@@ -37,8 +37,8 @@
 같은 Worker에 순위표용 Durable Object(`Board`, SQLite)가 함께 있습니다. 하루(한국 시간)마다 순위표가 새로 열립니다. 인물은 무작위로 뽑고 몇 번이든 다시 뽑을 수 있습니다.
 
 - `POST /api/start` `{seed, char}` → `{id}`: 판 번호 발급. IP당 한 시간에 30번까지.
-- `POST /api/score` `{id, name, days, char, end, rents, who}` → 순위와 상위 10명. 번호마다 한 번만 올릴 수 있고, 하루를 1.5초보다 빨리 넘긴 기록은 받지 않습니다.
-- `GET /api/board?seed=YYYY-MM-DD` → `{total, top}`
+- `POST /api/score` `{id, name, days, char, end, rents, who, look}` → 순위와 상위 10명. 번호마다 한 번만 올릴 수 있고, 하루를 1.5초보다 빨리 넘긴 기록은 받지 않습니다.
+- `GET /api/board?seed=YYYY-MM-DD&char=grad|mom|boss&limit=1~100` → `{total, top, at}` (버틴 날 → 낸 월세 → 먼저 올린 순)
 - 이름은 10자까지, 욕설이 들어가면 "익명의 세입자"로 바뀝니다.
 - 브라우저에서는 오늘의 판을 처음 한 번만 순위에 올리고, 다시 하는 판은 연습 판으로 처리합니다.
 

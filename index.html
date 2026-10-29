@@ -266,16 +266,91 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
 .person-card small{color:var(--muted);font-size:14px}
 .person-card .goal{color:var(--sodium);font-size:14px}
 .person-card.rolling{opacity:.55}
+.rk-head{display:flex;justify-content:space-between;align-items:baseline}
+.rk-head h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:20px}
+.linkish{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;padding:4px 0;min-height:32px}
+.linkish:hover{color:var(--sodium)}
+.linkish:focus-visible{outline:2px solid var(--sodium);outline-offset:2px}
+.av{width:28px;height:28px;image-rendering:pixelated;flex:none;background:#2a2639;border:1px solid var(--line)}
+.av.big{width:48px;height:48px}
+.rk-mini{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.rk-mini li,.rk-list li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.rk-mini li:last-child,.rk-list li:last-child{border-bottom:none}
+.rk-mini li.me,.rk-list li.me{background:rgba(255,164,63,.1);box-shadow:inset 3px 0 0 var(--sodium);padding-left:8px}
+.medal{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:14px;flex:none;color:#15131d}
+.medal.m1{background:#ffcf4d}.medal.m2{background:#cfd3de}.medal.m3{background:#d89a63}
+.who2{display:flex;flex-direction:column;min-width:0;flex:1}
+.who2 b{font-weight:500;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who2 small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc{display:flex;flex-direction:column;align-items:flex-end;flex:none}
+.sc b{font-family:var(--f-num);font-weight:400;font-size:16px;color:var(--sodium)}
+.sc small{font-size:12px;color:var(--muted)}
+.rk-foot{margin:0;font-size:12px;color:var(--muted)}
+.rk-list{list-style:none;margin:12px 0 0;padding:0 14px;border:2px solid var(--line);background:var(--panel)}
+.rk-list .rk{width:30px;text-align:center;font-family:var(--f-mono);color:var(--muted);flex:none}
+.rk-list .rk.date{width:40px;font-size:12px}
+.back{margin-bottom:4px;align-self:flex-start}
+.rk-title{margin:0}
+.rk-rule{margin:0 0 4px;font-size:13px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);background:#15131d;border:2px solid var(--line);padding:3px;gap:3px}
+.tab{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;padding:9px 4px;cursor:pointer;min-height:40px}
+.tab.on{background:var(--panel-2);color:var(--text);font-weight:500}
+.tab:focus-visible,.chip-btn:focus-visible{outline:2px solid var(--sodium);outline-offset:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip-btn{background:var(--panel);border:1px solid var(--line);color:var(--muted);font:inherit;font-size:13px;padding:6px 10px;cursor:pointer;min-height:32px}
+.chip-btn.on{background:var(--text);color:#15131d;border-color:var(--text);font-weight:500}
+.live-at,.cnt{margin-left:auto;font-size:12px;color:var(--muted);font-family:var(--f-mono);display:inline-flex;align-items:center;gap:6px}
+.live-at i{width:7px;height:7px;background:var(--gain);display:inline-block}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;margin-top:6px}
+.pod{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:14px 8px 12px;background:var(--panel);border:2px solid var(--line);min-width:0}
+.pod.p1{padding-top:24px;border-color:#ffcf4d;background:linear-gradient(180deg,rgba(255,207,77,.22),var(--panel) 70%)}
+.pod.p2{border-color:#8f94a3}.pod.p3{border-color:#9a6a45}
+.pod .pr{position:absolute;top:6px;left:8px;font-family:var(--f-num);font-size:14px;color:var(--muted)}
+.pod.p1 .pr{color:#ffcf4d}
+.pod .crown{position:absolute;top:2px;font-size:16px}
+.pod .av.big{width:56px;height:56px}
+.pod.p1 .av.big{width:64px;height:64px}
+.pod b{font-weight:500;font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod small{font-size:11px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .pd{font-family:var(--f-num);font-size:22px;color:var(--sodium)}
+.pod .pd small{font-family:var(--f-body);font-size:12px;color:var(--muted);margin-left:2px}
+.pod .prent{font-size:11px;color:var(--muted)}
+.pod.me{box-shadow:0 0 0 2px var(--sodium)}
+.empty-pod{visibility:hidden}
+.pad{padding:24px 0;text-align:center}
+.villa{margin-top:6px;display:flex;flex-direction:column;align-items:center}
+.rooftop{width:56%;background:#4a3f5c;border:2px solid #0b0a10;border-bottom:0;padding:10px 10px 8px;position:relative;display:flex;justify-content:center}
+.rooftop::before{content:"";position:absolute;left:-10px;right:-10px;top:-10px;height:10px;background:#2b2436;border:2px solid #0b0a10}
+.bldg{width:100%;background-color:#5a4a5f;background-image:repeating-linear-gradient(0deg,transparent 0 11px,rgba(0,0,0,.18) 11px 12px),repeating-linear-gradient(90deg,transparent 0 23px,rgba(0,0,0,.12) 23px 24px);border:2px solid #0b0a10;padding:10px 10px 0;display:flex;flex-direction:column;gap:10px}
+.sign{align-self:center;background:#1d3b2c;color:#d8f5dc;font-size:12px;padding:3px 10px;border:2px solid #0b0a10}
+.floor{display:grid;grid-template-columns:34px 1fr 1fr;gap:8px;align-items:stretch}
+.rooftop .win{width:100%}
+.fl{font-size:11px;color:#e6dcef;align-self:center;text-align:center}
+.rooftop{flex-direction:column;align-items:center;gap:4px}
+.rooftop .fl{position:static}
+.win{position:relative;min-height:112px;background:#14121b;border:3px solid #2b2436;box-shadow:inset 0 0 0 2px #0b0a10;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding:16px 4px 6px;min-width:0}
+.win.lit{background:linear-gradient(180deg,#ffd98a,#f2a84e)}
+.win.lit .av{background:transparent;border:0}
+.win.me{outline:3px solid var(--sodium);outline-offset:1px}
+.win .wl{position:absolute;top:3px;left:5px;font-family:var(--f-num);font-size:11px;color:#8a7f99}
+.win.lit .wl{color:#7a4a12}
+.plate{background:#1f1c2b;border:1px solid #0b0a10;padding:2px 6px;display:flex;flex-direction:column;align-items:center;max-width:100%}
+.plate b{font-size:12px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plate small{font-size:11px;color:var(--sodium);font-family:var(--f-mono)}
+.vacant{color:#5d5670;font-size:12px;margin-bottom:30px}
+.basement{grid-template-columns:44px 1fr;margin:0 -10px;padding:10px 10px 10px;background:#3a3040;border-top:3px solid #0b0a10}
+.basement .win{min-height:96px}
+.street{width:108%;height:12px;background:#2b2a33;border:2px solid #0b0a10;border-top:0}
+.empty-box{border:2px dashed var(--line);padding:28px 16px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.empty-box span{font-size:26px}
+.empty-box small{color:var(--muted)}
+.mine-best{display:flex;gap:12px;align-items:center;border:2px solid var(--sodium);padding:12px 14px;background:linear-gradient(90deg,rgba(255,164,63,.14),transparent)}
+.mine-best span{display:flex;flex-direction:column;gap:2px}
+.mine-best b{font-family:var(--f-display);font-weight:400;font-size:22px}
+.mine-best small{color:var(--muted);font-size:12px}
+@media (max-width:420px){.podium{gap:5px}.pod{padding:12px 4px 10px}.pod .pd{font-size:18px}.floor{grid-template-columns:26px 1fr 1fr;gap:6px}.basement{grid-template-columns:40px 1fr}.win{min-height:104px}}
 .board{border:2px solid var(--line);background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .board .label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
-.board ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.board li{display:grid;grid-template-columns:30px 1fr auto 56px;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
-.board li:last-child{border-bottom:none}
-.board li.me{background:rgba(255,164,63,.12);outline:1px solid var(--sodium)}
-.board .rk{font-family:var(--f-mono);color:var(--sodium);text-align:right}
-.board .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.board .ch{font-size:12px;color:var(--muted)}
-.board .dy{font-family:var(--f-mono);text-align:right}
 .board .empty{font-size:13px;color:var(--muted);margin:0}
 .mine{font-size:14px;color:var(--text)}
 .mine b{color:var(--sodium);font-weight:500}
@@ -1298,7 +1373,7 @@ function pickEvent(){
   if(due>=0){
     const q=s.queue.splice(due,1)[0];
     const ev = FOLLOW[q.id](s, q.data||{});
-    return {ev, cause:(q.data&&q.data.cause!=null)?q.data.cause:null};
+    return {ev, cause:(q.data&&q.data.cause!=null)?q.data.cause:null, fid:q.id+(q.data&&q.data.id&&(q.id==='rescue'||q.id==='twist'||q.id==='shock')?':'+q.data.id:'')};
   }
   return null;
 }
@@ -1308,8 +1383,8 @@ function nextEventOrFree(morning){
     const e = pickRandom(false);
     if(e) pick = {ev:e, cause:null, id:e.id};
   }
-  if(pick){ s.ev = {id:pick.id||null, obj: pick.id?null:pick.ev, cause:pick.cause}; s.phase='event'; }
-  else { s.ev=null; s.phase='free'; }
+  if(pick){ s.ev = {id:pick.id||null, obj: pick.id?null:pick.ev, cause:pick.cause, fid:pick.fid||null}; s.phase='event'; s.scene=sceneFor(curEv()); }
+  else { s.ev=null; s.phase='free'; s.scene=null; }
   render();
 }
 const ONCE=new Set(['intern','kimLead']);
@@ -1416,7 +1491,7 @@ function handleDefer(key, halfDay){
   if(d.done){ applyFx(d.done, n, `${d.name} 접수됨`); }
   if(d.repayTo){ s.rel[d.repayTo]=clamp(s.rel[d.repayTo]+5); }
   s.eveLog.push(`${d.name}을(를) 처리했다.${halfDay?' 반차를 써야 했다.':''}`);
-  s.pose = d.day ? 'out' : 'phone';
+  s.pose = d.day ? 'out' : 'phone'; s.scene = DEFER_SCENE[key] || (d.bill?'bills':null) || (d.key==='rent'?'door':null);
   render();
 }
 function dayBlocked(d){
@@ -1468,7 +1543,7 @@ function doAction(id){
   if(a.wise && s.mp<25) return;
   if(a.won && s.bal < -a.won) return;
   if(!canSpend(a.h)) return;
-  s.did[id]=1;
+  s.did[id]=1; s.scene=ACTION_SCENE[id]||null;
   const small = Math.round(food*1.7/100)*100*P;
   let txt='';
   switch(id){
@@ -1505,7 +1580,7 @@ function doAction(id){
 /* relationships */
 function careRel(key){
   if(s.relLast[key]===s.day || !canSpend(.5)) return;
-  s.relLast[key]=s.day; spend(.5);
+  s.relLast[key]=s.day; spend(.5); s.scene='phone';
   s.rel[key]=clamp(s.rel[key]+5); s.mp=clamp(s.mp+1);
   const r=CH().rels.find(x=>x.key===key);
   s.eveLog.push(`${r.name}에게 연락했다.`); s.pose='phone';
@@ -1517,7 +1592,7 @@ function askRel(key){
   if(r.ask.type==='money' && hasDefer('repay_'+key)) return;
   if(r.ask.type==='lead' && (s.flags.steady || s.queue.some(q=>q.id==='kimLeadF'))) return;
   if(!canSpend(.3)) return;
-  s.asked[key]=s.day; spend(.3);
+  s.asked[key]=s.day; spend(.3); s.scene='phone';
   const p = clamp(s.rel[key]/100*.92*Math.pow(.85,monthOf(s.day)-1),.05,.92), ok=rnd()<p;
   const prideMp = r.ask.pride ? -10 : 0;
   const n = node(`${r.name}에게 부탁: ${r.ask.label}`, null);
@@ -1581,11 +1656,12 @@ async function sleep(){
     s.nightDone = true;
     if(rnd() < Math.min(.75, .22 + dom(s.day)*.014 + (monthOf(s.day)-1)*.1)){
       const e = pickRandom(true);
-      if(e){ s.nightPending=true; s.ev={id:e.id,obj:null,cause:null}; s.phase='event'; render(); return; }
+      if(e){ s.nightPending=true; s.ev={id:e.id,obj:null,cause:null}; s.phase='event'; s.scene=sceneFor(e)||'night'; render(); return; }
     }
   }
   if(s.bal<0 && !s.flags.giveUp){ s.flags.warnNeg=1; render(); return; }
   s.gigStreak = (s.did.gigG||s.did.gigM||s.did.drive) ? s.gigStreak+1 : 0;
+  s.scene=null;
   busy=true;
   const C=CH(), P=C.people, H=HOUSES[C.house];
   // meal
@@ -1734,7 +1810,7 @@ function mindText(){
 }
 
 function render(){
-  const playing = s.char && s.phase!=='title' && s.phase!=='pick' && s.phase!=='contract';
+  const playing = s.char && s.phase!=='title' && s.phase!=='pick' && s.phase!=='contract' && s.phase!=='ranks';
   $('side').hidden = !playing;
   $('clock').hidden = !(playing && (s.phase==='free'||s.phase==='event'||s.phase==='result'));
   $('dday').innerHTML = s.phase==='end' ? `<b>${s.day}일</b> 버팀` : `월세날 <b>D-${s.day?31-dom(s.day):30}</b>`;
@@ -1749,7 +1825,7 @@ function render(){
     $('hpV').textContent=Math.round(s.hp); $('mpV').textContent=Math.round(s.mp);
     $('mind').innerHTML = mindText();
     const cap=$('sceneCap'); cap.hidden=false;
-    cap.innerHTML = `<b>${esc(CH().name)}</b><span>· ${esc(HOME_DESC[s.char])}</span><span>· ${esc(LIVES_WITH[s.char])}</span><span>· ${s.rain?'비':'맑음'}</span>`;
+    cap.innerHTML = `<b>${esc(CH().name)}</b>${s.scene&&SCENE_NAME[s.scene]?`<span>· 지금 ${esc(SCENE_NAME[s.scene])}</span>`:`<span>· ${esc(HOME_DESC[s.char])}</span>`}<span>· ${esc(LIVES_WITH[s.char])}</span><span>· ${s.rain?'비':'맑음'}</span>`;
     renderDiary();
     renderClock(); renderDefer(); renderPeople(); renderBills(); renderLedger();
     $('premium').textContent = fmt(premTotal())+'원';
@@ -1827,7 +1903,7 @@ function renderCard(){
       </div>`;
     $('startBtn').onclick=()=>{ if(saved && saved.ranked && !confirmDrop()) return; clearRun(); s.mode = canRank?'daily':(practiceOnly?'practice':'daily'); s.pickSeed=chooseSeed(s.mode); s.roll=newRoll(); s.rerolls=0; s.phase='pick'; render(); };
     if(saved) $('resumeBtn').onclick=()=>{ s=saved; reseed('d'+s.day); render(); };
-    if(API) fetchBoard(today);
+    if(API){ bindBoardLinks(); fetchBoard(today); }
     return;
   }
   if(s.phase==='pick'){
@@ -1905,6 +1981,7 @@ function renderCard(){
   }
   if(s.phase==='free') return renderFree(c);
   if(s.phase==='end') return renderEnd(c);
+  if(s.phase==='ranks') return renderRanks(c);
 }
 
 function renderFree(c){
@@ -2061,23 +2138,53 @@ function beginRun(){
 }
 function onRunEnd(){ clearRun(); if(API) fetchBoard(s.seed && s.seed[0]!=='p' ? s.seed : kstDate()); }
 let BOARD=null;
+const FULL={};
+let RV={tab:'list', seed:null, char:null};
+const fmtN = n => (n||0).toLocaleString('ko-KR');
+function kstOff(n){ return new Date(Date.now()+9*3600e3-n*86400e3).toISOString().slice(0,10); }
+const END_ICON={broke:'💸',collapse:'🚑',burnout:'🌧️',evicted:'🏚️'};
+const END_WORD={broke:'잔고 바닥',collapse:'쓰러짐',burnout:'번아웃',evicted:'쫓겨남'};
+const DEF_LOOK={grad:{h:'#2a2233',sh:'#6d7a8c'},mom:{h:'#4a2f25',sh:'#b0607a',l:1},boss:{h:'#8b8b95',sh:'#5b6b5a',g:1}};
+const AV_CACHE={};
+function avatarSrc(look, base){
+  const L={...(DEF_LOOK[base]||DEF_LOOK.grad), ...Object.fromEntries(Object.entries(look||{}).filter(([k,v])=>v!=null))};
+  const key=[L.h,L.sh,L.l?1:0,L.g?1:0].join('|');
+  if(AV_CACHE[key]) return AV_CACHE[key];
+  const c=document.createElement('canvas'); c.width=14; c.height=14; const g=c.getContext('2d');
+  const rows=CHAR.slice(); if(L.l){ rows[4]="hhsssssssshh"; rows[5]="h.sesssses.h"; rows[6]="h.ssssssss.h"; } if(L.g) rows[7]="...shhhhs...";
+  const pal={h:L.h,s:'#f0c49c',e:'#2a2233',m:'#a85a55',t:L.sh,d:shade(L.sh,.75),g:'#c9c9d1'};
+  rows.forEach((r,y)=>{ for(let x=0;x<r.length;x++){ const k=r[x]; if(k!=='.'&&pal[k]){ g.fillStyle=pal[k]; g.fillRect(x+1,y+1,1,1); } } });
+  return (AV_CACHE[key]=c.toDataURL());
+}
+const av = (r, cls='') => `<img class="av ${cls}" src="${avatarSrc(r.look, r.char)}" alt="" width="28" height="28">`;
+function myIds(){ return new Set((lsGet('wolse_mine')||[]).map(x=>x.id)); }
 async function fetchBoard(seed){
-  try{ BOARD = await api('/api/board?seed='+encodeURIComponent(seed)); BOARD.seed=seed; }catch(e){ BOARD={error:1}; }
-  const b=$('boardBox'); if(b) b.innerHTML=boardHtml();
+  try{ BOARD = await api('/api/board?seed='+encodeURIComponent(seed)+'&limit=10'); BOARD.seed=seed; }catch(e){ BOARD={error:1}; }
+  const b=$('boardBox'); if(b) b.innerHTML=boardHtml(s.rankInfo&&s.rankInfo.id);
+  bindBoardLinks();
   const rb=$('rankBox'); if(rb && !rb.querySelector('input')) { rb.innerHTML=rankBoxHtml(); bindRankBox(); }
+}
+async function fetchFull(seed, char){
+  const key=seed+'|'+(char||'');
+  try{ FULL[key] = await api('/api/board?seed='+encodeURIComponent(seed)+'&limit=100'+(char?'&char='+char:'')); }catch(e){ FULL[key]={error:1}; }
+  if(s.phase==='ranks' && RV.seed===seed && RV.char===char) renderCard();
 }
 const CHAR_NAME = k => GROUP[k] || '';
 function boardHtml(myId){
-  if(!BOARD) return '<p class="empty">순위를 불러오는 중…</p>';
-  if(BOARD.error) return '<p class="empty">지금은 순위를 불러올 수 없다.</p>';
-  const top=BOARD.top||[];
-  return `<div class="label"><span>${seedLabel(BOARD.seed)} 순위</span><span>${(BOARD.total||0).toLocaleString('ko-KR')}명 도전</span></div>
-    ${top.length?`<ol>${top.map((r,i)=>`<li class="${myId&&r.id===myId?'me':''}"><span class="rk">${r.rank||i+1}</span><span class="nm">${esc(r.name)}</span><span class="ch">${esc(r.who || CHAR_NAME(r.char))}</span><span class="dy">${r.days}일</span></li>`).join('')}</ol>`:'<p class="empty">아직 아무도 기록을 남기지 않았다. 첫 번째가 되어보자.</p>'}`;
+  const head=`<div class="rk-head"><h3>${BOARD&&BOARD.seed?seedLabel(BOARD.seed):'오늘'}의 순위</h3><button class="linkish" type="button" data-open-ranks>전체 보기 ›</button></div>`;
+  if(!BOARD) return head+'<p class="empty">순위를 불러오는 중…</p>';
+  if(BOARD.error) return head+'<p class="empty">지금은 순위를 불러올 수 없다.</p>';
+  const top=(BOARD.top||[]).slice(0,3), mine=myIds();
+  if(!top.length) return head+'<p class="empty">아직 아무도 기록을 남기지 않았다. 첫 번째가 되어보자.</p>';
+  return head+`<ol class="rk-mini">${top.map(r=>`<li class="${(myId&&r.id===myId)||mine.has(r.id)?'me':''}"><span class="medal m${r.rank}">${r.rank}</span>${av(r)}<span class="who2"><b>${esc(r.name)}</b><small>${esc(r.who||'')} · ${esc(CHAR_NAME(r.char))}</small></span><span class="sc"><b>${r.days}일</b><small>🏠${r.rents||0}</small></span></li>`).join('')}</ol>
+    <p class="rk-foot">${fmtN(BOARD.total)}명 도전 · 버틴 날이 같으면 월세를 더 낸 사람이 위</p>`;
 }
+function bindBoardLinks(){ document.querySelectorAll('[data-open-ranks]').forEach(b=>b.onclick=()=>openRanks(BOARD&&BOARD.seed)); }
+function openRanks(seed){ RV={tab:RV.tab||'list', seed:seed||kstDate(), char:null}; s.ranksBack=s.phase; s.phase='ranks'; render(); window.scrollTo&&window.scrollTo(0,0); }
 function rankBoxHtml(){
   if(!API) return '';
   const done=s.rankInfo;
-  if(done) return `<p class="memo"><b>${done.total.toLocaleString('ko-KR')}명 중 ${done.rank.toLocaleString('ko-KR')}위</b>${done.rank===1?'지금은 오늘 1등이다.':`상위 ${Math.max(1,Math.ceil(done.rank/done.total*100))}%.`} 자정까지 순위가 바뀔 수 있다.</p><div class="board" id="boardBox">${boardHtml(done.id)}</div>`;
+  if(done) return `<p class="memo"><b>${fmtN(done.total)}명 중 ${fmtN(done.rank)}위</b>${done.rank===1?'지금은 오늘 1등이다.':`상위 ${Math.max(1,Math.ceil(done.rank/done.total*100))}%.`} 자정까지 순위가 바뀔 수 있다.</p><div class="board" id="boardBox">${boardHtml(done.id)}</div>`;
   if(!s.ranked) return `<p class="memo"><b>연습 판</b>순위에는 올라가지 않는다.</p><div class="board" id="boardBox">${boardHtml()}</div>`;
   if(!s.runId) return `<p class="memo warn"><b>순위 서버에 연결되지 않았다</b>이번 판은 순위에 올릴 수 없다.</p>`;
   const nick = lsGet('wolse_nick') || '';
@@ -2087,19 +2194,78 @@ function rankBoxHtml(){
     <div class="board" id="boardBox">${boardHtml()}</div>`;
 }
 function bindRankBox(){
+  bindBoardLinks();
   const btn=$('submitBtn'); if(!btn) return;
   btn.onclick=async()=>{
     const name=($('nick').value||'').trim().slice(0,10);
     lsSet('wolse_nick', name);
     btn.disabled=true; btn.textContent='올리는 중…';
+    const L=CH().look||{}, look={h:L.hair, sh:L.shirt, l:!!L.long, g:!!L.gray};
     try{
-      const r = await api('/api/score', {id:s.runId, name, days:s.day, char:s.char, end:s.endType, rents:s.rentsPaid||0, who:`${CH().name} ${CH().age}세`});
+      const r = await api('/api/score', {id:s.runId, name, days:s.day, char:s.char, end:s.endType, rents:s.rentsPaid||0, who:`${CH().name} ${CH().age}세`, look});
       s.rankInfo={rank:r.rank,total:r.total,id:r.id};
       BOARD={...r.board, seed:s.seed};
       lsSet('wolse_daily', {seed:s.seed, started:1, done:{days:s.day, rank:r.rank, total:r.total}});
-      $('rankBox').innerHTML=rankBoxHtml();
+      const mine=lsGet('wolse_mine')||[]; mine.unshift({id:r.id, seed:s.seed, name:r.name, who:`${CH().name} ${CH().age}세`, char:s.char, look, days:s.day, rents:s.rentsPaid||0, endt:s.endType, rank:r.rank, total:r.total}); lsSet('wolse_mine', mine.slice(0,60));
+      delete FULL[s.seed+'|'];
+      $('rankBox').innerHTML=rankBoxHtml(); bindRankBox();
     }catch(e){ btn.disabled=false; btn.textContent='다시 시도'; $('submitMsg').textContent='올리지 못했다. 잠시 뒤 다시 눌러보자.'; }
   };
+}
+/* ---------- 순위 화면 ---------- */
+function renderRanks(c){
+  const seed=RV.seed||kstDate(), key=seed+'|'+(RV.char||''), B=FULL[key];
+  if(!B && RV.tab!=='mine') fetchFull(seed, RV.char);
+  const dates=[0,1,2,3,4,5,6].map(kstOff);
+  const dateChips = dates.map((d,i)=>`<button type="button" class="chip-btn ${d===seed?'on':''}" data-seed="${d}">${i===0?'오늘':i===1?'어제':d.slice(5).replace('-','.')}</button>`).join('');
+  const charChips = [['','전체'],['grad','청년 알바생'],['mom','한부모'],['boss','중년 일용직']].map(([k,l])=>`<button type="button" class="chip-btn ${(RV.char||'')===k?'on':''}" data-char="${k}">${l}</button>`).join('');
+  const tabs=[['villa','오늘의 빌라'],['list','순위 100'],['mine','나의 기록']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${RV.tab===k}" class="tab ${RV.tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('');
+  let body='';
+  if(RV.tab==='mine') body=mineHtml();
+  else if(!B) body='<p class="empty pad">순위를 불러오는 중…</p>';
+  else if(B.error) body='<p class="empty pad">지금은 순위를 불러올 수 없다. 잠시 뒤 다시 열어보자.</p>';
+  else body = RV.tab==='villa' ? villaHtml(B) : listHtml(B);
+  const at = B && B.at ? new Date(B.at+9*3600e3).toISOString().slice(11,16) : '';
+  c.innerHTML=`<button class="linkish back" type="button" id="ranksBack">‹ 돌아가기</button>
+    <h2 class="rk-title">순위</h2>
+    <p class="rk-rule">버틴 날 → 낸 월세 → 먼저 올린 순 · 하루에 한 번만 올라간다</p>
+    <div class="tabs" role="tablist">${tabs}</div>
+    ${RV.tab!=='mine'?`<div class="chips">${dateChips}<span class="live-at">${at?`<i></i>${at} 기준`:''}</span></div>
+    <div class="chips">${charChips}<span class="cnt">${B&&!B.error?fmtN(B.total)+'명':''}</span></div>`:''}
+    ${body}`;
+  $('ranksBack').onclick=()=>{ s.phase=s.ranksBack||'title'; render(); };
+  c.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ RV.tab=b.dataset.tab; renderCard(); });
+  c.querySelectorAll('[data-seed]').forEach(b=>b.onclick=()=>{ RV.seed=b.dataset.seed; renderCard(); });
+  c.querySelectorAll('[data-char]').forEach(b=>b.onclick=()=>{ RV.char=b.dataset.char||null; renderCard(); });
+}
+function rowSub(r){ return `${esc(r.who||'')}${r.who?' · ':''}${esc(CHAR_NAME(r.char))} · ${END_ICON[r.endt]||''} ${END_WORD[r.endt]||''}`; }
+function listHtml(B){
+  const top=B.top||[], mine=myIds();
+  if(!top.length) return '<p class="empty pad">이 날은 아직 아무도 기록을 남기지 않았다.</p>';
+  const pod=[top[1],top[0],top[2]].map((r,i)=>r?`<div class="pod p${r.rank<=3?r.rank:3} ${mine.has(r.id)?'me':''}"><span class="pr">${r.rank}</span>${r.rank===1?'<span class="crown" aria-hidden="true">👑</span>':''}${av(r,'big')}<b>${esc(r.name)}</b><small>${esc(r.who||CHAR_NAME(r.char))}</small><span class="pd">${r.days}<small>일</small></span><span class="prent">🏠 월세 ${r.rents||0}번</span></div>`:`<div class="pod empty-pod"></div>`).join('');
+  const rest=top.slice(3).map(r=>`<li class="${mine.has(r.id)?'me':''}"><span class="rk">${r.rank}</span>${av(r)}<span class="who2"><b>${esc(r.name)}</b><small>${rowSub(r)}</small></span><span class="sc"><b>${r.days}일</b><small>🏠${r.rents||0}</small></span></li>`).join('');
+  return `<div class="podium">${pod}</div>${rest?`<ol class="rk-list">${rest}</ol>`:''}`;
+}
+function villaHtml(B){
+  const top=B.top||[], mine=myIds(), at=i=>top[i];
+  const win=(r,label)=> r ? `<div class="win lit ${mine.has(r.id)?'me':''}" title="${esc(r.name)} · ${r.days}일"><span class="wl">${label}</span>${av(r,'big')}<span class="plate"><b>${esc(r.name)}</b><small>${r.days}일 · 🏠${r.rents||0}</small></span></div>`
+    : `<div class="win"><span class="wl">${label}</span><span class="vacant">빈 방</span></div>`;
+  const floors=[];
+  for(let f=4;f>=1;f--){ const a=1+(4-f)*2; floors.push(`<div class="floor"><span class="fl">${f}층</span>${win(at(a),`${a+1}위`)}${win(at(a+1),`${a+2}위`)}</div>`); }
+  return `<div class="villa">
+    <div class="rooftop"><span class="fl">옥탑</span>${win(at(0),'1위')}</div>
+    <div class="bldg"><div class="sign">월세빌라 · ${seedLabel(B.seed||RV.seed)}</div>${floors.join('')}
+      <div class="floor basement"><span class="fl">반지하</span>${win(at(9),'10위')}</div></div>
+    <div class="street"></div></div>
+    <p class="rk-foot">그날 가장 오래 버틴 열 명이 이 빌라에 산다. 1등은 옥탑방, 10등은 반지하.</p>`;
+}
+function mineHtml(){
+  const mine=lsGet('wolse_mine')||[];
+  if(!mine.length) return `<div class="empty-box"><span aria-hidden="true">🏠</span><b>아직 올린 기록이 없다</b><small>오늘의 판을 끝까지 버티고 이름을 올리면 여기에 쌓인다.</small></div>`;
+  const best=mine.reduce((a,b)=>b.days>a.days?b:a,mine[0]);
+  return `<div class="mine-best">${av(best,'big')}<span><small>내 최고 기록</small><b>${best.days}일 · 🏠 ${best.rents}번</b><small>${seedLabel(best.seed)} · ${esc(best.who||'')} · ${fmtN(best.total)}명 중 ${fmtN(best.rank)}위</small></span></div>
+    <ol class="rk-list">${mine.map(r=>`<li><span class="rk date">${seedLabel(r.seed).replace('월 ','.').replace('일','')}</span>${av(r)}<span class="who2"><b>${esc(r.who||'')}</b><small>${esc(r.name)} · ${END_ICON[r.endt]||''} ${END_WORD[r.endt]||''} · 그때 ${fmtN(r.total)}명 중 ${fmtN(r.rank)}위</small></span><span class="sc"><b>${r.days}일</b><small>🏠${r.rents||0}</small></span></li>`).join('')}</ol>
+    <p class="rk-foot">이 기록은 이 브라우저에만 저장된다.</p>`;
 }
 FOLLOW.docCheck = (s,d) => {
   const p = clamp(.35 + s.career/90, .1, .92);
@@ -2162,8 +2328,8 @@ function drawRoom(){
   }
   const cxp=house==='gosi'?32:12;
   px(cxp,10,22,24,'#f2ece0');px(cxp,10,22,6,'#d9483b');px(cxp+4,8,2,4,'#333');px(cxp+16,8,2,4,'#333');
-  const dn=Math.max(1,s.day||1); digits(dn,dn>9?cxp+4:cxp+8,19,'#2b2533',2);
-  if(s.day>=25) px(cxp+1,31,20,1,'#d9483b');
+  const dn=dom(s.day||1); digits(dn,dn>9?cxp+4:cxp+8,19,'#2b2533',2);
+  if(dn>=25) px(cxp+1,31,20,1,'#d9483b');
   px(0,70,W,20,house==='banjiha'?'#34302b':house==='gosi'?'#3a3240':'#5a4535');
   for(let x=0;x<W;x+=16) px(x,70,1,20,'rgba(0,0,0,.18)');
   if(house==='oneroom'){px(2,56,40,14,'#e4e0ec');px(2,60,40,10,'#6b7a6b');px(2,52,10,8,'#efeaf5');}
@@ -2218,7 +2384,244 @@ function drawNight(){
   if(night>.01) px(0,0,W,H,`rgba(8,6,22,${night.toFixed(3)})`);
   if(sleeping){ if(tick%30===0) zz.push({x:92,y:44,a:1}); zz.forEach(z=>{z.y-=.25;z.x+=.12;z.a-=.012;cx.fillStyle=`rgba(230,225,255,${Math.max(0,z.a)})`;cx.fillRect(Math.round(z.x),Math.round(z.y),3,1);cx.fillRect(Math.round(z.x)+1,Math.round(z.y)+1,1,1);cx.fillRect(Math.round(z.x),Math.round(z.y)+2,3,1);}); zz=zz.filter(z=>z.a>0); }
 }
-function frame(){ tick++; if(s){ drawRoom(); drawChar(); drawDesk(); drawKid(); drawCoins(); drawNight(); } requestAnimationFrame(frame); }
+/* ---------------- 상황 장면 ----------------
+   이벤트나 외출 때는 방 대신 그 장소를 그린다. 160x90 픽셀. */
+const SCENE_IDS = {
+  hospital:['tooth','toothBlow','crown','back','backBlow','childFever','childCough','childWorse','flu','fluWorse','famGrad','famMom','famBoss','momMoney','parent','bp','bpCrash','aloneHurt','glassesHead'],
+  store:['cover','shortCash','juhyu','drunk','laborWin','shiftCut','noise_store'],
+  mart:['weekendShift','momOT','promo'],
+  street:['lastBus','surge','rainUmb','cold','coat','driveRegular','chiefDrink','smash'],
+  bus:['card','alarm'],
+  work:['special','receivable','equip','equipSold','regularTip','oldRegular','kimLead','kimLeadF','rescue:bigGig'],
+  office:['intern','offer','interview','docFail','docCheck','coaching','toeic','studyCafe'],
+  school:['teacher','teacherMiss','fieldTrip','schoolOff','afterSchool','parentsDues','shock:child','tkd'],
+  gov:['supportNotice','supportPaid','supportMiss','loanCenter','debtAdjust','alimony','alimonyPaid','rescue:welfare','welfarePaid','vat','vatLate','shock:insurance','rehire'],
+  bills:['electric','cardloan','loanLate','nCardMsg','trialCharge','dataOver','bankFee','insRenew','billLate','shock:fine','shock:collect','oldLoan','gigDefect','vatLate'],
+  door:['mgmtExtra','rentHike','evict','rescue:landlordKind','gift','kimchi'],
+  phone:['smish','smishLoss','nPhish','momCall','nDaughter','nGradFriend','exCall','giftDay','nInsta','twist:scamCall','alone','fired','rescue:oldDebt','rescue:friendMeal'],
+  lucky:['rescue:lotto','refund','refundPaid','carPay','exPays','stuffSold','sellStuff','rescue:refund','offer'],
+  accident:['gigCrash','twist:carHit','blackIce','twist:theft'],
+  repair:['laundry','shock:washer','boiler','shock:boiler','fridge','hotWater','nLeak','mold','shock:laptop'],
+  night:['nSnack','nNoise','nMomKid','nKidCough','nLonely','nTomorrow','impulse']
+};
+const SCENE_OF={}; Object.entries(SCENE_IDS).forEach(([sc,ids])=>ids.forEach(id=>{ if(!SCENE_OF[id]) SCENE_OF[id]=sc; }));
+const SCENE_NAME={hospital:'병원',store:'편의점',mart:'마트 계산대',street:'밤거리',bus:'버스 안',work:'물류센터',office:'면접장',school:'학교',gov:'주민센터',bills:'고지서',door:'현관 앞',phone:'휴대폰',lucky:'',accident:'사고',repair:'고장',night:'',delivery:'배달 중',assembly:''};
+function sceneFor(ev){
+  if(!ev) return null;
+  const key=s.ev&&(s.ev.fid||s.ev.id);
+  if(key){ if(SCENE_OF[key]) return fixScene(SCENE_OF[key]); const base=key.split(':')[0]; if(SCENE_OF[base]) return fixScene(SCENE_OF[base]); }
+  const t=(ev.short||'')+' '+(ev.text||'');
+  const rules=[[/병원|응급|치과|입원|소아과|진료|약국|열이|폐렴/,'hospital'],[/면접|서류|합격|인턴|채용/,'office'],[/담임|학교|체험학습|방과후|급식/,'school'],[/주민센터|신청|지원금|복지|이행관리원/,'gov'],
+    [/집주인|월세|총무|퇴거/,'door'],[/고지서|독촉|연체|미납|청구|요금|결제/,'bills'],[/문자|전화|카톡|메신저/,'phone'],[/사고|넘어|미끄러|치였/,'accident'],[/고장|멈췄|샌다|곰팡이/,'repair'],
+    [/편의점|점장|시재/,'store'],[/마트|계산대|팀장/,'mart'],[/인력|물류|반장|현장|특근/,'work'],[/버스|지하철/,'bus'],[/당첨|환급|입금/,'lucky']];
+  for(const [re,sc] of rules) if(re.test(t)) return fixScene(sc);
+  return ev.night||s.nightPending ? 'night' : null;
+}
+function fixScene(sc){
+  if(sc==='store' && s.char==='mom') return 'mart';
+  if(sc==='mart' && s.char==='grad' && !s.flags.job) return 'store';
+  if(sc==='store' && s.char==='boss') return 'work';
+  return sc;
+}
+const ACTION_SCENE={bulk:'mart',small:'store',gigG:'delivery',drive:'street',gigM:'assembly'};
+const DEFER_SCENE={tooth:'hospital',back:'hospital',support:'gov',alimony:'gov',loanCenter:'gov',labor:'gov',welfare:'gov',vat:'gov',phone:'store',mold:'repair'};
+
+function body(x,y,o={}){
+  const pal=charPal(); if(o.shirt){ pal.t=o.shirt; pal.d=shade(o.shirt,.75); }
+  let rows=CHAR.slice(); const L=s.char?CH().look:{};
+  if(L.long){ rows[4]="hhsssssssshh"; rows[5]="h.sesssses.h"; rows[6]="h.ssssssss.h"; }
+  if(L.gray) rows[7]="...shhhhs...";
+  if(o.sad||s.mp<35) rows[7]=L.gray?rows[7]:"...smssms...";
+  if((tick%210)<7) rows[5]=rows[5].replace(/e/g,'s');
+  if(o.h) rows=rows.slice(0,o.h);
+  sprite(rows,x,y,pal);
+  if(o.hat){ px(x+1,y-1,10,3,o.hat); px(x,y+1,12,1,shade(o.hat,.8)); }
+  if(o.bandage){ px(x+2,y+2,8,1,'#f4f4f4'); }
+}
+function npc(x,y,hair,shirt,o={}){
+  let rows=CHAR.slice(); if(o.gray) rows[7]="...shhhhs..."; if(o.h) rows=rows.slice(0,o.h);
+  sprite(rows,x,y,{h:hair,s:o.skin||'#e8b98f',e:'#2a2233',m:'#9a5050',t:shirt,d:shade(shirt,.75),g:'#c9c9d1'});
+}
+function kidAt(x,y){ const pal={h:'#3a2520',s:'#f3cfa8',e:'#2a2233',m:'#c46a6a',p:s.rel&&s.rel.child<40?'#7a7f99':'#f0a35e'}; sprite(KID,x,y,pal); }
+function floorPx(y,c,step=16){ px(0,y,W,H-y,c); for(let x=0;x<W;x+=step) px(x,y,1,H-y,'rgba(0,0,0,.18)'); }
+function bubble(x,y,w,h,txtFn){ px(x,y,w,h,'#f6f4ee'); px(x+1,y+h,3,2,'#f6f4ee'); px(x,y,w,1,'#c9c5bb'); if(txtFn) txtFn(); }
+const BOB=()=>REDUCED?0:((tick>>5)%2);
+const SHELF_C=['#e85d5d','#ffd34d','#5db3e8','#7fd17a','#f29bd0','#ffffff','#f5a142','#9b7fe8'];
+const SHELF=Array.from({length:60},(_,i)=>SHELF_C[(i*7+3)%SHELF_C.length]);
+
+const SCENES = {
+  hospital(){
+    px(0,0,W,H,'#dfe6e9'); px(0,46,W,2,'#c7d2d6'); floorPx(70,'#a9b8bd',12);
+    px(14,8,14,14,'#2f9e6b'); px(19,10,4,10,'#fff'); px(16,13,10,4,'#fff');
+    px(34,10,30,9,'#2b3a40'); px(36,12,26,5,'#35c27a'); px(38,13,3,1,'#2b3a40');
+    px(118,4,42,2,'#8a949a'); for(let i=0;i<6;i++) px(120+i*7,6,6,62,i%2?'#89bccf':'#7fb3c9');
+    px(46,54,62,9,'#f6f8fa'); px(46,52,14,4,'#ffffff'); px(46,63,62,3,'#8a96a0'); px(48,66,2,4,'#6e7a83'); px(104,66,2,4,'#6e7a83');
+    px(112,16,1,54,'#9aa6ac'); px(109,16,7,11,'#d6eef5'); px(112,27,1,10,'#a7d3e0');
+    px(84,20,22,14,'#1f2a30'); const k=(tick>>1)%22; for(let i=0;i<22;i++){ const yy=27+((i===k||i===k+1)?-4:0); px(84+i,yy,1,1,'#4ff09a'); }
+    body(62,40+BOB(),{bandage:true});
+    if(s.char==='mom') kidAt(78,46);
+  },
+  store(){
+    px(0,0,W,H,'#ece8dc'); px(0,0,W,5,'#2f8f5b'); px(0,5,W,2,'#f29a3a');
+    for(let r=0;r<3;r++){ const y=14+r*14; px(4,y+9,92,2,'#8f846f'); for(let i=0;i<15;i++) px(6+i*6,y+2,4,7,SHELF[r*15+i]); }
+    px(104,9,52,58,'#c8d0d8'); px(106,11,23,54,'#bfe6f5'); px(131,11,23,54,'#bfe6f5');
+    for(let r=0;r<4;r++) for(let i=0;i<4;i++){ px(108+i*5,15+r*13,3,9,SHELF[(r*4+i+20)%60]); px(133+i*5,15+r*13,3,9,SHELF[(r*4+i+33)%60]); }
+    px(129,11,2,54,'#c8d0d8');
+    floorPx(70,'#cfc8b8',10);
+    body(54,42+BOB(),{shirt: s.char==='grad'?'#2f8f5b':undefined});
+    px(24,56,80,16,'#3d6a8f'); px(24,55,80,2,'#e3e3e3'); px(34,47,12,8,'#2a2a33'); px(36,49,8,4,(tick>>4)%2?'#7af0a8':'#5ad08a'); px(70,50,8,5,'#f4f1ea');
+  },
+  mart(){
+    px(0,0,W,H,'#f1ede2'); px(0,0,W,4,'#d9483b');
+    for(let a=0;a<4;a++){ const x=6+a*24; px(x,10,18,34,'#bdb6a3'); for(let r=0;r<4;r++) for(let i=0;i<3;i++) px(x+2+i*6,12+r*8,4,6,SHELF[(a*12+r*3+i)%60]); }
+    px(124,6,14,10,'#ffd34d'); digits(3,129,8,'#2b2533',1);
+    floorPx(70,'#d2cab6',12);
+    px(0,58,112,8,'#2b2b31'); for(let i=0;i<14;i++){ const xx=((i*9 + (REDUCED?0:tick>>1))%112); px(xx,59,1,6,'#45454d'); }
+    for(let i=0;i<3;i++){ const xx=((i*37 + (REDUCED?0:tick>>1))%104); px(xx,53,7,5,SHELF[(i*5+2)%60]); }
+    px(112,52,22,20,'#5a6270'); px(112,51,22,2,'#d0d0d0'); px(116,48,8,4,'#2a2a33'); px(114,56,1,1,(tick>>3)%2?'#ff4040':'#801010');
+    body(128,40+BOB(),{shirt:s.char==='mom'?'#c0504d':undefined});
+  },
+  street(){
+    const night = s.nightPending || /drive/.test(s.scene2||'') || true;
+    { const bands=skyBands(), bh=Math.ceil(58/bands.length); bands.forEach((c,i)=>px(0,i*bh,W,bh,c)); }
+    city.forEach((b,i)=>{ const x=b.x*3.7, h=b.h*1.6; px(x,58-h,b.w*3.2,h,'#1b1a2b'); b.lit.forEach(l=>{ if(l.on) px(x+l.x*3,58-h+l.y*1.6,2,2,'#ffcf6b'); }); });
+    px(0,58,W,32,'#2a2a30'); px(0,58,W,2,'#55535e'); for(let i=0;i<8;i++){ const xx=(i*24 - (REDUCED?0:(tick>>1))%24+W)%W; px(xx,74,12,2,'#d8d29a'); }
+    px(18,18,2,40,'#4a4a55'); px(14,16,10,3,'#4a4a55'); px(15,19,8,2,'#ffe7a0');
+    cx.fillStyle='rgba(255,231,160,.12)'; cx.beginPath(); cx.moveTo(15,21); cx.lineTo(23,21); cx.lineTo(36,60); cx.lineTo(2,60); cx.fill();
+    px(70,52,44,10,'#c9ccd6'); px(78,46,26,7,'#c9ccd6'); px(80,47,10,5,'#5b6f8a'); px(92,47,10,5,'#5b6f8a'); px(110,54,4,3,'#ffef9a'); px(70,55,3,3,'#e04848');
+    px(76,61,8,4,'#16161a'); px(102,61,8,4,'#16161a');
+    body(54,46+BOB());
+    if(s.rain) drawRain(0,0,W,58);
+  },
+  bus(){
+    px(0,0,W,H,'#3a4a5c'); px(0,8,W,30,'#1e2836');
+    cx.save(); cx.beginPath(); cx.rect(0,10,W,26); cx.clip(); skyBands().forEach((c,i)=>px(0,10+i*6,W,6,c));
+    city.forEach(b=>{ const x=((b.x*4 - (REDUCED?0:tick>>1))%200+200)%200-20; px(x,36-b.h,b.w*3,b.h,'#141824'); }); cx.restore();
+    for(let i=0;i<5;i++) px(i*34,8,3,30,'#2b3646');
+    px(0,6,W,2,'#c8cdd5'); for(let i=0;i<6;i++) px(10+i*26,2,1,6,'#c8cdd5'), px(8+i*26,7,5,2,'#e6c35a');
+    floorPx(72,'#2a2f36',20);
+    for(let i=0;i<4;i++){ px(8+i*40,50,26,16,'#2f5f9a'); px(8+i*40,46,26,6,'#3a72b5'); }
+    body(55,40+BOB(),{h:12}); px(52,52,18,2,'#3a72b5');
+    if(s.rain) for(let i=0;i<10;i++) px((i*17+tick)%W,12+((i*7+tick)%22),1,3,'#9fb3d9');
+  },
+  work(){
+    const sky=['#3b2d4f','#7a4a5f','#d98a5a','#f2c07a']; sky.forEach((c,i)=>px(0,i*5,W,5,c));
+    px(0,20,W,50,'#7a8290'); for(let x=0;x<W;x+=4) px(x,20,1,50,'#6a717e'); px(0,20,W,3,'#545a66');
+    px(96,30,52,40,'#3a3f48'); px(98,32,48,38,'#2a2e36'); px(96,30,52,2,'#e8c547');
+    for(let r=0;r<3;r++) for(let i=0;i<3-r;i++) px(8+i*14+r*7,56-r*10,13,10,'#b07a45'), px(8+i*14+r*7,56-r*10,13,1,'#8a5a30'), px(13+i*14+r*7,59-r*10,3,1,'#5a3a20');
+    px(4,66,50,4,'#8a6a40');
+    px(118,52,22,12,'#e8b52a'); px(120,44,10,9,'#2a2a30'); px(138,40,2,24,'#555'); px(140,56,8,2,'#888'); px(120,64,6,5,'#16161a'); px(132,64,6,5,'#16161a');
+    floorPx(70,'#5a5a60',20);
+    body(66,44+BOB(),{hat:'#f2c230'});
+  },
+  office(){
+    px(0,0,W,H,'#d9dde6'); for(let i=0;i<9;i++) px(104,6+i*3,48,2,'#eef1f6'); px(102,4,52,30,'rgba(0,0,0,.08)');
+    px(12,8,30,18,'#c9ced8'); px(14,10,26,14,'#eceff4'); px(18,14,18,1,'#9aa2b2'); px(18,17,14,1,'#9aa2b2');
+    floorPx(70,'#8a8f9c',20);
+    npc(30,36,'#2a2233','#3a4050'); npc(52,36,'#6b6b75','#4a4a56',{gray:true}); npc(74,36,'#3a2a20','#384a60');
+    px(20,48,84,8,'#6b4f3a'); px(20,48,84,1,'#8a6a50'); px(24,56,2,14,'#4a3828'); px(98,56,2,14,'#4a3828');
+    px(36,46,6,2,'#f4f1ea'); px(58,46,6,2,'#f4f1ea'); px(80,46,6,2,'#f4f1ea');
+    body(120,44+BOB(),{shirt:'#2f3550'}); px(125,53,2,4,'#b0303a');
+    px(116,58,20,3,'#3a3a44'); px(118,61,2,9,'#3a3a44'); px(132,61,2,9,'#3a3a44');
+  },
+  school(){
+    px(0,0,W,H,'#e8dfc8'); px(10,6,96,34,'#8a6b4a'); px(12,8,92,30,'#2f5d46');
+    for(let i=0;i<3;i++) px(18,14+i*7,30+((i*13)%30),1,'#d8e8d8'); px(70,14,26,1,'#d8e8d8'); px(10,40,96,2,'#b8a888');
+    px(116,8,34,26,'#f4f1ea'); px(118,10,30,20,'#ffd34d'); px(122,14,8,8,'#e85d5d'); px(134,16,10,10,'#5db3e8');
+    floorPx(70,'#a98a5e',14);
+    px(40,58,30,4,'#c99a5a'); px(44,62,2,8,'#8a6a40'); px(64,62,2,8,'#8a6a40');
+    if(s.char==='mom') kidAt(50,49); else npc(48,46,'#3a2520','#5db3e8',{h:10});
+    npc(14,44,'#2a2233','#7a5c8c');
+    body(112,44+BOB());
+  },
+  gov(){
+    px(0,0,W,H,'#e3e7ea'); px(0,0,W,6,'#1f4f8a');
+    px(60,10,40,14,'#1a1a1f'); const n=String(30+(s.day*7)%60).padStart(3,'0'); digits(+n,66,13,'#ff5a4a',2);
+    px(0,48,W,6,'#c9ced3'); px(0,47,W,1,'#ffffff'); for(let i=0;i<4;i++) px(20+i*36,30,30,17,'rgba(160,200,230,.35)'), px(20+i*36,30,1,17,'#a9b3bb');
+    npc(30,34,'#2a2233','#5a7aa0',{h:12}); npc(102,34,'#3a2a20','#5a7aa0',{h:12});
+    floorPx(70,'#b9c0c6',16);
+    body(66,44+BOB());
+    px(80,50,5,3,'#f4f1ea'); px(81,51,3,1,'#2b2533');
+  },
+  bills(){
+    drawRoom(); s.pose='desk'; drawChar(); drawDesk(); drawKid();
+    for(let i=0;i<5;i++){ px(56+i*3,50-i*2,14,8,'#f4f1ea'); px(56+i*3,50-i*2,14,1,'#cfc9bd'); px(64+i*3,53-i*2,5,3,'#d9483b'); }
+    const b=REDUCED?0:((tick>>4)%2); bubble(96,22-b,10,11); px(100,24-b,2,5,'#d9483b'); px(100,30-b,2,2,'#d9483b');
+  },
+  door(){
+    px(0,0,W,H,'#bfb3a0'); for(let y=0;y<70;y+=6) px(0,y,W,1,'#b0a490');
+    px(52,6,44,64,'#3a2e28'); px(55,9,38,61,'#5a4436'); px(55,9,38,61,'#2a2228'); px(58,12,32,58,'#e9dfc8');
+    npc(66,40,'#8b8b95','#7a5a3a',{gray:true});
+    px(92,40,2,4,'#d8b04a'); px(10,14,22,14,'#d9cdb4'); px(12,16,18,2,'#a89a80'); px(12,20,14,1,'#a89a80');
+    floorPx(70,'#6e5a48',14); px(50,68,48,3,'#4a3a30');
+    body(110,44+BOB()); px(104,52,8,5,'#f4f1ea');
+  },
+  phone(){
+    drawRoom(); s.pose='phone'; drawChar(); drawDesk(); drawKid();
+    const b=REDUCED?0:((tick>>4)%2);
+    bubble(96,18-b,26,14); const d=(tick>>4)%4; for(let i=0;i<3;i++) px(101+i*7,24-b,3,3,i<d?'#5b5f73':'#c9c5bb');
+  },
+  lucky(){
+    drawRoom(); s.pose='desk'; drawChar(); drawDesk(); drawKid();
+    for(let i=0;i<14;i++){ const a=i/14*6.283+tick/30, r=18+((i*7)%9); const x=86+Math.cos(a)*r, y=46+Math.sin(a)*r*.6; px(x,y,(i%3)?1:2,(i%3)?1:2,i%2?'#ffe27a':'#ffffff'); }
+    px(94,50,10,6,'#f6e27a'); px(95,51,8,4,'#d9b440'); px(96,52,6,2,'#fff2b0');
+  },
+  accident(){
+    px(0,0,W,52,'#9fb6cc'); city.forEach(b=>{ px(b.x*3.7,52-b.h*1.4,b.w*3.2,b.h*1.4,'#7d8a9c'); });
+    px(0,52,W,38,'#3a3a40'); for(let i=0;i<7;i++) px(10+i*14,60,8,26,'#e8e8e8');
+    const bl=(tick>>4)%2; px(96,50,44,12,'#c94040'); px(104,44,26,7,'#c94040'); px(106,45,10,5,'#5b6f8a'); px(118,45,10,5,'#5b6f8a');
+    px(138,53,3,3,bl?'#ffb030':'#8a5a20'); px(96,53,3,3,bl?'#ffb030':'#8a5a20'); px(102,61,8,4,'#16161a'); px(126,61,8,4,'#16161a');
+    for(let i=0;i<3;i++) px(84-i*4,48+i*4,6,1,'#f4f4f4');
+    body(40,54,{bandage:true,sad:true,h:11}); px(52,62,2,16,'#9a7a4a'); px(48,62,10,2,'#9a7a4a'); px(44,66,10,4,'#f4f4f4');
+  },
+  repair(){
+    drawRoom(); s.pose='desk'; drawChar(); drawDesk(); drawKid();
+    px(120,46,24,24,'#e6e9ee'); px(122,48,20,4,'#c8ccd2'); px(126,54,14,14,'#5b6f8a'); px(128,56,10,10,'#8fb6d8');
+    for(let i=0;i<3;i++){ const k=(tick+i*20)%60; px(130+Math.sin(k/8)*3,44-k/3,3,3,`rgba(90,90,100,${1-k/60})`); }
+    px(112,70,40,2,'#7fb3d9'); px(28,62,14,8,'#c0392b'); px(28,62,14,2,'#e74c3c'); px(32,60,6,2,'#555');
+  },
+  night(){
+    drawRoom(); drawChar(); drawDesk(); drawKid();
+    cx.fillStyle='rgba(10,10,30,.35)'; cx.fillRect(0,0,W,H);
+    px(80,46,6,6,'rgba(255,220,150,.12)');
+  },
+  delivery(){
+    const bands=skyBands(), bh=Math.ceil(70/bands.length); bands.forEach((c,i)=>px(0,i*bh,W,bh,c));
+    px(10,14,60,56,'#8a7f8e'); for(let r=0;r<5;r++) for(let i=0;i<4;i++) px(14+i*14,18+r*10,8,6,(r+i+(s.day||0))%3?'#ffd98a':'#3a3448');
+    px(30,56,18,14,'#2b2433'); px(90,24,56,46,'#6f7a8a'); for(let r=0;r<4;r++) for(let i=0;i<3;i++) px(96+i*17,28+r*10,10,6,(r*2+i)%3?'#ffd98a':'#3a3448');
+    px(0,70,W,20,'#45444c'); px(0,70,W,2,'#6a6872');
+    const step=REDUCED?0:((tick>>3)%2), wx=REDUCED?70:(40+((tick>>1)%80));
+    body(wx,57+step); px(wx-7,58+step,8,10,s.char==='grad'?'#3fb0d0':'#2a2a30'); px(wx-6,59+step,6,2,'#ffffff');
+    if(s.rain) drawRain(0,0,W,70);
+  },
+  assembly(){
+    drawRoom(); s.pose='desk'; drawChar(); drawDesk(); drawKid();
+    for(let i=0;i<22;i++) px(58+(i*5)%26,51-((i*3)%4),2,2,i%3?'#9aa0ad':'#5a6070');
+    px(88,50,10,6,'#5a6070'); px(89,51,8,4,'#3a3f48');
+  }
+};
+/* 방에 붙는 소품: 상황이 방에 쌓인다 */
+function drawRoomProps(){
+  const C=s.char?CH():null; if(!C) return;
+  const house=C.house;
+  // 미룬 일·청구서 봉투
+  const due=(s.defer||[]).length; for(let i=0;i<Math.min(4,due);i++){ px(98+i*2,57-i,9,6,'#f4f1ea'); px(102+i*2,59-i,3,2,(s.defer[i]&&s.defer[i].left<=2)?'#d9483b':'#9aa0ad'); }
+  // 먹을 게 없으면 컵라면 용기
+  if(!s.stock){ px(140,64,6,6,'#f2ece0'); px(140,64,6,2,'#d9483b'); px(147,66,5,4,'#f2ece0'); px(147,66,5,1,'#d9483b'); }
+  // 멘탈에 따라 시드는 화분
+  const px0=house==='gosi'?66:44; px(px0,49,6,5,'#9a5a3a');
+  if(s.mp>=55){ px(px0+2,42,2,7,'#3f8f4f'); px(px0,43,2,2,'#5fbf6f'); px(px0+4,44,2,2,'#5fbf6f'); px(px0+2,40,2,2,'#ff8fa8'); }
+  else if(s.mp>=30){ px(px0+2,44,2,5,'#6f8f4f'); px(px0,46,2,2,'#8faf5f'); px(px0+4,45,2,2,'#8faf5f'); }
+  else { px(px0+2,46,1,3,'#7a6a3a'); px(px0+3,45,3,1,'#7a6a3a'); }
+  // 반지하 곰팡이는 달이 갈수록 번진다
+  if(house==='banjiha'){ const m=monthOf(s.day||1); for(let i=0;i<m*2;i++) px(132+((i*11)%24),50+((i*7)%14),3+(i%2),2,'#2a3328'); }
+  // 엄마: 아이 그림
+  if(s.char==='mom'){ px(58,16,14,11,'#f4f1ea'); px(60,18,4,4,'#ffd34d'); px(65,22,5,3,'#5db3e8'); px(60,24,2,2,'#e85d5d'); }
+  // 겨울: 두 번째 달부터 눈
+  if(monthOf(s.day||1)>=2 && !s.rain){ const wx=house==='banjiha'?92:house==='gosi'?null:108; if(wx!=null) for(let i=0;i<12;i++){ px(wx+((i*13+(tick>>2))%44), (i*7+(tick>>1))%(house==='banjiha'?12:28)+(house==='banjiha'?3:9),1,1,'#ffffff'); } }
+}
+
+function frame(){ tick++; if(s){ const sc=s.scene&&SCENES[s.scene]; if(sc){ const keep=s.pose; px(0,0,W,H,'#2a2440'); sc(); s.pose=keep; } else { drawRoom(); drawRoomProps(); drawChar(); drawDesk(); drawKid(); } drawCoins(); drawNight(); } requestAnimationFrame(frame); }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function nightTransition(){ if(REDUCED) return; sleeping=true; s.pose='desk'; $('card').querySelectorAll('button').forEach(b=>b.disabled=true); await wait(1300); sleeping=false; zz=[]; await wait(250); }
 

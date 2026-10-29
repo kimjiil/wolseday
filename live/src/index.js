@@ -92,15 +92,22 @@ export class Board {
     // 이번 판 인물(이름·나이). 처음 배포한 표에는 없던 칸이라 없으면 추가한다.
     const cols = this.sql.exec(`PRAGMA table_info(scores)`).toArray().map((c) => c.name);
     if (!cols.includes('who')) this.sql.exec(`ALTER TABLE scores ADD COLUMN who TEXT`);
+    if (!cols.includes('look')) this.sql.exec(`ALTER TABLE scores ADD COLUMN look TEXT`);
   }
 
-  board(seed, limit = 10) {
-    const top = this.sql.exec(`SELECT id, name, char, who, days, rents FROM scores WHERE seed = ? ORDER BY days DESC, t ASC LIMIT ?`, seed, limit).toArray();
-    const total = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE seed = ?`, seed).one().n;
-    // 같은 일수면 같은 순위
-    let prevDays = null, prevRank = 0;
-    top.forEach((r, i) => { r.rank = r.days === prevDays ? prevRank : i + 1; prevDays = r.days; prevRank = r.rank; });
-    return { total, top };
+  board(seed, limit = 10, char = null) {
+    const where = char ? `seed = ? AND char = ?` : `seed = ?`;
+    const args = char ? [seed, char] : [seed];
+    const top = this.sql.exec(`SELECT id, name, char, who, look, days, rents, endt FROM scores WHERE ${where} ORDER BY days DESC, rents DESC, t ASC LIMIT ?`, ...args, limit).toArray();
+    const total = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE ${where}`, ...args).one().n;
+    // 버틴 날과 낸 월세가 같으면 같은 순위
+    let prev = null, prevRank = 0;
+    top.forEach((r, i) => {
+      const key = r.days + ':' + r.rents;
+      r.rank = key === prev ? prevRank : i + 1; prev = key; prevRank = r.rank;
+      try { r.look = r.look ? JSON.parse(r.look) : null; } catch (_) { r.look = null; }
+    });
+    return { total, top, at: Date.now() };
   }
 
   async fetch(request) {
@@ -111,7 +118,9 @@ export class Board {
     if (url.pathname === '/api/board') {
       const seed = url.searchParams.get('seed') || kstDate();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(seed)) return json({ error: 'seed' }, 400);
-      return json(this.board(seed));
+      const char = CHARS.includes(url.searchParams.get('char')) ? url.searchParams.get('char') : null;
+      const limit = Math.max(1, Math.min(100, Math.floor(Number(url.searchParams.get('limit')) || 10)));
+      return json(this.board(seed, limit, char));
     }
 
     let body = null;
@@ -139,10 +148,13 @@ export class Board {
       const endt = ENDS.includes(body.end) ? body.end : 'broke';
       const rents = Math.max(0, Math.min(Math.floor(days / 30), Math.floor(Number(body.rents) || 0)));
       const name = cleanName(body.name);
+      const lk = body.look && typeof body.look === 'object' ? body.look : {};
+      const hex = (v) => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v : null);
+      const look = JSON.stringify({ h: hex(lk.h), sh: hex(lk.sh), l: !!lk.l, g: !!lk.g });
       const who = String(body.who || '').normalize('NFC').replace(/[^0-9가-힣 ]/g, '').trim().slice(0, 12) || null;
       this.sql.exec(`UPDATE runs SET used = 1 WHERE id = ?`, run.id);
-      this.sql.exec(`INSERT INTO scores (id, seed, name, char, who, days, endt, rents, t) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, run.id, run.seed, name, run.char, who, days, endt, rents, now);
-      const better = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE seed = ? AND days > ?`, run.seed, days).one().n;
+      this.sql.exec(`INSERT INTO scores (id, seed, name, char, who, look, days, endt, rents, t) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, run.id, run.seed, name, run.char, who, look, days, endt, rents, now);
+      const better = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE seed = ? AND (days > ? OR (days = ? AND rents > ?))`, run.seed, days, days, rents).one().n;
       const b = this.board(run.seed);
       return json({ id: run.id, name, rank: better + 1, total: b.total, board: b });
     }

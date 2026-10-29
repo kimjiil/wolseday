@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="취준생, 한부모, 폐업한 사장님. 매일 바뀌는 세 사람 중 한 명으로 월세날을 몇 번 넘기는지 겨루는 도트 생존 게임. 매일 바뀌는 오늘의 판과 순위표.">
+<meta name="description" content="취준생, 한부모, 폐업한 사장님. 무작위로 태어난 한 사람으로 월세날을 몇 번 넘기는지 겨루는 도트 생존 게임. 매일 바뀌는 오늘의 판과 순위표.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="월세날까지">
 <meta property="og:description" content="돈이 없으면 시간으로, 시간이 없으면 돈으로. 오늘의 판에서 너는 며칠 버틸까?">
@@ -260,6 +260,12 @@ body{
 details.help{font-size:13px;color:var(--muted)}
 details.help summary{cursor:pointer;color:var(--text)}
 details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.who.one{grid-template-columns:1fr}
+.person-card{display:flex;flex-direction:column;gap:6px;text-align:left;padding:16px 18px;border:2px solid var(--sodium);background:var(--panel)}
+.person-card b{font-family:var(--f-display);font-weight:400;font-size:26px}
+.person-card small{color:var(--muted);font-size:14px}
+.person-card .goal{color:var(--sodium);font-size:14px}
+.person-card.rolling{opacity:.55}
 .board{border:2px solid var(--line);background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .board .label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
 .board ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
@@ -362,7 +368,7 @@ function hashStr(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++
 function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let q=Math.imul(a^a>>>15,1|a); q=q+Math.imul(q^q>>>7,61|q)^q; return ((q^q>>>14)>>>0)/4294967296; }; }
 let RNG=Math.random;
 const rnd=()=>RNG();
-function reseed(tag){ RNG = (s&&s.seed) ? mulberry(hashStr(s.seed+'|'+s.char+'|'+tag)) : Math.random; }
+function reseed(tag){ RNG = (s&&s.seed) ? mulberry(hashStr((s.lifeSeed||s.seed)+'|'+s.char+'|'+tag)) : Math.random; }
 function kstDate(){ return new Date(Date.now()+9*3600e3).toISOString().slice(0,10); }
 const rint = (a,b) => a + Math.floor(rnd()*(b-a+1));
 const MLEN = 30;
@@ -1759,8 +1765,7 @@ function renderDiary(){
   const days=[...new Set(list.map(d=>d.day))].sort((a,b)=>b-a).slice(0,12);
   $('diary').innerHTML = days.map(d=>`<li><span class="dd">${String(d).padStart(2,'0')}일</span><span class="dl">${list.filter(x=>x.day===d).map(x=>`<span class="${x.k}">${esc(x.t)}</span>`).join('')}</span></li>`).join('');
 }
-function liveLine(k){ const c=(window.__liveCounts||{})[k]; if(!(typeof c==='number' && c>0)) return ''; const n=todayName(k), j=(n.charCodeAt(n.length-1)-0xAC00)%28; return `오늘 ${c.toLocaleString('ko-KR')}명이 ${n}${j===0||j===8?'로':'으로'} 사는 중`; }
-const TODAY_PEOPLE={}; function todayName(k){ const sd=kstDate(); if(!TODAY_PEOPLE[sd]) TODAY_PEOPLE[sd]=peopleOf(sd); return TODAY_PEOPLE[sd][k].name; }
+function liveLine(k){ const c=(window.__liveCounts||{})[k]; if(!(typeof c==='number' && c>0)) return ''; return `지금 ${c.toLocaleString('ko-KR')}명이 ${GROUP[k]}(으)로 사는 중`.replace('생(으)로','생으로').replace('모(으)로','모로').replace('직(으)로','직으로'); }
 function renderMstat(playing){
   const m=$('mstat'); if(!m) return;
   m.hidden = !playing;
@@ -1812,7 +1817,7 @@ function renderCard(){
     c.innerHTML=`<div class="eyebrow">오늘의 판 · ${seedLabel(today)}</div>
       <h2>월세날을 몇 번 넘길 수 있을까.</h2>
       <p>시간이 모자라면 돈으로 사야 하고, 돈이 모자라면 시간과 몸으로 메워야 한다. 미룬 일은 커져서 돌아오고, 부탁할 사람은 쓸수록 줄어든다. 30일마다 월세날이 오고, 달이 갈수록 버티기는 더 어려워진다.</p>
-      <p class="memo"><b>규칙</b>잔고가 바닥난 채 잠들거나, 체력이나 멘탈이 0이 되거나, 밀린 월세를 끝내 못 내면 끝. 오늘 하루는 모두가 같은 일을 겪는다.${API?' 오늘의 판은 처음 한 번만 순위에 올라간다.':''}</p>
+      <p class="memo"><b>규칙</b>잔고가 바닥난 채 잠들거나, 체력이나 멘탈이 0이 되거나, 밀린 월세를 끝내 못 내면 끝. 누구로 태어날지는 무작위다. 마음에 안 들면 다시 뽑을 수 있다.${API?' 오늘의 판은 처음 한 번만 순위에 올라간다.':''}</p>
       ${API?`<div class="board" id="boardBox">${boardHtml()}</div>`:''}
       ${practiceOnly&&dl.done?`<p class="mine">오늘 내 기록: <b>${dl.done.days}일</b>${dl.done.rank?` · ${dl.done.total}명 중 <b>${dl.done.rank}위</b>`:''}</p>`:''}
       ${practiceOnly&&!dl.done&&!(saved&&saved.ranked)?`<p class="mine">오늘의 판은 이미 시작했다. 다시 하는 판은 순위에 올라가지 않는다.</p>`:''}
@@ -1820,18 +1825,26 @@ function renderCard(){
         ${saved?`<button class="primary" type="button" id="resumeBtn">이어하기 · ${esc((saved.person||CHARS[saved.char]).name)} DAY ${saved.day}${saved.ranked?' (순위 판)':''}</button>`:''}
         <button class="${saved?'ghost':'primary'}" type="button" id="startBtn">${canRank?'오늘의 판 시작':practiceOnly?'연습 판 (순위 미반영)':'시작하기'}</button>
       </div>`;
-    $('startBtn').onclick=()=>{ if(saved && saved.ranked && !confirmDrop()) return; clearRun(); s.mode = canRank?'daily':(practiceOnly?'practice':'daily'); s.pickSeed=chooseSeed(s.mode); s.phase='pick'; render(); };
+    $('startBtn').onclick=()=>{ if(saved && saved.ranked && !confirmDrop()) return; clearRun(); s.mode = canRank?'daily':(practiceOnly?'practice':'daily'); s.pickSeed=chooseSeed(s.mode); s.roll=newRoll(); s.rerolls=0; s.phase='pick'; render(); };
     if(saved) $('resumeBtn').onclick=()=>{ s=saved; reseed('d'+s.day); render(); };
     if(API) fetchBoard(today);
     return;
   }
   if(s.phase==='pick'){
     if(!s.pickSeed) s.pickSeed=chooseSeed(s.mode);
-    const ppl=peopleOf(s.pickSeed);
-    c.innerHTML=`<div class="eyebrow">${s.mode==='practice'?'연습 판 · 순위 미반영':`오늘의 판 · ${seedLabel(s.pickSeed)}`}</div><h2>오늘은 이 세 사람 중 한 명으로 산다.</h2>
-      <p>${s.mode==='practice'?'연습 판은 할 때마다 다른 사람이 나온다.':'오늘 들어온 사람은 모두 같은 세 사람을 만난다. 내일이면 다른 사람들로 바뀐다.'}</p>
-      <div class="who">${Object.entries(ppl).map(([k,ch])=>`<button type="button" id="pick-${k}" data-k="${k}"><b>${esc(ch.name)} · ${ch.age}세</b><small>${esc(GROUP[k])} · ${esc(ch.title)}</small><small>${esc(ch.bio)}</small><span class="goal">${ch.traits.map(esc).join(' · ')}</span><small>시작 잔고 ${fmt(ch.bal)}원 · 월세 ${fmt(ch.rent)}원 · 부족한 것: ${esc(ch.scarcity)}</small><small class="lc" data-live-char="${k}">${liveLine(k)}</small></button>`).join('')}</div>`;
-    c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>startAs(b.dataset.k, s.mode));
+    if(!s.roll){ s.roll=newRoll(); s.rerolls=0; }
+    const k=s.roll.base, ch=personOf(s.roll);
+    s.char=k; s.person=ch; // 장면에 뽑힌 사람을 미리 보여준다
+    c.innerHTML=`<div class="eyebrow">${s.mode==='practice'?'연습 판 · 순위 미반영':`오늘의 판 · ${seedLabel(s.pickSeed)}`}</div><h2>이번에 태어난 사람</h2>
+      <div class="who one"><div class="person-card${s.rolling?' rolling':''}" id="personCard">
+        <b>${esc(ch.name)} · ${ch.age}세</b><small>${esc(GROUP[k])} · ${esc(ch.title)}</small><small>${esc(ch.bio)}</small>
+        <span class="goal">${ch.traits.map(esc).join(' · ')}</span>
+        <small>시작 잔고 ${fmt(ch.bal)}원 · 월세 ${fmt(ch.rent)}원 · 부족한 것: ${esc(ch.scarcity)}</small>
+        <small class="lc" data-live-char="${k}">${liveLine(k)}</small></div></div>
+      <div class="row"><button class="primary" type="button" id="pick-${k}" data-k="${k}">이 사람으로 살기</button><button class="ghost" type="button" id="rerollBtn">다시 뽑기${s.rerolls?` · ${s.rerolls}번 뽑음`:''}</button></div>
+      <p class="memo"><b>뽑기</b>청년 알바생, 한부모, 중년 일용직 중 하나로 태어나고 이름, 나이, 사연, 돈, 성격이 무작위로 정해진다. 몇 번이든 다시 뽑을 수 있다.</p>`;
+    $('pick-'+k).onclick=()=>startAs(k, s.mode);
+    $('rerollBtn').onclick=reroll;
     setLiveChar(null);
     return;
   }
@@ -1865,7 +1878,7 @@ function renderCard(){
     </div>
     <div class="row"><button class="primary" type="button" id="beginBtn">이 조건으로 시작</button><button class="ghost" type="button" id="backBtn">다른 사람 고르기</button></div>`;
     $('beginBtn').onclick=()=>{ beginRun(); startDay(); };
-    $('backBtn').onclick=()=>{ const m=s.mode, ps=s.seed; s=fresh(); s.mode=m; s.pickSeed=ps; s.phase='pick'; render(); };
+    $('backBtn').onclick=()=>{ const m=s.mode, ps=s.seed, rl=s.roll, rr=s.rerolls; s=fresh(); s.mode=m; s.pickSeed=ps; s.roll=rl; s.rerolls=rr; s.phase='pick'; render(); };
     return;
   }
   if(s.phase==='event'){
@@ -1994,11 +2007,27 @@ function chooseSeed(mode){
   if(forced==='random' || mode==='practice') return 'p'+Math.floor(Math.random()*1e9);
   return forced && /^\d{4}-\d{2}-\d{2}$/.test(forced) ? forced : kstDate();
 }
+function newRoll(){
+  let who=null; try{ who=new URLSearchParams(location.search).get('who'); }catch(e){}
+  const id='r'+Math.floor(Math.random()*1e9).toString(36)+Date.now().toString(36).slice(-4);
+  const bases=['grad','mom','boss'];
+  return {id, base: bases.includes(who) ? who : bases[Math.floor(Math.random()*3)]};
+}
+function personOf(roll){ return makePerson(roll.base, mulberry(hashStr(roll.id+'|person'))); }
+let rollTimer=null;
+function reroll(){
+  if(rollTimer) return;
+  s.rerolls=(s.rerolls||0)+1;
+  if(REDUCED){ s.roll=newRoll(); render(); return; }
+  let n=0; s.rolling=true;
+  rollTimer=setInterval(()=>{ s.roll=newRoll(); render(); if(++n>=6){ clearInterval(rollTimer); rollTimer=null; s.rolling=false; render(); } }, 70);
+}
 function peopleOf(seed){ const o={}; ['grad','mom','boss'].forEach(k=>o[k]=makePerson(k, mulberry(hashStr(seed+'|person|'+k)))); return o; }
 function startAs(k, mode){
   const seed = s.pickSeed || chooseSeed(mode);
-  const C = peopleOf(seed)[k];
-  s=fresh(); s.char=k; s.mode=mode||'daily'; s.person=C; s.seed=seed;
+  const roll = (s.roll && s.roll.base===k) ? s.roll : {id:'r'+Math.floor(Math.random()*1e9).toString(36), base:k};
+  const C = personOf(roll), rerolls=s.rerolls||0;
+  s=fresh(); s.char=k; s.mode=mode||'daily'; s.person=C; s.seed=seed; s.lifeSeed=roll.id; s.roll=roll; s.rerolls=rerolls;
   s.ranked = !!API && s.mode==='daily' && seed[0]!=='p';
   reseed('start');
   s.rent = C.rent; s.bal=C.bal; s.hp=C.hp; s.hpMax=C.hpMax; s.mp=C.mp;
@@ -2037,13 +2066,13 @@ async function fetchBoard(seed){
   const b=$('boardBox'); if(b) b.innerHTML=boardHtml();
   const rb=$('rankBox'); if(rb && !rb.querySelector('input')) { rb.innerHTML=rankBoxHtml(); bindRankBox(); }
 }
-const CHAR_NAME = k => CHARS[k] ? (BOARD && BOARD.seed && BOARD.seed[0]!=='p' ? (TODAY_PEOPLE[BOARD.seed]||(TODAY_PEOPLE[BOARD.seed]=peopleOf(BOARD.seed)))[k].name : GROUP[k]) : '';
+const CHAR_NAME = k => GROUP[k] || '';
 function boardHtml(myId){
   if(!BOARD) return '<p class="empty">순위를 불러오는 중…</p>';
   if(BOARD.error) return '<p class="empty">지금은 순위를 불러올 수 없다.</p>';
   const top=BOARD.top||[];
   return `<div class="label"><span>${seedLabel(BOARD.seed)} 순위</span><span>${(BOARD.total||0).toLocaleString('ko-KR')}명 도전</span></div>
-    ${top.length?`<ol>${top.map((r,i)=>`<li class="${myId&&r.id===myId?'me':''}"><span class="rk">${r.rank||i+1}</span><span class="nm">${esc(r.name)}</span><span class="ch">${esc(CHAR_NAME(r.char))}</span><span class="dy">${r.days}일</span></li>`).join('')}</ol>`:'<p class="empty">아직 아무도 기록을 남기지 않았다. 첫 번째가 되어보자.</p>'}`;
+    ${top.length?`<ol>${top.map((r,i)=>`<li class="${myId&&r.id===myId?'me':''}"><span class="rk">${r.rank||i+1}</span><span class="nm">${esc(r.name)}</span><span class="ch">${esc(r.who || CHAR_NAME(r.char))}</span><span class="dy">${r.days}일</span></li>`).join('')}</ol>`:'<p class="empty">아직 아무도 기록을 남기지 않았다. 첫 번째가 되어보자.</p>'}`;
 }
 function rankBoxHtml(){
   if(!API) return '';
@@ -2064,7 +2093,7 @@ function bindRankBox(){
     lsSet('wolse_nick', name);
     btn.disabled=true; btn.textContent='올리는 중…';
     try{
-      const r = await api('/api/score', {id:s.runId, name, days:s.day, char:s.char, end:s.endType, rents:s.rentsPaid||0});
+      const r = await api('/api/score', {id:s.runId, name, days:s.day, char:s.char, end:s.endType, rents:s.rentsPaid||0, who:`${CH().name} ${CH().age}세`});
       s.rankInfo={rank:r.rank,total:r.total,id:r.id};
       BOARD={...r.board, seed:s.seed};
       lsSet('wolse_daily', {seed:s.seed, started:1, done:{days:s.day, rank:r.rank, total:r.total}});

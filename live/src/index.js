@@ -89,10 +89,13 @@ export class Board {
     this.sql.exec(`CREATE INDEX IF NOT EXISTS runs_ip ON runs (ip, t0)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS scores (id TEXT PRIMARY KEY, seed TEXT, name TEXT, char TEXT, days INTEGER, endt TEXT, rents INTEGER, t INTEGER)`);
     this.sql.exec(`CREATE INDEX IF NOT EXISTS scores_rank ON scores (seed, days DESC, t ASC)`);
+    // 이번 판 인물(이름·나이). 처음 배포한 표에는 없던 칸이라 없으면 추가한다.
+    const cols = this.sql.exec(`PRAGMA table_info(scores)`).toArray().map((c) => c.name);
+    if (!cols.includes('who')) this.sql.exec(`ALTER TABLE scores ADD COLUMN who TEXT`);
   }
 
   board(seed, limit = 10) {
-    const top = this.sql.exec(`SELECT id, name, char, days, rents FROM scores WHERE seed = ? ORDER BY days DESC, t ASC LIMIT ?`, seed, limit).toArray();
+    const top = this.sql.exec(`SELECT id, name, char, who, days, rents FROM scores WHERE seed = ? ORDER BY days DESC, t ASC LIMIT ?`, seed, limit).toArray();
     const total = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE seed = ?`, seed).one().n;
     // 같은 일수면 같은 순위
     let prevDays = null, prevRank = 0;
@@ -136,8 +139,9 @@ export class Board {
       const endt = ENDS.includes(body.end) ? body.end : 'broke';
       const rents = Math.max(0, Math.min(Math.floor(days / 30), Math.floor(Number(body.rents) || 0)));
       const name = cleanName(body.name);
+      const who = String(body.who || '').normalize('NFC').replace(/[^0-9가-힣 ]/g, '').trim().slice(0, 12) || null;
       this.sql.exec(`UPDATE runs SET used = 1 WHERE id = ?`, run.id);
-      this.sql.exec(`INSERT INTO scores (id, seed, name, char, days, endt, rents, t) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, run.id, run.seed, name, run.char, days, endt, rents, now);
+      this.sql.exec(`INSERT INTO scores (id, seed, name, char, who, days, endt, rents, t) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, run.id, run.seed, name, run.char, who, days, endt, rents, now);
       const better = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE seed = ? AND days > ?`, run.seed, days).one().n;
       const b = this.board(run.seed);
       return json({ id: run.id, name, rank: better + 1, total: b.total, board: b });

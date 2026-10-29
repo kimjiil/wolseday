@@ -440,6 +440,8 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmt = n => (n<0?'-':'') + Math.abs(Math.round(n)).toLocaleString('ko-KR');
 const clamp = (v,a=0,b=100) => Math.max(a, Math.min(b, v));
+function josa(w,a,b){ const c=(w||'').charCodeAt((w||'').length-1)-0xAC00; return (c>=0&&c<11172&&c%28)?a:b; }
+const eul=w=>w+josa(w,'을','를'), iga=w=>w+josa(w,'이','가');
 function hashStr(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++){ h=Math.imul(h^str.charCodeAt(i),3432918353); h=h<<13|h>>>19; } h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); return (h^h>>>16)>>>0; }
 function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let q=Math.imul(a^a>>>15,1|a); q=q+Math.imul(q^q>>>7,61|q)^q; return ((q^q>>>14)>>>0)/4294967296; }; }
 let RNG=Math.random;
@@ -618,6 +620,8 @@ function monthPlan(){
   return {fixedList, fixed, income, incomeNote, cashNote, free, perDay:Math.floor(free/30/100)*100};
 }
 function diary(t, kind='a'){ (s.diary=s.diary||[]).push({day:s.day, t, k:kind}); }
+const PLAY_LINES=['하린이가 학교에서 짝꿍이랑 싸운 얘기를 했다. 끝까지 들어줬다.','하린이랑 공기놀이를 했다. 세 판 내리 졌다.','하린이가 좋아하는 만화를 같이 봤다. 주제가를 따라 불렀다.','하린이 머리를 땋아주면서 오늘 있었던 일을 들었다.','종이접기로 개구리를 접었다. 하린이 것이 더 멀리 뛰었다.','하린이가 학교에서 배운 노래를 불러줬다.','이불 속에서 손전등으로 그림자놀이를 했다.','하린이가 커서 선생님이 되겠다고 했다. 이유는 방학이 길어서라고 한다.'];
+const HW_LINES=['받아쓰기 틀린 걸 같이 고쳤다.','수학 익힘책 세 쪽을 같이 풀었다. 받아내림에서 자꾸 막힌다.','일기 숙제를 봐줬다. 오늘 일기에 엄마가 나왔다.','독서록을 같이 썼다. 하린이가 고른 책은 공룡 책이다.','구구단 7단을 같이 외웠다.'];
 const HOUSES = {
   gosi:{name:'고시원',hp:0,mp:-1,food:5000},
   banjiha:{name:'반지하 투룸',hp:-1,mp:-1,food:5500},
@@ -720,7 +724,7 @@ const EVENTS = [
    {t:'방에서 버틴다'}]},
 
  /* ---- 정민 ---- */
- {id:'childFever',chars:['mom'],w:1.3,short:'하린 고열',text:'밤에 하린이 열이 39도까지 올랐다. 내일도 출근해야 하는 날이다.',
+ {id:'childFever',chars:['mom'],w:1.3,when:s=>wd(s.day)<=3||wd(s.day)===6,short:'하린 고열',text:'밤에 하린이 열이 39도까지 올랐다. 내일도 출근해야 하는 날이다.',
   choices:[
    {t:'내일 결근하고 소아과에 간다',absent:1,won:-15000,memo:'소아과',rel:{child:6}},
    {t:'친정엄마에게 와달라고 한다',chance:{rel:'grandma',ok:{rel:{grandma:-10,child:2},res:'엄마가 첫차를 타고 와주셨다.'},fail:{absent:1,rel:{grandma:-4},res:'"나도 내일 병원 가는 날이야." 결국 결근해야 한다.'}}},
@@ -938,7 +942,7 @@ const EVENTS = [
    {t:'낸다',won:-10000,memo:'스터디 벌금',career:2},
    {t:'스터디를 그만둔다',career:-6,mp:-3}]},
  /* ---- 정민 ---- */
- {id:'schoolOff',chars:['mom'],when:s=>s.day>=9&&todayWork(),short:'재량휴업일',text:'내일이 학교 재량휴업일이라는 걸 오늘 알았다. 하린이를 맡길 데가 없다.',
+ {id:'schoolOff',chars:['mom'],when:s=>s.day>=9&&todayWork()&&wd(s.day)<=3,short:'재량휴업일',text:'내일이 학교 재량휴업일이라는 걸 오늘 알았다. 하린이를 맡길 데가 없다.',
   choices:[
    {t:'결근한다',absent:1,rel:{child:6}},
    {t:'친정엄마에게 부탁한다',chance:{rel:'grandma',ok:{rel:{grandma:-8},res:'엄마가 와주기로 했다.'},fail:{absent:1,res:'엄마도 병원 예약이 있다. 결근해야 한다.'}}},
@@ -1005,7 +1009,7 @@ const EVENTS = [
    {t:'그냥 평소처럼 보낸다',mp:2}]},
  {id:'kimchi',short:'김장 택배',text:'고향에서 김장김치를 택배로 보냈다. 착불이다.',
   choices:[{t:'택배비를 낸다',won:-8000,memo:'택배 착불',add:{stock:5},mp:6},{t:'반송해 달라고 한다',mp:-6,res:'택배비 8천 원이 없어서 김치를 돌려보냈다.'}]},
- {id:'blackIce',when:s=>s.day>=18,short:'빙판길',text:'밤새 내린 눈이 얼었다. 출근길이 빙판이다.',
+ {id:'blackIce',when:s=>s.day>=18&&todayWork(),short:'빙판길',text:'밤새 내린 눈이 얼었다. 출근길이 빙판이다.',
   choices:[
    {t:'택시를 탄다',won:-11000,memo:'택시',prem:{cat:'택시',amt:8000}},
    {t:'조심해서 걷는다',chance:{p:.7,ok:{h:.5,res:'평소보다 30분 더 걸렸다.'},fail:{hp:-12,won:-15000,memo:'정형외과',force:1,res:'엉덩방아를 찧었다. 꼬리뼈가 욱신거린다.'}}}]},
@@ -1369,8 +1373,8 @@ const SHOCKS = [
   {id:'crown',t:'밥을 먹다가 어금니가 깨졌다. 크라운을 씌워야 한다.',short:'이가 깨짐',amt:260000,skip:{t:'일단 반대쪽으로 씹는다',hp:-8,mp:-6}},
   {id:'parent',t:'고향에서 전화가 왔다. 아버지가 넘어져서 입원하셨다. 병원비를 보태야 한다.',short:'아버지 입원',amt:300000,skip:{t:'형편이 안 된다고 말한다',mp:-16}},
   {id:'washer',t:'세탁기가 탈수 중에 멈췄다. 고치는 값이나 중고 값이나 비슷하다.',short:'세탁기 고장',amt:200000,skip:{t:'빨래방을 다닌다',mp:-6,won:-30000}},
-  {id:'fine',t:'몇 주 전 신호위반 과태료 고지서가 날아왔다.',short:'과태료',amt:70000},
-  {id:'wedding',t:'친한 친구 결혼식 청첩장이 왔다. 축의금과 교통비가 든다.',short:'결혼식',amt:150000,skip:{t:'못 간다고 한다',mp:-10}},
+  {id:'fine',capMult:1.3,t:'급하게 무단횡단하다 단속에 걸렸던 과태료 고지서가 날아왔다.',short:'과태료',amt:50000},
+  {id:'wedding',capMult:1.4,t:'친한 친구 결혼식 청첩장이 왔다. 축의금과 교통비가 든다.',short:'결혼식',amt:150000,skip:{t:'못 간다고 한다',mp:-10}},
   {id:'glasses2',t:'안경 렌즈에 금이 갔다. 도수가 높아서 렌즈만 해도 비싸다.',short:'안경',amt:120000,skip:{t:'금 간 채로 쓴다',hp:-4,mp:-6}},
   {id:'insurance',t:'건강보험료가 재산정돼서 밀린 차액이 한꺼번에 청구됐다.',short:'건강보험 추징',amt:210000},
   {id:'child',chars:['mom'],t:'하린이 학교에서 현장체험학습과 방과후 교재비 안내문을 받아왔다.',short:'하린 학교 비용',amt:160000,skip:{t:'이번엔 빠지자고 한다',rel:{child:-12},mp:-10}},
@@ -1379,7 +1383,8 @@ const SHOCKS = [
 ];
 function queueShocks(M){
   const pool=SHOCKS.filter(x=>(!x.chars||x.chars.includes(s.char)) && (M>1||x.amt<=200000)), n=M;
-  for(let i=0;i<n;i++){ const sh=pool[rint(0,pool.length-1)]; s.queue.push({id:'shock',day:s.day+rint(M===1?7:3,M===1?24:26),data:{id:sh.id,mult:1+.5*(M-1)}}); }
+  s.shockUsed=s.shockUsed||{};
+  for(let i=0;i<n;i++){ const fresh=pool.filter(x=>!(s.shockUsed[x.id]>0 && s.day-s.shockUsed[x.id]<50)), from=fresh.length?fresh:pool; const sh=from[rint(0,from.length-1)]; s.shockUsed[sh.id]=s.day+1; s.queue.push({id:'shock',day:s.day+rint(M===1?7:3,M===1?24:26),data:{id:sh.id,mult:Math.min(sh.capMult||9, 1+.5*(M-1))}}); }
 }
 FOLLOW.shock=(s,d)=>{ const sh=SHOCKS.find(x=>x.id===d.id), amt=round100(sh.amt*d.mult/1000)*1000;
   const ch=[{t:'바로 낸다',won:-amt,memo:sh.short,mp:-3}];
@@ -1435,7 +1440,7 @@ FOLLOW.twist=(s,d)=>{
       choices:[{t:'병원에 가서 깁스를 한다',won:-60000,memo:'정형외과 본인부담',force:1,hp:-22,mp:-10,set:{gigBlock:6,laid:3},absent:todayWork()?1:0,follow:{id:'carPay',in:9,p:.7},res:'보험금은 나중에 나온다고 한다. 당장은 일을 못 한다.'}]};
     case 'shockTwist': { const pool=SHOCKS.filter(x=>!x.chars||x.chars.includes(s.char)); const sh=pool[rint(0,pool.length-1)]; return FOLLOW.shock(s,{id:sh.id,mult:1.4}); }
     case 'scamCall': return {short:'택배 문자',text:'"[택배] 주소 불일치로 반송 예정. 확인: http://..." 오늘 택배 올 게 있긴 했다.',
-      choices:[{t:'링크를 누른다',won:-180000,memo:'스미싱 피해',force:1,mp:-16},{t:'택배사 앱에서 직접 확인한다',h:.3,mp:2,wise:true,res:'가짜였다. 하마터면 당할 뻔했다.'}]};
+      choices:[{t:'링크를 누른다',follow:{id:'smishLoss',in:1},res:'누르자마자 화면이 하얗게 바뀌었다. 뭔가 잘못됐다.'},{t:'택배사 앱에서 직접 확인한다',h:.3,mp:2,wise:true,res:'가짜였다. 하마터면 당할 뻔했다.'}]};
     case 'theft': return {short:'지갑 분실',text:'버스에서 내리고 보니 지갑이 없다. 현금 7만 원과 카드가 들어 있었다.',choices:[{t:'카드 정지하고 재발급한다',won:-70000,memo:'잃어버린 현금',force:1,h:1,mp:-12}]};
   }
 };
@@ -1454,7 +1459,7 @@ function newMonth(M){
     diary('월세를 못 냈다.','p');
   }
   s.flags.rentDelay=0; s.flags.cashUsed=0;
-  s.hpMax = Math.max(55, (s.char==='boss'?85:100) - 6*(M-1)); s.hp=Math.min(s.hp,s.hpMax);
+  s.hpMax = Math.max(50, ((s.person&&s.person.hpMax)||(s.char==='boss'?85:100)) - 6*(M-1)); s.hp=Math.min(s.hp,s.hpMax);
   s.mp = clamp(s.mp-5);
   queueShocks(M);
   diary(`${M}번째 달이 시작됐다.`,'a');
@@ -1477,7 +1482,7 @@ Object.assign(FOLLOW,{
   evict:(s)=>({short:'퇴거 통보',text:'밀린 월세를 끝내 못 냈다. 집주인이 이번 주 안에 방을 빼달라고 했다.',choices:[
     ...(s.char!=='grad' && !s.flags.depositUsed ? [{t:'보증금에서 까달라고 사정한다',set:{depositUsed:1},rentPaid:1,mp:-14,rel:{landlord:-15},res:'보증금에서 한 달 치를 깠다. 다음에는 이런 사정도 안 통한다.'}] : []),
     {t:'짐을 싼다',end:'evicted',mp:-30}]}),
-  rentHike:(s)=>{ const up=round100(s.rent*(s.char==='grad'?.06:.05)/1000)*1000||20000; return {short:'월세 인상',text:`${CH().rentWho}이(가) 다음 달부터 월세를 ${fmt(up)}원 올리겠다고 한다. "주변 시세가 다 올랐어요."`,
+  rentHike:(s)=>{ const up=round100(s.rent*(s.char==='grad'?.06:.05)/1000)*1000||20000; return {short:'월세 인상',text:`${iga(CH().rentWho)} 다음 달부터 월세를 ${fmt(up)}원 올리겠다고 한다. "주변 시세가 다 올랐어요."`,
     choices:[{t:'알겠다고 한다',mp:-6,res:`다음 달부터 월세는 ${fmt(s.rent+up)}원이다.`,addRent:up},
       {t:'사정을 말하고 조금만 덜 올려달라고 한다',h:.5,chance:{rel:'landlord',ok:{addRent:Math.round(up/2000)*1000,mp:2,res:'반만 올리기로 했다.'},fail:{addRent:up,rel:{landlord:-6},mp:-8,res:'"싫으면 나가셔도 돼요."'}}}]}; },
   rehire:(s)=>({short:'일자리 공고',text:s.char==='mom'?'동네 다른 마트에서 계산원을 구한다는 공고를 봤다.':s.char==='grad'?'근처 편의점에서 야간 알바를 구한다.':'다른 인력사무소에서 사람을 구한다.',
@@ -1488,7 +1493,7 @@ Object.assign(FOLLOW,{
   guarantorHit:()=>({short:'보증 채무',text:'모르는 번호로 전화가 왔다. "보증 서신 채무가 연체돼서 연락드렸습니다." 그 형은 연락이 안 된다.',choices:[{t:'분할로 갚겠다고 한다',won:-300000,memo:'보증 채무 1회차',force:1,mp:-18},{t:'법률구조공단에 상담한다',h:3,won:-150000,memo:'보증 채무 일부',force:1,mp:-12,res:'절반으로 줄였지만, 남은 건 갚아야 한다.'}]}),
   recheckWorse:()=>({short:'결국 입원',text:'미뤘던 재검 항목이 결국 문제였다. 하루 입원해서 검사를 받으라고 한다.',choices:[{t:'입원한다',won:-160000,memo:'입원 검사',force:1,absent:1,hp:-8,mp:-10}]}),
   ukkaPick:(s,d)=>{
-    const pool=EVENTS.filter(e=>e.ukka && (!e.chars||e.chars.includes(s.char)) && (!e.when||e.when(s)) && (s.used[e.id]==null || s.day-s.used[e.id]>=15));
+    const pool=EVENTS.filter(e=>e.ukka && (!e.chars||e.chars.includes(s.char)) && (!e.when||e.when(s)) && (s.used[e.id]==null || s.day-s.used[e.id]>=40));
     if(!pool.length) return {short:'꼬인 하루',text:'하루 종일 되는 일이 하나도 없었다.',ukka:1,choices:[{t:'…',mp:-6}]};
     const e=pool[rint(0,pool.length-1)]; s.used[e.id]=s.day;
     return {...e, _fid:e.id, ukka:1, text:(d.chain?'엎친 데 덮친 격이다. ':'')+e.text};
@@ -1527,7 +1532,8 @@ function pickRandom(night){
 function curEv(){ if(!s.ev) return null; return s.ev.obj || EVENTS.find(e=>e.id===s.ev.id); }
 
 /* ---------------- choice resolution ---------------- */
-function wonOf(c){ let w = typeof c.won==='function' ? c.won(s) : (c.won||0); if(w<0 && s.ev && s.ev.id && (s.costMult||1)>1) w = -round100(-w*s.costMult); return w; }
+const STATED_AMT=/\d[\d,]*\s*만?\s*(천\s*)?원|[0-9]+만|[일이삼사오육칠팔구십]\s*만\s*[0-9일이삼사오육칠팔구]*\s*천?\s*원/;
+function wonOf(c){ let w = typeof c.won==='function' ? c.won(s) : (c.won||0); const ev=curEv(); if(w<0 && s.ev && s.ev.id && (s.costMult||1)>1 && !(ev && STATED_AMT.test(ev.text||''))) w = -round100(-w*s.costMult); return w; }
 function chanceP(ch){ if(ch.rel) return clamp(s.rel[ch.rel]/100*.92,.05,.92); return ch.p; }
 function choiceState(c){
   if(c.wise && s.mp<40) return {fog:true};
@@ -1618,7 +1624,7 @@ function handleDefer(key, halfDay){
   const n = node(`처리: ${d.name}${halfDay?' (반차)':''}`, d.node, -(d.cost||0));
   if(d.done){ applyFx(d.done, n, `${d.name} 접수됨`); }
   if(d.repayTo){ s.rel[d.repayTo]=clamp(s.rel[d.repayTo]+5); }
-  s.eveLog.push(`${d.name}을(를) 처리했다.${halfDay?' 반차를 써야 했다.':''}`);
+  s.eveLog.push(`${eul(d.name)} 처리했다.${halfDay?' 반차를 써야 했다.':''}`);
   s.pose = d.day ? 'out' : 'phone'; s.scene = DEFER_SCENE[key] || (d.bill?'bills':null) || (d.key==='rent'?'door':null);
   render();
 }
@@ -1686,8 +1692,8 @@ function doAction(id){
       txt=`두 시간 동안 ${fmt(e)}원 벌었다.${k>=4?' 몸이 무거워서 콜을 잡아도 늦게 도착한다. 평점이 떨어졌다.':k>=2?' 다리가 무겁다. 며칠째 쉬지 못했다.':''}`;
       if(rnd()<gigRisk('gigG')) s.queue.push({id:'gigCrash',day:s.day+1,data:{rain:!!s.rain,cause:node('무리한 배달',null,e,true)}});
       s.pose='out'; break; }
-    case 'play': s.rel.child=clamp(s.rel.child+8); s.mp=clamp(s.mp+3); txt='하린이가 학교에서 짝꿍이랑 싸운 얘기를 했다. 끝까지 들어줬다.'; s.pose='desk'; break;
-    case 'homework': s.rel.child=clamp(s.rel.child+4); s.flags.hw=(s.flags.hw||0)+1; s.mp=clamp(s.mp-1); txt='받아쓰기 틀린 걸 같이 고쳤다.'; s.pose='study'; break;
+    case 'play': s.rel.child=clamp(s.rel.child+8); s.mp=clamp(s.mp+3); txt=PLAY_LINES[(s.day*7+3)%PLAY_LINES.length]; s.pose='desk'; break;
+    case 'homework': s.rel.child=clamp(s.rel.child+4); s.flags.hw=(s.flags.hw||0)+1; s.mp=clamp(s.mp-1); txt=HW_LINES[(s.day*5+1)%HW_LINES.length]; s.pose='study'; break;
     case 'gigM': { const k=Math.min(4,s.gigStreak||0); tx('부업 (부품 조립)',12000); s.hp=clamp(s.hp-2,0,s.hpMax); s.mp=clamp(s.mp-(1+k)); txt=`400개를 조립해서 1만 2천 원.${k>=2?' 눈이 침침하고 손목이 저리다.':''}`;
       if(rnd()<gigRisk('gigM')) s.queue.push({id:'gigDefect',day:s.day+1,data:{}});
       s.pose='desk'; break; }
@@ -2091,7 +2097,7 @@ function renderCard(){
   }
   if(s.phase==='event'){
     const ev=curEv();
-    c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 ${s.nightPending?'<span class="chip">자기 전</span>':''}${(ev.ukka||s.flags.ukkaDay===s.day)?'<span class="chip ukka">억까</span>':s.ev.obj?'<span class="chip">이어지는 일</span>':''}</div>
+    c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 ${s.nightPending?'<span class="chip">자기 전</span>':''}${ev.ukka?'<span class="chip ukka">억까</span>':s.ev.obj?'<span class="chip">이어지는 일</span>':''}</div>
       ${s.morning.length?`<ul class="log">${s.morning.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
       <p class="ev-text">${esc(ev.text)}</p>
       <div class="choices">${ev.choices.map((ch,i)=>{const st=choiceState(ch);

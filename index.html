@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="취준생, 한부모, 폐업한 사장님. 세 사람 중 한 명으로 월세날을 몇 번 넘기는지 겨루는 도트 생존 게임. 매일 바뀌는 오늘의 판과 순위표.">
+<meta name="description" content="취준생, 한부모, 폐업한 사장님. 매일 바뀌는 세 사람 중 한 명으로 월세날을 몇 번 넘기는지 겨루는 도트 생존 게임. 매일 바뀌는 오늘의 판과 순위표.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="월세날까지">
 <meta property="og:description" content="돈이 없으면 시간으로, 시간이 없으면 돈으로. 오늘의 판에서 너는 며칠 버틸까?">
@@ -423,6 +423,96 @@ const CHARS = {
     cash:150000
   }
 };
+/* ---------------- random people ----------------
+   세 가지 처지(청년 알바·한부모·중년 일용직) 위에 이름, 나이, 사연, 돈, 가족, 성격을 무작위로 얹는다. */
+const PICK = (a,r) => a[Math.floor(r()*a.length)];
+const GROUP = {grad:'청년 알바생', mom:'한부모', boss:'중년 일용직'};
+const PEOPLE = {
+  grad:{ names:{f:['윤서','서연','수빈','하은','예린','지유','채원','다인'],m:['지호','민준','도현','준혁','태윤','승우','현우','재민']},
+    age:[23,31], friends:['민지','수아','예지','하나','유리'],
+    titles:[
+      {title:'지방에서 올라온 취준생',bio:'경영학과를 졸업하고 서울로 올라왔다. 편의점 야간 알바로 버티면서 공채를 준비한다.'},
+      {title:'공시를 접고 취업에 뛰어든 청년',bio:'9급 시험에 두 번 떨어지고 공채로 방향을 틀었다. 남들보다 늦었다는 생각이 떠나지 않는다. 편의점 야간 알바로 버틴다.'},
+      {title:'졸업을 미룬 대학생',bio:'졸업 유예를 하고 인턴 자리를 찾는다. 학자금 대출이 남아 있고, 편의점 야간 알바를 한다.'},
+      {title:'회사를 그만둔 사회초년생',bio:'첫 회사에서 1년을 못 버티고 나왔다. 다시 이직을 준비하며 편의점 야간 알바를 한다.'},
+      {title:'디자인과를 나온 취준생',bio:'포트폴리오를 들고 면접을 다닌다. 붙는 곳은 인턴뿐이었다. 편의점 야간 알바로 버틴다.'}] },
+  mom:{ names:{f:['정민','수경','은정','미영','혜진','지은','소라','현주']}, age:[31,42], kids:['하린','서윤','지안','예린','수안','채은'],
+    titles:[
+      {title:'초등학생 딸을 키우는 한부모',bio:'마트 계산원 계약직. 여덟 살 딸과 반지하 투룸에 산다. 월급은 25일에 들어온다.'},
+      {title:'이혼 후 혼자 딸을 키우는 엄마',bio:'2년 전 이혼했다. 양육비는 자주 끊긴다. 마트 계산원 계약직으로 일한다. 월급은 25일.'},
+      {title:'별거 중인 엄마',bio:'남편과 따로 산 지 1년. 생활비는 거의 오지 않는다. 마트 계산원 계약직으로 일하며 딸과 둘이 산다. 월급은 25일.'},
+      {title:'경력이 끊겼다 다시 일하는 엄마',bio:'출산 뒤 7년을 쉬었다. 다시 구한 일은 마트 계산원 계약직이다. 월급은 25일에 들어온다.'}] },
+  boss:{ names:{m:['상철','영수','동훈','재석','병철','성민','기태','만호']}, age:[47,61], daughters:['수진','지현','민정','은영','소연'],
+    titles:[
+      {title:'치킨집을 접은 전직 사장님',shop:'치킨집',years:7},
+      {title:'분식집을 정리한 전직 사장님',shop:'분식집',years:9},
+      {title:'호프집을 닫은 전직 사장님',shop:'호프집',years:5},
+      {title:'돈가스집을 넘긴 전직 사장님',shop:'돈가스집',years:6}] }
+};
+const TRAITS = [
+  {id:'backBad',label:'허리가 안 좋다',fx:p=>{p.hpMax-=10; p.hp-=6;}},
+  {id:'strong',label:'몸 하나는 튼튼하다',fx:p=>{p.hp+=12;}},
+  {id:'worrier',label:'걱정이 많다',fx:p=>{p.mp-=10;}},
+  {id:'sunny',label:'잘 웃는다',fx:p=>{p.mp+=10;}},
+  {id:'stash',label:'비상금을 모아뒀다',fx:p=>{p.bal+=120000;}},
+  {id:'cardDebt',label:'밀린 카드값이 있다',fx:p=>{p.bills.push({day:14,name:'밀린 카드값 분납',amt:90000});}},
+  {id:'sendHome',label:'고향에 용돈을 보낸다',only:['grad','boss'],fx:p=>{p.bills.push({day:5,name:'부모님 용돈',amt:100000});}},
+  {id:'social',label:'사람을 잘 사귄다',fx:p=>{p.rels.forEach(r=>{ if(!r.child) r.v=Math.min(90,r.v+12); });}},
+  {id:'loner',label:'연락하는 사람이 거의 없다',fx:p=>{p.rels.forEach(r=>{ if(!r.child) r.v=Math.max(20,r.v-15); });}},
+  {id:'cert',label:'자격증이 있다',only:['grad'],fx:p=>{p.career0=40;}},
+  {id:'cheapRent',label:'월세가 싼 방을 구했다',fx:p=>{p.rent-=40000;}},
+  {id:'noDeposit',label:'보증금 없이 들어왔다',fx:p=>{p.rent+=50000;}},
+  {id:'atopy',label:'딸이 아토피가 있다',only:['mom'],fx:p=>{p.bills.push({day:8,name:'딸 피부과·보습제',amt:45000});}},
+  {id:'bigLoan',label:'가게 대출이 크다',only:['boss'],fx:p=>{ const b=p.bills.find(x=>x.key==='loan'); if(b) b.amt+=120000; }},
+  {id:'smoker',label:'담배를 못 끊었다',only:['grad','boss'],fx:p=>{p.bills.push({day:2,name:'담배 한 보루',amt:45000},{day:16,name:'담배 한 보루',amt:45000}); p.mp+=4;}},
+  {id:'insomnia',label:'잠을 잘 못 잔다',fx:p=>{p.mp-=6; p.hp-=4;}}
+];
+const EXCL=[['strong','backBad'],['cheapRent','noDeposit'],['sunny','worrier']];
+const SHIRTS=['#6d7a8c','#b0607a','#5b6b5a','#7a5c8c','#8c6a4a','#4a6a8c','#8c4a4a','#5a7a7a'];
+const HAIRS=['#2a2233','#4a2f25','#1f1a24','#5a3a2a','#3a2a20'];
+function makePerson(base, r){
+  r = r || Math.random;
+  const T=CHARS[base], P=PEOPLE[base];
+  const p = JSON.parse(JSON.stringify(T));
+  p.base = base;
+  const sex = base==='grad' ? (r()<.5?'f':'m') : base==='mom' ? 'f' : 'm';
+  p.sex = sex;
+  p.name = PICK(P.names[sex], r);
+  p.age = P.age[0] + Math.floor(r()*(P.age[1]-P.age[0]+1));
+  const tt = PICK(P.titles, r); p.title = tt.title;
+  if(base==='grad'){ p.bio = tt.bio; p.friend = PICK(P.friends, r); }
+  if(base==='mom'){ p.bio = tt.bio; p.kid = PICK(P.kids, r); }
+  if(base==='boss'){ p.daughter = PICK(P.daughters, r); p.shop = tt.shop; p.bio = `${tt.years}년 한 ${tt.shop}을 지난봄에 닫았다. 새벽엔 인력사무소, 밤엔 대리운전. 가게 대출과 카드빚이 남았다.`; }
+  const jit = (v, f) => Math.round(v*(1-f + r()*2*f)/10000)*10000;
+  p.bal = jit(T.bal, .35); p.rent = jit(T.rent, .12);
+  p.bills = p.bills.map(b => ({...b, amt: b.key ? jit(b.amt, .25) : Math.round(b.amt*(.85+r()*.3)/1000)*1000}));
+  p.hpMax = base==='boss'?85:100;
+  p.hp = T.hp + Math.floor(r()*11) - 5; p.mp = T.mp + Math.floor(r()*11) - 5;
+  if(base==='boss') p.hp -= Math.max(0, p.age-52);
+  p.rels.forEach(x=>{ x.v = Math.max(25, Math.min(85, x.v + Math.floor(r()*21) - 10)); });
+  p.look = {...T.look, hair: base==='boss' ? (p.age>=55?'#9a9aa3':'#6b6b75') : PICK(HAIRS, r), shirt: PICK(SHIRTS, r), long: sex==='f', gray: base==='boss'};
+  const pool = TRAITS.filter(x=>!x.only || x.only.includes(base)), traits=[];
+  for(let g=0; traits.length<2 && g<50; g++){ const x=PICK(pool,r); if(traits.includes(x)) continue; if(EXCL.some(e=>e.includes(x.id) && traits.some(y=>e.includes(y.id)))) continue; traits.push(x); }
+  traits.forEach(x=>x.fx(p)); p.traits = traits.map(x=>x.label);
+  p.hp = Math.max(40, Math.min(p.hpMax, p.hp)); p.mp = Math.max(35, Math.min(95, p.mp));
+  p.bills.sort((a,b)=>a.day-b.day);
+  return p;
+}
+// 이벤트 글에 박힌 기본 이름을 이번 판 사람 이름으로 바꾼다. 글자만 바꾸고 버튼 연결은 건드리지 않는다.
+function nm(str){
+  const P=s && s.person; if(!P || str==null) return str;
+  let o=String(str);
+  if(P.kid && P.kid!=='하린') o=o.replace(/하린/g, P.kid);
+  if(P.daughter && P.daughter!=='수진') o=o.replace(/수진/g, P.daughter);
+  if(P.friend && P.friend!=='민지') o=o.replace(/민지/g, P.friend);
+  if(P.shop && P.shop!=='치킨집') o=o.replace(/치킨집/g, P.shop);
+  return o;
+}
+function nmDom(root){
+  if(!root) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+  while((n=w.nextNode())){ const v=n.nodeValue, x=nm(v); if(x!==v) n.nodeValue=x; }
+}
 const HOME_DESC = {grad:'창문 없는 고시원 방 · 공용 주방', mom:'반지하 투룸 · 비 오면 창틀로 물이 샌다', boss:'낡은 원룸 · 가게를 정리하고 옮겨 왔다'};
 const LIVES_WITH = {grad:'혼자', mom:'딸 하린(8세)과 둘이', boss:'혼자'};
 const WEATHER = ['아침 기온 영하 1도.','하늘은 맑은데 바람이 차다.','미세먼지가 짙다.','흐리고 바람이 분다.','첫서리가 내렸다.','해가 짧아졌다. 다섯 시면 어둡다.'];
@@ -460,6 +550,7 @@ const DEF = {
   phone:{name:'휴대폰 수리',left:7,cost:70000,h:1,expire:'phoneDead'},
   back:{name:'허리 물리치료',left:5,cost:30000,h:2,day:true,expire:'backBlow'},
   mold:{name:'곰팡이 제거',left:6,cost:15000,h:2,expire:'childCough'},
+  welfare:{name:'긴급복지 생계지원 신청',left:6,cost:0,h:2,day:true,expire:null,done:{follow:{id:'welfarePaid',in:3}}},
   support:{name:'양육비 지원 신청',left:8,cost:0,h:3,day:true,expire:'supportMiss',done:{follow:{id:'supportPaid',in:5}}},
   alimony:{name:'양육비 이행 신청',left:9,cost:0,h:2,day:true,expire:null,done:{follow:{id:'alimonyPaid',in:7,p:.55}}},
   loanCenter:{name:'대출 상환 유예 상담',left:8,cost:0,h:3,day:true,expire:null,done:{set:{loanRelief:1}}},
@@ -930,9 +1021,9 @@ const FOLLOW = {
 
 /* ---------------- state ---------------- */
 let s;
-function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null,dayLog:[],diary:[],dayStart:null,gigStreak:0,gigBlockUntil:0,costMult:1,nightDone:false,nightPending:false,seed:null,ranked:false,rent:0,rentsPaid:0,extraBills:[],runId:null}; }
+function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null,dayLog:[],diary:[],dayStart:null,gigStreak:0,gigBlockUntil:0,costMult:1,nightDone:false,nightPending:false,seed:null,ranked:false,luck:0,rent:0,rentsPaid:0,extraBills:[],runId:null}; }
 
-const CH = () => CHARS[s.char];
+const CH = () => (s && s.person) || CHARS[s.char];
 function todayWork(){ return s.sched && s.sched.work; }
 function hasDefer(k){ return s.defer.some(d=>d.key===k); }
 
@@ -1001,7 +1092,11 @@ function makeSchedule(){
   if(s.absentNext && work){ s.absentNext=false; s.absentToday=true; work=false; label='결근'; blocks=[['sleep',7],['chore',c==='mom'?5:1.5]]; }
   else { s.absentNext=false; s.absentToday=false; }
   const used = blocks.reduce((a,b)=>a+b[1],0);
-  s.sched = {work, blocks, label};
+  let bed = 24;
+  if(c==='grad') bed = s.flags.job ? 24 : (work ? 21.5 : 25);
+  else if(c==='mom') bed = 23.5;
+  else bed = (work && !(s.flags.steady && s.day>=s.flags.steadyFrom)) ? 21.5 : 24;
+  s.sched = {work, blocks, label, bed};
   s.free = 24 - used;
 }
 
@@ -1038,6 +1133,7 @@ function startDay(){
     }
   } else if(s.char==='boss' && !s.flags.steady && w<=5 && s.day>=s.laidUntil){ s.mp-=3; s.morning.push('배정 문자가 오지 않았다. 공치는 날.'); }
   if(s.fired){ s.mp-=3; }
+  dailyMeals();
   // payday
   if(s.char==='grad' && w===4 && !s.fired && !s.flags.job){
     const juhyu = s.flags.juhyu ? 49536 : 0;
@@ -1048,8 +1144,8 @@ function startDay(){
   billsDue().forEach(b=>{
     if(b.day!==D) return;
     let amt=b.amt;
-    if(b.key==='loan' && s.flags.loanRelief){ amt=260000; }
-    if(b.key==='revolving' && s.flags.revolvingCut){ amt=150000; }
+    if(b.key==='loan' && s.flags.loanRelief){ amt=Math.round(b.amt/2/1000)*1000; }
+    if(b.key==='revolving' && s.flags.revolvingCut){ amt=b.amt-30000; }
     if(b.key==='tkd' && s.flags.noTkd) return;
     if(s.bal >= amt){ tx(b.name+' 자동이체', -amt, b.prem?{cat:b.premCat,amt:b.prem}:null); s.morning.push(`${b.name} ${fmt(amt)}원 빠져나감`); }
     else {
@@ -1063,10 +1159,13 @@ function startDay(){
   // clamp
   s.hp=clamp(s.hp,0,s.hpMax); s.mp=clamp(s.mp);
   if(s.hp<=0||s.mp<=0) return endGame(s.hp<=0?'collapse':'burnout');
+  luckRoll();
   nextEventOrFree(true);
 }
 
 function wear(){ return Math.max(0, (s.day-8)/30); }
+function clockStr(h){ h=((h%24)+24)%24; const m=Math.round(h*60), hh=Math.floor(m/60)%24, mm=m%60; return `${hh<5?'새벽 ':''}${hh}:${String(mm).padStart(2,'0')}`; }
+function nowClock(){ if(!s.sched) return ''; const bed=s.sched.bed||24; return clockStr(bed - (s.free - s.spent)); }
 function priceUp(){ return 1 + .06*(monthOf(s.day)-1); }
 function foodPrice(){ return round100(HOUSES[CH().house].food*priceUp()); }
 const SHOCKS = [
@@ -1092,6 +1191,60 @@ FOLLOW.shock=(s,d)=>{ const sh=SHOCKS.find(x=>x.id===d.id), amt=round100(sh.amt*
   if(sh.skip) ch.push({...sh.skip});
   if(!sh.skip && ch.length===1) ch[0].force=1;
   return {short:sh.short,text:sh.t,choices:ch}; };
+function dailyMeals(){
+  const k=s.char, work=todayWork();
+  let cost, text;
+  if(k==='grad'){ if(s.flags.job && work){ cost=9000; text='점심은 회사 근처 백반'; } else { cost=3800; text=work?'퇴근길 삼각김밥, 점심은 컵라면':'아침은 거르고 점심은 컵라면'; } }
+  else if(k==='mom'){ cost=work?3500:2400; text=work?'하린은 학교 급식, 나는 마트 직원식당':'아침은 시리얼, 점심은 하린이랑 라면'; }
+  else { cost=3000; text=work?'새벽에 김밥 한 줄, 점심은 현장 식당':'김밥 한 줄로 아침 겸 점심'; }
+  cost=round100(cost*priceUp());
+  if(s.bal>=cost){ tx('아침·점심', -cost); s.morning.push(`${text} (${fmt(cost)}원)`); }
+  else { s.hp-=4; s.mp-=2; s.morning.push('아침도 점심도 걸렀다. 살 돈이 없었다.'); }
+}
+const RESCUES = [
+  {id:'lotto',w:2},{id:'welfare',w:2},{id:'oldDebt',w:2},{id:'bigGig',w:2},{id:'landlordKind',w:1},{id:'refund',w:2},{id:'foodbank',w:2},{id:'friendMeal',w:2}
+];
+const TWISTS = [{id:'carHit',w:2},{id:'shockTwist',w:3},{id:'scamCall',w:1},{id:'theft',w:2}];
+function wpick(list){ const tot=list.reduce((a,x)=>a+x.w,0); let r=rnd()*tot; for(const x of list){ r-=x.w; if(r<=0) return x; } return list[0]; }
+function luckRoll(){
+  if(s.day<4 || s.queue.some(q=>q.day<=s.day)) return;
+  const L=s.luck||0;
+  if(L>=25 && rnd() < (L-15)/220){ s.queue.push({id:'rescue',day:s.day,data:{id:wpick(RESCUES).id}}); s.luck=L-45; }
+  else if(L<=-25 && rnd() < (-L-15)/220){ s.queue.push({id:'twist',day:s.day,data:{id:wpick(TWISTS).id}}); s.luck=L+40; }
+}
+function updateLuck(){
+  const st=s.dayStart||{}; const bad=s.nodes.slice(st.nodes||0).filter(n=>n.bad).length;
+  const rent=s.rent||CH().rent;
+  let d = bad*4 + (s.bal<rent*.5?5:0) + (s.hp<35?4:0) + (s.mp<35?4:0) - (s.bal>rent*2.5?6:0) - (s.hp>75&&s.mp>75?3:0);
+  s.luck = clamp((s.luck||0)+d, -100, 100);
+}
+FOLLOW.rescue=(s,d)=>{
+  const k=s.char, P=CH().people;
+  switch(d.id){
+    case 'lotto': { const r=rnd(); const amt = r<.12?1500000:r<.45?500000:200000;
+      return {short:'즉석복권',text:'거스름돈 대신 받은 즉석복권을 긁었다. 숫자가 맞는다. 한 번 더 확인했다.',choices:[{t:'복권방으로 달려간다',won:amt,memo:'즉석복권 당첨',mp:15,res:amt>=1500000?'손이 떨렸다. 이번 달은 숨을 쉴 수 있다.':'크진 않지만, 오늘은 웃었다.'}]}; }
+    case 'welfare': return {short:'긴급복지 안내',text:'주민센터에서 문자가 왔다. "위기 상황 가구 긴급복지 생계지원 신청 안내." 조건이 맞을 것 같다.',note:'긴급복지지원은 갑작스러운 위기로 생계가 어려울 때 생계비 등을 짧게 지원하는 제도다. 주민센터나 129로 신청한다.',
+      choices:[{t:'서류를 챙겨 신청하러 간다',h:2,mp:4,defer:{key:'welfare',left:6},res:'평일 낮에 주민센터에 서류를 내야 한다. 미룬 일에 올려뒀다.'},{t:'괜히 창피하다. 넘긴다',mp:-4}]};
+    case 'oldDebt': return {short:'오래된 빚',text:'몇 년 전에 돈을 빌려가고 연락이 끊겼던 친구가 문자를 보냈다. "늦어서 미안. 이제야 갚는다."',choices:[{t:'확인',won:300000,memo:'옛 친구가 갚은 돈',mp:12}]};
+    case 'bigGig': return {short:'이삿짐 알바',text:'아는 사람이 이틀짜리 이삿짐 알바를 소개해 줬다. 하루 18만 원, 현금으로 바로 준다.',choices:[{t:'한다',won:360000,memo:'이삿짐 알바 이틀',hp:-16,mp:4,absent:k!=='boss'&&todayWork()?1:0,res:'허리가 끊어질 것 같지만 봉투가 두툼하다.'},{t:'몸이 안 된다',mp:-3}]};
+    case 'landlordKind': return {short:'집주인의 연락',text:`${CH().rentWho}이(가) 찾아왔다. "요즘 힘들어 보여서. 이번 달은 5만 원 덜 보내요."`,choices:[{t:'고맙다고 몇 번이고 말한다',won:50000,memo:'월세 할인',mp:14,rel:{landlord:8}}]};
+    case 'refund': return {short:'환급 안내',text:'통신사와 보험사에서 안 받아간 돈이 있다며 환급 안내가 왔다. 몰랐던 돈이다.',choices:[{t:'신청한다',h:.5,won:120000,memo:'미환급금',mp:6}]};
+    case 'foodbank': return {short:'푸드뱅크',text:'동네 푸드뱅크에서 이번 주 식료품을 나눠준다고 한다.',choices:[{t:'받으러 간다',h:1,add:{stock:7},mp:2,res:'쌀, 라면, 통조림, 우유. 일주일은 장을 안 봐도 된다.'},{t:'아는 사람 볼까 봐 안 간다',mp:-2}]};
+    case 'friendMeal': return {short:'오랜 친구',text:'연락 없던 친구가 근처에 왔다며 밥을 사겠다고 한다. 아무 말도 안 했는데 다 아는 눈치다.',choices:[{t:'나간다',h:2,hp:8,mp:22,res:'오랜만에 배부르게 먹고, 오래 웃었다.'}]};
+  }
+};
+FOLLOW.twist=(s,d)=>{
+  switch(d.id){
+    case 'carHit': return {short:'교통사고',text:'횡단보도를 건너다 우회전하던 차에 치였다. 다리를 절뚝거린다. 운전자는 보험 처리하겠다고 했다.',
+      choices:[{t:'병원에 가서 깁스를 한다',won:-60000,memo:'정형외과 본인부담',force:1,hp:-22,mp:-10,set:{gigBlock:6,laid:3},absent:todayWork()?1:0,follow:{id:'carPay',in:9,p:.7},res:'보험금은 나중에 나온다고 한다. 당장은 일을 못 한다.'}]};
+    case 'shockTwist': { const pool=SHOCKS.filter(x=>!x.chars||x.chars.includes(s.char)); const sh=pool[rint(0,pool.length-1)]; return FOLLOW.shock(s,{id:sh.id,mult:1.4}); }
+    case 'scamCall': return {short:'택배 문자',text:'"[택배] 주소 불일치로 반송 예정. 확인: http://..." 오늘 택배 올 게 있긴 했다.',
+      choices:[{t:'링크를 누른다',won:-180000,memo:'스미싱 피해',force:1,mp:-16},{t:'택배사 앱에서 직접 확인한다',h:.3,mp:2,wise:true,res:'가짜였다. 하마터면 당할 뻔했다.'}]};
+    case 'theft': return {short:'지갑 분실',text:'버스에서 내리고 보니 지갑이 없다. 현금 7만 원과 카드가 들어 있었다.',choices:[{t:'카드 정지하고 재발급한다',won:-70000,memo:'잃어버린 현금',force:1,h:1,mp:-12}]};
+  }
+};
+FOLLOW.welfarePaid=(s)=>({short:'긴급 생계지원',text:'긴급복지 생계지원금이 들어왔다. 한 달 치다.',choices:[{t:'확인',won:s.char==='mom'?1200000:730000,memo:'긴급복지 생계지원',mp:14}]});
+FOLLOW.carPay=()=>({short:'보험금',text:'교통사고 보험금이 들어왔다. 치료비와 일 못 한 날 몫이다.',choices:[{t:'확인',won:420000,memo:'교통사고 보험금',mp:10}]});
 function newMonth(M){
   const C=CH(), rent=s.rent;
   s.morning.push(`${M-1}번째 월세날이다.`);
@@ -1436,6 +1589,7 @@ async function sleep(){
     else { s.hp=clamp(s.hp-8,0,s.hpMax); s.mp=clamp(s.mp-5); if(P>1) s.rel.child=clamp(s.rel.child-8); s.eveLog.push('저녁을 굶었다.'); }
   }
   closeDay(false);
+  updateLuck();
   if(s.bal<0) { busy=false; return endGame('broke'); }
   // sleep
   const cut = sleepCut();
@@ -1551,7 +1705,7 @@ async function saveImage(){
 /* ---------------- bills view ---------------- */
 function billsDue(){ return [...CH().bills, ...(s.extraBills||[])]; }
 function upcoming(){
-  const list = billsDue().filter(b=>b.day>dom(s.day) && !(b.key==='tkd'&&s.flags.noTkd)).map(b=>({day:b.day,name:b.name,amt:(b.key==='loan'&&s.flags.loanRelief)?260000:b.amt}));
+  const list = billsDue().filter(b=>b.day>dom(s.day) && !(b.key==='tkd'&&s.flags.noTkd)).map(b=>({day:b.day,name:b.name,amt:(b.key==='loan'&&s.flags.loanRelief)?Math.round(b.amt/2/1000)*1000:(b.key==='revolving'&&s.flags.revolvingCut)?b.amt-30000:b.amt}));
   list.sort((a,b)=>a.day-b.day); list.push({day:31,name:`월세 (${CH().rentWho})`,amt:s.rent||CH().rent});
   return list;
 }
@@ -1597,6 +1751,7 @@ function render(){
   if(!playing){ $('sceneCap').hidden=true; $('diaryBox').hidden=true; }
   renderMstat(playing);
   renderCard();
+  if(s && s.person) ['card','diaryBox','people','deferList','bills','sceneCap','ledger','mind','clockLabel','mstat'].forEach(id=>nmDom($(id)));
 }
 function renderDiary(){
   const box=$('diaryBox'), list=(s.diary||[]);
@@ -1604,7 +1759,8 @@ function renderDiary(){
   const days=[...new Set(list.map(d=>d.day))].sort((a,b)=>b-a).slice(0,12);
   $('diary').innerHTML = days.map(d=>`<li><span class="dd">${String(d).padStart(2,'0')}일</span><span class="dl">${list.filter(x=>x.day===d).map(x=>`<span class="${x.k}">${esc(x.t)}</span>`).join('')}</span></li>`).join('');
 }
-function liveLine(k){ const c=(window.__liveCounts||{})[k]; return typeof c==='number' && c>0 ? `지금 ${c.toLocaleString('ko-KR')}명이 ${CHARS[k].name}${((CHARS[k].name.charCodeAt(CHARS[k].name.length-1)-0xAC00)%28)===0||((CHARS[k].name.charCodeAt(CHARS[k].name.length-1)-0xAC00)%28)===8?'로':'으로'} 사는 중` : ''; }
+function liveLine(k){ const c=(window.__liveCounts||{})[k]; if(!(typeof c==='number' && c>0)) return ''; const n=todayName(k), j=(n.charCodeAt(n.length-1)-0xAC00)%28; return `오늘 ${c.toLocaleString('ko-KR')}명이 ${n}${j===0||j===8?'로':'으로'} 사는 중`; }
+const TODAY_PEOPLE={}; function todayName(k){ const sd=kstDate(); if(!TODAY_PEOPLE[sd]) TODAY_PEOPLE[sd]=peopleOf(sd); return TODAY_PEOPLE[sd][k].name; }
 function renderMstat(playing){
   const m=$('mstat'); if(!m) return;
   m.hidden = !playing;
@@ -1614,12 +1770,12 @@ function renderMstat(playing){
   m.innerHTML = `<span class="mb ${s.bal<0?'neg':''}">${fmt(s.bal)}<small style="font-family:var(--f-body);font-size:12px;color:var(--muted)">원</small></span>
     <span class="mm">체력${bar(s.hp,s.hpMax||100,'var(--hp)')}</span>
     <span class="mm">멘탈${bar(s.mp,100,'var(--mp)')}</span>
-    <span class="mt"><span>DAY ${s.day} · 월세날까지 ${31-dom(s.day)}일</span>${s.phase==='free'?`<span>자유 시간 <b>${left>=0?hstr(left):'없음'}</b></span>`:''}</span>`;
+    <span class="mt"><span>DAY ${s.day} · 월세날까지 ${31-dom(s.day)}일</span>${s.phase==='free'?`<span>${nowClock()} · 자유 <b>${left>=0?hstr(left):'없음'}</b></span>`:''}</span>`;
 }
 
 function renderClock(){
   if(!s.sched) return;
-  $('clockLabel').innerHTML = `DAY ${s.day} · ${monthOf(s.day)}번째 달 ${dom(s.day)}일 · ${WEEK[wd(s.day)]}요일 · ${esc(s.sched.label)}`;
+  $('clockLabel').innerHTML = `DAY ${s.day} · ${monthOf(s.day)}번째 달 ${dom(s.day)}일 · ${WEEK[wd(s.day)]}요일 · ${esc(s.sched.label)}${s.phase==='free'?` · <b>지금 ${nowClock()}</b> · 잘 시간 ${clockStr(s.sched.bed||24)}`:''}`;
   const left = s.free - s.spent;
   $('clockFree').textContent = left>=0 ? hstr(left) : `없음 (잠 ${hstr(-left)} 깎임)`;
   const cells=[]; const push=(c,h)=>{ for(let i=0;i<Math.round(h*2);i++) cells.push(c); };
@@ -1661,17 +1817,20 @@ function renderCard(){
       ${practiceOnly&&dl.done?`<p class="mine">오늘 내 기록: <b>${dl.done.days}일</b>${dl.done.rank?` · ${dl.done.total}명 중 <b>${dl.done.rank}위</b>`:''}</p>`:''}
       ${practiceOnly&&!dl.done&&!(saved&&saved.ranked)?`<p class="mine">오늘의 판은 이미 시작했다. 다시 하는 판은 순위에 올라가지 않는다.</p>`:''}
       <div class="row">
-        ${saved?`<button class="primary" type="button" id="resumeBtn">이어하기 · ${esc(CHARS[saved.char].name)} DAY ${saved.day}${saved.ranked?' (순위 판)':''}</button>`:''}
+        ${saved?`<button class="primary" type="button" id="resumeBtn">이어하기 · ${esc((saved.person||CHARS[saved.char]).name)} DAY ${saved.day}${saved.ranked?' (순위 판)':''}</button>`:''}
         <button class="${saved?'ghost':'primary'}" type="button" id="startBtn">${canRank?'오늘의 판 시작':practiceOnly?'연습 판 (순위 미반영)':'시작하기'}</button>
       </div>`;
-    $('startBtn').onclick=()=>{ if(saved && saved.ranked && !confirmDrop()) return; clearRun(); s.mode = canRank?'daily':(practiceOnly?'practice':'daily'); s.phase='pick'; render(); };
+    $('startBtn').onclick=()=>{ if(saved && saved.ranked && !confirmDrop()) return; clearRun(); s.mode = canRank?'daily':(practiceOnly?'practice':'daily'); s.pickSeed=chooseSeed(s.mode); s.phase='pick'; render(); };
     if(saved) $('resumeBtn').onclick=()=>{ s=saved; reseed('d'+s.day); render(); };
     if(API) fetchBoard(today);
     return;
   }
   if(s.phase==='pick'){
-    c.innerHTML=`<div class="eyebrow">${s.mode==='practice'?'연습 판 · 순위 미반영':`오늘의 판 · ${seedLabel(kstDate())}`}</div><h2>누구로 버텨볼까.</h2>
-      <div class="who">${Object.entries(CHARS).map(([k,ch])=>`<button type="button" id="pick-${k}" data-k="${k}"><b>${ch.name} · ${ch.age}세</b><small>${ch.title}</small><small>${esc(ch.bio)}</small><span class="goal">목표: ${esc(ch.goal)}</span><small>시작 잔고 ${fmt(ch.bal)}원 · 부족한 것: ${ch.scarcity}</small><small class="lc" data-live-char="${k}">${liveLine(k)}</small></button>`).join('')}</div>`;
+    if(!s.pickSeed) s.pickSeed=chooseSeed(s.mode);
+    const ppl=peopleOf(s.pickSeed);
+    c.innerHTML=`<div class="eyebrow">${s.mode==='practice'?'연습 판 · 순위 미반영':`오늘의 판 · ${seedLabel(s.pickSeed)}`}</div><h2>오늘은 이 세 사람 중 한 명으로 산다.</h2>
+      <p>${s.mode==='practice'?'연습 판은 할 때마다 다른 사람이 나온다.':'오늘 들어온 사람은 모두 같은 세 사람을 만난다. 내일이면 다른 사람들로 바뀐다.'}</p>
+      <div class="who">${Object.entries(ppl).map(([k,ch])=>`<button type="button" id="pick-${k}" data-k="${k}"><b>${esc(ch.name)} · ${ch.age}세</b><small>${esc(GROUP[k])} · ${esc(ch.title)}</small><small>${esc(ch.bio)}</small><span class="goal">${ch.traits.map(esc).join(' · ')}</span><small>시작 잔고 ${fmt(ch.bal)}원 · 월세 ${fmt(ch.rent)}원 · 부족한 것: ${esc(ch.scarcity)}</small><small class="lc" data-live-char="${k}">${liveLine(k)}</small></button>`).join('')}</div>`;
     c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>startAs(b.dataset.k, s.mode));
     setLiveChar(null);
     return;
@@ -1689,6 +1848,7 @@ function renderCard(){
           <div><dt>하는 일</dt><dd>${esc(C.jobName)}</dd></div>
           <div><dt>월세 · 내는 날</dt><dd>${fmt(C.rent)}원 · 31일</dd></div>
           <div><dt>부족한 것</dt><dd>${esc(C.scarcity)}</dd></div>
+          <div><dt>이 사람은</dt><dd>${(C.traits||[]).map(esc).join(' · ')}</dd></div>
           <div><dt>이번 달 목표</dt><dd>${esc(C.goal)}</dd></div>
         </dl>
         <table class="doc-calc">
@@ -1705,7 +1865,7 @@ function renderCard(){
     </div>
     <div class="row"><button class="primary" type="button" id="beginBtn">이 조건으로 시작</button><button class="ghost" type="button" id="backBtn">다른 사람 고르기</button></div>`;
     $('beginBtn').onclick=()=>{ beginRun(); startDay(); };
-    $('backBtn').onclick=()=>{ const m=s.mode; s=fresh(); s.mode=m; s.phase='pick'; render(); };
+    $('backBtn').onclick=()=>{ const m=s.mode, ps=s.seed; s=fresh(); s.mode=m; s.pickSeed=ps; s.phase='pick'; render(); };
     return;
   }
   if(s.phase==='event'){
@@ -1752,7 +1912,7 @@ function renderFree(c){
     if(!care && !ask) return '';
     return `<div class="prow"><span>${esc(r.name)}<small>${r.ask&&r.ask.pride?'부탁하면 체면이 크게 상한다':'들어줄지는 사이에 달렸다'}</small></span><span class="pbtn">${care}${ask}</span></div>`;}).join('');
   const cashOk = !s.flags.cashUsed && !s.flags.cardStop;
-  c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 · 자유 시간 ${left>=0?hstr(left)+' 남음':'없음'}</div>
+  c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 · 지금 ${nowClock()} · 자유 시간 ${left>=0?hstr(left)+' 남음':'없음'}</div>
     ${s.morning.length&&!s.eveLog.length?`<ul class="log">${s.morning.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
     ${s.eveLog.length?`<ul class="log">${s.eveLog.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
     ${s.bal<0?`<p class="memo warn"><b>잔고 ${fmt(s.bal)}원</b>이대로 잠들면 끝이다. 부탁하거나 현금서비스를 써야 한다.</p>`:''}
@@ -1829,14 +1989,20 @@ function renderEnd(c){
   $('imgBtn').onclick=saveImage;
 }
 
-function startAs(k, mode){
-  const C=CHARS[k];
-  s=fresh(); s.char=k; s.mode=mode||'daily';
+function chooseSeed(mode){
   let forced=null; try{ forced=new URLSearchParams(location.search).get('seed'); }catch(e){}
-  s.seed = forced==='random' || s.mode==='practice' ? 'p'+Math.floor(Math.random()*1e9) : (forced && /^\d{4}-\d{2}-\d{2}$/.test(forced) ? forced : kstDate());
-  s.ranked = !!API && s.mode==='daily' && forced!=='random';
+  if(forced==='random' || mode==='practice') return 'p'+Math.floor(Math.random()*1e9);
+  return forced && /^\d{4}-\d{2}-\d{2}$/.test(forced) ? forced : kstDate();
+}
+function peopleOf(seed){ const o={}; ['grad','mom','boss'].forEach(k=>o[k]=makePerson(k, mulberry(hashStr(seed+'|person|'+k)))); return o; }
+function startAs(k, mode){
+  const seed = s.pickSeed || chooseSeed(mode);
+  const C = peopleOf(seed)[k];
+  s=fresh(); s.char=k; s.mode=mode||'daily'; s.person=C; s.seed=seed;
+  s.ranked = !!API && s.mode==='daily' && seed[0]!=='p';
   reseed('start');
-  s.rent = C.rent; s.bal=C.bal; s.hp=C.hp; s.hpMax=k==='boss'?85:100; s.mp=C.mp;
+  s.rent = C.rent; s.bal=C.bal; s.hp=C.hp; s.hpMax=C.hpMax; s.mp=C.mp;
+  if(C.career0){ s.career=C.career0; s.career0=C.career0; }
   C.rels.forEach(r=>s.rel[r.key]=r.v);
   s.stock = k==='mom'?2:1;
   if(k==='grad'){ const cos=['한빛물산','세움로지스','다온식품']; [6,13,21].forEach((d,i)=>s.queue.push({id:'docCheck',day:d+rint(0,1),data:{co:cos[i]}})); }
@@ -1871,7 +2037,7 @@ async function fetchBoard(seed){
   const b=$('boardBox'); if(b) b.innerHTML=boardHtml();
   const rb=$('rankBox'); if(rb && !rb.querySelector('input')) { rb.innerHTML=rankBoxHtml(); bindRankBox(); }
 }
-const CHAR_NAME = k => CHARS[k] ? CHARS[k].name : '';
+const CHAR_NAME = k => CHARS[k] ? (BOARD && BOARD.seed && BOARD.seed[0]!=='p' ? (TODAY_PEOPLE[BOARD.seed]||(TODAY_PEOPLE[BOARD.seed]=peopleOf(BOARD.seed)))[k].name : GROUP[k]) : '';
 function boardHtml(myId){
   if(!BOARD) return '<p class="empty">순위를 불러오는 중…</p>';
   if(BOARD.error) return '<p class="empty">지금은 순위를 불러올 수 없다.</p>';
@@ -2030,7 +2196,7 @@ async function nightTransition(){ if(REDUCED) return; sleeping=true; s.pose='des
 /* ---------------- boot ---------------- */
 function boot(data){ s=(data&&data.s)?data.s:fresh(); render(); requestAnimationFrame(frame); }
 try{ window.claude?.hot?.snapshot?.(()=>({s})); }catch(e){}
-window.__game = { state:()=>s, end:t=>endGame(t), share:()=>shareText(true) };
+if(!/(^|\.)wolseday\.(com|pages\.dev)$/.test(location.hostname)) window.__game = { state:()=>s, end:t=>endGame(t), share:()=>shareText(true) };
 const LIVE_URL = (()=>{ let u=null; try{ u=new URLSearchParams(location.search).get('live'); }catch(e){} if(!u && /(^|\.)wolseday\.(com|pages\.dev)$/.test(location.hostname)) u='wss://live.wolseday.com/ws'; return u; })();
 const API = LIVE_URL ? LIVE_URL.replace(/^ws/,'http').replace(/\/ws$/,'') : null;
 let liveSendFn=()=>{};

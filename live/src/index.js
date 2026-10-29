@@ -28,13 +28,26 @@ export class Presence {
 
   async alarm() {
     const open = this.ctx.getWebSockets().filter((ws) => ws.readyState === 1);
-    const msg = JSON.stringify({ online: open.length });
+    const chars = { grad: 0, mom: 0, boss: 0 };
+    for (const ws of open) {
+      const a = ws.deserializeAttachment();
+      if (a && a.char in chars) chars[a.char]++;
+    }
+    const msg = JSON.stringify({ online: open.length, chars });
     for (const ws of open) {
       try { ws.send(msg); } catch (_) { /* 이미 끊긴 연결 */ }
     }
   }
 
-  async webSocketMessage() { /* 클라이언트가 보내는 내용은 쓰지 않는다 */ }
+  // 클라이언트는 지금 고른 인물만 알려준다: {"char":"grad"|"mom"|"boss"|null}
+  async webSocketMessage(ws, message) {
+    if (typeof message !== 'string' || message.length > 64) return;
+    let data;
+    try { data = JSON.parse(message); } catch (_) { return; }
+    const char = ['grad', 'mom', 'boss'].includes(data && data.char) ? data.char : null;
+    ws.serializeAttachment({ char });
+    await this.scheduleBroadcast();
+  }
 
   async webSocketClose(ws, code) {
     try { ws.close(code === 1005 ? 1000 : code, 'bye'); } catch (_) {}

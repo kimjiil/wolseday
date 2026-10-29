@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="취준생, 한부모, 폐업한 사장님. 세 사람 중 한 명으로 월세날까지 30일을 버티는 도트 생존 게임.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="월세날까지">
+<meta property="og:description" content="돈이 없으면 시간으로, 시간이 없으면 돈으로. 월세날까지 30일, 버틸 수 있을까?">
+<meta name="theme-color" content="#15131d">
+<meta property="og:url" content="https://wolseday.com/">
+<meta property="og:image" content="https://wolseday.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="월세날까지 - 자취방 책상 앞에서 통장 잔고를 보는 도트 캐릭터">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>html,body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>월세날까지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gowun+Dodum&family=Silkscreen&display=swap">
+<style>
+/* Layout: room scene, 24-hour strip and the day's card on the left; body, people, overdue things and the passbook on the right. Stacks on phones. Single dark look on purpose (it is always after work). */
+:root{
+  --ink:#15131d;
+  --panel:#1f1c2b;
+  --panel-2:#2a2639;
+  --line:#3b3552;
+  --text:#ebe6f3;
+  --muted:#a29bb8;
+  --sodium:#ffa43f;
+  --loss:#ff6a5f;
+  --gain:#64d690;
+  --hp:#ff7d7d;
+  --mp:#8fb5ff;
+  --rel:#e7a3d6;
+  --paper:#efe7d4;
+  --paper-ink:#2b2533;
+  --paper-rule:#cfc3a8;
+  --t-sleep:#33406b;
+  --t-work:#9a5b2c;
+  --t-move:#5e5675;
+  --t-chore:#4b6b5a;
+  --t-used:#ffa43f;
+  --t-free:#2f2a40;
+  --t-cut:#ff6a5f;
+  --f-display:"Do Hyeon","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"Silkscreen","Courier New",monospace;
+  color-scheme:dark;
+}
+body{
+  background:var(--ink);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 32px;
+}
+*{box-sizing:border-box}
+.app{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-size:30px;color:var(--sodium);letter-spacing:.02em;line-height:1}
+.brand small{display:block;font-family:var(--f-body);font-size:13px;color:var(--muted);letter-spacing:0;margin-top:6px}
+.dday{font-family:var(--f-num);font-size:15px;padding:6px 12px;border:2px solid var(--line);background:var(--panel);font-variant-numeric:tabular-nums}
+.dday b{color:var(--sodium);font-weight:400}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.stage,.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+.scene-wrap{position:relative;border:3px solid var(--line);background:#000;box-shadow:0 6px 0 #0b0a10}
+#scene{display:block;width:100%;aspect-ratio:16/9;max-width:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.hud{position:absolute;inset:auto 10px 8px 10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;font-family:var(--f-num);font-size:clamp(10px,1.9vw,14px);text-shadow:2px 2px 0 #000;color:#fff}
+.hud .bal{color:var(--sodium)}.hud .bal.neg{color:var(--loss)}
+#floaters{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.floater{position:absolute;font-family:var(--f-num);font-size:clamp(13px,2.6vw,20px);text-shadow:2px 2px 0 #000;animation:rise 1.4s steps(14) forwards;white-space:nowrap}
+.floater.plus{color:var(--gain)}.floater.minus{color:var(--loss)}.floater.time{color:var(--sodium)}
+@keyframes rise{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-48px);opacity:0}}
+
+.clock{background:var(--panel);border:2px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.clock-top{display:flex;justify-content:space-between;gap:8px;font-size:13px;flex-wrap:wrap}
+.clock-top b{font-family:var(--f-num);font-weight:400;color:var(--sodium)}
+.strip{display:grid;grid-template-columns:repeat(48,1fr);gap:1px;height:16px}
+.strip i{display:block}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+
+.card{background:var(--panel);border:2px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:14px;min-height:220px}
+.eyebrow{font-family:var(--f-num);font-size:12px;color:var(--muted);letter-spacing:.08em;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{font-family:var(--f-body);font-size:12px;padding:1px 8px;border:1px solid var(--sodium);color:var(--sodium);letter-spacing:0}
+.chip.red{border-color:var(--loss);color:var(--loss)}
+.card h2{font-family:var(--f-display);font-weight:400;font-size:26px;line-height:1.25;margin:0;text-wrap:balance}
+.card h3{font-family:var(--f-display);font-weight:400;font-size:18px;margin:4px 0 0;color:var(--muted)}
+.card p{margin:0;max-width:64ch}
+.ev-text{font-size:17px;line-height:1.7}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice{all:unset;box-sizing:border-box;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 14px;background:var(--panel-2);border:2px solid var(--line);box-shadow:0 3px 0 #0b0a10;font-family:var(--f-body);font-size:15px;color:var(--text);line-height:1.4}
+.choice:hover:not([disabled]){border-color:var(--sodium)}
+.choice:focus-visible{outline:3px solid var(--sodium);outline-offset:2px}
+.choice:active:not([disabled]){transform:translateY(2px);box-shadow:0 1px 0 #0b0a10}
+.choice[disabled]{opacity:.42;cursor:default}
+.choice.fog{filter:blur(1.5px);opacity:.35}
+.choice .sub{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.tags{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.tag{font-family:var(--f-num);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tag.minus{color:var(--loss)}.tag.plus{color:var(--gain)}.tag.h{color:var(--sodium)}
+.result{font-size:17px;line-height:1.7}
+.memo{border-left:3px solid var(--sodium);padding:4px 0 4px 12px;color:var(--muted);font-size:14px}
+.memo b{color:var(--sodium);font-weight:400;font-family:var(--f-display);font-size:15px;margin-right:6px}
+.memo.warn{border-color:var(--loss);color:var(--text)}.memo.warn b{color:var(--loss)}
+.log{display:flex;flex-direction:column;gap:3px;font-size:14px;color:var(--muted);margin:0;padding:0;list-style:none}
+.log li::before{content:"· ";color:var(--sodium)}
+.primary{all:unset;box-sizing:border-box;cursor:pointer;align-self:flex-start;padding:12px 22px;background:var(--sodium);color:#1b1408;font-family:var(--f-display);font-size:18px;box-shadow:0 4px 0 #8a5114}
+.primary:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+.primary:active{transform:translateY(2px);box-shadow:0 2px 0 #8a5114}
+.primary[disabled]{opacity:.5}
+.ghost{all:unset;cursor:pointer;padding:10px 16px;border:2px solid var(--line);color:var(--text);font-family:var(--f-body)}
+.ghost:focus-visible{outline:3px solid var(--sodium);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.who button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:6px;padding:14px;background:var(--panel-2);border:2px solid var(--line);box-shadow:0 3px 0 #0b0a10}
+.who button:hover{border-color:var(--sodium)}
+.who button:focus-visible{outline:3px solid var(--sodium);outline-offset:2px}
+.who b{font-family:var(--f-display);font-weight:400;font-size:20px}
+.who small{color:var(--muted);font-size:13px;line-height:1.5}
+.who .goal{color:var(--sodium);font-size:13px}
+
+.panel{background:var(--panel);border:2px solid var(--line);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.label{font-size:12px;color:var(--muted);letter-spacing:.06em;display:flex;justify-content:space-between;gap:8px}
+.money{font-family:var(--f-num);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.money small{font-family:var(--f-body);font-size:15px;color:var(--muted);margin-left:4px}
+.money.neg{color:var(--loss)}
+.meter{display:grid;grid-template-columns:44px 1fr 30px;align-items:center;gap:10px;font-size:13px}
+.meter .v{font-family:var(--f-num);font-size:12px;text-align:right;color:var(--muted)}
+.cells{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.cells i{height:11px;background:#2f2a40}
+.cells.hp i.on{background:var(--hp)}.cells.mp i.on{background:var(--mp)}.cells.rel i.on{background:var(--rel)}
+.cells.low i.on{animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.mind{font-size:13px;color:var(--muted)}.mind b{color:var(--text);font-weight:400}
+.people{display:flex;flex-direction:column;gap:8px}
+.person{display:grid;grid-template-columns:72px 1fr 30px;gap:8px;align-items:center;font-size:13px}
+.person small{display:block;color:var(--muted);font-size:11px;line-height:1.2}
+.defer{display:flex;flex-direction:column;gap:6px}
+.defer div{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:6px 8px;border:1px dashed var(--line)}
+.defer div.hot{border-color:var(--loss)}
+.defer .d{font-family:var(--f-num);font-size:12px;color:var(--sodium);white-space:nowrap}
+.defer .hot .d{color:var(--loss)}
+.empty{color:var(--muted);font-size:13px}
+.bills{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.bills div{display:flex;justify-content:space-between;gap:8px}
+.bills .n{font-family:var(--f-num);font-size:12px}
+.premium{font-family:var(--f-num);font-size:20px;color:var(--loss)}
+
+.passbook{background:var(--paper);color:var(--paper-ink);border:2px solid #0b0a10;box-shadow:0 5px 0 #0b0a10;padding:14px 14px 10px;display:flex;flex-direction:column;gap:8px}
+.passbook h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:18px;display:flex;justify-content:space-between;align-items:baseline}
+.passbook h3 span{font-family:var(--f-num);font-size:11px;color:#7a6f5c}
+.ledger{max-height:280px;overflow:auto}
+.ledger table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.ledger th{font-weight:400;text-align:left;color:#7a6f5c;border-bottom:2px solid var(--paper-ink);padding:4px;position:sticky;top:0;background:var(--paper);font-size:11px}
+.ledger td{padding:5px 4px;border-bottom:1px dashed var(--paper-rule);vertical-align:top}
+.ledger td.n{font-family:var(--f-num);font-size:11px;text-align:right;white-space:nowrap}
+.ledger th.n{text-align:right}
+.ledger td.out{color:#b3352b}.ledger td.in{color:#24804a}
+.ledger tr.pre td:nth-child(2)::after{content:" ▲";color:#b3352b;font-size:10px}
+.ledger .none td{color:#7a6f5c;text-align:center;padding:16px}
+
+.endstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.endstats div{background:var(--panel-2);border:2px solid var(--line);padding:10px 12px;font-size:13px}
+.endstats b{display:block;font-family:var(--f-num);font-size:16px;font-weight:400;margin-top:2px}
+.chains{display:flex;flex-direction:column;gap:14px}
+.chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px}
+.node{background:var(--panel-2);border:2px solid var(--line);padding:6px 9px;font-size:13px;max-width:220px;display:flex;flex-direction:column;gap:2px}
+.node .d{font-family:var(--f-num);font-size:10px;color:var(--muted)}
+.node .m{font-family:var(--f-num);font-size:11px}
+.node.bad{border-color:var(--loss)}
+.arrow{align-self:center;font-family:var(--f-num);color:var(--sodium)}
+.prem-list{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.prem-list div{display:flex;justify-content:space-between;gap:10px}
+.prem-list .n{font-family:var(--f-num);font-size:13px;color:var(--loss)}
+#copyArea{width:100%;min-height:90px;background:var(--panel-2);color:var(--text);border:2px solid var(--line);font-family:var(--f-body);padding:8px}
+
+.plist{display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;border:2px solid var(--line);background:var(--panel-2)}
+.prow small{display:block;color:var(--muted);font-size:12px}
+.pbtn{display:flex;gap:6px;flex-wrap:wrap}
+.mini{all:unset;box-sizing:border-box;cursor:pointer;padding:5px 10px;border:1px solid var(--line);font-size:13px;color:var(--text);background:var(--panel)}
+.mini.ask{border-color:var(--rel)}
+.mini:hover:not([disabled]){border-color:var(--sodium)}
+.mini:focus-visible{outline:3px solid var(--sodium);outline-offset:2px}
+.mini[disabled]{opacity:.4;cursor:default}
+@media (prefers-reduced-motion:reduce){.floater{animation:none}.cells.low i.on{animation:none}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">월세날까지<small>서울 30일 생존기 · 프로토타입 v2</small></div>
+    <div class="dday" id="dday">월세날 <b>D-30</b></div>
+  </header>
+
+  <div class="grid">
+    <section class="stage">
+      <div class="scene-wrap">
+        <canvas id="scene" width="160" height="90" aria-label="방 안 도트 장면"></canvas>
+        <div class="hud"><span id="hudDay">-</span><span class="bal" id="hudBal">-</span></div>
+        <div id="floaters"></div>
+      </div>
+      <div class="clock" id="clock" hidden>
+        <div class="clock-top"><span id="clockLabel">-</span><span>남은 자유 시간 <b id="clockFree">0</b></span></div>
+        <div class="strip" id="strip"></div>
+        <div class="legend"><span style="--c:var(--t-sleep)">잠</span><span style="--c:var(--t-work)">일</span><span style="--c:var(--t-move)">이동</span><span style="--c:var(--t-chore)">집안일·돌봄</span><span style="--c:var(--t-used)">쓴 시간</span><span style="--c:var(--t-free)">남은 시간</span><span style="--c:var(--t-cut)">깎인 잠</span></div>
+      </div>
+      <div class="card" id="card" aria-live="polite"></div>
+    </section>
+
+    <aside class="side" id="side" hidden>
+      <div class="panel">
+        <div class="label"><span>통장 잔고</span><span id="whoLabel"></span></div>
+        <div class="money" id="bal">0<small>원</small></div>
+        <div class="meter"><span>체력</span><div class="cells hp" id="hpCells"></div><span class="v" id="hpV">0</span></div>
+        <div class="meter"><span>멘탈</span><div class="cells mp" id="mpCells"></div><span class="v" id="mpV">0</span></div>
+        <div class="mind" id="mind"></div>
+      </div>
+      <div class="panel">
+        <div class="label"><span>미룬 일</span><span>방치하면 커진다</span></div>
+        <div class="defer" id="deferList"></div>
+      </div>
+      <div class="panel">
+        <div class="label"><span>사람들</span><span>부탁할 수 있는 정도</span></div>
+        <div class="people" id="people"></div>
+      </div>
+      <div class="panel">
+        <div class="label"><span>다가오는 지출</span><span>자동이체</span></div>
+        <div class="bills" id="bills"></div>
+      </div>
+      <div class="panel">
+        <div class="label"><span>가난해서 더 낸 돈</span><span>▲ 표시 거래</span></div>
+        <div class="premium" id="premium">0원</div>
+      </div>
+      <div class="passbook">
+        <h3>보통예금 거래내역 <span id="pbCount">0건</span></h3>
+        <div class="ledger" id="ledgerBox">
+          <table>
+            <thead><tr><th>일자</th><th>적요</th><th class="n">찾으신 금액</th><th class="n">맡기신 금액</th><th class="n">잔액</th></tr></thead>
+            <tbody id="ledger"></tbody>
+          </table>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = n => (n<0?'-':'') + Math.abs(Math.round(n)).toLocaleString('ko-KR');
+const clamp = (v,a=0,b=100) => Math.max(a, Math.min(b, v));
+const rint = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const round100 = n => Math.round(n/100)*100;
+const WEEK = ['월','화','수','목','금','토','일'];
+const wd = d => (d-1)%7;
+const MINW = 10320; // 2026년 최저시급
+const hstr = h => { const m=Math.round(h*60); const hh=Math.floor(m/60), mm=m%60; return hh&&mm?`${hh}시간 ${mm}분`:hh?`${hh}시간`:`${mm}분`; };
+
+/* ---------------- characters ---------------- */
+const CHARS = {
+  grad:{
+    name:'윤서', age:24, title:'지방에서 올라온 취준생', house:'gosi',
+    bio:'경영학과를 졸업하고 서울로 올라왔다. 편의점 야간 알바로 버티면서 공채를 준비한다.',
+    goal:'월세를 내고, 공채 하나라도 최종 합격하기', scarcity:'잠과 시간',
+    bal:160000, hp:82, mp:72, people:1, rent:380000, rentWho:'고시원 총무',
+    look:{hair:'#2a2233', shirt:'#6d7a8c', long:false, gray:false},
+    jobName:'편의점 야간 (월~수 22시~6시)',
+    rels:[
+      {key:'mom',name:'엄마',sub:'지방에 사는 엄마',v:70,ask:{type:'money',amt:100000,label:'10만 원만 보내달라고'}},
+      {key:'friend',name:'민지',sub:'대학 동기',v:60,ask:{type:'money',amt:50000,label:'5만 원 빌려달라고'}},
+      {key:'boss',name:'점장',sub:'편의점 점장',v:50,ask:{type:'shift',label:'근무 하루 바꿔달라고'}},
+      {key:'landlord',name:'총무',sub:'고시원 총무',v:45,ask:{type:'rentDelay',label:'월세 일주일만 미뤄달라고'}}],
+    bills:[{day:7,name:'취업 인강 구독',amt:39000},{day:10,name:'통신비',amt:69000},{day:20,name:'학자금 상환',amt:167000},{day:24,name:'고시원 공과금',amt:30000}],
+    cash:300000
+  },
+  mom:{
+    name:'정민', age:36, title:'초등학생 딸을 키우는 한부모', house:'banjiha',
+    bio:'마트 계산원 계약직. 여덟 살 하린이와 반지하 투룸에 산다. 월급은 25일에 들어온다.',
+    goal:'월세를 내고, 하린이 마음을 지키기', scarcity:'아이와 보낼 시간',
+    bal:720000, hp:78, mp:68, people:2, rent:420000, rentWho:'집주인',
+    look:{hair:'#4a2f25', shirt:'#b0607a', long:true, gray:false},
+    jobName:'마트 계산원 (월~금 9시~6시)',
+    rels:[
+      {key:'child',name:'하린',sub:'여덟 살 딸',v:72,child:true},
+      {key:'grandma',name:'친정엄마',sub:'버스로 40분 거리',v:55,ask:{type:'care',label:'하린이를 하루 봐달라고'}},
+      {key:'neighbor',name:'옆집 할머니',sub:'반지하 옆집',v:40,ask:{type:'care',label:'하린이를 잠깐 봐달라고'}},
+      {key:'boss',name:'팀장',sub:'마트 계산대 팀장',v:50,ask:{type:'shift',label:'근무 하루 바꿔달라고'}},
+      {key:'landlord',name:'집주인',sub:'2층에 사는 집주인',v:45,ask:{type:'rentDelay',label:'월세 일주일만 미뤄달라고'}}],
+    bills:[{day:5,name:'태권도 원비',amt:150000,key:'tkd'},{day:10,name:'통신비 2회선',amt:95000},{day:15,name:'실손보험 2인',amt:58000},{day:20,name:'관리비',amt:45000}],
+    cash:200000
+  },
+  boss:{
+    name:'상철', age:52, title:'치킨집을 접은 전직 사장님', house:'oneroom',
+    bio:'7년 한 치킨집을 지난봄에 닫았다. 새벽엔 인력사무소, 밤엔 대리운전. 가게 대출과 카드빚이 남았다.',
+    goal:'월세를 내고, 대출을 한 번도 연체하지 않기', scarcity:'몸과 체면',
+    bal:350000, hp:72, mp:62, people:1, rent:450000, rentWho:'집주인',
+    look:{hair:'#8b8b95', shirt:'#5b6b5a', long:false, gray:true},
+    jobName:'물류 일용직 (배정될 때만) + 대리운전',
+    rels:[
+      {key:'daughter',name:'수진',sub:'대학생 딸',v:52,ask:{type:'money',amt:100000,label:'10만 원만 빌려달라고',pride:1}},
+      {key:'kim',name:'김사장',sub:'옛 단골, 고깃집 사장',v:45,ask:{type:'lead',label:'일자리 알아봐 달라고'}},
+      {key:'chief',name:'반장',sub:'인력사무소 반장',v:50,ask:{type:'chief',label:'며칠 우선 배정해 달라고'}},
+      {key:'landlord',name:'집주인',sub:'원룸 건물주',v:50,ask:{type:'rentDelay',label:'월세 일주일만 미뤄달라고'}}],
+    bills:[{day:10,name:'통신비',amt:55000},{day:15,name:'소상공인 대출 상환',amt:520000,key:'loan'},{day:20,name:'카드 리볼빙 최소결제',amt:180000,prem:47300,premCat:'리볼빙 이자'}],
+    cash:150000
+  }
+};
+const HOUSES = {
+  gosi:{name:'고시원',hp:0,mp:-1,food:5000},
+  banjiha:{name:'반지하 투룸',hp:-1,mp:-1,food:5500},
+  oneroom:{name:'낡은 원룸',hp:0,mp:0,food:5500}
+};
+
+/* ---------------- events ----------------
+   choice fields: t, won, memo, h (hours), hp, mp, rel{}, defer{}, follow{}, set{}, add{}, career, absent,
+   need (needs this much money), wise (hidden when the head is foggy), chance{p, ok{}, fail{}}, prem{cat,amt}, res, force */
+const DEF = {
+  tooth:{name:'치과 치료',left:6,cost:50000,h:2,day:true,expire:'toothBlow'},
+  phone:{name:'휴대폰 수리',left:7,cost:70000,h:1,expire:'phoneDead'},
+  back:{name:'허리 물리치료',left:5,cost:30000,h:2,day:true,expire:'backBlow'},
+  mold:{name:'곰팡이 제거',left:6,cost:15000,h:2,expire:'childCough'},
+  support:{name:'양육비 지원 신청',left:8,cost:0,h:3,day:true,expire:'supportMiss',done:{follow:{id:'supportPaid',in:5}}},
+  alimony:{name:'양육비 이행 신청',left:9,cost:0,h:2,day:true,expire:null,done:{follow:{id:'alimonyPaid',in:7,p:.55}}},
+  loanCenter:{name:'대출 상환 유예 상담',left:8,cost:0,h:3,day:true,expire:null,done:{set:{loanRelief:1}}},
+  vat:{name:'남은 부가세 납부',left:6,cost:184000,h:.2,expire:'vatLate'},
+  labor:{name:'노동청 진정서 제출',left:6,cost:0,h:2,day:true,expire:null,done:{follow:{id:'laborWin',in:8,p:.8}}}
+};
+
+const EVENTS = [
+ /* ---- shared ---- */
+ {id:'tooth',short:'치통',text:'며칠째 어금니가 시큰하다. 찬물만 마셔도 머리까지 울린다.',
+  note:'미룰수록 비싸지는 비용은, 당장 돈이 없는 사람에게 더 자주 터진다.',
+  choices:[
+   {t:'이번 주 안에 치과에 간다',defer:{key:'tooth'},res:'"미룬 일"에 치과가 올라갔다. 평일 낮에만 진료한다.'},
+   {t:'진통제로 버틴다',won:-4500,memo:'진통제',mp:2,defer:{key:'tooth',left:3},res:'약 기운이 도는 동안은 괜찮았다.'}]},
+ {id:'phone',short:'액정 깨짐',text:'휴대폰을 떨어뜨렸다. 액정이 거미줄처럼 갈라졌고 터치가 가끔 먹통이다.',
+  choices:[
+   {t:'오늘 사설 수리점에 간다',h:1,won:-70000,memo:'액정 수리',need:70000},
+   {t:'나중에 고친다',defer:{key:'phone'},res:'중요한 연락이 이 화면으로 온다는 걸 알고 있다.'}]},
+ {id:'lastBus',chars:['mom','boss'],short:'막차 놓침',when:s=>todayWork(),text:'일이 늦게 끝나 막차를 놓쳤다. 걸으면 한 시간 반.',
+  choices:[
+   {t:'택시를 탄다',won:-18000,memo:'택시',need:18000,prem:{cat:'택시',amt:15000}},
+   {t:'걸어간다',h:1.5,hp:-5,res:'발바닥이 욱신거렸다. 그만큼 잘 시간이 줄었다.'}]},
+ {id:'laundry',short:'세탁기 고장',text:'공용 세탁기가 고장 났다. 빨랫감이 산처럼 쌓였다.',
+  choices:[
+   {t:'빨래방에 간다',h:1,won:-8000,memo:'빨래방',need:8000},
+   {t:'손빨래를 한다',h:1.5,hp:-2}]},
+ {id:'impulse',short:'새벽 쇼핑',when:s=>s.mp<38,w:2,text:'새벽, 쇼핑 앱을 멍하니 넘긴다. 장바구니에 담아둔 게 많다.',
+  note:'스트레스가 쌓이면 당장의 위안에 손이 먼저 간다. 의지가 약해서가 아니다.',
+  choices:[
+   {t:'결제한다',won:-39000,memo:'충동구매',mp:9,force:1},
+   {t:'앱을 지우고 잔다',mp:-3,wise:1},
+   {t:'장바구니만 보다 잠든다',mp:-1}]},
+ {id:'cardloan',short:'카드론 문자',when:s=>!s.flags.cardloan,text:'"[OO카드] 고객님 장기카드대출 300만 원 즉시 가능합니다." 오늘만 세 번째 문자다.',
+  note:'급할 때 가장 손쉽게 닿는 돈이 가장 비싼 돈인 경우가 많다.',
+  choices:[
+   {t:'50만 원만 받아둔다',won:500000,memo:'카드론 입금',set:{cardloan:1},deferRaw:{key:'cardloanPay',name:'카드론 첫 상환',left:10,cost:62000,h:.1,expire:'loanLate',prem:{cat:'카드론 이자',amt:12000}},res:'잔고 숫자가 커지니 이상하게 마음이 놓였다.'},
+   {t:'문자를 지운다',wise:1}]},
+ {id:'cold',short:'한파',text:'한파 특보. 방 안에서도 입김이 보인다.',
+  choices:[
+   {t:'전기장판을 산다',won:-35000,memo:'전기장판',need:35000,set:{blanket:1}},
+   {t:'옷을 껴입고 버틴다',hp:-6,res:'밤새 몇 번이나 깼다.'}]},
+ {id:'gift',short:'이웃의 귤',text:'누군가 문고리에 귤 한 봉지를 걸어두고 갔다. "추운데 힘내요."',
+  choices:[{t:'고맙다고 쪽지를 남긴다',mp:7,add:{stock:1}}]},
+ {id:'smish',short:'택배 문자',text:'"[택배] 주소지 불일치로 배송 보류. 확인: http://…" 마침 기다리던 택배가 있다.',
+  choices:[
+   {t:'링크를 누른다',follow:{id:'smishLoss',in:1,p:.6}},
+   {t:'택배사 앱에서 직접 확인한다',h:.2,wise:1}]},
+
+ /* ---- 윤서 ---- */
+ {id:'momCall',chars:['grad'],w:1.5,short:'엄마 전화',text:'엄마에게서 전화가 왔다. "밥은 잘 먹고 다니니?"',
+  choices:[
+   {t:'30분 통화한다',h:.5,rel:{mom:6},mp:4},
+   {t:'바쁘다고 끊는다',rel:{mom:-5},mp:-2,res:'끊고 나서 한참 휴대폰을 쳐다봤다.'}]},
+ {id:'momMoney',chars:['grad'],short:'아빠 병원비',text:'엄마가 아빠 병원비 이야기를 꺼낸다. 돈 얘기는 아닌 척한다.',
+  choices:[
+   {t:'20만 원 보낸다',won:-200000,memo:'엄마 송금',need:200000,rel:{mom:10},mp:3},
+   {t:'5만 원 보낸다',won:-50000,memo:'엄마 송금',need:50000,rel:{mom:2}},
+   {t:'못 들은 척한다',rel:{mom:-8},mp:-8}]},
+ {id:'juhyu',chars:['grad'],when:s=>s.day>=4&&!s.flags.juhyu,short:'주휴수당',text:'주급 명세를 보다 깨달았다. 주휴수당이 한 번도 안 들어왔다. 점장은 "편의점은 원래 그래"라고 한다.',
+  note:'주 15시간 이상 일하면 주휴수당을 받을 수 있다. 하지만 일자리를 잃을까 봐 말 못 하는 경우가 많다.',
+  choices:[
+   {t:'법대로 달라고 말한다',chance:{rel:'boss',ok:{set:{juhyu:1},rel:{boss:-10},res:'점장이 투덜거리며 다음 주부터 넣어주겠다고 했다.'},fail:{rel:{boss:-22},follow:{id:'shiftCut',in:2,p:.6},res:'"그럼 다른 데 알아보든가." 근무표에 내 이름 옆으로 물음표가 붙었다.'}}},
+   {t:'노동청에 진정한다',defer:{key:'labor'},rel:{boss:-15},res:'진정서를 내려면 평일 낮에 노동청에 가야 한다.'},
+   {t:'모른 척 넘어간다',mp:-6,prem:{cat:'못 받은 주휴수당',amt:49536*3},res:'한 달이면 20만 원 가까이 덜 받는 셈이다.'}]},
+ {id:'toeic',chars:['grad'],short:'토익 접수',text:'토익 점수 유효기간이 끝났다. 서류에 넣으려면 다시 봐야 한다. 응시료 5만 2천 원.',
+  choices:[
+   {t:'접수한다',won:-52000,memo:'토익 응시료',need:52000,career:10,wise:1},
+   {t:'다음 달에 본다',career:-3}]},
+ {id:'noise',chars:['grad'],short:'낮잠 방해',text:'야간 근무 끝나고 자야 하는데 복도에서 공사 소리가 쿵쿵 울린다.',
+  choices:[
+   {t:'귀마개를 산다',won:-3000,memo:'귀마개',set:{earplug:1}},
+   {t:'그냥 눈을 감는다',hp:-6}]},
+ {id:'wedding',chars:['grad'],short:'민지 결혼식',text:'대학 동기 민지가 결혼한다. 호텔 예식이고, 단톡방은 "당연히 가지?" 분위기다.',
+  choices:[
+   {t:'참석하고 축의금 10만 원',won:-100000,memo:'축의금',need:100000,h:4,rel:{friend:12},mp:4},
+   {t:'5만 원만 송금한다',won:-50000,memo:'축의금 송금',need:50000,rel:{friend:2}},
+   {t:'못 본 척한다',rel:{friend:-15},mp:-6}]},
+ {id:'drunk',chars:['grad'],when:s=>todayWork(),short:'새벽 취객',text:'새벽 3시, 취객이 계산대 앞에서 거스름돈이 틀렸다며 고함을 친다.',
+  choices:[
+   {t:'참고 사과한다',mp:-10},
+   {t:'경찰을 부른다',h:1,mp:-4,rel:{boss:-4},res:'진술서를 쓰느라 퇴근이 한 시간 늦었다.'}]},
+ {id:'studyCafe',chars:['grad'],when:s=>!s.flags.studyCafe,short:'스터디카페',text:'스터디카페 4주 정기권이 8만 원. 고시원 방에서는 도저히 집중이 안 된다.',
+  choices:[
+   {t:'정기권을 끊는다',won:-80000,memo:'스터디카페',need:80000,set:{studyCafe:1},wise:1,res:'공부 효율이 오른다.'},
+   {t:'방에서 버틴다'}]},
+
+ /* ---- 정민 ---- */
+ {id:'childFever',chars:['mom'],w:1.3,short:'하린 고열',text:'밤에 하린이 열이 39도까지 올랐다. 내일도 출근해야 하는 날이다.',
+  choices:[
+   {t:'내일 결근하고 소아과에 간다',absent:1,won:-15000,memo:'소아과',rel:{child:6}},
+   {t:'친정엄마에게 와달라고 한다',chance:{rel:'grandma',ok:{rel:{grandma:-10,child:2},res:'엄마가 첫차를 타고 와주셨다.'},fail:{absent:1,rel:{grandma:-4},res:'"나도 내일 병원 가는 날이야." 결국 결근해야 한다.'}}},
+   {t:'해열제 먹여서 학교에 보낸다',rel:{child:-12},mp:-8,follow:{id:'childWorse',in:2,p:.5},res:'교문 앞에서 돌아보던 얼굴이 계속 생각난다.'}]},
+ {id:'fieldTrip',chars:['mom'],short:'체험학습비',text:'가정통신문: 현장체험학습비 2만 3천 원, 내일까지.',
+  choices:[
+   {t:'낸다',won:-23000,memo:'체험학습비',need:23000,rel:{child:4}},
+   {t:'아프다고 하고 안 보낸다',rel:{child:-12},mp:-6,res:'하린은 아무것도 묻지 않았다. 그게 더 마음에 걸렸다.'}]},
+ {id:'tkd',chars:['mom'],when:s=>s.day<=4,short:'태권도 원비',text:'5일에 태권도 원비 15만 원이 나간다. 끊으면 5시부터 7시까지 하린이가 집에 혼자 있게 된다.',
+  choices:[
+   {t:'계속 보낸다'},
+   {t:'이번 달부터 끊는다',set:{noTkd:1},mp:-4,rel:{child:-6},res:'15만 원을 아꼈다. 대신 퇴근 전 두 시간이 비었다.'}]},
+ {id:'weekendShift',chars:['mom'],short:'주말 근무',text:'팀장이 이번 토요일 근무를 부탁한다. 일당 8만 원. 하린이를 맡길 곳이 필요하다.',
+  choices:[
+   {t:'옆집 할머니에게 맡기고 나간다',chance:{rel:'neighbor',ok:{won:80000,memo:'주말 근무',rel:{neighbor:-8,boss:6},hp:-6},fail:{rel:{boss:-6},mp:-4,res:'할머니가 몸살이시란다. 결국 못 나간다고 했다.'}}},
+   {t:'하린이를 데리고 가 휴게실에 둔다',won:80000,memo:'주말 근무',rel:{child:-10,boss:2},hp:-6},
+   {t:'거절한다',rel:{boss:-6}}]},
+ {id:'mold',chars:['mom'],short:'곰팡이',text:'반지하 벽에 곰팡이가 번졌다. 하린이 기침이 잦아졌다.',
+  choices:[
+   {t:'제습기를 산다',won:-89000,memo:'제습기',need:89000,wise:1},
+   {t:'주말에 락스로 닦는다',defer:{key:'mold'}}]},
+ {id:'supportNotice',chars:['mom'],when:s=>!s.used.supportNotice,short:'양육비 지원 안내',text:'주민센터에서 한부모가족 아동양육비 신청 안내 문자가 왔다. 서류를 들고 평일 낮에 가야 한다.',
+  note:'지원 제도가 평일 낮에만 열려 있으면, 일하는 사람에게는 그 자체가 장벽이 된다.',
+  choices:[
+   {t:'시간을 내서 꼭 간다',defer:{key:'support'}},
+   {t:'서류가 너무 많다, 다음 달에',mp:-3}]},
+ {id:'birthday',chars:['mom'],when:s=>s.day>=8,short:'하린 생일',text:'다음 주가 하린이 생일이다. 반 친구들은 다 키즈카페에서 생일파티를 한다.',
+  choices:[
+   {t:'키즈카페 파티를 열어준다',won:-150000,memo:'생일파티',need:150000,rel:{child:16}},
+   {t:'집에서 케이크를 만든다',won:-25000,memo:'케이크 재료',need:25000,h:2,rel:{child:7}},
+   {t:'다음에 하자고 한다',rel:{child:-16},mp:-8}]},
+ {id:'boiler',chars:['mom'],short:'보일러 고장',text:'보일러가 고장 났다. 집주인은 세입자가 고치라고 한다.',
+  choices:[
+   {t:'수리 기사를 부른다',won:-120000,memo:'보일러 수리',need:120000},
+   {t:'계약서를 들고 따진다',chance:{p:.5,ok:{rel:{landlord:-10},res:'집주인이 마지못해 수리비를 냈다.'},fail:{rel:{landlord:-20},hp:-6,res:'"싫으면 나가요." 사흘 동안 찬물로 씻었다.'}}},
+   {t:'전기난로로 버틴다',won:-30000,memo:'전기난로',need:30000,hp:-4}]},
+ {id:'alimony',chars:['mom'],short:'양육비 미지급',text:'전남편이 이번 달 양육비를 또 안 보냈다.',
+  choices:[
+   {t:'양육비이행관리원에 신청한다',defer:{key:'alimony'}},
+   {t:'연락해서 따진다',mp:-12,chance:{p:.3,ok:{won:200000,memo:'양육비',res:'사흘 만에 돈이 들어왔다. 사과는 없었다.'},fail:{res:'읽고 답이 없다.'}}},
+   {t:'포기한다',mp:-6}]},
+ {id:'alone',chars:['mom'],when:s=>s.flags.noTkd&&todayWork(),w:2,short:'하린 연락 두절',text:'퇴근길, 하린이 전화를 받지 않는다. 벌써 세 번째다.',
+  choices:[
+   {t:'택시를 타고 달려간다',won:-15000,memo:'택시',prem:{cat:'택시',amt:12000},mp:-6,res:'TV를 켜둔 채 잠들어 있었다. 손이 떨렸다.'},
+   {t:'옆집 할머니에게 봐달라고 전화한다',rel:{neighbor:-5},mp:-3}]},
+
+ /* ---- 상철 ---- */
+ {id:'back',chars:['boss'],w:1.3,when:s=>!s.defer.some(d=>d.key==='back'),short:'허리 통증',text:'허리가 끊어질 것 같다. 아침에 양말 신기도 힘들다.',
+  choices:[
+   {t:'이번 주에 물리치료를 받는다',defer:{key:'back'}},
+   {t:'파스 붙이고 일한다',won:-6000,memo:'파스',hp:-8,defer:{key:'back',left:3}}]},
+ {id:'daughter',chars:['boss'],short:'딸 등록금',text:'딸 수진이 조심스럽게 연락했다. "아빠, 등록금 조금만 보태줄 수 있어?"',
+  choices:[
+   {t:'50만 원 보낸다',won:-500000,memo:'수진 등록금',need:500000,rel:{daughter:15},mp:5},
+   {t:'20만 원 보낸다',won:-200000,memo:'수진 등록금',need:200000,rel:{daughter:4}},
+   {t:'사정을 털어놓는다',rel:{daughter:-6},mp:-14,res:'"괜찮아, 아빠." 그 말이 더 아팠다.'}]},
+ {id:'kimLead',chars:['boss'],when:s=>!s.flags.steady&&s.day<=22,short:'주방 자리 제안',text:'김사장이 전화했다. "우리 가게 주방에 자리 하나 났어. 월급은 다음 달 10일부터야."',
+  note:'안정된 일자리일수록 첫 월급까지 버틸 여윳돈이 필요하다. 그 여윳돈이 없는 사람은 계속 일당을 고른다.',
+  choices:[
+   {t:'받는다',set:{steady:1},rel:{kim:5},res:'다음 주부터 매일 출근이다. 대신 이번 달 안에는 월급이 안 들어온다.'},
+   {t:'당장 일당이 급하다',rel:{kim:-6}}]},
+ {id:'loanCenter',chars:['boss'],when:s=>s.day<=12,short:'상환 유예 안내',text:'소상공인 대출 상환 유예 상담을 받을 수 있다는 안내가 왔다. 센터는 평일 낮에만 연다.',
+  choices:[
+   {t:'시간을 내서 간다',defer:{key:'loanCenter'}},
+   {t:'어차피 안 될 거다',mp:-4}]},
+ {id:'vat',chars:['boss'],short:'부가세 고지서',text:'닫은 가게의 남은 부가세 고지서가 날아왔다. 18만 4천 원.',
+  choices:[
+   {t:'바로 낸다',won:-184000,memo:'부가세',need:184000},
+   {t:'다음 일당 받고 낸다',defer:{key:'vat'}}]},
+ {id:'reunion',chars:['boss'],short:'동창회',text:'고등학교 동창회. 다들 사장님, 부장님 소리를 듣는다.',
+  choices:[
+   {t:'나간다',won:-60000,memo:'동창회',need:60000,h:4,mp:-6,rel:{kim:5},res:'2차는 내가 쏘겠다고 말해버렸다.'},
+   {t:'일이 있다고 한다',mp:-4}]},
+ {id:'special',chars:['boss'],when:s=>!s.flags.steady,short:'새벽 특근',text:'반장이 문자를 보냈다. "내일 새벽 4시 특근, 일당 15만. 나올래요?"',
+  choices:[
+   {t:'나간다',won:150000,memo:'특근 일당',hp:-14,h:3,rel:{chief:4}},
+   {t:'몸이 안 된다고 한다',rel:{chief:-4}}]}
+];
+
+/* follow-ups: (s, data) => event */
+const FOLLOW = {
+  toothBlow:()=>({short:'치통 악화',text:'밤새 잇몸이 부어 얼굴이 퉁퉁 부었다. 응급으로 신경치료를 받아야 한다.',choices:[{t:'아침 일찍 치과로 간다',won:-260000,memo:'신경치료',absent:1,hp:-10,force:1,res:'처음 견적의 다섯 배를 냈다. 내일은 출근도 못 한다.'}]}),
+  phoneDead:()=>({short:'휴대폰 먹통',text:'액정이 완전히 나갔다. 그사이 온 연락을 놓쳤다.',choices:[{t:'급하게 중고 공기계를 산다',won:-120000,memo:'중고 공기계',force:1,mp:-8,lostCall:1}]}),
+  backBlow:()=>({short:'디스크',text:'허리 디스크가 터졌다. 사흘은 꼼짝도 못 한다.',choices:[{t:'병원에 간다',won:-150000,memo:'MRI·주사',hp:-18,force:1,set:{laid:3},res:'사흘 동안 일을 나갈 수 없다.'}]}),
+  childCough:()=>({short:'하린 기침',text:'하린이 기침이 밤새 멎지 않는다. 소아과에서 기관지염이라고 한다.',choices:[{t:'약을 받아온다',won:-25000,memo:'소아과·약',force:1,rel:{child:-5},mp:-6}]}),
+  childWorse:()=>({short:'하린 폐렴',text:'하린이 폐렴 진단을 받았다. 이틀 입원해야 한다.',choices:[{t:'입원시킨다',won:-180000,memo:'입원비',force:1,absent:1,mp:-10,hp:-5}]}),
+  supportPaid:()=>({short:'양육비 지원',text:'아동양육비 지원이 결정됐다. 이번 달 20만 원이 들어왔다.',choices:[{t:'확인',won:200000,memo:'아동양육비',mp:8}]}),
+  supportMiss:()=>({short:'신청 놓침',text:'신청 기간이 지났다. 이번 달 지원은 놓쳤다.',choices:[{t:'확인',mp:-8}]}),
+  alimonyPaid:()=>({short:'양육비 입금',text:'이행관리원 독촉 끝에 밀린 양육비가 들어왔다.',choices:[{t:'확인',won:300000,memo:'양육비',mp:6}]}),
+  laborWin:()=>({short:'주휴수당 지급',text:'노동청 조정으로 밀린 주휴수당이 들어왔다.',choices:[{t:'확인',won:148608,memo:'밀린 주휴수당',set:{juhyu:1},mp:8}]}),
+  shiftCut:()=>({short:'근무 축소',text:'점장이 다음 주부터 근무를 하루 뺐다. "요즘 매출이 안 좋아서."',choices:[{t:'알겠다고 한다',set:{shiftCut:1},mp:-8}]}),
+  vatLate:()=>({short:'가산세',text:'가산세가 붙은 독촉장이 왔다.',choices:[{t:'낸다',won:-202000,memo:'부가세+가산세',force:1,prem:{cat:'가산세',amt:18000}}]}),
+  loanLate:()=>({short:'카드론 연체',text:'카드론 상환이 밀렸다. 연체 이자가 붙고 추심 전화가 오기 시작했다.',choices:[{t:'낸다',won:-70000,memo:'카드론+연체이자',force:1,mp:-8,prem:{cat:'연체이자',amt:8000}}]}),
+  smishLoss:()=>({short:'소액결제 피해',text:'모르는 결제 알림이 연달아 울렸다. 합쳐서 9만 5천 원.',choices:[{t:'카드사에 신고한다',won:-95000,memo:'소액결제 피해',force:1,mp:-8}]}),
+  billLate:(s,d)=>({short:`${d.name} 독촉`,text:`${d.name} 미납이 계속됐다. 독촉 문자와 함께 연체료가 더 붙었다.`,choices:[{t:'낸다',won:-Math.round(d.amt*1.1),memo:`${d.name} 연체납부`,force:1,mp:-10,prem:{cat:'연체료',amt:Math.round(d.amt*.1)}}]}),
+  repayLate:(s,d)=>({short:`${d.name}에게 못 갚음`,text:`${d.name}에게 빌린 돈을 갚기로 한 날이 지났다. 연락하기가 어색해졌다.`,choices:[{t:'…',rel:{[d.rel]:-25},mp:-8}]}),
+  interview:(s,d)=>{
+    const p = interviewP();
+    const night = !s.fired && (todayWork() || wd(s.day)<=2);
+    return {short:`${d.co} 면접`,text:`"${d.co} 1차 면접은 내일 오전 10시입니다." ${night?'오늘 밤도 야간 근무다. 끝나고 바로 가야 한다.':'다행히 근무가 없는 날이다.'}`,
+      choices:[
+        {t:night?'근무 끝나고 바로 면접에 간다':'면접 준비를 하고 간다',h:night?4:3,won:s.flags.suit?-6000:-36000,memo:s.flags.suit?'면접 교통비':'정장 대여·교통비',set:{suit:1},chance:{p,ok:{career:12,add:{pass:1},res:'며칠 뒤 합격 문자가 왔다. 다음 전형으로 간다.'},fail:{mp:-10,career:4,res:'"좋은 결과 있으시길 바랍니다." 그 말의 뜻을 안다.'}}},
+        ...(night?[{t:'점장에게 근무를 바꿔달라고 한다',h:3,won:s.flags.suit?-6000:-36000,memo:s.flags.suit?'면접 교통비':'정장 대여·교통비',set:{suit:1},needRel:{boss:35},rel:{boss:-10},chance:{p:Math.min(.9,p+.15),ok:{career:12,add:{pass:1},res:'푹 자고 간 덕분인지 말이 잘 나왔다. 합격 문자가 왔다.'},fail:{mp:-10,career:4,res:'잘 봤다고 생각했는데 떨어졌다.'}}}]:[]),
+        {t:'이번 면접은 포기한다',mp:-12}]};
+  },
+  docFail:(s,d)=>({short:`${d.co} 서류 탈락`,text:`"${d.co} 서류 전형 결과를 안내드립니다. 아쉽게도…"`,choices:[{t:'확인',mp:-7,career:2}]}),
+  offer:()=>({short:'최종 합격',text:'최종 합격 전화가 왔다. 다음 달 1일 입사. 첫 월급은 다음 달 25일이다.',choices:[{t:'엄마에게 전화한다',mp:25,rel:{mom:10},set:{offer:1}}]}),
+  fired:(s)=>({short:'해고',text: s.char==='grad'?'점장이 근무표를 내밀었다. "다음 주부터는 다른 사람 쓰기로 했어."':'팀장이 불렀다. "계약직은 결근 세 번이면 계약 해지예요. 내일부터 안 나오셔도 돼요. 일한 날만큼은 25일에 정산해 드릴게요."',choices:[{t:'짐을 챙긴다',mp:-18,fire:1}]})
+};
+
+/* ---------------- state ---------------- */
+let s;
+function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null}; }
+
+const CH = () => CHARS[s.char];
+function todayWork(){ return s.sched && s.sched.work; }
+function hasDefer(k){ return s.defer.some(d=>d.key===k); }
+
+/* ---------------- causal nodes ---------------- */
+function node(label, cause, money=0, bad=false){
+  const id = s.nodes.length;
+  s.nodes.push({id, day:s.day, label, cause: (cause===undefined?null:cause), money, bad});
+  return id;
+}
+
+/* ---------------- money ---------------- */
+function tx(memo, amt, prem){
+  if(!amt) return;
+  s.bal += amt;
+  if(amt>0) s.totalIn += amt; else s.totalOut -= amt;
+  s.ledger.push({day:s.day, memo, amt, bal:s.bal, pre:!!prem});
+  if(prem) addPrem(prem.cat, prem.amt);
+  floater((amt>0?'+':'-')+fmt(Math.abs(amt)), amt>0?'plus':'minus');
+  coinBurst(amt);
+}
+function addPrem(cat, amt){ if(!amt) return; s.premium[cat]=(s.premium[cat]||0)+amt; }
+const premTotal = () => Object.values(s.premium).reduce((a,b)=>a+b,0);
+function debtTotal(){ return (s.flags.cardloan?450000:0) + s.defer.filter(d=>d.cost).reduce((x,d)=>x+d.cost,0); }
+
+/* ---------------- time ---------------- */
+function spend(h){
+  if(!h) return 0;
+  const real = h * (s.mp<40 ? 1.25 : 1);
+  s.spent += real;
+  floater('-'+hstr(real), 'time');
+  return real;
+}
+const sleepCut = () => Math.max(0, s.spent - s.free);
+const canSpend = h => (s.spent + h*(s.mp<40?1.25:1)) - s.free <= 4;
+
+/* ---------------- schedule ---------------- */
+function makeSchedule(){
+  const w = wd(s.day), c = s.char;
+  let work=false, blocks, label;
+  if(c==='grad'){
+    const cut = s.flags.shiftCut && w===2;
+    work = !s.fired && w<=2 && !cut;
+    blocks = work ? [['sleep',7],['chore',1],['move',.5],['work',8]] : [['sleep',7],['chore',1.5]];
+    label = work ? '편의점 야간 22:00–06:00' : (s.fired?'일이 없다':'쉬는 날');
+  } else if(c==='mom'){
+    work = !s.fired && w<=4;
+    blocks = work ? [['sleep',7],['chore',3],['move',1],['work',9]] : [['sleep',7],['chore',5]];
+    label = work ? '마트 09:00–18:00 · 하린 등하교·저녁·재우기' : '쉬는 날 · 하린이와 집';
+  } else {
+    if(s.flags.steady && s.day>=s.flags.steadyFrom){
+      work = w<=5;
+      label = work ? '고깃집 주방 10:00–21:00 (월급은 다음 달)' : '쉬는 날';
+      blocks = work ? [['sleep',7],['chore',1],['move',1],['work',11]] : [['sleep',7],['chore',1.5]];
+    } else {
+      const laid = s.day < s.laidUntil;
+      const p = laid ? 0 : (w<=5 ? clamp(.4 + (s.rel.chief-50)/200 + (s.day<s.chiefUntil?.3:0) - (s.hp<35?.25:0),0,.95) : 0);
+      work = Math.random() < p;
+      blocks = work ? [['sleep',7],['chore',1],['move',1.5],['work',9]] : [['sleep',7],['chore',1.5]];
+      label = laid ? '허리 때문에 일을 못 나간다' : work ? '물류센터 배정 05:00–14:00' : (w<=5?'배정 문자가 안 왔다':'쉬는 날');
+    }
+  }
+  if(s.absentNext && work){ s.absentNext=false; s.absentToday=true; work=false; label='결근'; blocks=[['sleep',7],['chore',c==='mom'?5:1.5]]; }
+  else { s.absentNext=false; s.absentToday=false; }
+  const used = blocks.reduce((a,b)=>a+b[1],0);
+  s.sched = {work, blocks, label};
+  s.free = 24 - used;
+}
+
+/* ---------------- day ---------------- */
+function startDay(){
+  s.day++; s.spent=0; s.cooked=false; s.did={}; s.eveLog=[]; s.morning=[]; s.pose='desk';
+  s.rain = Math.random()<.2;
+  makeSchedule();
+  if(s.carry&&s.carry.length){ s.morning.push(...s.carry); s.carry=[]; }
+  const C = CH(), w = wd(s.day);
+  // absence
+  if(s.absentToday && !s.fired && s.char!=='boss'){
+    s.strikes++; s.morning.push(`결근했다. 결근 ${s.strikes}/3`);
+    if(s.char==='mom') s.flags.deduct=(s.flags.deduct||0)+98000;
+    if(s.strikes>=3) s.queue.unshift({id:'fired',day:s.day});
+  }
+  // payday first
+  if(s.char==='mom' && s.day===25){ const base = s.fired ? Math.round(2156880*(s.flags.workDays||0)/22/10)*10 : 2156880; const cut = s.fired ? (s.flags.halfDeduct||0) : (s.flags.deduct||0); const pay=Math.max(0,base-cut); if(pay) tx(s.fired?'급여 정산':'급여', pay); s.morning.push(pay ? `${s.fired?'급여 정산':'월급'} ${fmt(pay)}원 입금${s.fired?` (일한 ${s.flags.workDays||0}일분)`:''}${cut?` · 공제 ${fmt(cut)}원`:''}` : '월급날이지만 들어온 돈이 없다.'); }
+  // work and pay
+  if(s.sched.work){
+    if(s.char==='grad'){ s.pending += MINW*8; s.hp-=6; s.mp-=2; s.morning.push(`야간 근무 · 오늘 몫 ${fmt(MINW*8)}원 (금요일 지급)`); }
+    if(s.char==='mom'){ s.flags.workDays=(s.flags.workDays||0)+1; s.hp-=4; s.mp-=3; tx('교통비', -2900); s.morning.push('마트 근무 · 퇴근 후 하린이 저녁과 숙제'); }
+    if(s.char==='boss'){
+      if(s.flags.steady && s.day>=s.flags.steadyFrom){ s.hp-=6; s.mp-=1; s.pending += 105000; tx('교통비',-2900); s.morning.push(`고깃집 주방 · 오늘 몫 ${fmt(105000)}원 (다음 달 10일 지급)`); }
+      else { s.hp-=8; s.mp-=1; tx('일당 (소개비 10% 공제)', 112500); s.morning.push('물류센터 배정 · 일당 11만 2,500원 (소개비 1만 2,500원 공제)'); }
+    }
+  } else if(s.char==='boss' && !s.flags.steady && w<=5 && s.day>=s.laidUntil){ s.mp-=3; s.morning.push('배정 문자가 오지 않았다. 공치는 날.'); }
+  if(s.fired){ s.mp-=3; }
+  // payday
+  if(s.char==='grad' && w===4 && !s.fired){
+    const juhyu = s.flags.juhyu ? 49536 : 0;
+    if(s.pending+juhyu>0){ tx(juhyu?'주급 (주휴수당 포함)':'주급', s.pending+juhyu); s.morning.push(`주급 ${fmt(s.pending+juhyu)}원 입금`); s.pending=0; }
+  }
+  if(s.char==='grad' && s.fired && s.pending>0){ tx('주급 정산', s.pending); s.pending=0; }
+  // bills
+  billsDue().forEach(b=>{
+    if(b.day!==s.day) return;
+    let amt=b.amt;
+    if(b.key==='loan' && s.flags.loanRelief){ amt=260000; }
+    if(b.key==='tkd' && s.flags.noTkd) return;
+    if(s.bal >= amt){ tx(b.name+' 자동이체', -amt, b.prem?{cat:b.premCat,amt:b.prem}:null); s.morning.push(`${b.name} ${fmt(amt)}원 빠져나감`); }
+    else {
+      const late=Math.round(amt*1.05);
+      const n=node(`${b.name} 미납 (잔고 부족)`, null, 0, true);
+      addDeferRaw({key:'bill_'+b.name,name:`${b.name} 미납분`,left:5,cost:late,h:.1,expire:'billLate',data:{name:b.name,amt},prem:{cat:'연체료',amt:late-amt},bill:true}, n);
+      if(b.key==='loan') s.flags.loanMissed=1;
+      s.morning.push(`${b.name} 자동이체 실패 · 연체료가 붙는다`);
+    }
+  });
+  // clamp
+  s.hp=clamp(s.hp,0,s.hpMax); s.mp=clamp(s.mp);
+  if(s.hp<=0||s.mp<=0) return endGame(s.hp<=0?'collapse':'burnout');
+  nextEventOrFree(true);
+}
+
+function pickEvent(){
+  const due = s.queue.findIndex(q=>q.day<=s.day);
+  if(due>=0){
+    const q=s.queue.splice(due,1)[0];
+    const ev = FOLLOW[q.id](s, q.data||{});
+    return {ev, cause:(q.data&&q.data.cause!=null)?q.data.cause:null};
+  }
+  return null;
+}
+function nextEventOrFree(morning){
+  let pick = pickEvent();
+  if(!pick && morning && Math.random() < .62){
+    const pool = EVENTS.filter(e=>!s.used[e.id] && (!e.chars||e.chars.includes(s.char)) && (!e.when||e.when(s)));
+    if(pool.length){
+      let tot=pool.reduce((a,e)=>a+(e.w||1),0), r=Math.random()*tot, e=pool[0];
+      for(const x of pool){ r-=(x.w||1); if(r<=0){e=x;break;} }
+      s.used[e.id]=1;
+      pick = {ev:{...e, choices:e.choices}, cause:null, id:e.id};
+    }
+  }
+  if(pick){ s.ev = {id:pick.id||null, obj: pick.id?null:pick.ev, cause:pick.cause}; s.phase='event'; }
+  else { s.ev=null; s.phase='free'; }
+  render();
+}
+function curEv(){ if(!s.ev) return null; return s.ev.obj || EVENTS.find(e=>e.id===s.ev.id); }
+
+/* ---------------- choice resolution ---------------- */
+function wonOf(c){ return typeof c.won==='function' ? c.won(s) : (c.won||0); }
+function chanceP(ch){ if(ch.rel) return clamp(s.rel[ch.rel]/100*.92,.05,.92); return ch.p; }
+function choiceState(c){
+  if(c.wise && s.mp<40) return {fog:true};
+  const w=wonOf(c);
+  if(!c.force && w<0 && s.bal < -w) return {dis:'돈이 모자란다'};
+  if(c.need && s.bal < c.need) return {dis:'돈이 모자란다'};
+  if(c.h && !canSpend(c.h)) return {dis:'시간이 없다'};
+  if(c.needRel) for(const k in c.needRel) if((s.rel[k]||0)<c.needRel[k]) return {dis:'부탁할 사이가 아니다'};
+  return {};
+}
+
+function applyFx(fx, cause, label){
+  if(!fx) return {text:''};
+  const w = wonOf(fx);
+  if(w) tx(fx.memo || (w>0?'입금':'출금'), w, fx.prem && w<0 ? fx.prem : null);
+  else if(fx.prem) addPrem(fx.prem.cat, fx.prem.amt);
+  if(fx.h) spend(fx.h);
+  if(fx.hp) s.hp = clamp(s.hp+fx.hp, 0, s.hpMax);
+  if(fx.mp) s.mp = clamp(s.mp+fx.mp);
+  if(fx.rel) for(const k in fx.rel){ if(k in s.rel) s.rel[k]=clamp(s.rel[k]+fx.rel[k]); }
+  if(fx.career) s.career = clamp(s.career+fx.career);
+  if(fx.set) for(const k in fx.set){ s.flags[k]=fx.set[k]; }
+  if(fx.add) for(const k in fx.add){ if(k==='stock') s.stock+=fx.add[k]; else if(k==='pass') s.pass+=fx.add[k]; else s.flags[k]=(s.flags[k]||0)+fx.add[k]; }
+  if(fx.set && fx.set.steady){ s.flags.steadyFrom = s.day+3; }
+  if(fx.set && fx.set.laid){ s.laidUntil = s.day+1+fx.set.laid; }
+  if(fx.absent) s.absentNext = true;
+  if(fx.fire){ s.fired = true; if(s.char==='grad' && s.pending>0){ tx('주급 정산', s.pending); s.pending=0; } }
+  if(fx.lostCall){ if(s.char==='grad') s.career=clamp(s.career-10); if(s.char==='boss') s.rel.chief=clamp(s.rel.chief-10); if(s.char==='mom') s.rel.child=clamp(s.rel.child-8); }
+  const n = node(label, cause, w, (fx.mp||0)<=-8 || (fx.hp||0)<=-10 || w<=-100000);
+  if(fx.defer){ const d = DEF[fx.defer.key]; addDeferRaw({...d, key:fx.defer.key, ...fx.defer}, n); }
+  if(fx.deferRaw) addDeferRaw(fx.deferRaw, n);
+  if(fx.follow && Math.random() < (fx.follow.p??1)) s.queue.push({id:fx.follow.id, day:s.day+fx.follow.in, data:{...(fx.follow.data||{}), cause:n}});
+  return {text:fx.res||'', node:n};
+}
+
+function choose(i){
+  const ev=curEv(), c=ev.choices[i];
+  const st=choiceState(c); if(st.fog||st.dis) return;
+  const label = `${ev.short||'일'} → ${c.t}`;
+  let r = applyFx(c, s.ev.cause, label);
+  let text = r.text, roll=null;
+  if(c.chance){
+    const p = chanceP(c.chance), ok = Math.random() < p;
+    const sub = applyFx(ok?c.chance.ok:c.chance.fail, r.node, ok?'잘 풀림':'안 풀림');
+    text = sub.text || text; roll={p,ok};
+  }
+  if(s.char==='grad' && s.pass>=2 && !s.flags.offerQueued){ s.flags.offerQueued=1; s.queue.push({id:'offer',day:s.day+2,data:{cause:r.node}}); }
+  s.log.push({day:s.day, pick:c.t, ev:ev.short});
+  s.res = {text, note:ev.note||null, roll};
+  s.phase='result';
+  render();
+}
+
+/* ---------------- deferred things ---------------- */
+function addDeferRaw(d, cause){
+  const ex = s.defer.find(x=>x.key===d.key);
+  if(ex){ ex.left=Math.min(ex.left,d.left); return; }
+  s.defer.push({...d, node:cause});
+}
+function handleDefer(key, halfDay){
+  const d = s.defer.find(x=>x.key===key); if(!d) return;
+  if(d.cost && s.bal < d.cost) return;
+  if(!canSpend(d.h)) return;
+  if(halfDay){
+    if(s.char==='mom'){ s.flags.deduct=(s.flags.deduct||0)+49000; s.flags.halfDeduct=(s.flags.halfDeduct||0)+49000; }
+    else if(s.char==='boss' && todayWork() && !(s.flags.steady && s.day>=s.flags.steadyFrom)){ tx('반일 조퇴 공제', -56250); }
+    const rk = s.char==='mom' ? 'boss' : (s.flags.steady && s.day>=s.flags.steadyFrom ? 'kim' : 'chief');
+    if(rk in s.rel) s.rel[rk] = clamp(s.rel[rk]-6);
+    if(s.char==='boss' && s.flags.steady && s.day>=s.flags.steadyFrom){ s.pending = Math.max(0, s.pending-52500); }
+  }
+  if(d.cost) tx(d.name, -d.cost, d.prem||null);
+  spend(d.h);
+  s.defer = s.defer.filter(x=>x!==d);
+  const n = node(`처리: ${d.name}${halfDay?' (반차)':''}`, d.node, -(d.cost||0));
+  if(d.done){ applyFx(d.done, n, `${d.name} 접수됨`); }
+  if(d.repayTo){ s.rel[d.repayTo]=clamp(s.rel[d.repayTo]+5); }
+  s.eveLog.push(`${d.name}을(를) 처리했다.${halfDay?' 반차를 써야 했다.':''}`);
+  s.pose = d.day ? 'out' : 'phone';
+  render();
+}
+function dayBlocked(d){
+  if(!d.day) return false;
+  const w=wd(s.day);
+  if(w>=5) return 'weekend';
+  if(s.char==='grad') return false; // works at night
+  if(s.char==='boss') return todayWork() ? 'work' : false;
+  return todayWork() ? 'work' : false;
+}
+
+/* ---------------- free-time actions ---------------- */
+function actions(){
+  const C=CH(), P=C.people, food=HOUSES[C.house].food, A=[];
+  const bulk = food*7*P, small = Math.round(food*1.7/100)*100*P;
+  if(!s.cooked){
+    if(s.stock>0) A.push({id:'cook',label:P>1?'저녁 해 먹이기':'밥 해 먹기',sub:`장 봐둔 재료 사용 · ${s.stock}일치 남음`,h:P>1?1.2:.8});
+    A.push({id:'bulk',label:'마트에서 일주일치 장보기',sub:`끼니당 ${fmt(food)}원 · 목돈이 있어야 한다`,h:1.5,won:-bulk,wise:true});
+    A.push({id:'small',label:'편의점에서 하루치 장보기',sub:`끼니당 ${fmt(small/P)}원`,h:.3,won:-small});
+  }
+  if(s.char==='grad'){
+    A.push({id:'study',label:'자소서 쓰고 공부하기',sub:s.flags.studyCafe?'스터디카페에서 · 집중이 잘 된다':'고시원 방에서',h:2,wise:true,once:true});
+    A.push({id:'gigG',label:'도보 배달 뛰기',sub:'두 시간 · 건당 수수료',h:2,once:true});
+  }
+  if(s.char==='mom'){
+    A.push({id:'play',label:'하린이랑 놀아주기',sub:'오늘 있었던 일을 듣는다',h:1,once:true});
+    A.push({id:'homework',label:'하린이 숙제 봐주기',sub:'받아쓰기, 수학 익힘책',h:1,once:true});
+    A.push({id:'gigM',label:'재택 부업 (부품 조립)',sub:'두 시간 · 개당 30원',h:2,once:true});
+  }
+  if(s.char==='boss'){
+    A.push({id:'drive',label:'대리운전 나가기',sub:'밤 9시~새벽 1시 · 콜 수는 운',h:4,once:true});
+  }
+  A.push({id:'rest',label:'누워서 쉬기',sub:'한 시간',h:1});
+  return A;
+}
+
+function doAction(id){
+  const C=CH(), P=C.people, food=HOUSES[C.house].food;
+  const a = actions().find(x=>x.id===id); if(!a) return;
+  if(a.once && s.did[id]) return;
+  if(a.wise && s.mp<25) return;
+  if(a.won && s.bal < -a.won) return;
+  if(!canSpend(a.h)) return;
+  s.did[id]=1;
+  const small = Math.round(food*1.7/100)*100*P;
+  let txt='';
+  switch(id){
+    case 'cook': s.stock--; s.cooked=true; s.hp=clamp(s.hp+2,0,s.hpMax); if(P>1) s.rel.child=clamp(s.rel.child+2); txt=P>1?'된장찌개를 끓였다. 하린이가 두 그릇 먹었다.':'밥을 해 먹었다. 오늘 끼니는 해결.'; s.pose='cook'; break;
+    case 'bulk': tx('마트 장보기', -food*7*P); s.stock+=7; txt='일주일치 장을 봤다. 냉장고가 든든하다.'; s.pose='out'; break;
+    case 'small': tx('편의점 장보기', -small, {cat:'소량 장보기',amt:small-food*P}); s.stock+=1; txt='하루치를 샀다. 같은 걸 마트보다 비싸게 샀다.'; s.pose='out'; break;
+    case 'study': { const g = (s.flags.studyCafe?10:7) + (s.hp<40?-3:0); s.career=clamp(s.career+g); s.mp=clamp(s.mp-3); txt=`자소서 두 개를 고쳤다. 취업 준비도 +${g}`; s.pose='study'; break; }
+    case 'gigG': { const e=round100(rint(16000,28000)); tx('도보 배달',e); s.hp=clamp(s.hp-4,0,s.hpMax); txt=`두 시간 동안 ${fmt(e)}원 벌었다.`; s.pose='out'; break; }
+    case 'play': s.rel.child=clamp(s.rel.child+8); s.mp=clamp(s.mp+3); txt='하린이가 학교에서 짝꿍이랑 싸운 얘기를 했다. 끝까지 들어줬다.'; s.pose='desk'; break;
+    case 'homework': s.rel.child=clamp(s.rel.child+4); s.flags.hw=(s.flags.hw||0)+1; s.mp=clamp(s.mp-1); txt='받아쓰기 틀린 걸 같이 고쳤다.'; s.pose='study'; break;
+    case 'gigM': { tx('부업 (부품 조립)',12000); s.hp=clamp(s.hp-2,0,s.hpMax); s.mp=clamp(s.mp-2); txt='400개를 조립해서 1만 2천 원.'; s.pose='desk'; break; }
+    case 'drive': {
+      const calls=rint(1,3); let e=0; for(let k=0;k<calls;k++) e+=rint(13,28)*1000;
+      e -= 3000; tx(`대리운전 ${calls}콜 (보험료 공제)`, e); s.hp=clamp(s.hp-10,0,s.hpMax); s.mp=clamp(s.mp-3);
+      txt=`콜 ${calls}개. ${fmt(e)}원 벌었다.`;
+      if(Math.random()<.2){ s.mp=clamp(s.mp-6); tx('요금 깎아줌',-10000); txt+=' 취한 손님이 요금이 비싸다며 끝까지 버텨서 만 원을 깎아줬다.'; }
+      s.pose='out'; break; }
+    case 'rest': s.hp=clamp(s.hp+3,0,s.hpMax); s.mp=clamp(s.mp+4); txt='한 시간 누워 있었다.'; s.pose='rest'; s.did.rest=0; break;
+  }
+  spend(a.h);
+  s.eveLog.push(txt);
+  render();
+}
+
+/* relationships */
+function careRel(key){
+  if(s.relLast[key]===s.day || !canSpend(.5)) return;
+  s.relLast[key]=s.day; spend(.5);
+  s.rel[key]=clamp(s.rel[key]+5); s.mp=clamp(s.mp+1);
+  const r=CH().rels.find(x=>x.key===key);
+  s.eveLog.push(`${r.name}에게 연락했다.`); s.pose='phone';
+  render();
+}
+function askRel(key){
+  const r=CH().rels.find(x=>x.key===key); if(!r||!r.ask) return;
+  if(s.asked[key] && s.day - s.asked[key] < 5) return;
+  if(r.ask.type==='money' && hasDefer('repay_'+key)) return;
+  if(r.ask.type==='lead' && (s.flags.steady || s.queue.some(q=>q.id==='kimLeadF'))) return;
+  if(!canSpend(.3)) return;
+  s.asked[key]=s.day; spend(.3);
+  const p = clamp(s.rel[key]/100*.92,.05,.92), ok=Math.random()<p;
+  const prideMp = r.ask.pride ? -10 : 0;
+  const n = node(`${r.name}에게 부탁: ${r.ask.label}`, null);
+  let t;
+  if(ok){
+    s.rel[key]=clamp(s.rel[key]-12); s.mp=clamp(s.mp-4+prideMp);
+    switch(r.ask.type){
+      case 'money': tx(`${r.name}에게 빌림`, r.ask.amt); addDeferRaw({key:'repay_'+key,name:`${r.name}에게 갚기`,left:10,cost:r.ask.amt,h:.1,expire:'repayLate',data:{name:r.name,rel:key},repayTo:key}, n); t=`${r.name}이(가) ${fmt(r.ask.amt)}원을 보내줬다. 열흘 안에 갚아야 한다.`; break;
+      case 'shift': s.flags.shiftToken=1; t=`${r.name}이(가) 한 번은 바꿔주겠다고 했다. 다음 결근 한 번은 기록되지 않는다.`; break;
+      case 'care': s.flags.careToken=1; t=`${r.name}이(가) 하린이를 봐주겠다고 했다. 급할 때 한 번 맡길 수 있다.`; break;
+      case 'rentDelay': s.flags.rentDelay=1; t=`${r.name}이(가) 이번 달 월세를 일주일 미뤄주겠다고 했다.`; break;
+      case 'lead': s.queue.push({id:'kimLeadF',day:s.day+1,data:{cause:n}}); t='김사장이 "알아보고 연락 줄게"라고 했다.'; break;
+      case 'chief': s.chiefUntil=s.day+5; t='반장이 며칠은 먼저 불러주겠다고 했다.'; break;
+    }
+  } else {
+    s.rel[key]=clamp(s.rel[key]-6); s.mp=clamp(s.mp-8+prideMp);
+    t=`${r.name}은(는) 곤란하다고 했다. 말을 꺼낸 게 후회됐다.`;
+    s.nodes[n].bad=true;
+  }
+  s.eveLog.push(t); s.pose='phone';
+  render();
+}
+FOLLOW.kimLeadF = ()=>({short:'주방 자리 제안',text:'김사장이 전화했다. "우리 가게 주방에 자리 하나 났어. 월급은 다음 달 10일부터야."',note:'안정된 일자리일수록 첫 월급까지 버틸 여윳돈이 필요하다.',choices:[{t:'받는다',set:{steady:1},res:'사흘 뒤부터 매일 출근이다. 대신 이번 달 안에는 월급이 안 들어온다.'},{t:'당장 일당이 급하다'}]});
+
+/* cash advance */
+function cashAdvance(){
+  if(s.flags.cashUsed || s.flags.cardStop) return;
+  const amt=CH().cash; s.flags.cashUsed=1;
+  const n=node('카드 현금서비스', null, amt);
+  tx('현금서비스', amt);
+  addDeferRaw({key:'cash',name:'현금서비스 결제',left:8,cost:Math.round(amt*1.065),h:.1,expire:'billLate',data:{name:'현금서비스',amt:Math.round(amt*1.065)},prem:{cat:'현금서비스 수수료',amt:Math.round(amt*.065)}}, n);
+  s.eveLog.push(`현금서비스 ${fmt(amt)}원. 8일 뒤 수수료까지 갚아야 한다.`);
+  render();
+}
+
+/* ---------------- night ---------------- */
+let busy=false;
+async function sleep(){
+  if(busy) return;
+  if(s.bal<0 && !s.flags.giveUp){ s.flags.warnNeg=1; render(); return; }
+  busy=true;
+  const C=CH(), P=C.people, H=HOUSES[C.house];
+  // meal
+  if(!s.cooked){
+    const conv = 8500*P;
+    if(s.bal >= conv){ tx(P>1?'편의점 저녁 2인':'편의점 저녁', -conv, {cat:'편의점 끼니',amt:conv-H.food*P}); }
+    else { s.hp=clamp(s.hp-8,0,s.hpMax); s.mp=clamp(s.mp-5); if(P>1) s.rel.child=clamp(s.rel.child-8); s.eveLog.push('저녁을 굶었다.'); }
+  }
+  if(s.bal<0) { busy=false; return endGame('broke'); }
+  // sleep
+  const cut = sleepCut();
+  let dh = 6 + H.hp - cut*4 + (s.flags.blanket?1:0) + (s.flags.earplug&&s.char==='grad'?1:0);
+  let dm = 2 + H.mp - cut*2;
+  if(s.char==='mom'){ if(!s.did.play && !s.did.homework) s.rel.child=clamp(s.rel.child-2); if(s.rel.child<40) dm-=2; if(s.flags.noTkd && todayWork()) dm-=1; }
+  if(s.fired) dm-=1;
+  s.hp=clamp(s.hp+dh,0,s.hpMax); s.mp=clamp(s.mp+dm);
+  if(cut>0) s.eveLog.push(`잠을 ${hstr(cut)} 줄였다.`);
+  // relationships drift
+  for(const k in s.rel){ if(k==='child') continue; if(s.relLast[k]!==s.day && s.day%3===0) s.rel[k]=clamp(s.rel[k]-1); }
+  // deferred timers
+  s.defer.forEach(d=>d.left--);
+  const exp = s.defer.filter(d=>d.left<=0);
+  s.defer = s.defer.filter(d=>d.left>0);
+  exp.forEach(d=>{ if(d.expire){ s.queue.push({id:d.expire, day:s.day+1, data:{...(d.data||{}), cause:d.node}}); } else { (s.carry=s.carry||[]).push(`${d.name} 기한을 놓쳤다.`); node(`${d.name} 기한 놓침`, d.node, 0, true); } });
+  // shift token cancels a strike
+  if(s.flags.shiftToken && s.absentNext){ s.flags.shiftToken=0; s.absentNext=false; s.eveLog.push('근무를 바꿔둔 덕에 결근 처리는 안 된다.'); }
+  if(s.flags.careToken && s.absentNext && s.char==='mom'){ s.flags.careToken=0; s.absentNext=false; }
+  if(s.hp<=0){ busy=false; return endGame('collapse'); }
+  if(s.mp<=0){ busy=false; return endGame('burnout'); }
+  if(s.day>=30){ busy=false; return endGame('survived'); }
+  await nightTransition();
+  busy=false;
+  startDay();
+}
+function giveUp(){ s.flags.giveUp=1; sleep(); }
+
+function endGame(type){ s.endType=type; s.phase='end'; s.ev=null; render(); }
+
+/* ---------------- bills view ---------------- */
+function billsDue(){ return CH().bills; }
+function upcoming(){
+  const list = billsDue().filter(b=>b.day>s.day && !(b.key==='tkd'&&s.flags.noTkd)).map(b=>({day:b.day,name:b.name,amt:(b.key==='loan'&&s.flags.loanRelief)?260000:b.amt}));
+  list.push({day:31,name:`월세 (${CH().rentWho})`,amt:CH().rent});
+  return list;
+}
+
+/* ---------------- render ---------------- */
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function tagsHtml(w,h){
+  let t='';
+  if(w) t+=`<span class="tag ${w>0?'plus':'minus'}">${w>0?'+':'-'}${fmt(Math.abs(w))}</span>`;
+  if(h) t+=`<span class="tag h">${hstr(h)}</span>`;
+  return t?`<span class="tags">${t}</span>`:'';
+}
+function cellsHtml(v, cls, max=100){ const on=Math.ceil(v/max*10); return `<div class="cells ${cls} ${v<30?'low':''}" aria-label="${Math.round(v)}/${max}">${Array.from({length:10},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div>`; }
+function mindText(){
+  if(s.mp>=60) return '머릿속: <b>맑음</b>';
+  if(s.mp>=40) return '머릿속: <b>지침</b> · 아직은 판단이 선다';
+  if(s.mp>=25) return '머릿속: <b>흐릿함</b> · 좋은 선택지가 잘 안 떠오르고, 모든 일이 더 오래 걸린다';
+  return '머릿속: <b>바닥</b> · 장기적인 일은 엄두가 안 난다';
+}
+
+function render(){
+  const playing = s.char && s.phase!=='title' && s.phase!=='pick';
+  $('side').hidden = !playing;
+  $('clock').hidden = !(playing && (s.phase==='free'||s.phase==='event'||s.phase==='result'));
+  $('dday').innerHTML = s.phase==='end' ? '월세날 <b>D-DAY</b>' : `월세날 <b>D-${s.day?31-s.day:30}</b>`;
+  if(playing){
+    $('hudDay').textContent = `DAY ${s.day} (${WEEK[wd(Math.max(1,s.day))]})`;
+    $('hudBal').textContent = fmt(s.bal); $('hudBal').classList.toggle('neg', s.bal<0);
+    $('whoLabel').textContent = `${CH().name} · ${CH().age}세`;
+    $('bal').innerHTML = `${fmt(s.bal)}<small>원</small>`; $('bal').classList.toggle('neg', s.bal<0);
+    $('hpCells').outerHTML = cellsHtml(s.hp,'hp',100).replace('class="cells','id="hpCells" class="cells');
+    $('mpCells').outerHTML = cellsHtml(s.mp,'mp',100).replace('class="cells','id="mpCells" class="cells');
+    $('hpV').textContent=Math.round(s.hp); $('mpV').textContent=Math.round(s.mp);
+    $('mind').innerHTML = mindText();
+    renderClock(); renderDefer(); renderPeople(); renderBills(); renderLedger();
+    $('premium').textContent = fmt(premTotal())+'원';
+  } else { $('hudDay').textContent='-'; $('hudBal').textContent=''; }
+  renderCard();
+}
+
+function renderClock(){
+  if(!s.sched) return;
+  $('clockLabel').innerHTML = `DAY ${s.day} · ${WEEK[wd(s.day)]}요일 · ${esc(s.sched.label)}`;
+  const left = s.free - s.spent;
+  $('clockFree').textContent = left>=0 ? hstr(left) : `없음 (잠 ${hstr(-left)} 깎임)`;
+  const cells=[]; const push=(c,h)=>{ for(let i=0;i<Math.round(h*2);i++) cells.push(c); };
+  const cut = sleepCut();
+  s.sched.blocks.forEach(([k,h])=>{ if(k==='sleep'){ push('var(--t-sleep)', Math.max(0,h-cut)); push('var(--t-cut)', Math.min(h,cut)); } else push(`var(--t-${k})`, h); });
+  push('var(--t-used)', Math.min(s.spent, s.free));
+  push('var(--t-free)', Math.max(0, s.free - s.spent));
+  while(cells.length<48) cells.push('var(--t-free)'); cells.length=48;
+  $('strip').innerHTML = cells.map(c=>`<i style="background:${c}"></i>`).join('');
+}
+function renderDefer(){
+  if(!s.defer.length){ $('deferList').innerHTML='<p class="empty">지금은 없다.</p>'; return; }
+  $('deferList').innerHTML = s.defer.map(d=>`<div class="${d.left<=2?'hot':''}"><span>${esc(d.name)}${d.cost?` · ${fmt(d.cost)}원`:''}${d.day?' · 평일 낮':''}</span><span class="d">D-${d.left}</span></div>`).join('');
+}
+function renderPeople(){
+  $('people').innerHTML = CH().rels.map(r=>`<div class="person"><span>${esc(r.name)}<small>${esc(r.sub)}</small></span>${cellsHtml(s.rel[r.key],'rel')}<span class="v" style="font-family:var(--f-num);font-size:12px;text-align:right;color:var(--muted)">${Math.round(s.rel[r.key])}</span></div>`).join('');
+}
+function renderBills(){
+  $('bills').innerHTML = upcoming().slice(0,5).map(b=>`<div><span>${b.day}일 · ${esc(b.name)}</span><span class="n">${fmt(b.amt)}</span></div>`).join('');
+}
+function renderLedger(){
+  const rows=s.ledger; $('pbCount').textContent=rows.length+'건';
+  if(!rows.length){ $('ledger').innerHTML=`<tr class="none"><td colspan="5">이월 잔액 ${fmt(CH().bal)}원</td></tr>`; return; }
+  $('ledger').innerHTML = rows.map(r=>`<tr class="${r.pre?'pre':''}"><td class="n">${String(r.day).padStart(2,'0')}일</td><td>${esc(r.memo)}</td><td class="n out">${r.amt<0?fmt(-r.amt):''}</td><td class="n in">${r.amt>0?fmt(r.amt):''}</td><td class="n">${fmt(r.bal)}</td></tr>`).join('');
+  const box=$('ledgerBox'); box.scrollTop=box.scrollHeight;
+}
+
+function renderCard(){
+  const c=$('card');
+  if(s.phase==='title'){
+    c.innerHTML=`<div class="eyebrow">11월 · 서울</div>
+      <h2>월세날까지 30일. 돈만 모자란 게 아니다.</h2>
+      <p>시간이 모자라면 돈으로 사야 하고, 돈이 모자라면 시간과 몸으로 메워야 한다. 미룬 일은 커져서 돌아오고, 부탁할 사람은 쓸수록 줄어든다. 지치면 좋은 선택지가 아예 떠오르지 않는다.</p>
+      <p class="memo"><b>규칙</b>잔고가 바닥난 채 잠들거나, 체력이나 멘탈이 0이 되면 끝. 선택지에는 드는 돈과 시간만 보인다.</p>
+      <button class="primary" type="button" id="startBtn">누구의 30일을 살지 고르기</button>`;
+    $('startBtn').onclick=()=>{s.phase='pick';render();};
+    return;
+  }
+  if(s.phase==='pick'){
+    c.innerHTML=`<div class="eyebrow">세 사람의 11월</div><h2>누구의 30일을 살아볼까.</h2>
+      <div class="who">${Object.entries(CHARS).map(([k,ch])=>`<button type="button" id="pick-${k}" data-k="${k}"><b>${ch.name} · ${ch.age}세</b><small>${ch.title}</small><small>${esc(ch.bio)}</small><span class="goal">목표: ${esc(ch.goal)}</span><small>시작 잔고 ${fmt(ch.bal)}원 · 부족한 것: ${ch.scarcity}</small></button>`).join('')}</div>`;
+    c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>startAs(b.dataset.k));
+    return;
+  }
+  if(s.phase==='event'){
+    const ev=curEv();
+    c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 ${s.ev.obj?'<span class="chip">이어지는 일</span>':''}</div>
+      ${s.morning.length?`<ul class="log">${s.morning.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
+      <p class="ev-text">${esc(ev.text)}</p>
+      <div class="choices">${ev.choices.map((ch,i)=>{const st=choiceState(ch);
+        if(st.fog) return `<button class="choice fog" type="button" disabled aria-label="떠오르지 않는 선택지"><span>지금은 떠오르지 않는다</span></button>`;
+        return `<button class="choice" type="button" id="choice-${i}" data-i="${i}" ${st.dis?'disabled':''}><span>${esc(ch.t)}${st.dis?`<span class="sub">${st.dis}</span>`:ch.chance?`<span class="sub">결과는 해봐야 안다</span>`:''}</span>${tagsHtml(wonOf(ch),ch.h)}</button>`;}).join('')}</div>
+      ${s.mp<40&&ev.choices.some(x=>x.wise)?'<p class="memo warn"><b>머리가 멍하다</b>지쳐서 떠오르지 않는 선택지가 있다.</p>':''}`;
+    c.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+    return;
+  }
+  if(s.phase==='result'){
+    const r=s.res;
+    c.innerHTML=`<div class="eyebrow">DAY ${s.day}</div>
+      <p class="result">${esc(r.text||'그렇게 넘어갔다.')}</p>
+      ${r.roll?`<p class="memo"><b>${r.roll.ok?'잘 풀렸다':'안 풀렸다'}</b>될 가능성은 ${Math.round(r.roll.p*100)}% 정도였다.</p>`:''}
+      ${r.note?`<p class="memo"><b>현실 메모</b>${esc(r.note)}</p>`:''}
+      <button class="primary" type="button" id="nextBtn">계속</button>`;
+    $('nextBtn').onclick=()=>{ s.res=null; nextEventOrFree(false); };
+    return;
+  }
+  if(s.phase==='free') return renderFree(c);
+  if(s.phase==='end') return renderEnd(c);
+}
+
+function renderFree(c){
+  const left=s.free-s.spent;
+  const acts=actions().map(a=>{
+    let dis=''; if(a.once&&s.did[a.id]) dis='오늘은 했다'; else if(a.wise&&s.mp<25) dis='엄두가 안 난다'; else if(a.won&&s.bal< -a.won) dis='목돈이 없다'; else if(!canSpend(a.h)) dis='시간이 없다';
+    return `<button class="choice" type="button" id="act-${a.id}" data-a="${a.id}" ${dis?'disabled':''}><span>${esc(a.label)}<span class="sub">${dis||esc(a.sub)}</span></span>${tagsHtml(a.won,a.h)}</button>`;}).join('');
+  const defers=s.defer.map(d=>{
+    const blk=dayBlocked(d); let dis=''; if(d.cost&&s.bal<d.cost) dis='돈이 모자란다'; else if(!canSpend(d.h)) dis='시간이 없다';
+    if(blk==='weekend') dis='주말엔 문을 안 연다';
+    const main = blk==='work' ? '' : `<button class="choice" type="button" id="def-${d.key}" data-d="${d.key}" ${dis?'disabled':''}><span>처리: ${esc(d.name)}<span class="sub">${dis||`D-${d.left}`}</span></span>${tagsHtml(-d.cost,d.h)}</button>`;
+    const half = blk==='work' ? `<button class="choice" type="button" id="defh-${d.key}" data-dh="${d.key}" ${dis?'disabled':''}><span>반차 쓰고 처리: ${esc(d.name)}<span class="sub">${dis||`평일 낮에만 된다 · ${s.char==='mom'?'급여 4만 9천 원 공제 · 팀장 눈치':(s.flags.steady&&s.day>=s.flags.steadyFrom)?'월급에서 5만 2,500원 공제 · 김사장 눈치':'일당 절반 반납 · 반장 눈치'}`}</span></span>${tagsHtml(-d.cost,d.h)}</button>` : '';
+    return main+half;}).join('');
+  const people=CH().rels.map(r=>{
+    const done=s.relLast[r.key]===s.day, owe=r.ask&&r.ask.type==='money'&&hasDefer('repay_'+r.key), noLead=r.ask&&r.ask.type==='lead'&&(s.flags.steady||s.queue.some(q=>q.id==='kimLeadF')), cd=r.ask&&((s.asked[r.key]&&s.day-s.asked[r.key]<5)||owe||noLead);
+    const care = r.child ? '' : `<button class="mini" type="button" id="care-${r.key}" data-c="${r.key}" ${done||!canSpend(.5)?'disabled':''}>${done?'연락함':'연락 30분'}</button>`;
+    const ask = r.ask ? `<button class="mini ask" type="button" id="ask-${r.key}" data-k="${r.key}" ${cd||!canSpend(.3)?'disabled':''} title="${esc(r.ask.label)}">${owe?'빌린 돈을 아직 못 갚았다':noLead?'이미 자리를 얻었다':cd?'얼마 전 부탁함':'부탁: '+esc(r.ask.label)}${r.ask.amt?` (+${fmt(r.ask.amt)})`:''}</button>` : '';
+    if(!care && !ask) return '';
+    return `<div class="prow"><span>${esc(r.name)}<small>${r.ask&&r.ask.pride?'부탁하면 체면이 크게 상한다':'들어줄지는 사이에 달렸다'}</small></span><span class="pbtn">${care}${ask}</span></div>`;}).join('');
+  const cashOk = !s.flags.cashUsed && !s.flags.cardStop;
+  c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 · 자유 시간 ${left>=0?hstr(left)+' 남음':'없음'}</div>
+    ${s.morning.length&&!s.eveLog.length?`<ul class="log">${s.morning.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
+    ${s.eveLog.length?`<ul class="log">${s.eveLog.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
+    ${s.bal<0?`<p class="memo warn"><b>잔고 ${fmt(s.bal)}원</b>이대로 잠들면 끝이다. 부탁하거나 현금서비스를 써야 한다.</p>`:''}
+    ${!s.cooked?`<p class="memo"><b>저녁</b>${s.stock>0?'장 봐둔 재료가 있다.':'집에 먹을 게 없다.'} 해 먹지 않으면 자기 전에 편의점에서 ${fmt(8500*CH().people)}원을 쓴다.</p>`:''}
+    <h3>오늘 할 일</h3><div class="choices">${acts}</div>
+    ${defers?`<h3>미룬 일</h3><div class="choices">${defers}</div>`:''}
+    <h3>사람들</h3><div class="plist">${people}</div>
+    <h3>급할 때</h3><div class="choices"><button class="choice" type="button" id="cashBtn" ${cashOk?'':'disabled'}><span>카드 현금서비스<span class="sub">${cashOk?'8일 뒤 수수료 6.5%까지 갚는다':'이번 달은 더 못 쓴다'}</span></span>${tagsHtml(CH().cash,0)}</button></div>
+    <div class="row"><button class="primary" type="button" id="sleepBtn">불 끄고 잔다</button>${s.bal<0&&s.flags.warnNeg?'<button class="ghost" type="button" id="giveUpBtn">그래도 잔다 (여기서 끝)</button>':''}</div>`;
+  c.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>doAction(b.dataset.a));
+  c.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>handleDefer(b.dataset.d,false));
+  c.querySelectorAll('[data-dh]').forEach(b=>b.onclick=()=>handleDefer(b.dataset.dh,true));
+  c.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>careRel(b.dataset.c));
+  c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>askRel(b.dataset.k));
+  $('cashBtn').onclick=cashAdvance;
+  $('sleepBtn').onclick=sleep;
+  if($('giveUpBtn')) $('giveUpBtn').onclick=giveUp;
+}
+
+function chains(){
+  const kids={}; s.nodes.forEach(n=>{ if(n.cause!=null){ (kids[n.cause]=kids[n.cause]||[]).push(n.id); } });
+  const roots = s.nodes.filter(n=>n.cause==null && kids[n.id]);
+  const out=[];
+  const walk=(id,path)=>{ const p=[...path,id]; if(!kids[id]) { out.push(p); return; } kids[id].forEach(k=>walk(k,p)); };
+  roots.forEach(r=>walk(r.id,[]));
+  return out.filter(p=>p.length>=2).sort((a,b)=>b.length-a.length || Math.abs(sumMoney(b))-Math.abs(sumMoney(a))).slice(0,4);
+}
+const sumMoney = p => p.reduce((a,id)=>a+s.nodes[id].money,0);
+
+function renderEnd(c){
+  const C=CH();
+  let head, body;
+  const rentOk = s.bal>=C.rent || (s.flags.rentDelay && s.bal>=C.rent*.5);
+  if(s.endType==='survived'){
+    head='30일을 버텼다.';
+    body = s.bal>=C.rent ? `내일 아침 월세 ${fmt(C.rent)}원을 보낼 수 있다. 보내고 나면 ${fmt(s.bal-C.rent)}원이 남는다.`
+      : rentOk ? `월세 ${fmt(C.rent)}원 중 ${fmt(C.rent-s.bal)}원이 모자라지만, ${C.rentWho}이(가) 일주일 미뤄주기로 했다.`
+      : `내일 아침 월세 ${fmt(C.rent)}원 중 ${fmt(C.rent-s.bal)}원이 모자란다. ${C.rentWho}에게 보낼 문자를 몇 번이고 고쳐 쓴다.`;
+  } else if(s.endType==='broke'){ head=`${s.day}일째, 잔고가 바닥난 채 잠들었다.`; body='다음 날 아침, 자동이체 실패 문자가 줄줄이 와 있었다.'; }
+  else if(s.endType==='collapse'){ head=`${s.day}일째, 쓰러졌다.`; body='깨어보니 응급실이었다. 진료비 영수증이 먼저 눈에 들어왔다.'; }
+  else { head=`${s.day}일째, 더는 버틸 수 없었다.`; body='알람을 끄고 다시 누웠다. 휴대폰을 뒤집어 놓고 아무 연락도 받지 않았다.'; }
+  const goal = s.char==='grad' ? (s.flags.offer?'최종 합격. 다음 달부터 출근한다.':`최종 합격은 아직이다. 면접 통과 ${s.pass}번.`)
+    : s.char==='mom' ? (s.rel.child>=50?`하린이는 아직 엄마 품에서 웃는다. (마음 ${Math.round(s.rel.child)})`:`하린이가 말수가 줄었다. (마음 ${Math.round(s.rel.child)})`)
+    : (s.flags.loanMissed?'대출 상환을 한 번 놓쳤다. 신용점수가 떨어졌다.':'대출은 한 번도 밀리지 않았다.') + (s.flags.steady?` 다음 달 10일에 첫 월급 ${fmt(s.pending)}원이 들어온다.`:'');
+  const ch = chains();
+  const prem = Object.entries(s.premium).sort((a,b)=>b[1]-a[1]);
+  const shareText = `월세날까지 | ${C.name}(${C.age}) ${C.title}\n${head} 잔고 ${fmt(s.bal)}원${debtTotal()?` · 남은 빚 ${fmt(debtTotal())}원`:''}\n가난해서 더 낸 돈 ${fmt(premTotal())}원\n${goal}`;
+  c.innerHTML=`<div class="eyebrow">${C.name} · ${C.title}</div>
+    <h2>${esc(head)}</h2><p>${esc(body)}</p><p class="memo"><b>목표</b>${esc(goal)}</p>
+    <div class="endstats">
+      <div>버틴 날<b>${s.day}일</b></div>
+      <div>번 돈<b class="tag plus">${fmt(s.totalIn)}</b></div>
+      <div>쓴 돈<b class="tag minus">${fmt(s.totalOut)}</b></div>
+      <div>가난해서 더 낸 돈<b class="tag minus">${fmt(premTotal())}</b></div>
+      <div>다음 달로 넘어가는 빚<b class="tag minus">${fmt(debtTotal())}</b></div>
+    </div>
+    ${prem.length?`<h3>더 낸 돈은 어디서 생겼나</h3><div class="prem-list">${prem.map(([k,v])=>`<div><span>${esc(k)}</span><span class="n">${fmt(v)}원</span></div>`).join('')}</div>`:''}
+    <h3>선택은 이렇게 이어졌다</h3>
+    ${ch.length?`<div class="chains">${ch.map(p=>`<div class="chain">${p.map((id,i)=>{const n=s.nodes[id];return `${i?'<span class="arrow">→</span>':''}<div class="node ${n.bad?'bad':''}"><span class="d">${n.day}일</span><span>${esc(n.label)}</span>${n.money?`<span class="m ${n.money>0?'tag plus':'tag minus'}">${n.money>0?'+':'-'}${fmt(Math.abs(n.money))}</span>`:''}</div>`;}).join('')}</div>`).join('')}</div>`:'<p class="empty">이번 판은 크게 이어진 일이 없었다.</p>'}
+    <textarea id="copyArea" readonly hidden>${esc(shareText)}</textarea>
+    <div class="row"><button class="primary" type="button" id="againBtn">다른 사람으로 다시</button><button class="ghost" type="button" id="copyBtn">결과 복사</button></div>`;
+  $('againBtn').onclick=()=>{ s=fresh(); s.phase='pick'; render(); };
+  $('copyBtn').onclick=()=>{ const ta=$('copyArea'); const fb=()=>{ta.hidden=false;ta.focus();ta.select();$('copyBtn').textContent='위 글을 길게 눌러 복사하세요';}; try{navigator.clipboard.writeText(shareText).then(()=>{$('copyBtn').textContent='복사했어요';},fb);}catch(e){fb();} };
+}
+
+function startAs(k){
+  const C=CHARS[k];
+  s=fresh(); s.char=k; s.bal=C.bal; s.hp=C.hp; s.hpMax=k==='boss'?85:100; s.mp=C.mp;
+  C.rels.forEach(r=>s.rel[r.key]=r.v);
+  s.stock = k==='mom'?2:1;
+  if(k==='grad'){ const cos=['한빛물산','세움로지스','다온식품']; [6,13,21].forEach((d,i)=>s.queue.push({id:'docCheck',day:d+rint(0,1),data:{co:cos[i]}})); }
+  startDay();
+}
+FOLLOW.docCheck = (s,d) => {
+  const p = clamp(.35 + s.career/90, .1, .92);
+  if(Math.random()<p) return FOLLOW.interview(s,d);
+  return FOLLOW.docFail(s,d);
+};
+function interviewP(){ return clamp(.3 + s.career/130 + (s.hp-50)/250 + (s.mp-50)/250, .05, .85); }
+
+/* ---------------- floaters ---------------- */
+function floater(text, cls){
+  const f=document.createElement('div'); f.className='floater '+cls; f.textContent=text;
+  f.style.left=(46+Math.random()*18)+'%'; f.style.top=(36+Math.random()*12)+'%';
+  $('floaters').appendChild(f); setTimeout(()=>f.remove(),1500);
+}
+
+/* ---------------- pixel scene ---------------- */
+const cv=$('scene'), cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false;
+const W=160,H=90;
+function px(x,y,w,h,c){cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),w,h);}
+function sprite(rows,x,y,pal){for(let j=0;j<rows.length;j++){const r=rows[j];for(let i=0;i<r.length;i++){const k=r[i];if(k!=='.'&&pal[k])px(x+i,y+j,1,1,pal[k]);}}}
+function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;return'#'+((1<<24)|(Math.round(r*f)<<16)|(Math.round(g*f)<<8)|Math.round(b*f)).toString(16).slice(1);}
+const CHAR=["...hhhhhh...","..hhhhhhhh..",".hhhhhhhhhh.",".hhsssssshh.",".hssssssssh.","..sesssses..","..ssssssss..","...ssmmss...","....ssss....","..tttttttt..",".tttttttttt.","tttdttttdttt","tttdttttdttt"];
+const KID=["..hhh..","hhhhhhh","hsssssh",".sesess",".sssss.","..sms..",".ppppp.","ppppppp","ppppppp"];
+const DIG={0:['111','101','101','101','111'],1:['010','110','010','010','111'],2:['111','001','111','100','111'],3:['111','001','111','001','111'],4:['101','101','111','001','001'],5:['111','100','111','001','111'],6:['111','100','111','101','111'],7:['111','001','010','010','010'],8:['111','101','111','101','111'],9:['111','101','111','001','111']};
+function digits(n,x,y,c,sc){String(n).split('').forEach((d,k)=>{DIG[d].forEach((row,j)=>{for(let i=0;i<3;i++)if(row[i]==='1')px(x+k*(3*sc+1)+i*sc,y+j*sc,sc,sc,c);});});}
+const city=[];(function(){let x=0,seed=7;const r=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};while(x<44){const w=5+Math.floor(r()*5),h=8+Math.floor(r()*16);const lit=[];for(let yy=2;yy<h-1;yy+=3)for(let xx=1;xx<w-1;xx+=2)lit.push({x:xx,y:yy,on:r()<.4});city.push({x,w,h,lit});x+=w+1;}})();
+const drops=Array.from({length:24},()=>({x:Math.random()*44,y:Math.random()*30}));
+let coins=[],tick=0,night=0,nightTarget=0,sleeping=false,zz=[];
+function coinBurst(amt){const n=Math.min(10,2+Math.floor(Math.abs(amt)/40000));for(let i=0;i<n;i++){if(amt>0)coins.push({x:60+Math.random()*50,y:-4-Math.random()*20,vx:0,vy:.7+Math.random()*.4,life:90,stop:57});else coins.push({x:84+Math.random()*6,y:52,vx:(Math.random()-.5)*1.4,vy:-.8-Math.random()*.6,life:60,stop:null});}}
+function skyBands(){
+  const t = s && s.free ? clamp(s.spent/s.free,0,1) : 0;
+  const dusk=['#262553','#352d63','#4b3770','#6b4174','#91506f','#b9636a'], late=['#0f1028','#14163a','#1a1c46','#211f4c','#2a2350','#33284f'];
+  return dusk.map((c,i)=>t>.6?late[i]:c);
+}
+function drawRain(x,y,w,h){drops.forEach(d=>{d.y+=2.2;d.x-=.4;if(d.y>h){d.y=-2;d.x=Math.random()*w+6;}px(x+d.x,y+d.y,1,3,'#9fb3d9');});}
+function drawRoom(){
+  const house = s.char ? CH().house : 'oneroom';
+  const wall=house==='gosi'?'#4c4458':house==='banjiha'?'#47524b':'#55586e';
+  px(0,0,W,H,wall); for(let x=0;x<W;x+=8) px(x,0,1,70,shade(wall,.9));
+  if(house==='gosi'){
+    const wd2=shade(wall,.75); px(0,0,26,70,wd2); px(134,0,26,70,wd2);
+    px(108,12,20,24,'#e8dcc0'); px(110,14,16,13,'#7fb0d8'); px(110,22,16,5,'#4f8a4f'); px(113,16,4,4,'#ffd166');
+    px(80,0,1,8,'#222'); px(78,8,5,4,(tick>>5)%9===0?'#c9a24f':'#ffdf8a');
+  } else if(house==='banjiha'){
+    const wx=92,wy=2,ww=56,wh=15; px(wx-2,wy-2,ww+4,wh+4,'#2b2a30'); px(wx,wy,ww,wh,skyBands()[1]); px(wx,wy+10,ww,5,'#77767f'); px(wx,wy+10,ww,1,'#9c9ba4');
+    cx.save();cx.beginPath();cx.rect(wx,wy,ww,wh);cx.clip();
+    const cyc=(tick%420)/420,lx=wx+ww+6-cyc*(ww+20),st=(tick>>3)%2;
+    px(lx,wy+3,2,7,'#2f3c5c');px(lx+4,wy+3,2,7,'#2f3c5c');px(lx-1+st,wy+9,4,2,'#1c1c1c');px(lx+3-st,wy+9,4,2,'#1c1c1c');
+    if(s.rain) drawRain(wx,wy,ww,10); cx.restore();
+    for(let i=0;i<4;i++) px(wx+i*14,wy,1,wh,'#2b2a30');
+    if(s.used&&s.used.mold){px(136,58,6,4,'#2a3328');px(140,54,4,3,'#2a3328');px(146,60,5,3,'#2a3328');}
+  } else {
+    const wx=108,wy=8,ww=44,wh=30; px(wx-3,wy-3,ww+6,wh+6,'#2e2b3c');
+    skyBands().forEach((c,i)=>px(wx,wy+i*5,ww,5,c));
+    cx.save();cx.beginPath();cx.rect(wx,wy,ww,wh);cx.clip();
+    city.forEach(b=>{px(wx+b.x,wy+wh-b.h,b.w,b.h,'#1b1a2b');b.lit.forEach(l=>{if(l.on)px(wx+b.x+l.x,wy+wh-b.h+l.y,1,1,'#ffcf6b');});});
+    if(s.rain) drawRain(wx,wy,ww,wh); cx.restore();
+    px(wx+ww/2-1,wy,2,wh,'#2e2b3c'); px(wx,wy+wh/2,ww,1,'#2e2b3c');
+    if(tick%40===0){const b=city[Math.floor(Math.random()*city.length)];const l=b.lit[Math.floor(Math.random()*b.lit.length)];if(l)l.on=!l.on;}
+  }
+  const cxp=house==='gosi'?32:12;
+  px(cxp,10,22,24,'#f2ece0');px(cxp,10,22,6,'#d9483b');px(cxp+4,8,2,4,'#333');px(cxp+16,8,2,4,'#333');
+  const dn=Math.max(1,s.day||1); digits(dn,dn>9?cxp+4:cxp+8,19,'#2b2533',2);
+  if(s.day>=25) px(cxp+1,31,20,1,'#d9483b');
+  px(0,70,W,20,house==='banjiha'?'#34302b':house==='gosi'?'#3a3240':'#5a4535');
+  for(let x=0;x<W;x+=16) px(x,70,1,20,'rgba(0,0,0,.18)');
+  if(house==='oneroom'){px(2,56,40,14,'#e4e0ec');px(2,60,40,10,'#6b7a6b');px(2,52,10,8,'#efeaf5');}
+  if(house==='banjiha'){px(2,64,42,6,'#cfc9d6');px(2,66,42,4,'#6b8a6e');}
+  if(house==='gosi'){px(27,52,34,18,'#ccc6d4');px(27,56,34,14,'#8a6b5a');}
+}
+function charPal(){ const L=s.char?CH().look:{hair:'#2a2233',shirt:'#7a7690'}; return {h:L.hair,s:'#f0c49c',e:'#2a2233',m:'#a85a55',t:L.shirt,d:shade(L.shirt,.75),g:'#c9c9d1'}; }
+function drawChar(){
+  const pose=s.pose||'desk'; if(pose==='out') return;
+  const pal=charPal(); let rows=CHAR.slice();
+  const L=s.char?CH().look:{};
+  if(L.long){ rows[4]="hhsssssssshh"; rows[5]="h.sesssses.h"; rows[6]="h.ssssssss.h"; }
+  if(L.gray){ rows[7]="...shhhhs..."; }
+  if((tick%210)<7) rows[5]=rows[5].replace(/e/g,'s');
+  if(s.mp<35 && !L.gray) rows[7]="...smssms...";
+  if(sleeping) rows[5]=rows[5].replace(/e/g,'h');
+  const house=s.char?CH().house:'oneroom';
+  if(pose==='rest'){
+    const bx = house==='gosi'?30:4, by = house==='banjiha'?60:52;
+    px(bx,by+2,6,5,pal.h); px(bx+5,by+3,4,4,pal.s); px(bx+9,by+3,26,6,shade(pal.t,.9)); return;
+  }
+  if(pose==='cook'){
+    sprite(rows,128,44,pal);
+    px(124,58,14,3,'#333'); px(126,53,10,5,'#9aa0ad');
+    if(!REDUCED) for(let i=0;i<3;i++){const k=(tick+i*14)%42;px(128+i*3+Math.round(Math.sin(k/6)),51-k/5,1,1,`rgba(235,235,245,${1-k/42})`);}
+    return;
+  }
+  const slump=s.mp<35?1:0, bob=REDUCED?0:((tick>>5)%2);
+  const x=80,y=46+slump+bob; sprite(rows,x,y,pal);
+  if(pose==='phone'){ px(x+10,y+5,2,4,'#1d1d24'); px(x+10,y+6,1,2,'#8fd1ff'); }
+  if(s.hp<35&&!sleeping){const k=(tick>>2)%12;px(x+11,y+3+k,1,2,'#9fd3ff');}
+}
+function drawKid(){
+  if(s.char!=='mom' || s.pose==='out') return;
+  const pal={h:'#3a2520',s:'#f3cfa8',e:'#2a2233',m:'#c46a6a',p:s.rel.child<40?'#7a7f99':'#f0a35e'};
+  let rows=KID.slice(); if((tick%260)<8) rows[3]=".sssss.";
+  if(s.rel.child<40) rows[5]="..m.m..";
+  sprite(rows,104,49,pal);
+}
+function drawDesk(){
+  px(46,60,82,4,'#8a5a3c');px(46,64,82,8,'#6b4430');px(48,72,3,18,'#5a3826');px(123,72,3,18,'#5a3826');
+  if(s.pose==='study'){px(84,57,12,3,'#f3efe6');px(89,57,1,3,'#9a8f7a');}
+  else {px(60,51,18,10,'#a3a9b6');px(60,51,18,1,'#c6cbd5');px(68,55,2,2,'#e9edf3');px(58,60,22,1,'#7f8594');}
+  if(s.stock>0){px(114,55,6,5,'#e8e1d2');px(114,55,6,1,'#c44');}
+  if(s.pose==='out'){px(78,48,16,12,'#3a3046');px(80,46,12,3,'#3a3046');}
+  px(52,58,6,2,'#2d2a35');px(54,48,2,10,'#2d2a35');px(51,46,8,3,'#ffa43f');
+}
+function drawCoins(){coins.forEach(c=>{c.x+=c.vx;c.y+=c.vy;c.life--;if(c.stop!==null&&c.y>=c.stop){c.y=c.stop;c.vy=0;}if(c.stop===null)c.vy+=.02;px(c.x,c.y,3,3,'#ffd34d');px(c.x+2,c.y,1,3,'#c9962b');px(c.x,c.y+2,3,1,'#c9962b');});coins=coins.filter(c=>c.life>0);}
+function drawNight(){
+  const t = s && s.free && s.phase==='free' ? clamp(s.spent/s.free,0,1)*.35 : 0;
+  night+=((sleeping?.8:t)-night)*.08;
+  if(night>.01) px(0,0,W,H,`rgba(8,6,22,${night.toFixed(3)})`);
+  if(sleeping){ if(tick%30===0) zz.push({x:92,y:44,a:1}); zz.forEach(z=>{z.y-=.25;z.x+=.12;z.a-=.012;cx.fillStyle=`rgba(230,225,255,${Math.max(0,z.a)})`;cx.fillRect(Math.round(z.x),Math.round(z.y),3,1);cx.fillRect(Math.round(z.x)+1,Math.round(z.y)+1,1,1);cx.fillRect(Math.round(z.x),Math.round(z.y)+2,3,1);}); zz=zz.filter(z=>z.a>0); }
+}
+function frame(){ tick++; if(s){ drawRoom(); drawChar(); drawDesk(); drawKid(); drawCoins(); drawNight(); } requestAnimationFrame(frame); }
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function nightTransition(){ if(REDUCED) return; sleeping=true; s.pose='desk'; $('card').querySelectorAll('button').forEach(b=>b.disabled=true); await wait(1300); sleeping=false; zz=[]; await wait(250); }
+
+/* ---------------- boot ---------------- */
+function boot(data){ s=(data&&data.s)?data.s:fresh(); render(); requestAnimationFrame(frame); }
+try{ window.claude?.hot?.snapshot?.(()=>({s})); }catch(e){}
+window.__game = { state:()=>s };
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+})();
+</script>
+
+</body>
+</html>

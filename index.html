@@ -343,7 +343,7 @@ const CHARS = {
       {key:'kim',name:'김사장',sub:'옛 단골, 고깃집 사장',v:45,ask:{type:'lead',label:'일자리 알아봐 달라고'}},
       {key:'chief',name:'반장',sub:'인력사무소 반장',v:50,ask:{type:'chief',label:'며칠 우선 배정해 달라고'}},
       {key:'landlord',name:'집주인',sub:'원룸 건물주',v:50,ask:{type:'rentDelay',label:'월세 일주일만 미뤄달라고'}}],
-    bills:[{day:10,name:'통신비',amt:55000},{day:15,name:'소상공인 대출 상환',amt:520000,key:'loan'},{day:20,name:'카드 리볼빙 최소결제',amt:180000,prem:47300,premCat:'리볼빙 이자'}],
+    bills:[{day:10,name:'통신비',amt:55000},{day:15,name:'소상공인 대출 상환',amt:520000,key:'loan'},{day:20,name:'카드 리볼빙 최소결제',amt:180000,prem:47300,premCat:'리볼빙 이자',key:'revolving'}],
     cash:150000
   }
 };
@@ -526,6 +526,276 @@ const EVENTS = [
   choices:[
    {t:'나간다',won:150000,memo:'특근 일당',hp:-14,h:3,rel:{chief:4}},
    {t:'몸이 안 된다고 한다',rel:{chief:-4}}]}
+ ,
+ /* ===== v3: 더 많은 일들 ===== */
+ /* ---- 공통 · 한 번 ---- */
+ {id:'fridge',when:s=>CH().house!=='gosi',short:'냉장고 고장',text:'냉장고에서 웅 소리가 나더니 멈췄다. 안에 든 반찬이 미지근하다.',
+  choices:[
+   {t:'수리 기사를 부른다',won:-90000,memo:'냉장고 수리',need:90000},
+   {t:'중고거래로 싼 걸 구한다',won:-55000,memo:'중고 냉장고',need:55000,h:2,hp:-4},
+   {t:'겨울이니 베란다에 둔다',mp:-5,add:{stock:-9},res:'장 봐둔 재료가 반은 상했다. 당분간 그날그날 사 먹어야 한다.'}]},
+ {id:'glasses',short:'안경 부러짐',text:'안경다리가 툭 부러졌다. 안경 없이는 모니터 글씨가 안 보인다.',
+  choices:[
+   {t:'안경점에서 새로 맞춘다',won:-70000,memo:'안경',need:70000,h:1},
+   {t:'테이프로 감아서 쓴다',mp:-4,follow:{id:'glassesHead',in:3,p:.5},res:'거울 속 얼굴이 좀 우스웠다.'}]},
+ {id:'flu',short:'몸살 기운',text:'온몸이 쑤시고 목이 따끔거린다. 몸살이 오려는 것 같다.',
+  choices:[
+   {t:'약국에서 약 사고 일찍 눕는다',won:-8000,memo:'감기약',h:1,hp:6},
+   {t:'괜찮겠지 하고 넘어간다',hp:-8,follow:{id:'fluWorse',in:2,p:.55}}]},
+ {id:'electric',when:s=>s.day>=10&&CH().house!=='gosi',short:'전기요금',text:'전기요금 고지서가 왔다. 전기장판을 켠 탓에 누진 구간을 넘겼다.',
+  note:'전기요금 누진제는 사용량이 늘수록 단가가 올라간다. 난방을 전기에 기대는 집일수록 겨울 고지서가 무겁다.',
+  choices:[
+   {t:'바로 낸다',won:-68000,memo:'전기요금',need:68000},
+   {t:'다음 달에 낸다',deferRaw:{key:'elec',name:'전기요금 미납분',left:6,cost:71400,h:.1,expire:'billLate',data:{name:'전기요금',amt:68000},prem:{cat:'연체료',amt:3400},bill:true},res:'고지서를 서랍에 넣었다.'}]},
+ {id:'friendBday',short:'친구 생일',text:'친구 생일이라 저녁을 먹자고 한다. 고깃집이고 1/N이다.',
+  choices:[
+   {t:'간다',won:-35000,memo:'생일 모임',need:35000,h:3,mp:7},
+   {t:'선물만 보내고 빠진다',won:-15000,memo:'기프티콘',mp:-2},
+   {t:'일 핑계를 댄다',mp:-5,res:'단체 사진에 내 자리만 비어 있었다.'}]},
+ {id:'shoes',short:'신발 밑창',text:'운동화 밑창이 덜렁거린다. 비 오는 날이면 양말이 다 젖는다.',
+  choices:[
+   {t:'새 운동화를 산다',won:-49000,memo:'운동화',need:49000},
+   {t:'순간접착제로 붙인다',won:-3000,memo:'접착제',h:.5},
+   {t:'그냥 신는다',hp:-4}]},
+ {id:'refund',when:s=>s.day>=8,short:'환급 안내',text:'"[국세청] 미수령 환급금이 있습니다." 진짜인지 홈택스에 들어가 확인해 봐야 한다.',
+  choices:[
+   {t:'저녁에 시간 내서 신청한다',h:1,follow:{id:'refundPaid',in:3},res:'공동인증서 비밀번호를 세 번 틀리고 겨우 들어갔다.'},
+   {t:'귀찮다, 다음에',mp:-1}]},
+ {id:'coat',when:s=>s.day>=12,short:'한파',text:'첫 한파. 가을 점퍼로는 바람이 그대로 들어온다.',
+  choices:[
+   {t:'패딩을 산다',won:-79000,memo:'패딩',need:79000,mp:3},
+   {t:'중고거래로 구한다',won:-25000,memo:'중고 패딩',need:25000,h:1.5},
+   {t:'껴입고 버틴다',hp:-7}]},
+ {id:'card',short:'교통카드 분실',text:'교통카드를 잃어버렸다. 충전해 둔 돈이 꽤 들어 있었다.',
+  choices:[
+   {t:'분실 신고하고 새로 산다',won:-18000,memo:'교통카드 재발급·잔액 손실',force:1},
+   {t:'당분간 현금으로 탄다',prem:{cat:'환승할인 못 받음',amt:6000},mp:-2,res:'환승 할인이 안 돼서 매번 조금씩 더 낸다.'}]},
+ {id:'mgmtExtra',when:s=>s.day>=14,short:'집주인 문자',text:'집주인 문자: "건물 수리비 분담으로 이번 달 3만 원 추가 부탁드려요."',
+  choices:[
+   {t:'보낸다',won:-30000,memo:'수리비 분담'},
+   {t:'계약서에 없다고 거절한다',chance:{rel:'landlord',ok:{rel:{landlord:-6},res:'"그럼 이번만 넘어갈게요." 답장이 짧았다.'},fail:{rel:{landlord:-15},mp:-8,res:'"재계약 때 봅시다." 그 한 줄이 계속 맴돈다.'}}}]},
+ {id:'hotWater',when:s=>s.day>=15&&s.char!=='mom',short:'온수 고장',text:'온수가 안 나온다. 아침마다 찬물로 씻어야 한다.',
+  choices:[
+   {t:'수리 기사를 부른다',won:-80000,memo:'온수기 수리',need:80000},
+   {t:'목욕탕에 다닌다',won:-9000,memo:'목욕탕',h:1.5},
+   {t:'찬물로 버틴다',hp:-9,mp:-4}]},
+ {id:'famGrad',chars:['grad'],when:s=>s.day>=17,short:'아빠 입원',text:'아빠가 넘어져서 입원했다. 엄마 혼자 병원을 지키고 있다.',
+  choices:[
+   {t:'주말에 내려가고 병원비를 보탠다',won:-180000,memo:'귀성·병원비',need:180000,h:6,rel:{mom:15},mp:-3},
+   {t:'병원비만 보낸다',won:-80000,memo:'병원비 송금',need:80000,rel:{mom:5}},
+   {t:'지금은 못 간다고 한다',rel:{mom:-15},mp:-15}]},
+ {id:'famMom',chars:['mom'],when:s=>s.day>=17,short:'친정엄마 입원',text:'친정엄마가 빙판길에 넘어져 손목이 부러졌다.',
+  choices:[
+   {t:'하루 쉬고 병원에 모시고 간다',absent:1,won:-60000,memo:'병원비',rel:{grandma:15}},
+   {t:'병원비만 보낸다',won:-80000,memo:'병원비 송금',need:80000,rel:{grandma:3}},
+   {t:'오빠한테 부탁한다',rel:{grandma:-10},mp:-10}]},
+ {id:'famBoss',chars:['boss'],when:s=>s.day>=17,short:'수진 수술',text:'수진이 맹장 수술을 받는다. 보호자 동의서에 아빠 이름이 필요하다.',
+  choices:[
+   {t:'일을 빼고 병원에 간다',won:-150000,memo:'수술비 보탬',need:150000,h:6,rel:{daughter:18},set:{laid:1}},
+   {t:'수술비만 보낸다',won:-100000,memo:'수술비 송금',need:100000,rel:{daughter:4}},
+   {t:'전처에게 맡긴다',rel:{daughter:-18},mp:-14}]},
+ /* ---- 공통 · 반복 ---- */
+ {id:'alarm',rep:7,when:s=>todayWork()&&s.char!=='boss',short:'늦잠',text:'알람을 못 들었다. 이대로면 지각이다.',
+  choices:[
+   {t:'택시를 탄다',won:-13000,memo:'택시',prem:{cat:'택시',amt:10000},force:1},
+   {t:'지각한다',rel:{boss:-7},mp:-4,res:'"요즘 왜 그래요?" 한마디가 하루 종일 따라다녔다.'}]},
+ {id:'surge',rep:5,chars:['grad','boss'],when:s=>s.rain&&!s.fired,short:'비 오는 날 할증',text:'비가 온다. 배달·대리 앱에 "우천 할증 1.5배" 알림이 떴다.',
+  choices:[
+   {t:'오늘 밤 나가볼까',set:{surge:1},res:'할증이 붙으면 같은 시간에 더 번다. 대신 빗길은 미끄럽다.'},
+   {t:'오늘은 쉰다'}]},
+ {id:'giftDay',rep:9,short:'경조사 문자',text:'모바일 청첩장이 또 왔다. 얼굴만 아는 사이다.',
+  choices:[
+   {t:'5만 원 보낸다',won:-50000,memo:'축의금 송금',mp:1},
+   {t:'3만 원 보낸다',won:-30000,memo:'축의금 송금',mp:-1},
+   {t:'모른 척한다',mp:-4}]},
+ /* ---- 밤 ---- */
+ {id:'nInsta',night:1,rep:8,short:'SNS',text:'자기 전에 SNS를 열었다. 친구들이 오사카 여행 사진을 올렸다.',
+  choices:[
+   {t:'휴대폰을 덮고 잔다',mp:-2},
+   {t:'한참 넘겨 본다',h:1,mp:-8}]},
+ {id:'nSnack',night:1,rep:4,short:'야식',text:'배가 고파서 잠이 안 온다. 배달앱 첫 화면에 떡볶이가 떠 있다.',
+  choices:[
+   {t:'시킨다',won:-19000,memo:'야식 배달',mp:6,prem:{cat:'배달비',amt:4000}},
+   {t:'라면 하나 끓인다',won:-1200,memo:'라면',h:.3},
+   {t:'참고 잔다',mp:-3}]},
+ {id:'nCardMsg',night:1,rep:9,when:s=>s.day>=8,short:'결제 예정 문자',text:'"이번 달 카드 결제 예정 금액을 확인하세요." 숫자를 보는 순간 잠이 달아났다.',
+  choices:[
+   {t:'가계부를 다시 짠다',h:1,mp:-2,wise:1,res:'다음 주까지 쓸 수 있는 돈을 하루 단위로 나눠 적었다.'},
+   {t:'못 본 척 잔다',mp:-6}]},
+ {id:'nNoise',night:1,rep:6,short:'층간소음',text:'윗집에서 새벽까지 쿵쿵거린다.',
+  choices:[
+   {t:'올라가서 말한다',h:.5,chance:{p:.5,ok:{mp:2,res:'사과를 받았다. 조용해졌다.'},fail:{mp:-8,res:'"우리 아니에요." 문이 쾅 닫혔다.'}}},
+   {t:'귀마개 끼고 참는다',hp:-4,mp:-3}]},
+ {id:'nPhish',night:1,rep:10,short:'수상한 문자',text:'"엄마 나 폰 액정 깨져서 이 번호로 연락해. 급한 거 하나만 부탁할게."',
+  note:'가족을 사칭하는 메신저 피싱은 급한 상황을 꾸며 판단할 시간을 빼앗는 방식이 많다.',
+  choices:[
+   {t:'삭제하고 차단한다',wise:1},
+   {t:'혹시 몰라 답장해 본다',mp:-6,follow:{id:'smishLoss',in:1,p:.5}}]},
+ {id:'nMomKid',night:1,rep:6,chars:['mom'],short:'하린 악몽',text:'새벽 2시, 하린이 울면서 방에 들어왔다. 무서운 꿈을 꿨다고 한다.',
+  choices:[
+   {t:'옆에 눕혀 재운다',h:1,rel:{child:6},hp:-3},
+   {t:'다시 방으로 보낸다',rel:{child:-6},mp:-3}]},
+ {id:'nKidCough',night:1,rep:8,chars:['mom'],short:'밤 기침',text:'하린이 밤새 기침을 한다. 열은 없는데 숨소리가 거칠다.',
+  choices:[
+   {t:'내일 하루 쉬고 소아과에 간다',absent:1,won:-15000,memo:'소아과',rel:{child:4}},
+   {t:'상비약 먹이고 지켜본다',won:-6000,memo:'상비약',h:1.5,hp:-5}]},
+ {id:'nDaughter',night:1,rep:7,chars:['boss'],short:'수진 전화',text:'밤늦게 수진이 전화를 했다. "아빠 밥은 먹었어?"',
+  choices:[
+   {t:'괜찮다고, 한참 얘기한다',h:1,rel:{daughter:8},mp:8},
+   {t:'피곤하다고 끊는다',rel:{daughter:-4},mp:-2}]},
+ {id:'nGradFriend',night:1,rep:7,chars:['grad'],short:'민지 전화',text:'민지가 새벽에 전화했다. 회사에서 울었다고 한다.',
+  choices:[
+   {t:'끝까지 들어준다',h:1.5,rel:{friend:10},mp:-3},
+   {t:'내일 얘기하자고 한다',rel:{friend:-6}}]},
+ /* ---- 윤서 ---- */
+ {id:'cover',rep:6,chars:['grad'],when:s=>!s.fired,short:'주말 대타',text:'점장: "토요일 낮에 6시간 대타 가능해? 사람이 펑크 났어."',
+  choices:[
+   {t:'한다',won:61920,memo:'대타 근무',h:6,hp:-10,rel:{boss:6}},
+   {t:'공부해야 한다고 거절한다',rel:{boss:-5}}]},
+ {id:'shortCash',chars:['grad'],when:s=>s.day>=10&&!s.fired,short:'시재 부족',text:'정산해 보니 시재가 2만 원 모자란다. 점장은 야간 근무자가 메우라고 한다.',
+  choices:[
+   {t:'내 돈으로 메운다',won:-20000,memo:'시재 변상',force:1,mp:-4},
+   {t:'CCTV를 확인하자고 한다',chance:{rel:'boss',ok:{mp:3,res:'낮 근무자가 거스름돈을 잘못 준 장면이 나왔다.'},fail:{won:-20000,memo:'시재 변상',rel:{boss:-10},mp:-8,res:'"그거 볼 시간 없어." 결국 내가 메웠다.'}}}]},
+ {id:'coaching',chars:['grad'],short:'자소서 첨삭',text:'유료 자소서 첨삭 광고가 떴다. 합격자 첨삭, 4만 9천 원.',
+  choices:[
+   {t:'받는다',won:-49000,memo:'자소서 첨삭',need:49000,career:12,wise:1},
+   {t:'취업 카페에서 무료로 피드백을 구한다',h:2,career:5},
+   {t:'넘긴다'}]},
+ {id:'fine',chars:['grad'],when:s=>s.day>=6,short:'스터디 벌금',text:'면접 스터디에 지각해서 벌금 만 원이 나왔다.',
+  choices:[
+   {t:'낸다',won:-10000,memo:'스터디 벌금',career:2},
+   {t:'스터디를 그만둔다',career:-6,mp:-3}]},
+ /* ---- 정민 ---- */
+ {id:'schoolOff',chars:['mom'],when:s=>s.day>=9&&todayWork(),short:'재량휴업일',text:'내일이 학교 재량휴업일이라는 걸 오늘 알았다. 하린이를 맡길 데가 없다.',
+  choices:[
+   {t:'결근한다',absent:1,rel:{child:6}},
+   {t:'친정엄마에게 부탁한다',chance:{rel:'grandma',ok:{rel:{grandma:-8},res:'엄마가 와주기로 했다.'},fail:{absent:1,res:'엄마도 병원 예약이 있다. 결근해야 한다.'}}},
+   {t:'혼자 집에 있게 한다',rel:{child:-14},mp:-10,follow:{id:'aloneHurt',in:1,p:.25}}]},
+ {id:'tablet',chars:['mom'],short:'태블릿',text:'"엄마, 우리 반에 태블릿 없는 애 나밖에 없어." 하린이 처음으로 뭘 사달라고 했다.',
+  choices:[
+   {t:'중고로 사준다',won:-120000,memo:'중고 태블릿',need:120000,rel:{child:12}},
+   {t:'생일 때 사주겠다고 한다',rel:{child:-4}},
+   {t:'안 된다고 한다',rel:{child:-10},mp:-5}]},
+ {id:'teacher',chars:['mom'],short:'담임 상담',text:'담임 선생님이 상담을 하자고 연락이 왔다. 평일 오후 3시만 된다고 한다.',
+  choices:[
+   {t:'꼭 가겠다고 한다',deferRaw:{key:'teacher',name:'담임 상담',left:6,cost:0,h:2,day:true,expire:'teacherMiss',done:{rel:{child:10},mp:4}}},
+   {t:'전화 상담으로 해달라고 한다',h:.5,rel:{child:2}}]},
+ {id:'momOT',rep:6,chars:['mom'],when:s=>todayWork()&&!s.fired,short:'연장 근무',text:'팀장: "오늘 2시간만 더 해줄 수 있어요? 수당 1.5배예요."',
+  choices:[
+   {t:'한다',won:30960,memo:'연장 수당',h:2,rel:{boss:5,child:-5}},
+   {t:'아이 때문에 안 된다고 한다',rel:{boss:-5}}]},
+ /* ---- 상철 ---- */
+ {id:'receivable',chars:['boss'],short:'미수금',text:'가게 할 때 안 받은 거래처 외상값 85만 원. 그 사장이 근처에서 새로 가게를 열었다고 한다.',
+  choices:[
+   {t:'찾아간다',h:3,chance:{p:.4,ok:{won:300000,memo:'미수금 일부',mp:6,res:'30만 원만 먼저 받았다. 나머지는 다음 달에 주겠다고 한다.'},fail:{mp:-12,res:'"요즘 다 어렵잖아요." 빈손으로 돌아왔다.'}}},
+   {t:'포기한다',mp:-4}]},
+ {id:'equip',chars:['boss'],short:'가게 집기',text:'창고에 남은 튀김기와 냉동고. 고물상은 12만 원, 중고거래로 올리면 더 받을 수도 있다.',
+  choices:[
+   {t:'고물상에 넘긴다',won:120000,memo:'집기 판매',h:3,hp:-8},
+   {t:'중고거래에 올려본다',follow:{id:'equipSold',in:6,p:.55},res:'사진을 찍어 올렸다. 연락이 올지는 모르겠다.'}]},
+ {id:'bp',chars:['boss'],short:'혈압약',text:'혈압약이 다 떨어졌다. 처방을 받으려면 동네 의원에 가야 한다.',
+  choices:[
+   {t:'병원에 간다',won:-18000,memo:'진료·혈압약',h:2},
+   {t:'며칠 안 먹어도 괜찮겠지',follow:{id:'bpCrash',in:4,p:.45}}]},
+ {id:'chiefDrink',rep:7,chars:['boss'],when:s=>!s.flags.steady,short:'반장 술자리',text:'반장이 일 끝나고 소주 한잔하자고 한다. 보통은 부른 사람이 산다.',
+  choices:[
+   {t:'내가 산다',won:-45000,memo:'술값',h:2,rel:{chief:12},hp:-4},
+   {t:'몸이 안 좋다고 빠진다',rel:{chief:-6}}]}
+
+ ,
+ /* ===== v3b: 더 많은 일들 ===== */
+ {id:'rainUmb',rep:6,when:s=>s.rain&&todayWork(),short:'소나기',text:'퇴근하려는데 비가 쏟아진다. 우산이 없다.',
+  choices:[
+   {t:'편의점 우산을 산다',won:-7000,memo:'우산',prem:{cat:'급하게 산 물건',amt:4000}},
+   {t:'비 맞고 뛴다',hp:-5}]},
+ {id:'dataOver',short:'데이터 초과',text:'"[통신사] 데이터 사용량이 제공량을 초과했습니다. 초과 요금이 부과됩니다."',
+  choices:[
+   {t:'데이터 쿠폰을 산다',won:-11000,memo:'데이터 쿠폰'},
+   {t:'와이파이 되는 곳에서만 쓴다',mp:-3,res:'지도 앱도 못 켜고 버스 정류장 이름을 외웠다.'}]},
+ {id:'trialCharge',when:s=>s.day>=6,short:'자동결제',text:'잊고 있던 무료체험이 끝나 1만 4,900원이 자동결제됐다.',
+  choices:[
+   {t:'환불을 요청한다',h:.5,chance:{p:.5,ok:{res:'상담원이 이번만 환불해 주겠다고 했다.'},fail:{won:-14900,memo:'자동결제',force:1,mp:-4,res:'"이미 이용 기간이 시작되어 환불이 어렵습니다."'}}},
+   {t:'그냥 해지만 한다',won:-14900,memo:'자동결제',force:1}]},
+ {id:'oldLoan',when:s=>s.day>=10,short:'옛날 빚',text:'2년 전에 돈을 빌려 갔던 친구가 연락했다. "늦어서 미안. 일부라도 보낼게."',
+  choices:[{t:'고맙다고 답장한다',won:50000,memo:'옛 친구 상환',mp:8}]},
+ {id:'sellStuff',short:'안 쓰는 물건',text:'방 구석의 안 쓰는 블루투스 스피커가 눈에 들어왔다. 중고로 팔면 몇만 원은 될 것 같다.',
+  choices:[
+   {t:'사진 찍어서 올린다',h:.7,follow:{id:'stuffSold',in:2,p:.75}},
+   {t:'그냥 둔다'}]},
+ {id:'foodBank',when:s=>s.bal<200000,short:'푸드마켓',text:'구청 소식지에 "기초푸드뱅크·푸드마켓 이용 안내"가 있다. 소득 기준에 해당될 것 같다.',
+  note:'푸드마켓은 기부받은 식품을 저소득 가구가 무료로 가져갈 수 있게 한 곳이다. 이용하려면 주민센터 확인을 거쳐야 하는 경우가 많다.',
+  choices:[
+   {t:'주민센터에 확인하고 간다',h:2,add:{stock:5},mp:-3,wise:1,res:'라면, 쌀, 통조림을 받아왔다. 계산대가 없는 마트가 조금 낯설었다.'},
+   {t:'그 정도는 아니라고 생각한다'}]},
+ {id:'myBday',when:s=>s.day>=5,short:'내 생일',text:'오늘이 내 생일이다. 단톡방에 축하 메시지가 몇 개 올라왔다.',
+  choices:[
+   {t:'나를 위해 케이크 한 조각을 산다',won:-6500,memo:'조각 케이크',mp:10},
+   {t:'그냥 평소처럼 보낸다',mp:2}]},
+ {id:'kimchi',short:'김장 택배',text:'고향에서 김장김치를 택배로 보냈다. 착불이다.',
+  choices:[{t:'택배비를 낸다',won:-8000,memo:'택배 착불',add:{stock:5},mp:6},{t:'반송해 달라고 한다',mp:-6,res:'택배비 8천 원이 없어서 김치를 돌려보냈다.'}]},
+ {id:'blackIce',when:s=>s.day>=18,short:'빙판길',text:'밤새 내린 눈이 얼었다. 출근길이 빙판이다.',
+  choices:[
+   {t:'택시를 탄다',won:-11000,memo:'택시',prem:{cat:'택시',amt:8000}},
+   {t:'조심해서 걷는다',chance:{p:.7,ok:{h:.5,res:'평소보다 30분 더 걸렸다.'},fail:{hp:-12,won:-15000,memo:'정형외과',force:1,res:'엉덩방아를 찧었다. 꼬리뼈가 욱신거린다.'}}}]},
+ {id:'insRenew',when:s=>s.day>=12,short:'보험 갱신',text:'실손보험 갱신 안내가 왔다. 다음 달부터 보험료가 22% 오른다.',
+  choices:[
+   {t:'그래도 유지한다',mp:-4},
+   {t:'해지한다',set:{insured:0},res:'아프지만 않으면 된다고 생각하기로 했다.'}]},
+ {id:'bankFee',rep:8,when:s=>s.bal<60000,short:'수수료',text:'잔고 부족으로 자동이체가 한 번 실패했다며 수수료가 빠져나갔다.',
+  choices:[{t:'확인',won:-1000,memo:'이체 실패 수수료',force:1,prem:{cat:'수수료',amt:1000},mp:-3}]},
+ {id:'nLonely',night:1,rep:8,short:'혼자인 밤',text:'불을 끄고 누웠는데 이상하게 서럽다. 이번 달이 너무 길다.',
+  choices:[
+   {t:'누군가에게 전화한다',h:.7,mp:6},
+   {t:'그냥 눈을 감는다',mp:-5}]},
+ {id:'nTomorrow',night:1,rep:6,when:s=>s.day>=10,short:'내일 걱정',text:'내일 나갈 돈을 머릿속으로 세다 보니 잠이 안 온다.',
+  choices:[
+   {t:'일어나서 적어 본다',h:1,mp:2,wise:1},
+   {t:'뒤척이다 잠든다',hp:-4,mp:-4}]},
+ {id:'nLeak',night:1,chars:['mom'],when:s=>s.rain,short:'누수',text:'비가 오자 반지하 창틀로 물이 스며든다. 하린이 이불이 젖었다.',
+  choices:[
+   {t:'밤새 수건으로 막는다',h:2,hp:-6},
+   {t:'집주인에게 문자한다',chance:{rel:'landlord',ok:{res:'내일 실리콘을 다시 쏴주겠다고 했다.'},fail:{won:-35000,memo:'실리콘 시공',rel:{landlord:-5},res:'"그건 세입자가 알아서 하세요."'}}}]},
+ /* 윤서 */
+ {id:'intern',chars:['grad'],when:s=>s.day>=15&&s.career>=55&&!s.flags.offer,short:'인턴 제안',text:'지원했던 중소기업에서 6개월 인턴을 제안했다. 정규직 전환 가능, 월 190만 원. 다음 달부터다.',
+  choices:[
+   {t:'받는다',mp:15,set:{intern:1},res:'공채는 계속 준비하기로 했다. 다음 달부터는 월급이 생긴다.'},
+   {t:'공채에 집중한다',career:6,mp:-3}]},
+ {id:'promo',chars:['grad'],when:s=>!s.fired,short:'행사 상품',text:'점장이 유통기한 임박 행사 상품을 직원들한테 하나씩 사가라고 한다.',
+  choices:[
+   {t:'산다',won:-15000,memo:'행사 상품',add:{stock:2},rel:{boss:4}},
+   {t:'돈이 없다고 한다',rel:{boss:-5},mp:-2}]},
+ {id:'kitchen',chars:['grad'],short:'공용 주방',text:'고시원 공용 주방에 "취사 금지, 라면만 가능" 공지가 붙었다.',
+  choices:[
+   {t:'전기밥솥으로 방에서 몰래 해 먹는다',won:-25000,memo:'미니 밥솥',mp:2},
+   {t:'당분간 사 먹는다',prem:{cat:'외식',amt:20000},won:-20000,memo:'외식'}]},
+ /* 정민 */
+ {id:'parentsDues',chars:['mom'],short:'반모임 회비',text:'반 단톡방에 학부모 모임 공지가 올라왔다. 회비 2만 원, 평일 오전 11시.',
+  choices:[
+   {t:'회비만 보낸다',won:-20000,memo:'반모임 회비',rel:{child:2}},
+   {t:'못 간다고 한다',mp:-3,res:'"워킹맘이시니까요." 그 말이 오래 남았다.'}]},
+ {id:'afterSchool',chars:['mom'],short:'방과후 신청',text:'방과후 수업 신청 기간이다. 로봇 과학 4만 원. 하린이가 꼭 하고 싶다고 한다.',
+  choices:[
+   {t:'신청한다',won:-40000,memo:'방과후 수업',need:40000,rel:{child:10}},
+   {t:'다음 학기에 하자고 한다',rel:{child:-8}}]},
+ {id:'exCall',chars:['mom'],when:s=>s.day>=8,short:'전남편 연락',text:'전남편이 문자를 보냈다. "주말에 하린이 좀 보자. 양육비는 다음 달에 한꺼번에 줄게."',
+  choices:[
+   {t:'만나게 해준다',rel:{child:5},mp:-6,follow:{id:'exPays',in:6,p:.35}},
+   {t:'양육비부터 보내라고 한다',mp:-8,chance:{p:.3,ok:{won:150000,memo:'양육비 일부',res:'15만 원이 들어왔다.'},fail:{res:'답이 없다.'}}}]},
+ /* 상철 */
+ {id:'oldRegular',chars:['boss'],short:'옛 단골',text:'편의점 앞에서 가게 시절 단골을 만났다. "사장님, 요즘 뭐 하세요?"',
+  choices:[
+   {t:'웃으며 사정을 말한다',mp:-4,rel:{kim:4},follow:{id:'regularTip',in:3,p:.4}},
+   {t:'잘 지낸다고 둘러댄다',mp:-8}]},
+ {id:'debtAdjust',chars:['boss'],when:s=>s.day<=20,short:'채무조정 안내',text:'신용회복위원회 채무조정 상담 안내를 받았다. 카드 리볼빙 이자를 낮출 수 있다고 한다.',
+  note:'채무조정 제도가 있어도, 상담 자체가 평일 낮에만 가능하거나 서류가 많아 미루게 되는 경우가 많다.',
+  choices:[
+   {t:'상담 예약을 잡는다',deferRaw:{key:'debtAdj',name:'채무조정 상담',left:7,cost:0,h:3,day:true,expire:null,done:{set:{revolvingCut:1},mp:6}}},
+   {t:'나중에 알아본다',mp:-3}]},
+ {id:'driveRegular',rep:6,chars:['boss'],when:s=>!s.fired,short:'단골 손님',text:'대리운전 단골 손님이 오늘 밤 예약을 하고 싶다고 한다. 팁을 잘 주는 손님이다.',
+  choices:[
+   {t:'받는다',won:35000,memo:'대리 단골 예약',h:2,hp:-5},
+   {t:'오늘은 쉰다',mp:2}]}
+
 ];
 
 /* follow-ups: (s, data) => event */
@@ -561,7 +831,7 @@ const FOLLOW = {
 
 /* ---------------- state ---------------- */
 let s;
-function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null,dayLog:[],dayStart:null}; }
+function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null,dayLog:[],dayStart:null,gigStreak:0,gigBlockUntil:0,costMult:1,nightDone:false,nightPending:false}; }
 
 const CH = () => CHARS[s.char];
 function todayWork(){ return s.sched && s.sched.work; }
@@ -636,6 +906,7 @@ function makeSchedule(){
 function startDay(){
   s.day++; s.spent=0; s.cooked=false; s.did={}; s.eveLog=[]; s.morning=[]; s.pose='desk';
   s.dayStart={bal:s.bal,hp:s.hp,mp:s.mp,nodes:s.nodes.length,ledger:s.ledger.length};
+  s.costMult = 1 + Math.max(0, s.day-12)*0.025; s.nightDone=false; s.nightPending=false; s.flags.surge=0;
   s.rain = Math.random()<.2;
   makeSchedule();
   if(s.carry&&s.carry.length){ s.morning.push(...s.carry); s.carry=[]; }
@@ -669,6 +940,7 @@ function startDay(){
     if(b.day!==s.day) return;
     let amt=b.amt;
     if(b.key==='loan' && s.flags.loanRelief){ amt=260000; }
+    if(b.key==='revolving' && s.flags.revolvingCut){ amt=150000; }
     if(b.key==='tkd' && s.flags.noTkd) return;
     if(s.bal >= amt){ tx(b.name+' 자동이체', -amt, b.prem?{cat:b.premCat,amt:b.prem}:null); s.morning.push(`${b.name} ${fmt(amt)}원 빠져나감`); }
     else {
@@ -696,23 +968,27 @@ function pickEvent(){
 }
 function nextEventOrFree(morning){
   let pick = pickEvent();
-  if(!pick && morning && Math.random() < .62){
-    const pool = EVENTS.filter(e=>!s.used[e.id] && (!e.chars||e.chars.includes(s.char)) && (!e.when||e.when(s)));
-    if(pool.length){
-      let tot=pool.reduce((a,e)=>a+(e.w||1),0), r=Math.random()*tot, e=pool[0];
-      for(const x of pool){ r-=(x.w||1); if(r<=0){e=x;break;} }
-      s.used[e.id]=1;
-      pick = {ev:{...e, choices:e.choices}, cause:null, id:e.id};
-    }
+  if(!pick && morning && Math.random() < (s.day===1 ? 1 : .9)){
+    const e = pickRandom(false);
+    if(e) pick = {ev:e, cause:null, id:e.id};
   }
   if(pick){ s.ev = {id:pick.id||null, obj: pick.id?null:pick.ev, cause:pick.cause}; s.phase='event'; }
   else { s.ev=null; s.phase='free'; }
   render();
 }
+function pickRandom(night){
+  const pool = EVENTS.filter(e=>!!e.night===night && (!e.chars||e.chars.includes(s.char)) && (!e.when||e.when(s))
+    && (s.used[e.id]==null || (e.rep && s.day - s.used[e.id] >= e.rep)));
+  if(!pool.length) return null;
+  let tot=pool.reduce((a,e)=>a+(e.w||1)*(e.rep?.6:1),0), r=Math.random()*tot, e=pool[0];
+  for(const x of pool){ r-=(x.w||1)*(x.rep?.6:1); if(r<=0){e=x;break;} }
+  s.used[e.id]=s.day;
+  return e;
+}
 function curEv(){ if(!s.ev) return null; return s.ev.obj || EVENTS.find(e=>e.id===s.ev.id); }
 
 /* ---------------- choice resolution ---------------- */
-function wonOf(c){ return typeof c.won==='function' ? c.won(s) : (c.won||0); }
+function wonOf(c){ let w = typeof c.won==='function' ? c.won(s) : (c.won||0); if(w<0 && s.ev && s.ev.id && (s.costMult||1)>1) w = -round100(-w*s.costMult); return w; }
 function chanceP(ch){ if(ch.rel) return clamp(s.rel[ch.rel]/100*.92,.05,.92); return ch.p; }
 function choiceState(c){
   if(c.wise && s.mp<40) return {fog:true};
@@ -738,6 +1014,8 @@ function applyFx(fx, cause, label){
   if(fx.add) for(const k in fx.add){ if(k==='stock') s.stock+=fx.add[k]; else if(k==='pass') s.pass+=fx.add[k]; else s.flags[k]=(s.flags[k]||0)+fx.add[k]; }
   if(fx.set && fx.set.steady){ s.flags.steadyFrom = s.day+3; }
   if(fx.set && fx.set.laid){ s.laidUntil = s.day+1+fx.set.laid; }
+  if(fx.set && fx.set.gigBlock){ s.gigBlockUntil = s.day+1+fx.set.gigBlock; s.flags.gigBlock=0; }
+  if(s.stock<0) s.stock=0;
   if(fx.absent) s.absentNext = true;
   if(fx.fire){ s.fired = true; if(s.char==='grad' && s.pending>0){ tx('주급 정산', s.pending); s.pending=0; } }
   if(fx.lostCall){ if(s.char==='grad') s.career=clamp(s.career-10); if(s.char==='boss') s.rel.chief=clamp(s.rel.chief-10); if(s.char==='mom') s.rel.child=clamp(s.rel.child-8); }
@@ -748,10 +1026,14 @@ function applyFx(fx, cause, label){
   return {text:fx.res||'', node:n};
 }
 
+const FALLBACK_CHOICE={t:'어쩔 도리가 없다',mp:-6,res:'돈도 시간도 없어서 그냥 넘길 수밖에 없었다.'};
+function noWayOut(ev){ return ev.choices.every(ch=>{ const st=choiceState(ch); return st.fog||st.dis; }); }
 function choose(i){
-  const ev=curEv(), c=ev.choices[i];
+  const ev=curEv(), c= i==='fb' ? FALLBACK_CHOICE : ev.choices[i];
+  if(i==='fb' && !noWayOut(ev)) return;
   const st=choiceState(c); if(st.fog||st.dis) return;
   const label = `${ev.short||'일'} → ${c.t}`;
+  if(i!=='fb'){ const st2=choiceState(c); if(st2.fog||st2.dis) return; }
   let r = applyFx(c, s.ev.cause, label);
   let text = r.text, roll=null;
   if(c.chance){
@@ -813,24 +1095,32 @@ function actions(){
   }
   if(s.char==='grad'){
     A.push({id:'study',label:'자소서 쓰고 공부하기',sub:s.flags.studyCafe?'스터디카페에서 · 집중이 잘 된다':'고시원 방에서',h:2,wise:true,once:true});
-    A.push({id:'gigG',label:'도보 배달 뛰기',sub:'두 시간 · 건당 수수료',h:2,once:true});
+    A.push({id:'gigG',label:'도보 배달 뛰기',sub:gigSub('두 시간 · 건당 수수료'),h:2,once:true,gig:true});
   }
   if(s.char==='mom'){
     A.push({id:'play',label:'하린이랑 놀아주기',sub:'오늘 있었던 일을 듣는다',h:1,once:true});
     A.push({id:'homework',label:'하린이 숙제 봐주기',sub:'받아쓰기, 수학 익힘책',h:1,once:true});
-    A.push({id:'gigM',label:'재택 부업 (부품 조립)',sub:'두 시간 · 개당 30원',h:2,once:true});
+    A.push({id:'gigM',label:'재택 부업 (부품 조립)',sub:gigSub('두 시간 · 개당 30원'),h:2,once:true,gig:true});
   }
   if(s.char==='boss'){
-    A.push({id:'drive',label:'대리운전 나가기',sub:'밤 9시~새벽 1시 · 콜 수는 운',h:4,once:true});
+    A.push({id:'drive',label:'대리운전 나가기',sub:gigSub('밤 9시~새벽 1시 · 콜 수는 운'),h:4,once:true,gig:true});
   }
   A.push({id:'rest',label:'누워서 쉬기',sub:'한 시간',h:1});
   return A;
 }
 
+function gigSub(base){
+  const k=s.gigStreak||0, bits=[base];
+  if(s.flags.surge) bits.push('우천 할증 1.5배');
+  if(k>=1) bits.push(`${k+1}일 연속 · 피로가 쌓여 다칠 위험이 커진다`);
+  return bits.join(' · ');
+}
+function gigRisk(kind){ const k=Math.min(6,s.gigStreak||0); return (kind==='drive'?.05:kind==='gigM'?.08:.03) + .05*k + (s.rain&&kind!=='gigM'?.08:0) + (s.flags.surge?.04:0); }
 function doAction(id){
   const C=CH(), P=C.people, food=HOUSES[C.house].food;
   const a = actions().find(x=>x.id===id); if(!a) return;
   if(a.once && s.did[id]) return;
+  if(a.gig && s.day < s.gigBlockUntil) return;
   if(a.wise && s.mp<25) return;
   if(a.won && s.bal < -a.won) return;
   if(!canSpend(a.h)) return;
@@ -842,13 +1132,22 @@ function doAction(id){
     case 'bulk': tx('마트 장보기', -food*7*P); s.stock+=7; txt='일주일치 장을 봤다. 냉장고가 든든하다.'; s.pose='out'; break;
     case 'small': tx('편의점 장보기', -small, {cat:'소량 장보기',amt:small-food*P}); s.stock+=1; txt='하루치를 샀다. 같은 걸 마트보다 비싸게 샀다.'; s.pose='out'; break;
     case 'study': { const g = (s.flags.studyCafe?10:7) + (s.hp<40?-3:0); s.career=clamp(s.career+g); s.mp=clamp(s.mp-3); txt=`자소서 두 개를 고쳤다. 취업 준비도 +${g}`; s.pose='study'; break; }
-    case 'gigG': { const e=round100(rint(16000,28000)); tx('도보 배달',e); s.hp=clamp(s.hp-4,0,s.hpMax); txt=`두 시간 동안 ${fmt(e)}원 벌었다.`; s.pose='out'; break; }
+    case 'gigG': {
+      const k=Math.min(6,s.gigStreak||0), mult=(s.flags.surge?1.5:s.rain?1.2:1)*(k>=4?.7:k>=2?.85:1);
+      const e=round100(rint(14000,24000)*mult); tx(s.flags.surge?'도보 배달 (우천 할증)':'도보 배달',e);
+      s.hp=clamp(s.hp-(5+3*k),0,s.hpMax); s.mp=clamp(s.mp-(1+2*k));
+      txt=`두 시간 동안 ${fmt(e)}원 벌었다.${k>=4?' 몸이 무거워서 콜을 잡아도 늦게 도착한다. 평점이 떨어졌다.':k>=2?' 다리가 무겁다. 며칠째 쉬지 못했다.':''}`;
+      if(Math.random()<gigRisk('gigG')) s.queue.push({id:'gigCrash',day:s.day+1,data:{rain:!!s.rain,cause:node('무리한 배달',null,e,true)}});
+      s.pose='out'; break; }
     case 'play': s.rel.child=clamp(s.rel.child+8); s.mp=clamp(s.mp+3); txt='하린이가 학교에서 짝꿍이랑 싸운 얘기를 했다. 끝까지 들어줬다.'; s.pose='desk'; break;
     case 'homework': s.rel.child=clamp(s.rel.child+4); s.flags.hw=(s.flags.hw||0)+1; s.mp=clamp(s.mp-1); txt='받아쓰기 틀린 걸 같이 고쳤다.'; s.pose='study'; break;
-    case 'gigM': { tx('부업 (부품 조립)',12000); s.hp=clamp(s.hp-2,0,s.hpMax); s.mp=clamp(s.mp-2); txt='400개를 조립해서 1만 2천 원.'; s.pose='desk'; break; }
+    case 'gigM': { const k=Math.min(4,s.gigStreak||0); tx('부업 (부품 조립)',12000); s.hp=clamp(s.hp-2,0,s.hpMax); s.mp=clamp(s.mp-(1+k)); txt=`400개를 조립해서 1만 2천 원.${k>=2?' 눈이 침침하고 손목이 저리다.':''}`;
+      if(Math.random()<gigRisk('gigM')) s.queue.push({id:'gigDefect',day:s.day+1,data:{}});
+      s.pose='desk'; break; }
     case 'drive': {
-      const calls=rint(1,3); let e=0; for(let k=0;k<calls;k++) e+=rint(13,28)*1000;
-      e -= 3000; tx(`대리운전 ${calls}콜 (보험료 공제)`, e); s.hp=clamp(s.hp-10,0,s.hpMax); s.mp=clamp(s.mp-3);
+      const k0=Math.min(4,s.gigStreak||0), calls=rint(1,3)+(s.flags.surge?1:0); let e=0; for(let k=0;k<calls;k++) e+=rint(13,28)*1000;
+      e -= 3000; tx(`대리운전 ${calls}콜 (보험료 공제)`, e); s.hp=clamp(s.hp-(10+2*k0),0,s.hpMax); s.mp=clamp(s.mp-(3+k0));
+      if(Math.random()<gigRisk('drive')) s.queue.push({id:'gigCrash',day:s.day+1,data:{drive:1,cause:node('무리한 대리운전',null,e,true)}});
       txt=`콜 ${calls}개. ${fmt(e)}원 벌었다.`;
       if(Math.random()<.2){ s.mp=clamp(s.mp-6); tx('요금 깎아줌',-10000); txt+=' 취한 손님이 요금이 비싸다며 끝까지 버텨서 만 원을 깎아줬다.'; }
       s.pose='out'; break; }
@@ -897,6 +1196,26 @@ function askRel(key){
   s.eveLog.push(t); s.pose='phone';
   render();
 }
+Object.assign(FOLLOW,{
+  glassesHead:()=>({short:'두통',text:'삐뚤어진 안경 탓인지 하루 종일 머리가 지끈거린다.',choices:[{t:'결국 안경을 새로 맞춘다',won:-70000,memo:'안경',force:1},{t:'진통제로 버틴다',won:-4500,memo:'진통제',hp:-6,mp:-4}]}),
+  fluWorse:()=>({short:'몸살',text:'몸살이 제대로 왔다. 열이 38도를 넘는다.',choices:[{t:'병원에 간다',won:-25000,memo:'병원비',force:1,hp:4,mp:-3},{t:'하루 종일 누워 버틴다',hp:-14,mp:-6}]}),
+  refundPaid:()=>({short:'환급금',text:'환급금이 들어왔다. 작년 알바 원천징수분이었다.',choices:[{t:'확인',won:37000,memo:'세금 환급',mp:5}]}),
+  equipSold:()=>({short:'집기 팔림',text:'튀김기를 사겠다는 연락이 왔다. 직접 실어 가겠다고 한다.',choices:[{t:'판다',won:260000,memo:'집기 판매',mp:6}]}),
+  bpCrash:()=>({short:'어지럼증',text:'일하다가 눈앞이 핑 돌았다. 혈압이 너무 높다고 한다.',choices:[{t:'응급실에 간다',won:-95000,memo:'응급실',force:1,hp:-12,set:{laid:2},res:'이틀은 쉬라고 했다.'}]}),
+  aloneHurt:()=>({short:'하린 다침',text:'혼자 있던 하린이 라면 물을 끓이다 손을 데었다.',choices:[{t:'병원으로 달려간다',won:-40000,memo:'화상 치료',force:1,absent:1,rel:{child:-6},mp:-14}]}),
+  teacherMiss:()=>({short:'상담 못 감',text:'결국 담임 상담에 못 갔다. 하린이가 "엄마 안 왔지?"라고 물었다.',choices:[{t:'…',rel:{child:-10},mp:-8}]}),
+  gigCrash:(s,d)=>({short:d.drive?'접촉 사고':'배달 중 사고',text:d.drive?'대리운전 중 주차장 기둥에 범퍼를 긁었다. 손님 차다.':(d.rain?'빗길에 미끄러져 넘어졌다. 무릎이 찢어지고 휴대폰 액정이 깨졌다.':'계단에서 발을 헛디뎌 발목을 접질렸다.'),
+    choices: d.drive ? [
+      {t:'보험 처리하고 배상한다',won:-150000,memo:'대리 사고 자기부담금',force:1,mp:-12,set:{gigBlock:4},res:'보험사에서 며칠 콜 배정을 막았다.'},
+      {t:'손님과 현금으로 합의한다',won:-90000,memo:'현금 합의',force:1,mp:-8,set:{gigBlock:2}}]
+    : [
+      {t:'병원에 간다',won:-45000,memo:'정형외과',force:1,hp:-8,set:{gigBlock:4},res:'나흘은 배달을 쉬라고 했다.'},
+      {t:'파스 붙이고 다음 날도 나간다',won:-6000,memo:'파스',hp:-18,set:{gigBlock:1}}]}),
+  stuffSold:()=>({short:'중고 판매',text:'스피커를 사겠다는 연락이 왔다. 역 앞에서 직거래하기로 했다.',choices:[{t:'판다',won:35000,memo:'중고 판매',h:.5}]}),
+  exPays:()=>({short:'양육비 입금',text:'전남편이 약속대로 양육비 일부를 보냈다.',choices:[{t:'확인',won:200000,memo:'양육비',mp:6}]}),
+  regularTip:()=>({short:'단골의 소개',text:'옛 단골이 자기 식당 주말 주방 보조 자리를 소개해 줬다. 토요일 하루 8만 원.',choices:[{t:'나간다',won:80000,memo:'주말 주방 보조',hp:-8,mp:5},{t:'몸이 안 된다고 한다',mp:-2}]}),
+  gigDefect:()=>({short:'불량 반품',text:'조립한 부품에서 불량이 나왔다며 공임을 깎겠다고 한다.',choices:[{t:'받아들인다',won:-8000,memo:'불량 공임 차감',force:1,mp:-6}]})
+});
 FOLLOW.kimLeadF = ()=>({short:'주방 자리 제안',text:'김사장이 전화했다. "우리 가게 주방에 자리 하나 났어. 월급은 다음 달 10일부터야."',note:'안정된 일자리일수록 첫 월급까지 버틸 여윳돈이 필요하다.',choices:[{t:'받는다',set:{steady:1},res:'사흘 뒤부터 매일 출근이다. 대신 이번 달 안에는 월급이 안 들어온다.'},{t:'당장 일당이 급하다'}]});
 
 /* cash advance */
@@ -914,7 +1233,15 @@ function cashAdvance(){
 let busy=false;
 async function sleep(){
   if(busy) return;
+  if(!s.nightDone && s.phase==='free' && !(s.bal<0)){
+    s.nightDone = true;
+    if(Math.random() < Math.min(.6, .22 + s.day*.014)){
+      const e = pickRandom(true);
+      if(e){ s.nightPending=true; s.ev={id:e.id,obj:null,cause:null}; s.phase='event'; render(); return; }
+    }
+  }
   if(s.bal<0 && !s.flags.giveUp){ s.flags.warnNeg=1; render(); return; }
+  s.gigStreak = (s.did.gigG||s.did.gigM||s.did.drive) ? s.gigStreak+1 : 0;
   busy=true;
   const C=CH(), P=C.people, H=HOUSES[C.house];
   // meal
@@ -1137,14 +1464,14 @@ function renderCard(){
   }
   if(s.phase==='event'){
     const ev=curEv();
-    c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 ${s.ev.obj?'<span class="chip">이어지는 일</span>':''}</div>
+    c.innerHTML=`<div class="eyebrow">DAY ${s.day} · ${WEEK[wd(s.day)]}요일 ${s.nightPending?'<span class="chip">자기 전</span>':''}${s.ev.obj?'<span class="chip">이어지는 일</span>':''}</div>
       ${s.morning.length?`<ul class="log">${s.morning.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
       <p class="ev-text">${esc(ev.text)}</p>
       <div class="choices">${ev.choices.map((ch,i)=>{const st=choiceState(ch);
         if(st.fog) return `<button class="choice fog" type="button" disabled aria-label="떠오르지 않는 선택지"><span>지금은 떠오르지 않는다</span></button>`;
-        return `<button class="choice" type="button" id="choice-${i}" data-i="${i}" ${st.dis?'disabled':''}><span>${esc(ch.t)}${st.dis?`<span class="sub">${st.dis}</span>`:ch.chance?`<span class="sub">결과는 해봐야 안다</span>`:''}</span>${tagsHtml(wonOf(ch),ch.h)}</button>`;}).join('')}</div>
+        return `<button class="choice" type="button" id="choice-${i}" data-i="${i}" ${st.dis?'disabled':''}><span>${esc(ch.t)}${st.dis?`<span class="sub">${st.dis}</span>`:ch.chance?`<span class="sub">결과는 해봐야 안다</span>`:''}</span>${tagsHtml(wonOf(ch),ch.h)}</button>`;}).join('')}${noWayOut(ev)?`<button class="choice" type="button" id="choice-fb" data-i="fb"><span>${FALLBACK_CHOICE.t}<span class="sub">할 수 있는 게 없다</span></span></button>`:''}</div>
       ${s.mp<40&&ev.choices.some(x=>x.wise)?'<p class="memo warn"><b>머리가 멍하다</b>지쳐서 떠오르지 않는 선택지가 있다.</p>':''}`;
-    c.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+    c.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>choose(b.dataset.i==='fb'?'fb':+b.dataset.i));
     return;
   }
   if(s.phase==='result'){
@@ -1153,8 +1480,8 @@ function renderCard(){
       <p class="result">${esc(r.text||'그렇게 넘어갔다.')}</p>
       ${r.roll?`<p class="memo"><b>${r.roll.ok?'잘 풀렸다':'안 풀렸다'}</b>될 가능성은 ${Math.round(r.roll.p*100)}% 정도였다.</p>`:''}
       ${r.note?`<p class="memo"><b>현실 메모</b>${esc(r.note)}</p>`:''}
-      <button class="primary" type="button" id="nextBtn">계속</button>`;
-    $('nextBtn').onclick=()=>{ s.res=null; nextEventOrFree(false); };
+      <button class="primary" type="button" id="nextBtn">${s.nightPending?'이제 잔다':'계속'}</button>`;
+    $('nextBtn').onclick=()=>{ s.res=null; if(s.nightPending){ s.nightPending=false; s.ev=null; s.phase='free'; sleep(); return; } nextEventOrFree(false); };
     return;
   }
   if(s.phase==='free') return renderFree(c);
@@ -1164,7 +1491,7 @@ function renderCard(){
 function renderFree(c){
   const left=s.free-s.spent;
   const acts=actions().map(a=>{
-    let dis=''; if(a.once&&s.did[a.id]) dis='오늘은 했다'; else if(a.wise&&s.mp<25) dis='엄두가 안 난다'; else if(a.won&&s.bal< -a.won) dis='목돈이 없다'; else if(!canSpend(a.h)) dis='시간이 없다';
+    let dis=''; if(a.gig && s.day<s.gigBlockUntil) dis=`다쳐서 ${s.gigBlockUntil-s.day}일은 못 한다`; else if(a.once&&s.did[a.id]) dis='오늘은 했다'; else if(a.wise&&s.mp<25) dis='엄두가 안 난다'; else if(a.won&&s.bal< -a.won) dis='목돈이 없다'; else if(!canSpend(a.h)) dis='시간이 없다';
     return `<button class="choice" type="button" id="act-${a.id}" data-a="${a.id}" ${dis?'disabled':''}><span>${esc(a.label)}<span class="sub">${dis||esc(a.sub)}</span></span>${tagsHtml(a.won,a.h)}</button>`;}).join('');
   const defers=s.defer.map(d=>{
     const blk=dayBlocked(d); let dis=''; if(d.cost&&s.bal<d.cost) dis='돈이 모자란다'; else if(!canSpend(d.h)) dis='시간이 없다';
@@ -1221,7 +1548,7 @@ function renderEnd(c){
   } else if(s.endType==='broke'){ head=`${s.day}일째, 잔고가 바닥난 채 잠들었다.`; body='다음 날 아침, 자동이체 실패 문자가 줄줄이 와 있었다.'; }
   else if(s.endType==='collapse'){ head=`${s.day}일째, 쓰러졌다.`; body='깨어보니 응급실이었다. 진료비 영수증이 먼저 눈에 들어왔다.'; }
   else { head=`${s.day}일째, 더는 버틸 수 없었다.`; body='알람을 끄고 다시 누웠다. 휴대폰을 뒤집어 놓고 아무 연락도 받지 않았다.'; }
-  const goal = s.char==='grad' ? (s.flags.offer?'최종 합격. 다음 달부터 출근한다.':`최종 합격은 아직이다. 면접 통과 ${s.pass}번.`)
+  const goal = s.char==='grad' ? (s.flags.offer?'최종 합격. 다음 달부터 출근한다.':s.flags.intern?`공채 최종 합격은 아직이지만, 다음 달부터 인턴으로 출근한다. 면접 통과 ${s.pass}번.`:`최종 합격은 아직이다. 면접 통과 ${s.pass}번.`)
     : s.char==='mom' ? (s.rel.child>=50?`하린이는 아직 엄마 품에서 웃는다. (마음 ${Math.round(s.rel.child)})`:`하린이가 말수가 줄었다. (마음 ${Math.round(s.rel.child)})`)
     : (s.flags.loanMissed?'대출 상환을 한 번 놓쳤다. 신용점수가 떨어졌다.':'대출은 한 번도 밀리지 않았다.') + (s.flags.steady?` 다음 달 10일에 첫 월급 ${fmt(s.pending)}원이 들어온다.`:'');
   const ch = chains();

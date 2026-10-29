@@ -32,6 +32,16 @@
 - 배포: Cloudflare Workers Builds가 `live/` 폴더를 `npx wrangler deploy`로 배포합니다.
 - 비용: 무료 플랜 안에서 동작합니다. 대기 중인 접속은 하이버네이션으로 비용이 거의 들지 않고, 30초 ping은 자동 응답으로 처리합니다.
 
+## 오늘의 판 순위표 (`live/`의 `Board`)
+
+같은 Worker에 순위표용 Durable Object(`Board`, SQLite)가 함께 있습니다. 하루(한국 시간)마다 시드가 바뀌고, 그날은 모두가 같은 사건을 겪습니다.
+
+- `POST /api/start` `{seed, char}` → `{id}`: 판 번호 발급. IP당 한 시간에 30번까지.
+- `POST /api/score` `{id, name, days, char, end, rents}` → 순위와 상위 10명. 번호마다 한 번만 올릴 수 있고, 하루를 1.5초보다 빨리 넘긴 기록은 받지 않습니다.
+- `GET /api/board?seed=YYYY-MM-DD` → `{total, top}`
+- 이름은 10자까지, 욕설이 들어가면 "익명의 세입자"로 바뀝니다.
+- 브라우저에서는 오늘의 판을 처음 한 번만 순위에 올리고, 다시 하는 판은 연습 판으로 처리합니다.
+
 ## 로컬에서 실행
 
 `index.html`을 브라우저로 열면 게임이 됩니다. 접속자 수까지 시험하려면:

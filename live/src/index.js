@@ -59,9 +59,118 @@ export class Presence {
   }
 }
 
+// ---------------- 오늘의 판 순위표 ----------------
+// 판 하나를 시작할 때 /api/start 로 번호를 받고, 끝나면 그 번호로 /api/score 에 기록을 올린다.
+// 번호마다 한 번만 올릴 수 있고, 시작부터 너무 빨리 끝난 기록(하루 1.5초 미만)은 받지 않는다.
+
+const CHARS = ['grad', 'mom', 'boss'];
+const ENDS = ['broke', 'collapse', 'burnout', 'evicted'];
+const BAD_WORDS = ['시발', '씨발', 'ㅅㅂ', '병신', 'ㅂㅅ', '좆', '개새', '니애미', '느금', '섹스', 'fuck', 'shit', 'sex', 'bitch', '창녀', '애미', '애비', '꺼져', '죽어'];
+const MIN_MS_PER_DAY = 1500;
+
+function kstDate(offsetDays = 0) {
+  return new Date(Date.now() + 9 * 3600e3 + offsetDays * 86400e3).toISOString().slice(0, 10);
+}
+function validSeed(seed) {
+  return typeof seed === 'string' && [kstDate(-1), kstDate(0), kstDate(1)].includes(seed);
+}
+function cleanName(raw) {
+  let name = String(raw || '').normalize('NFC').replace(/[^0-9A-Za-z가-힣ㄱ-ㅎㅏ-ㅣ _.-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 10);
+  const flat = name.toLowerCase().replace(/[\s_.-]/g, '');
+  if (!name || BAD_WORDS.some((w) => flat.includes(w))) name = '익명의 세입자';
+  return name;
+}
+
+export class Board {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.sql = ctx.storage.sql;
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, seed TEXT, char TEXT, ip TEXT, t0 INTEGER, used INTEGER DEFAULT 0)`);
+    this.sql.exec(`CREATE INDEX IF NOT EXISTS runs_ip ON runs (ip, t0)`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS scores (id TEXT PRIMARY KEY, seed TEXT, name TEXT, char TEXT, days INTEGER, endt TEXT, rents INTEGER, t INTEGER)`);
+    this.sql.exec(`CREATE INDEX IF NOT EXISTS scores_rank ON scores (seed, days DESC, t ASC)`);
+  }
+
+  board(seed, limit = 10) {
+    const top = this.sql.exec(`SELECT id, name, char, days, rents FROM scores WHERE seed = ? ORDER BY days DESC, t ASC LIMIT ?`, seed, limit).toArray();
+    const total = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE seed = ?`, seed).one().n;
+    // 같은 일수면 같은 순위
+    let prevDays = null, prevRank = 0;
+    top.forEach((r, i) => { r.rank = r.days === prevDays ? prevRank : i + 1; prevDays = r.days; prevRank = r.rank; });
+    return { total, top };
+  }
+
+  async fetch(request) {
+    const url = new URL(request.url);
+    const ip = request.headers.get('cf-connecting-ip') || 'local';
+    const now = Date.now();
+
+    if (url.pathname === '/api/board') {
+      const seed = url.searchParams.get('seed') || kstDate();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(seed)) return json({ error: 'seed' }, 400);
+      return json(this.board(seed));
+    }
+
+    let body = null;
+    try { body = await request.json(); } catch (_) { return json({ error: 'body' }, 400); }
+    if (!body || typeof body !== 'object') return json({ error: 'body' }, 400);
+
+    if (url.pathname === '/api/start') {
+      if (!validSeed(body.seed) || !CHARS.includes(body.char)) return json({ error: 'bad' }, 400);
+      const recent = this.sql.exec(`SELECT COUNT(*) AS n FROM runs WHERE ip = ? AND t0 > ?`, ip, now - 3600e3).one().n;
+      if (recent >= 30) return json({ error: 'slow down' }, 429);
+      this.sql.exec(`DELETE FROM runs WHERE t0 < ?`, now - 3 * 86400e3);
+      const id = crypto.randomUUID();
+      this.sql.exec(`INSERT INTO runs (id, seed, char, ip, t0) VALUES (?, ?, ?, ?, ?)`, id, body.seed, body.char, ip, now);
+      return json({ id });
+    }
+
+    if (url.pathname === '/api/score') {
+      const run = typeof body.id === 'string' ? this.sql.exec(`SELECT * FROM runs WHERE id = ?`, body.id).toArray()[0] : null;
+      if (!run) return json({ error: 'no run' }, 404);
+      if (run.used) return json({ error: 'already' }, 409);
+      const days = Math.floor(Number(body.days));
+      if (!(days >= 1 && days <= 500)) return json({ error: 'days' }, 400);
+      if (now - run.t0 < days * MIN_MS_PER_DAY) return json({ error: 'too fast' }, 400);
+      if (body.char !== run.char) return json({ error: 'char' }, 400);
+      const endt = ENDS.includes(body.end) ? body.end : 'broke';
+      const rents = Math.max(0, Math.min(Math.floor(days / 30), Math.floor(Number(body.rents) || 0)));
+      const name = cleanName(body.name);
+      this.sql.exec(`UPDATE runs SET used = 1 WHERE id = ?`, run.id);
+      this.sql.exec(`INSERT INTO scores (id, seed, name, char, days, endt, rents, t) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, run.id, run.seed, name, run.char, days, endt, rents, now);
+      const better = this.sql.exec(`SELECT COUNT(*) AS n FROM scores WHERE seed = ? AND days > ?`, run.seed, days).one().n;
+      const b = this.board(run.seed);
+      return json({ id: run.id, name, rank: better + 1, total: b.total, board: b });
+    }
+
+    return json({ error: 'not found' }, 404);
+  }
+}
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
+}
+function withCors(res, origin) {
+  const h = new Headers(res.headers);
+  h.set('Access-Control-Allow-Origin', origin);
+  h.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  h.set('Access-Control-Allow-Headers', 'content-type');
+  h.set('Access-Control-Max-Age', '86400');
+  h.set('Vary', 'Origin');
+  return new Response(res.body, { status: res.status, headers: h });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname.startsWith('/api/')) {
+      const origin = request.headers.get('Origin') || '';
+      if (!ALLOWED.test(origin)) return new Response('Forbidden', { status: 403 });
+      if (request.method === 'OPTIONS') return withCors(new Response(null, { status: 204 }), origin);
+      if (request.method !== (url.pathname === '/api/board' ? 'GET' : 'POST')) return withCors(json({ error: 'method' }, 405), origin);
+      const stub = env.BOARD.get(env.BOARD.idFromName('global'));
+      return withCors(await stub.fetch(request), origin);
+    }
     if (url.pathname !== '/ws') return new Response('wolseday live', { status: 200 });
     if (request.headers.get('Upgrade') !== 'websocket') return new Response('WebSocket only', { status: 426 });
     const origin = request.headers.get('Origin') || '';

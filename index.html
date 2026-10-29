@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="취준생, 한부모, 폐업한 사장님. 세 사람 중 한 명으로 월세날까지 30일을 버티는 도트 생존 게임.">
+<meta name="description" content="취준생, 한부모, 폐업한 사장님. 세 사람 중 한 명으로 월세날을 몇 번 넘기는지 겨루는 도트 생존 게임. 매일 바뀌는 오늘의 판과 순위표.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="월세날까지">
-<meta property="og:description" content="돈이 없으면 시간으로, 시간이 없으면 돈으로. 월세날까지 30일, 버틸 수 있을까?">
+<meta property="og:description" content="돈이 없으면 시간으로, 시간이 없으면 돈으로. 오늘의 판에서 너는 며칠 버틸까?">
 <meta name="theme-color" content="#15131d">
 <meta property="og:url" content="https://wolseday.com/">
 <meta property="og:image" content="https://wolseday.com/og.png">
@@ -260,6 +260,25 @@ body{
 details.help{font-size:13px;color:var(--muted)}
 details.help summary{cursor:pointer;color:var(--text)}
 details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.board{border:2px solid var(--line);background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.board .label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.board ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.board li{display:grid;grid-template-columns:30px 1fr auto 56px;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.board li:last-child{border-bottom:none}
+.board li.me{background:rgba(255,164,63,.12);outline:1px solid var(--sodium)}
+.board .rk{font-family:var(--f-mono);color:var(--sodium);text-align:right}
+.board .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board .ch{font-size:12px;color:var(--muted)}
+.board .dy{font-family:var(--f-mono);text-align:right}
+.board .empty{font-size:13px;color:var(--muted);margin:0}
+.mine{font-size:14px;color:var(--text)}
+.mine b{color:var(--sodium);font-weight:500}
+.submit{display:flex;flex-direction:column;gap:8px;border:2px solid var(--sodium);padding:12px 14px}
+.submit label{font-size:13px;color:var(--muted)}
+.submit .in{display:flex;gap:8px;flex-wrap:wrap}
+.submit input{flex:1 1 160px;min-width:0;background:#0f0d16;color:var(--text);border:2px solid var(--line);padding:10px 12px;font:inherit;font-size:16px}
+.submit input:focus{outline:2px solid var(--sodium);outline-offset:1px}
+.submit small{color:var(--muted);font-size:12px}
 @media (prefers-reduced-motion:reduce){.live i{animation:none}.floater{animation:none}.cells.low i.on{animation:none}}
 </style>
 
@@ -267,7 +286,7 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand">월세날까지<small>서울 30일 생존기</small></div>
+    <div class="brand">월세날까지<small>월세날을 몇 번 넘길 수 있을까</small></div>
     <div class="top-right">
       <div class="live" id="live" hidden role="status"><i aria-hidden="true"></i>지금 <b id="liveN">0</b>명이 버티는 중</div>
       <div class="dday" id="dday">월세날 <b>D-30</b></div>
@@ -289,7 +308,7 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
         <div class="legend"><span style="--c:var(--t-sleep)">잠</span><span style="--c:var(--t-work)">일</span><span style="--c:var(--t-move)">이동</span><span style="--c:var(--t-chore)">집안일·돌봄</span><span style="--c:var(--t-used)">쓴 시간</span><span style="--c:var(--t-free)">남은 시간</span><span style="--c:var(--t-cut)">깎인 잠</span></div>
       </div>
       <div class="card" id="card" aria-live="polite"></div>
-      <div class="panel diary" id="diaryBox" hidden><div class="label"><span>30일 기록</span><span>최근 순</span></div><ol id="diary"></ol></div>
+      <div class="panel diary" id="diaryBox" hidden><div class="label"><span>기록</span><span>최근 순</span></div><ol id="diary"></ol></div>
     </section>
 
     <aside class="side" id="side" hidden>
@@ -339,7 +358,16 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmt = n => (n<0?'-':'') + Math.abs(Math.round(n)).toLocaleString('ko-KR');
 const clamp = (v,a=0,b=100) => Math.max(a, Math.min(b, v));
-const rint = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+function hashStr(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++){ h=Math.imul(h^str.charCodeAt(i),3432918353); h=h<<13|h>>>19; } h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); return (h^h>>>16)>>>0; }
+function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let q=Math.imul(a^a>>>15,1|a); q=q+Math.imul(q^q>>>7,61|q)^q; return ((q^q>>>14)>>>0)/4294967296; }; }
+let RNG=Math.random;
+const rnd=()=>RNG();
+function reseed(tag){ RNG = (s&&s.seed) ? mulberry(hashStr(s.seed+'|'+s.char+'|'+tag)) : Math.random; }
+function kstDate(){ return new Date(Date.now()+9*3600e3).toISOString().slice(0,10); }
+const rint = (a,b) => a + Math.floor(rnd()*(b-a+1));
+const MLEN = 30;
+const dom = d => ((Math.max(1,d)-1)%MLEN)+1;
+const monthOf = d => Math.floor((Math.max(1,d)-1)/MLEN)+1;
 const round100 = n => Math.round(n/100)*100;
 const WEEK = ['월','화','수','목','금','토','일'];
 const wd = d => (d-1)%7;
@@ -827,7 +855,7 @@ const EVENTS = [
    {t:'밤새 수건으로 막는다',h:2,hp:-6},
    {t:'집주인에게 문자한다',chance:{rel:'landlord',ok:{res:'내일 실리콘을 다시 쏴주겠다고 했다.'},fail:{won:-35000,memo:'실리콘 시공',rel:{landlord:-5},res:'"그건 세입자가 알아서 하세요."'}}}]},
  /* 윤서 */
- {id:'intern',chars:['grad'],when:s=>s.day>=15&&s.career>=55&&!s.flags.offer,short:'인턴 제안',text:'지원했던 중소기업에서 6개월 인턴을 제안했다. 정규직 전환 가능, 월 190만 원. 다음 달부터다.',
+ {id:'intern',chars:['grad'],when:s=>s.day>=15&&s.career>=70&&!s.flags.offer,short:'인턴 제안',text:'지원했던 중소기업에서 6개월 인턴을 제안했다. 정규직 전환 가능, 월 190만 원. 다음 달부터다.',
   choices:[
    {t:'받는다',mp:15,set:{intern:1},res:'공채는 계속 준비하기로 했다. 다음 달부터는 월급이 생긴다.'},
    {t:'공채에 집중한다',career:6,mp:-3}]},
@@ -902,7 +930,7 @@ const FOLLOW = {
 
 /* ---------------- state ---------------- */
 let s;
-function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null,dayLog:[],diary:[],dayStart:null,gigStreak:0,gigBlockUntil:0,costMult:1,nightDone:false,nightPending:false}; }
+function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null,dayLog:[],diary:[],dayStart:null,gigStreak:0,gigBlockUntil:0,costMult:1,nightDone:false,nightPending:false,seed:null,ranked:false,rent:0,rentsPaid:0,extraBills:[],runId:null}; }
 
 const CH = () => CHARS[s.char];
 function todayWork(){ return s.sched && s.sched.work; }
@@ -944,7 +972,11 @@ const canSpend = h => (s.spent + h*(s.mp<40?1.25:1)) - s.free <= 4;
 function makeSchedule(){
   const w = wd(s.day), c = s.char;
   let work=false, blocks, label;
-  if(c==='grad'){
+  if(c==='grad' && s.flags.job){
+    work = !s.fired && w<=4;
+    blocks = work ? [['sleep',7],['chore',1],['move',1.5],['work',9]] : [['sleep',7],['chore',1.5]];
+    label = work ? (s.flags.job==='office'?'회사 09:00–18:00':'인턴 09:00–18:00') : (s.fired?'일이 없다':'쉬는 날');
+  } else if(c==='grad'){
     const cut = s.flags.shiftCut && w===2;
     work = !s.fired && w<=2 && !cut;
     blocks = work ? [['sleep',7],['chore',1],['move',.5],['work',8]] : [['sleep',7],['chore',1.5]];
@@ -960,8 +992,8 @@ function makeSchedule(){
       blocks = work ? [['sleep',7],['chore',1],['move',1],['work',11]] : [['sleep',7],['chore',1.5]];
     } else {
       const laid = s.day < s.laidUntil;
-      const p = laid ? 0 : (w<=5 ? clamp(.4 + (s.rel.chief-50)/200 + (s.day<s.chiefUntil?.3:0) - (s.hp<35?.25:0),0,.95) : 0);
-      work = Math.random() < p;
+      const p = laid ? 0 : (w<=5 ? clamp(.46 + (s.rel.chief-50)/200 + (s.day<s.chiefUntil?.3:0) - (s.hp<35?.25:0),0,.95) : 0);
+      work = rnd() < p;
       blocks = work ? [['sleep',7],['chore',1],['move',1.5],['work',9]] : [['sleep',7],['chore',1.5]];
       label = laid ? '허리 때문에 일을 못 나간다' : work ? '물류센터 배정 05:00–14:00' : (w<=5?'배정 문자가 안 왔다':'쉬는 날');
     }
@@ -975,25 +1007,30 @@ function makeSchedule(){
 
 /* ---------------- day ---------------- */
 function startDay(){
-  s.day++; s.spent=0; s.cooked=false; s.did={}; s.eveLog=[]; s.morning=[]; s.pose='desk';
+  s.day++; reseed('d'+s.day); s.spent=0; s.cooked=false; s.did={}; s.eveLog=[]; s.morning=[]; s.pose='desk';
   s.dayStart={bal:s.bal,hp:s.hp,mp:s.mp,nodes:s.nodes.length,ledger:s.ledger.length};
-  s.costMult = 1 + Math.max(0, s.day-12)*0.025; s.nightDone=false; s.nightPending=false; s.flags.surge=0;
-  s.rain = Math.random()<.2;
+  const D=dom(s.day), M=monthOf(s.day);
+  s.costMult = 1 + Math.max(0, D-12)*0.025 + (M-1)*0.12; s.nightDone=false; s.nightPending=false; s.flags.surge=0;
+  s.rain = rnd()<.2;
   makeSchedule();
   { const m=MOMENTS[s.char]||[]; diary(`${s.rain?'비가 온다.':WEATHER[rint(0,WEATHER.length-1)]} ${m[rint(0,m.length-1)]||''}`.trim(),'a'); }
   if(s.carry&&s.carry.length){ s.morning.push(...s.carry); s.carry=[]; }
   const C = CH(), w = wd(s.day);
+  if(D===1 && s.day>1) newMonth(M);
   // absence
   if(s.absentToday && !s.fired && s.char!=='boss'){
     s.strikes++; s.morning.push(`결근했다. 결근 ${s.strikes}/3`);
-    if(s.char==='mom') s.flags.deduct=(s.flags.deduct||0)+98000;
+    if(s.char==='mom' || s.flags.job) s.flags.deduct=(s.flags.deduct||0)+98000;
     if(s.strikes>=3) s.queue.unshift({id:'fired',day:s.day});
   }
   // payday first
-  if(s.char==='mom' && s.day===25){ const base = s.fired ? Math.round(2156880*(s.flags.workDays||0)/22/10)*10 : 2156880; const cut = s.fired ? (s.flags.halfDeduct||0) : (s.flags.deduct||0); const pay=Math.max(0,base-cut); if(pay) tx(s.fired?'급여 정산':'급여', pay); s.morning.push(pay ? `${s.fired?'급여 정산':'월급'} ${fmt(pay)}원 입금${s.fired?` (일한 ${s.flags.workDays||0}일분)`:''}${cut?` · 공제 ${fmt(cut)}원`:''}` : '월급날이지만 들어온 돈이 없다.'); }
+  if(s.char==='mom' && D===25 && !(s.fired && !s.flags.workDays && !s.flags.halfDeduct)){ const base = s.fired ? Math.round(2156880*(s.flags.workDays||0)/22/10)*10 : 2156880; const cut = s.fired ? (s.flags.halfDeduct||0) : (s.flags.deduct||0); const pay=Math.max(0,base-cut); if(pay) tx(s.fired?'급여 정산':'급여', pay); s.morning.push(pay ? `${s.fired?'급여 정산':'월급'} ${fmt(pay)}원 입금${s.fired?` (일한 ${s.flags.workDays||0}일분)`:''}${cut?` · 공제 ${fmt(cut)}원`:''}` : '월급날이지만 들어온 돈이 없다.'); s.flags.workDays=0; s.flags.deduct=0; s.flags.halfDeduct=0; }
+  if(s.char==='grad' && s.flags.job && D===25 && !s.fired){ const pay=s.flags.job==='office'?2480000:1900000; const cut=s.flags.deduct||0; tx(s.flags.job==='office'?'급여':'인턴 급여', pay-cut); s.morning.push(`월급 ${fmt(pay-cut)}원 입금${cut?` · 결근 공제 ${fmt(cut)}원`:''}`); s.flags.deduct=0; }
+  if(s.char==='boss' && s.flags.steady && D===10 && s.pending>0){ tx('고깃집 월급', s.pending); s.morning.push(`고깃집 월급 ${fmt(s.pending)}원 입금`); s.pending=0; }
   // work and pay
   if(s.sched.work){
-    if(s.char==='grad'){ s.pending += MINW*8; s.hp-=6; s.mp-=2; s.morning.push(`야간 근무 · 오늘 몫 ${fmt(MINW*8)}원 (금요일 지급)`); }
+    if(s.char==='grad' && s.flags.job){ s.hp-=4; s.mp-=3; tx('교통비',-2900); s.morning.push(s.flags.job==='office'?'회사 출근 · 아직 모든 게 낯설다':'인턴 출근 · 정규직 전환은 아무도 모른다'); }
+    else if(s.char==='grad'){ s.pending += MINW*8; s.hp-=6; s.mp-=2; s.morning.push(`야간 근무 · 오늘 몫 ${fmt(MINW*8)}원 (금요일 지급)`); }
     if(s.char==='mom'){ s.flags.workDays=(s.flags.workDays||0)+1; s.hp-=4; s.mp-=3; tx('교통비', -2900); s.morning.push('마트 근무 · 퇴근 후 하린이 저녁과 숙제'); }
     if(s.char==='boss'){
       if(s.flags.steady && s.day>=s.flags.steadyFrom){ s.hp-=6; s.mp-=1; s.pending += 105000; tx('교통비',-2900); s.morning.push(`고깃집 주방 · 오늘 몫 ${fmt(105000)}원 (다음 달 10일 지급)`); }
@@ -1002,14 +1039,14 @@ function startDay(){
   } else if(s.char==='boss' && !s.flags.steady && w<=5 && s.day>=s.laidUntil){ s.mp-=3; s.morning.push('배정 문자가 오지 않았다. 공치는 날.'); }
   if(s.fired){ s.mp-=3; }
   // payday
-  if(s.char==='grad' && w===4 && !s.fired){
+  if(s.char==='grad' && w===4 && !s.fired && !s.flags.job){
     const juhyu = s.flags.juhyu ? 49536 : 0;
     if(s.pending+juhyu>0){ tx(juhyu?'주급 (주휴수당 포함)':'주급', s.pending+juhyu); s.morning.push(`주급 ${fmt(s.pending+juhyu)}원 입금`); s.pending=0; }
   }
   if(s.char==='grad' && s.fired && s.pending>0){ tx('주급 정산', s.pending); s.pending=0; }
   // bills
   billsDue().forEach(b=>{
-    if(b.day!==s.day) return;
+    if(b.day!==D) return;
     let amt=b.amt;
     if(b.key==='loan' && s.flags.loanRelief){ amt=260000; }
     if(b.key==='revolving' && s.flags.revolvingCut){ amt=150000; }
@@ -1029,6 +1066,74 @@ function startDay(){
   nextEventOrFree(true);
 }
 
+function wear(){ return Math.max(0, (s.day-8)/30); }
+function priceUp(){ return 1 + .06*(monthOf(s.day)-1); }
+function foodPrice(){ return round100(HOUSES[CH().house].food*priceUp()); }
+const SHOCKS = [
+  {id:'boiler',t:'보일러가 멈췄다. 기사님이 부품을 통째로 갈아야 한다고 한다.',short:'보일러 고장',amt:180000,skip:{t:'전기장판으로 버틴다',hp:-12,mp:-8}},
+  {id:'crown',t:'밥을 먹다가 어금니가 깨졌다. 크라운을 씌워야 한다.',short:'이가 깨짐',amt:260000,skip:{t:'일단 반대쪽으로 씹는다',hp:-8,mp:-6}},
+  {id:'parent',t:'고향에서 전화가 왔다. 아버지가 넘어져서 입원하셨다. 병원비를 보태야 한다.',short:'아버지 입원',amt:300000,skip:{t:'형편이 안 된다고 말한다',mp:-16}},
+  {id:'washer',t:'세탁기가 탈수 중에 멈췄다. 고치는 값이나 중고 값이나 비슷하다.',short:'세탁기 고장',amt:200000,skip:{t:'빨래방을 다닌다',mp:-6,won:-30000}},
+  {id:'fine',t:'몇 주 전 신호위반 과태료 고지서가 날아왔다.',short:'과태료',amt:70000},
+  {id:'wedding',t:'친한 친구 결혼식 청첩장이 왔다. 축의금과 교통비가 든다.',short:'결혼식',amt:150000,skip:{t:'못 간다고 한다',mp:-10}},
+  {id:'glasses2',t:'안경 렌즈에 금이 갔다. 도수가 높아서 렌즈만 해도 비싸다.',short:'안경',amt:120000,skip:{t:'금 간 채로 쓴다',hp:-4,mp:-6}},
+  {id:'insurance',t:'건강보험료가 재산정돼서 밀린 차액이 한꺼번에 청구됐다.',short:'건강보험 추징',amt:210000},
+  {id:'child',chars:['mom'],t:'하린이 학교에서 현장체험학습과 방과후 교재비 안내문을 받아왔다.',short:'하린 학교 비용',amt:160000,skip:{t:'이번엔 빠지자고 한다',rel:{child:-12},mp:-10}},
+  {id:'laptop',chars:['grad'],t:'노트북이 켜지지 않는다. 자소서 파일이 전부 그 안에 있다.',short:'노트북 고장',amt:350000,skip:{t:'PC방에서 쓴다',mp:-8,won:-20000}},
+  {id:'collect',chars:['boss'],t:'가게 시절 거래처가 밀린 대금을 한꺼번에 갚으라는 내용증명을 보냈다.',short:'내용증명',amt:400000,skip:{t:'못 본 척한다',mp:-14}}
+];
+function queueShocks(M){
+  const pool=SHOCKS.filter(x=>(!x.chars||x.chars.includes(s.char)) && (M>1||x.amt<=200000)), n=M;
+  for(let i=0;i<n;i++){ const sh=pool[rint(0,pool.length-1)]; s.queue.push({id:'shock',day:s.day+rint(M===1?7:3,M===1?24:26),data:{id:sh.id,mult:1+.5*(M-1)}}); }
+}
+FOLLOW.shock=(s,d)=>{ const sh=SHOCKS.find(x=>x.id===d.id), amt=round100(sh.amt*d.mult/1000)*1000;
+  const ch=[{t:'바로 낸다',won:-amt,memo:sh.short,mp:-3}];
+  if(!hasDefer('shock_'+sh.id)) ch.push({t:'카드 할부로 돌린다',mp:-5,deferRaw:{key:'shock_'+sh.id,name:`${sh.short} 할부`,left:10,cost:round100(amt*1.12),h:.1,expire:'billLate',data:{name:`${sh.short} 할부`,amt:round100(amt*1.12)},prem:{cat:'할부 이자',amt:round100(amt*.12)}},res:'열흘 뒤 이자까지 붙어서 빠져나간다.'});
+  if(sh.skip) ch.push({...sh.skip});
+  if(!sh.skip && ch.length===1) ch[0].force=1;
+  return {short:sh.short,text:sh.t,choices:ch}; };
+function newMonth(M){
+  const C=CH(), rent=s.rent;
+  s.morning.push(`${M-1}번째 월세날이다.`);
+  if(s.bal>=rent){ tx(`월세 (${C.rentWho})`, -rent); s.rentsPaid++; s.flags.rentToday=1; s.morning.push(`월세 ${fmt(rent)}원을 보냈다.`); diary(`${M-1}번째 월세를 냈다.`,'p'); }
+  else {
+    const n=node('월세를 못 냄', null, 0, true);
+    const left = s.flags.rentDelay ? 14 : 7;
+    addDeferRaw({key:'rent',name:'밀린 월세',left,cost:rent,h:.2,expire:'evict',data:{},bill:true}, n);
+    if(!s.flags.rentDelay && 'landlord' in s.rel) s.rel.landlord=clamp(s.rel.landlord-10);
+    s.morning.push(`월세 ${fmt(rent)}원을 보내지 못했다. ${C.rentWho}이(가) ${left}일 안에 내라고 했다.`);
+    diary('월세를 못 냈다.','p');
+  }
+  s.flags.rentDelay=0; s.flags.cashUsed=0;
+  s.hpMax = Math.max(55, (s.char==='boss'?85:100) - 6*(M-1)); s.hp=Math.min(s.hp,s.hpMax);
+  s.mp = clamp(s.mp-5);
+  queueShocks(M);
+  diary(`${M}번째 달이 시작됐다.`,'a');
+  // 겨울로 갈수록 붙는 돈
+  const heat={grad:25000,mom:110000,boss:80000}[s.char];
+  s.extraBills=[{day:18,name:'난방비',amt:round100(heat*(1+.25*Math.min(3,M-2)))}];
+  if(s.char==='mom') s.extraBills.push({day:3,name:'하린 돌봄교실·학원',amt:round100(120000*priceUp())});
+  if(M>=3) s.extraBills.push({day:12,name:'경조사비·모임',amt:{grad:30000,mom:50000,boss:100000}[s.char]});
+  if(M%3===2) s.queue.push({id:'rentHike',day:s.day});
+  if(s.fired) s.queue.push({id:'rehire',day:s.day+rint(2,6)});
+  // 취업 이후
+  if(s.char==='grad' && !s.flags.job && (s.flags.offer||s.flags.intern)){
+    s.flags.job = s.flags.offer ? 'office' : 'intern'; s.fired=false; s.strikes=0;
+    if(s.pending>0){ tx('편의점 마지막 주급', s.pending); s.pending=0; }
+    s.morning.push(s.flags.job==='office'?'오늘부터 회사에 출근한다. 첫 월급은 25일이다.':'오늘부터 인턴 출근이다. 첫 월급은 25일이다.');
+  }
+  if(s.char==='grad' && !s.flags.job && !s.flags.offer){ const cos=['동림유통','한결테크','새봄제약','우성물류','가온식품','이음정보']; [5,12,19].forEach((d,i)=>s.queue.push({id:'docCheck',day:s.day+d-1+rint(0,1),data:{co:cos[(M*3+i)%cos.length]}})); }
+}
+Object.assign(FOLLOW,{
+  evict:(s)=>({short:'퇴거 통보',text:'밀린 월세를 끝내 못 냈다. 집주인이 이번 주 안에 방을 빼달라고 했다.',choices:[
+    ...(s.char!=='grad' && !s.flags.depositUsed ? [{t:'보증금에서 까달라고 사정한다',set:{depositUsed:1},rentPaid:1,mp:-14,rel:{landlord:-15},res:'보증금에서 한 달 치를 깠다. 다음에는 이런 사정도 안 통한다.'}] : []),
+    {t:'짐을 싼다',end:'evicted',mp:-30}]}),
+  rentHike:(s)=>{ const up=round100(s.rent*(s.char==='grad'?.06:.05)/1000)*1000||20000; return {short:'월세 인상',text:`${CH().rentWho}이(가) 다음 달부터 월세를 ${fmt(up)}원 올리겠다고 한다. "주변 시세가 다 올랐어요."`,
+    choices:[{t:'알겠다고 한다',mp:-6,res:`다음 달부터 월세는 ${fmt(s.rent+up)}원이다.`,addRent:up},
+      {t:'사정을 말하고 조금만 덜 올려달라고 한다',h:.5,chance:{rel:'landlord',ok:{addRent:Math.round(up/2000)*1000,mp:2,res:'반만 올리기로 했다.'},fail:{addRent:up,rel:{landlord:-6},mp:-8,res:'"싫으면 나가셔도 돼요."'}}}]}; },
+  rehire:(s)=>({short:'일자리 공고',text:s.char==='mom'?'동네 다른 마트에서 계산원을 구한다는 공고를 봤다.':s.char==='grad'?'근처 편의점에서 야간 알바를 구한다.':'다른 인력사무소에서 사람을 구한다.',
+    choices:[{t:'면접을 본다',h:2,won:-3000,memo:'교통비',chance:{p:.55,ok:{rehire:1,mp:10,res:'다음 주부터 나오라고 했다.'},fail:{mp:-8,res:'연락이 오지 않았다.',retry:1}}},{t:'지금은 힘이 없다',mp:-4}]})
+});
 function pickEvent(){
   const due = s.queue.findIndex(q=>q.day<=s.day);
   if(due>=0){
@@ -1040,7 +1145,7 @@ function pickEvent(){
 }
 function nextEventOrFree(morning){
   let pick = pickEvent();
-  if(!pick && morning && Math.random() < (s.day===1 ? 1 : .9)){
+  if(!pick && morning && rnd() < (s.day===1 || monthOf(s.day)>1 ? 1 : .9)){
     const e = pickRandom(false);
     if(e) pick = {ev:e, cause:null, id:e.id};
   }
@@ -1048,11 +1153,12 @@ function nextEventOrFree(morning){
   else { s.ev=null; s.phase='free'; }
   render();
 }
+const ONCE=new Set(['intern','kimLead']);
 function pickRandom(night){
   const pool = EVENTS.filter(e=>!!e.night===night && (!e.chars||e.chars.includes(s.char)) && (!e.when||e.when(s))
-    && (s.used[e.id]==null || (e.rep && s.day - s.used[e.id] >= e.rep)));
+    && (s.used[e.id]==null || (e.rep && s.day - s.used[e.id] >= e.rep) || (!e.rep && !ONCE.has(e.id) && s.day - s.used[e.id] >= 40)));
   if(!pool.length) return null;
-  let tot=pool.reduce((a,e)=>a+(e.w||1)*(e.rep?.6:1),0), r=Math.random()*tot, e=pool[0];
+  let tot=pool.reduce((a,e)=>a+(e.w||1)*(e.rep?.6:1),0), r=rnd()*tot, e=pool[0];
   for(const x of pool){ r-=(x.w||1)*(x.rep?.6:1); if(r<=0){e=x;break;} }
   s.used[e.id]=s.day;
   return e;
@@ -1089,12 +1195,16 @@ function applyFx(fx, cause, label){
   if(fx.set && fx.set.gigBlock){ s.gigBlockUntil = s.day+1+fx.set.gigBlock; s.flags.gigBlock=0; }
   if(s.stock<0) s.stock=0;
   if(fx.absent) s.absentNext = true;
-  if(fx.fire){ s.fired = true; if(s.char==='grad' && s.pending>0){ tx('주급 정산', s.pending); s.pending=0; } }
+  if(fx.addRent){ s.rent += fx.addRent; }
+  if(fx.rentPaid){ s.rentsPaid++; s.flags.rentToday=1; }
+  if(fx.rehire){ s.fired=false; s.strikes=0; s.flags.workDays=0; s.flags.shiftCut=0; }
+  if(fx.retry){ s.queue.push({id:'rehire',day:s.day+rint(5,9)}); }
+  if(fx.fire){ s.fired = true; if(s.flags.job){ s.flags.job=null; s.flags.offer=0; s.flags.intern=0; } if(s.char==='grad' && s.pending>0){ tx('주급 정산', s.pending); s.pending=0; } }
   if(fx.lostCall){ if(s.char==='grad') s.career=clamp(s.career-10); if(s.char==='boss') s.rel.chief=clamp(s.rel.chief-10); if(s.char==='mom') s.rel.child=clamp(s.rel.child-8); }
   const n = node(label, cause, w, (fx.mp||0)<=-8 || (fx.hp||0)<=-10 || w<=-100000);
   if(fx.defer){ const d = DEF[fx.defer.key]; addDeferRaw({...d, key:fx.defer.key, ...fx.defer}, n); }
   if(fx.deferRaw) addDeferRaw(fx.deferRaw, n);
-  if(fx.follow && Math.random() < (fx.follow.p??1)) s.queue.push({id:fx.follow.id, day:s.day+fx.follow.in, data:{...(fx.follow.data||{}), cause:n}});
+  if(fx.follow && rnd() < (fx.follow.p??1)) s.queue.push({id:fx.follow.id, day:s.day+fx.follow.in, data:{...(fx.follow.data||{}), cause:n}});
   return {text:fx.res||'', node:n};
 }
 
@@ -1109,11 +1219,12 @@ function choose(i){
   let r = applyFx(c, s.ev.cause, label);
   let text = r.text, roll=null;
   if(c.chance){
-    const p = chanceP(c.chance), ok = Math.random() < p;
+    const p = chanceP(c.chance), ok = rnd() < p;
     const sub = applyFx(ok?c.chance.ok:c.chance.fail, r.node, ok?'잘 풀림':'안 풀림');
     text = sub.text || text; roll={p,ok};
   }
-  if(s.char==='grad' && s.pass>=2 && !s.flags.offerQueued){ s.flags.offerQueued=1; s.queue.push({id:'offer',day:s.day+2,data:{cause:r.node}}); }
+  if(c.end){ s.log.push({day:s.day, pick:c.t, ev:ev.short}); return endGame(c.end); }
+  if(s.char==='grad' && s.pass>=3 && !s.flags.offerQueued && !s.flags.job){ s.flags.offerQueued=1; s.queue.push({id:'offer',day:s.day+2,data:{cause:r.node}}); }
   s.log.push({day:s.day, pick:c.t, ev:ev.short});
   { const w=wonOf(c); diary(`${ev.short||'일'} → ${c.t}`+(w?` (${w>0?'+':'-'}${fmt(Math.abs(w))})`:''),'p'); }
   s.res = {text, note:ev.note||null, roll};
@@ -1139,6 +1250,7 @@ function handleDefer(key, halfDay){
     if(s.char==='boss' && s.flags.steady && s.day>=s.flags.steadyFrom){ s.pending = Math.max(0, s.pending-52500); }
   }
   if(d.cost) tx(d.name, -d.cost, d.prem||null);
+  if(d.key==='rent'){ s.rentsPaid++; s.flags.rentToday=1; }
   spend(d.h);
   s.defer = s.defer.filter(x=>x!==d);
   const n = node(`처리: ${d.name}${halfDay?' (반차)':''}`, d.node, -(d.cost||0));
@@ -1159,7 +1271,7 @@ function dayBlocked(d){
 
 /* ---------------- free-time actions ---------------- */
 function actions(){
-  const C=CH(), P=C.people, food=HOUSES[C.house].food, A=[];
+  const C=CH(), P=C.people, food=foodPrice(), A=[];
   const bulk = food*7*P, small = Math.round(food*1.7/100)*100*P;
   if(!s.cooked){
     if(s.stock>0) A.push({id:'cook',label:P>1?'저녁 해 먹이기':'밥 해 먹기',sub:`장 봐둔 재료 사용 · ${s.stock}일치 남음`,h:P>1?1.2:.8});
@@ -1190,7 +1302,7 @@ function gigSub(base){
 }
 function gigRisk(kind){ const k=Math.min(6,s.gigStreak||0); return (kind==='drive'?.05:kind==='gigM'?.08:.03) + .05*k + (s.rain&&kind!=='gigM'?.08:0) + (s.flags.surge?.04:0); }
 function doAction(id){
-  const C=CH(), P=C.people, food=HOUSES[C.house].food;
+  const C=CH(), P=C.people, food=foodPrice();
   const a = actions().find(x=>x.id===id); if(!a) return;
   if(a.once && s.did[id]) return;
   if(a.gig && s.day < s.gigBlockUntil) return;
@@ -1210,21 +1322,21 @@ function doAction(id){
       const e=round100(rint(14000,24000)*mult); tx(s.flags.surge?'도보 배달 (우천 할증)':'도보 배달',e);
       s.hp=clamp(s.hp-(5+3*k),0,s.hpMax); s.mp=clamp(s.mp-(1+2*k));
       txt=`두 시간 동안 ${fmt(e)}원 벌었다.${k>=4?' 몸이 무거워서 콜을 잡아도 늦게 도착한다. 평점이 떨어졌다.':k>=2?' 다리가 무겁다. 며칠째 쉬지 못했다.':''}`;
-      if(Math.random()<gigRisk('gigG')) s.queue.push({id:'gigCrash',day:s.day+1,data:{rain:!!s.rain,cause:node('무리한 배달',null,e,true)}});
+      if(rnd()<gigRisk('gigG')) s.queue.push({id:'gigCrash',day:s.day+1,data:{rain:!!s.rain,cause:node('무리한 배달',null,e,true)}});
       s.pose='out'; break; }
     case 'play': s.rel.child=clamp(s.rel.child+8); s.mp=clamp(s.mp+3); txt='하린이가 학교에서 짝꿍이랑 싸운 얘기를 했다. 끝까지 들어줬다.'; s.pose='desk'; break;
     case 'homework': s.rel.child=clamp(s.rel.child+4); s.flags.hw=(s.flags.hw||0)+1; s.mp=clamp(s.mp-1); txt='받아쓰기 틀린 걸 같이 고쳤다.'; s.pose='study'; break;
     case 'gigM': { const k=Math.min(4,s.gigStreak||0); tx('부업 (부품 조립)',12000); s.hp=clamp(s.hp-2,0,s.hpMax); s.mp=clamp(s.mp-(1+k)); txt=`400개를 조립해서 1만 2천 원.${k>=2?' 눈이 침침하고 손목이 저리다.':''}`;
-      if(Math.random()<gigRisk('gigM')) s.queue.push({id:'gigDefect',day:s.day+1,data:{}});
+      if(rnd()<gigRisk('gigM')) s.queue.push({id:'gigDefect',day:s.day+1,data:{}});
       s.pose='desk'; break; }
     case 'drive': {
       const k0=Math.min(4,s.gigStreak||0), calls=rint(1,3)+(s.flags.surge?1:0); let e=0; for(let k=0;k<calls;k++) e+=rint(13,28)*1000;
       e -= 3000; tx(`대리운전 ${calls}콜 (보험료 공제)`, e); s.hp=clamp(s.hp-(10+2*k0),0,s.hpMax); s.mp=clamp(s.mp-(3+k0));
-      if(Math.random()<gigRisk('drive')) s.queue.push({id:'gigCrash',day:s.day+1,data:{drive:1,cause:node('무리한 대리운전',null,e,true)}});
+      if(rnd()<gigRisk('drive')) s.queue.push({id:'gigCrash',day:s.day+1,data:{drive:1,cause:node('무리한 대리운전',null,e,true)}});
       txt=`콜 ${calls}개. ${fmt(e)}원 벌었다.`;
-      if(Math.random()<.2){ s.mp=clamp(s.mp-6); tx('요금 깎아줌',-10000); txt+=' 취한 손님이 요금이 비싸다며 끝까지 버텨서 만 원을 깎아줬다.'; }
+      if(rnd()<.2){ s.mp=clamp(s.mp-6); tx('요금 깎아줌',-10000); txt+=' 취한 손님이 요금이 비싸다며 끝까지 버텨서 만 원을 깎아줬다.'; }
       s.pose='out'; break; }
-    case 'rest': s.hp=clamp(s.hp+3,0,s.hpMax); s.mp=clamp(s.mp+4); txt='한 시간 누워 있었다.'; s.pose='rest'; s.did.rest=0; break;
+    case 'rest': { const wr=wear()*.9; s.hp=clamp(s.hp+Math.max(0,3-wr),0,s.hpMax); s.mp=clamp(s.mp+Math.max(1,4-wr)); txt=wr>=2?'한 시간 누워 있었다. 누워 있어도 몸이 잘 풀리지 않는다.':'한 시간 누워 있었다.'; } s.pose='rest'; s.did.rest=0; break;
   }
   spend(a.h);
   s.eveLog.push(txt);
@@ -1247,7 +1359,7 @@ function askRel(key){
   if(r.ask.type==='lead' && (s.flags.steady || s.queue.some(q=>q.id==='kimLeadF'))) return;
   if(!canSpend(.3)) return;
   s.asked[key]=s.day; spend(.3);
-  const p = clamp(s.rel[key]/100*.92,.05,.92), ok=Math.random()<p;
+  const p = clamp(s.rel[key]/100*.92*Math.pow(.85,monthOf(s.day)-1),.05,.92), ok=rnd()<p;
   const prideMp = r.ask.pride ? -10 : 0;
   const n = node(`${r.name}에게 부탁: ${r.ask.label}`, null);
   let t;
@@ -1308,7 +1420,7 @@ async function sleep(){
   if(busy) return;
   if(!s.nightDone && s.phase==='free' && !(s.bal<0)){
     s.nightDone = true;
-    if(Math.random() < Math.min(.6, .22 + s.day*.014)){
+    if(rnd() < Math.min(.75, .22 + dom(s.day)*.014 + (monthOf(s.day)-1)*.1)){
       const e = pickRandom(true);
       if(e){ s.nightPending=true; s.ev={id:e.id,obj:null,cause:null}; s.phase='event'; render(); return; }
     }
@@ -1319,8 +1431,8 @@ async function sleep(){
   const C=CH(), P=C.people, H=HOUSES[C.house];
   // meal
   if(!s.cooked){
-    const conv = 8500*P;
-    if(s.bal >= conv){ tx(P>1?'편의점 저녁 2인':'편의점 저녁', -conv, {cat:'편의점 끼니',amt:conv-H.food*P}); }
+    const conv = round100(8500*priceUp())*P;
+    if(s.bal >= conv){ tx(P>1?'편의점 저녁 2인':'편의점 저녁', -conv, {cat:'편의점 끼니',amt:conv-foodPrice()*P}); }
     else { s.hp=clamp(s.hp-8,0,s.hpMax); s.mp=clamp(s.mp-5); if(P>1) s.rel.child=clamp(s.rel.child-8); s.eveLog.push('저녁을 굶었다.'); }
   }
   closeDay(false);
@@ -1329,6 +1441,7 @@ async function sleep(){
   const cut = sleepCut();
   let dh = 6 + H.hp - cut*4 + (s.flags.blanket?1:0) + (s.flags.earplug&&s.char==='grad'?1:0);
   let dm = 2 + H.mp - cut*2;
+  { const wv=wear(); dh -= wv*3.2; dm -= wv*1.6; }
   if(s.char==='mom'){ if(!s.did.play && !s.did.homework) s.rel.child=clamp(s.rel.child-2); if(s.rel.child<40) dm-=2; if(s.flags.noTkd && todayWork()) dm-=1; }
   if(s.fired) dm-=1;
   s.hp=clamp(s.hp+dh,0,s.hpMax); s.mp=clamp(s.mp+dm);
@@ -1345,7 +1458,6 @@ async function sleep(){
   if(s.flags.careToken && s.absentNext && s.char==='mom'){ s.flags.careToken=0; s.absentNext=false; }
   if(s.hp<=0){ busy=false; return endGame('collapse'); }
   if(s.mp<=0){ busy=false; return endGame('burnout'); }
-  if(s.day>=30){ busy=false; return endGame('survived'); }
   await nightTransition();
   busy=false;
   startDay();
@@ -1358,28 +1470,31 @@ function closeDay(failed){
   const payday = txs.some(l=>l.amt>0 && /급여|주급/.test(l.memo));
   const bad = s.nodes.slice(st.nodes).some(n=>n.bad) || txs.some(l=>l.amt<=-100000) || (st.hp-s.hp)>=15 || (st.mp-s.mp)>=15;
   const net = s.bal - st.bal;
-  const e = failed ? 'fail' : payday ? 'pay' : bad ? 'bad' : (net<=-30000 || sleepCut()>0) ? 'meh' : 'ok';
-  s.dayLog.push({day:s.day, e, net});
+  const e = failed ? 'fail' : s.flags.rentToday ? 'rent' : payday ? 'pay' : bad ? 'bad' : (net<=-30000 || sleepCut()>0) ? 'meh' : 'ok';
+  s.dayLog.push({day:s.day, e, net}); s.flags.rentToday=0;
 }
 function endGame(type){
-  if(s.dayLog){ closeDay(type!=='survived'); if(type!=='survived'){ const last=s.dayLog[s.dayLog.length-1]; if(last && last.day===s.day) last.e='fail'; } }
+  if(s.dayLog){ closeDay(true); const last=s.dayLog[s.dayLog.length-1]; if(last && last.day===s.day) last.e='fail'; }
   s.endType=type; s.phase='end'; s.ev=null;
-  diary(verdict ? (type==='survived'?'30일을 버텼다.':'여기서 멈췄다.') : '', 'p');
+  diary(`${s.day}일째, 여기서 멈췄다.`, 'p');
+  onRunEnd();
   render();
 }
 const SITE='https://wolseday.com';
-const EMO={ok:'🟩',meh:'🟨',bad:'🟥',pay:'💰',fail:'❌',none:'⬜'};
-const EMO_LABEL=[['ok','무난'],['meh','빠듯'],['bad','큰일'],['pay','월급날'],['fail','끝난 날'],['none','못 간 날']];
-function dayCells(){ const out=[]; for(let d=1;d<=30;d++){ const l=(s.dayLog||[]).find(x=>x.day===d); out.push(l?l.e:'none'); } return out; }
-function emojiGrid(){ const c=dayCells().map(k=>EMO[k]); return [0,10,20].map(i=>c.slice(i,i+10).join('')).join('\n'); }
+const EMO={ok:'🟩',meh:'🟨',bad:'🟥',pay:'💰',rent:'🏠',fail:'❌',none:'⬜'};
+const EMO_LABEL=[['ok','무난'],['meh','빠듯'],['bad','큰일'],['pay','월급날'],['rent','월세 낸 날'],['fail','끝난 날']];
+function dayCells(){ const out=[]; for(let d=Math.max(1,s.day-89);d<=s.day;d++){ const l=(s.dayLog||[]).find(x=>x.day===d); out.push(l?l.e:'none'); } return out; }
+function emojiGrid(){ const c=dayCells().map(k=>EMO[k]), rows=[]; for(let i=0;i<c.length;i+=10) rows.push(c.slice(i,i+10).join('')); return (s.day>90?'…\n':'')+rows.join('\n'); }
 function rentOkNow(){ const C=CH(); return s.bal>=C.rent || (s.flags.rentDelay && s.bal>=C.rent*.5); }
 function verdict(){
-  if(s.endType==='survived') return rentOkNow() ? '✅ 30일 버팀 · 월세 냄' : '⚠️ 30일 버팀 · 월세 모자람';
-  return {broke:`💸 ${s.day}일째 잔고 바닥`, collapse:`🚑 ${s.day}일째 쓰러짐`, burnout:`🌧️ ${s.day}일째 번아웃`}[s.endType];
+  const how={broke:'💸 잔고 바닥',collapse:'🚑 쓰러짐',burnout:'🌧️ 번아웃',evicted:'🏚️ 쫓겨남'}[s.endType]||'';
+  return `${s.day}일 버팀 · 월세 ${s.rentsPaid||0}번 냄 · ${how}`;
 }
+function rankLine(){ const r=s.rankInfo; return r&&r.rank ? `오늘의 판 ${r.total.toLocaleString('ko-KR')}명 중 ${r.rank.toLocaleString('ko-KR')}위` : ''; }
 function shareText(withUrl=true){
   const C=CH();
-  return `월세날까지 · ${C.name}(${C.age}) ${C.title}\n${verdict()}\n${emojiGrid()}\n가난해서 더 낸 돈 ${fmt(premTotal())}원${withUrl?'\n'+SITE:''}`;
+  const rl=rankLine();
+  return `월세날까지 ${s.ranked?`· ${seedLabel(s.seed)} `:''}· ${C.name}(${C.age})\n${verdict()}${rl?'\n🏆 '+rl:''}\n${emojiGrid()}\n가난해서 더 낸 돈 ${fmt(premTotal())}원${withUrl?'\n'+SITE:''}`;
 }
 function copyText(text, btnId){
   const btn=$(btnId), ta=$('copyArea');
@@ -1404,16 +1519,16 @@ async function resultImage(){
   g.textBaseline='top';
   g.fillStyle='#ffa43f'; g.font='92px "Do Hyeon", sans-serif'; g.fillText('월세날까지',60,640);
   g.fillStyle='#a29bb8'; g.font='34px "Gowun Dodum", sans-serif'; g.fillText(`${C.name}(${C.age}) · ${C.title}`,60,750);
-  g.fillStyle='#ebe6f3'; g.font='50px "Do Hyeon", sans-serif'; g.fillText(verdict().replace(/^\S+\s/,''),60,806);
-  const COL={ok:'#64d690',meh:'#f2c14e',bad:'#ff6a5f',pay:'#ffa43f',fail:'#5a2a33',none:'#2f2a40'};
-  const cells=dayCells(), sz=84, gap=12, gx=60, gy=890;
+  g.fillStyle='#ebe6f3'; g.font='50px "Do Hyeon", sans-serif'; g.fillText(`${s.day}일 버팀 · 월세 ${s.rentsPaid||0}번`,60,806);
+  const COL={ok:'#64d690',meh:'#f2c14e',bad:'#ff6a5f',pay:'#ffa43f',rent:'#8fb6ff',fail:'#5a2a33',none:'#2f2a40'};
+  const cells=dayCells(), rows=Math.ceil(cells.length/10), gap=rows>3?6:12, sz=Math.min(84, Math.floor(286/rows)-gap), gx=60, gy=890;
   cells.forEach((k,i)=>{ const x=gx+(i%10)*(sz+gap), y=gy+Math.floor(i/10)*(sz+gap);
     g.fillStyle=COL[k]; g.fillRect(x,y,sz,sz);
-    if(k==='pay'){ g.fillStyle='#6a3a10'; g.font='44px "Silkscreen", monospace'; g.fillText('$',x+28,y+18); }
-    if(k==='fail'){ g.strokeStyle='#ff6a5f'; g.lineWidth=8; g.beginPath(); g.moveTo(x+20,y+20); g.lineTo(x+sz-20,y+sz-20); g.moveTo(x+sz-20,y+20); g.lineTo(x+20,y+sz-20); g.stroke(); }
+    if(k==='pay' && sz>=40){ g.fillStyle='#6a3a10'; g.font='44px "Silkscreen", monospace'; g.fillText('$',x+28,y+18); }
+    if(k==='fail'){ const m=sz*.24; g.strokeStyle='#ff6a5f'; g.lineWidth=Math.max(3,sz/10); g.beginPath(); g.moveTo(x+m,y+m); g.lineTo(x+sz-m,y+sz-m); g.moveTo(x+sz-m,y+m); g.lineTo(x+m,y+sz-m); g.stroke(); }
   });
   g.fillStyle='#ebe6f3'; g.font='34px "Gowun Dodum", sans-serif';
-  g.fillText(`가난해서 더 낸 돈  ${fmt(premTotal())}원`,60,1196);
+  g.fillText(rankLine() ? `🏆 ${rankLine()}` : `가난해서 더 낸 돈  ${fmt(premTotal())}원`,60,1196);
   g.fillStyle='#a29bb8'; g.font='30px "Silkscreen", monospace'; g.fillText('WOLSEDAY.COM',60,1262);
   return cv;
 }
@@ -1434,10 +1549,10 @@ async function saveImage(){
 }
 
 /* ---------------- bills view ---------------- */
-function billsDue(){ return CH().bills; }
+function billsDue(){ return [...CH().bills, ...(s.extraBills||[])]; }
 function upcoming(){
-  const list = billsDue().filter(b=>b.day>s.day && !(b.key==='tkd'&&s.flags.noTkd)).map(b=>({day:b.day,name:b.name,amt:(b.key==='loan'&&s.flags.loanRelief)?260000:b.amt}));
-  list.push({day:31,name:`월세 (${CH().rentWho})`,amt:CH().rent});
+  const list = billsDue().filter(b=>b.day>dom(s.day) && !(b.key==='tkd'&&s.flags.noTkd)).map(b=>({day:b.day,name:b.name,amt:(b.key==='loan'&&s.flags.loanRelief)?260000:b.amt}));
+  list.sort((a,b)=>a.day-b.day); list.push({day:31,name:`월세 (${CH().rentWho})`,amt:s.rent||CH().rent});
   return list;
 }
 
@@ -1462,9 +1577,10 @@ function render(){
   const playing = s.char && s.phase!=='title' && s.phase!=='pick' && s.phase!=='contract';
   $('side').hidden = !playing;
   $('clock').hidden = !(playing && (s.phase==='free'||s.phase==='event'||s.phase==='result'));
-  $('dday').innerHTML = s.phase==='end' ? '월세날 <b>D-DAY</b>' : `월세날 <b>D-${s.day?31-s.day:30}</b>`;
+  $('dday').innerHTML = s.phase==='end' ? `<b>${s.day}일</b> 버팀` : `월세날 <b>D-${s.day?31-dom(s.day):30}</b>`;
   if(playing){
     $('hudDay').textContent = `DAY ${s.day} (${WEEK[wd(Math.max(1,s.day))]})`;
+    saveRun();
     $('hudBal').textContent = fmt(s.bal); $('hudBal').classList.toggle('neg', s.bal<0);
     $('whoLabel').textContent = `${CH().name} · ${CH().age}세`;
     $('bal').innerHTML = `${fmt(s.bal)}<small>원</small>`; $('bal').classList.toggle('neg', s.bal<0);
@@ -1498,12 +1614,12 @@ function renderMstat(playing){
   m.innerHTML = `<span class="mb ${s.bal<0?'neg':''}">${fmt(s.bal)}<small style="font-family:var(--f-body);font-size:12px;color:var(--muted)">원</small></span>
     <span class="mm">체력${bar(s.hp,s.hpMax||100,'var(--hp)')}</span>
     <span class="mm">멘탈${bar(s.mp,100,'var(--mp)')}</span>
-    <span class="mt"><span>DAY ${s.day} · 월세날까지 ${Math.max(0,31-s.day)}일</span>${s.phase==='free'?`<span>자유 시간 <b>${left>=0?hstr(left):'없음'}</b></span>`:''}</span>`;
+    <span class="mt"><span>DAY ${s.day} · 월세날까지 ${31-dom(s.day)}일</span>${s.phase==='free'?`<span>자유 시간 <b>${left>=0?hstr(left):'없음'}</b></span>`:''}</span>`;
 }
 
 function renderClock(){
   if(!s.sched) return;
-  $('clockLabel').innerHTML = `DAY ${s.day} · ${WEEK[wd(s.day)]}요일 · ${esc(s.sched.label)}`;
+  $('clockLabel').innerHTML = `DAY ${s.day} · ${monthOf(s.day)}번째 달 ${dom(s.day)}일 · ${WEEK[wd(s.day)]}요일 · ${esc(s.sched.label)}`;
   const left = s.free - s.spent;
   $('clockFree').textContent = left>=0 ? hstr(left) : `없음 (잠 ${hstr(-left)} 깎임)`;
   const cells=[]; const push=(c,h)=>{ for(let i=0;i<Math.round(h*2);i++) cells.push(c); };
@@ -1534,18 +1650,29 @@ function renderLedger(){
 function renderCard(){
   const c=$('card');
   if(s.phase==='title'){
-    c.innerHTML=`<div class="eyebrow">11월 · 서울</div>
-      <h2>월세날까지 30일. 돈만 모자란 게 아니다.</h2>
-      <p>시간이 모자라면 돈으로 사야 하고, 돈이 모자라면 시간과 몸으로 메워야 한다. 미룬 일은 커져서 돌아오고, 부탁할 사람은 쓸수록 줄어든다. 지치면 좋은 선택지가 아예 떠오르지 않는다.</p>
-      <p class="memo"><b>규칙</b>잔고가 바닥난 채 잠들거나, 체력이나 멘탈이 0이 되면 끝. 선택지에는 드는 돈과 시간만 보인다.</p>
-      <button class="primary" type="button" id="startBtn">누구의 30일을 살지 고르기</button>`;
-    $('startBtn').onclick=()=>{s.phase='pick';render();};
+    const today=kstDate(), dl=dailyInfo(), saved=loadRun();
+    const canRank = !!API && !(dl.seed===today && dl.started);
+    const practiceOnly = !!API && !canRank;
+    c.innerHTML=`<div class="eyebrow">오늘의 판 · ${seedLabel(today)}</div>
+      <h2>월세날을 몇 번 넘길 수 있을까.</h2>
+      <p>시간이 모자라면 돈으로 사야 하고, 돈이 모자라면 시간과 몸으로 메워야 한다. 미룬 일은 커져서 돌아오고, 부탁할 사람은 쓸수록 줄어든다. 30일마다 월세날이 오고, 달이 갈수록 버티기는 더 어려워진다.</p>
+      <p class="memo"><b>규칙</b>잔고가 바닥난 채 잠들거나, 체력이나 멘탈이 0이 되거나, 밀린 월세를 끝내 못 내면 끝. 오늘 하루는 모두가 같은 일을 겪는다.${API?' 오늘의 판은 처음 한 번만 순위에 올라간다.':''}</p>
+      ${API?`<div class="board" id="boardBox">${boardHtml()}</div>`:''}
+      ${practiceOnly&&dl.done?`<p class="mine">오늘 내 기록: <b>${dl.done.days}일</b>${dl.done.rank?` · ${dl.done.total}명 중 <b>${dl.done.rank}위</b>`:''}</p>`:''}
+      ${practiceOnly&&!dl.done&&!(saved&&saved.ranked)?`<p class="mine">오늘의 판은 이미 시작했다. 다시 하는 판은 순위에 올라가지 않는다.</p>`:''}
+      <div class="row">
+        ${saved?`<button class="primary" type="button" id="resumeBtn">이어하기 · ${esc(CHARS[saved.char].name)} DAY ${saved.day}${saved.ranked?' (순위 판)':''}</button>`:''}
+        <button class="${saved?'ghost':'primary'}" type="button" id="startBtn">${canRank?'오늘의 판 시작':practiceOnly?'연습 판 (순위 미반영)':'시작하기'}</button>
+      </div>`;
+    $('startBtn').onclick=()=>{ if(saved && saved.ranked && !confirmDrop()) return; clearRun(); s.mode = canRank?'daily':(practiceOnly?'practice':'daily'); s.phase='pick'; render(); };
+    if(saved) $('resumeBtn').onclick=()=>{ s=saved; reseed('d'+s.day); render(); };
+    if(API) fetchBoard(today);
     return;
   }
   if(s.phase==='pick'){
-    c.innerHTML=`<div class="eyebrow">세 사람의 11월</div><h2>누구의 30일을 살아볼까.</h2>
+    c.innerHTML=`<div class="eyebrow">${s.mode==='practice'?'연습 판 · 순위 미반영':`오늘의 판 · ${seedLabel(kstDate())}`}</div><h2>누구로 버텨볼까.</h2>
       <div class="who">${Object.entries(CHARS).map(([k,ch])=>`<button type="button" id="pick-${k}" data-k="${k}"><b>${ch.name} · ${ch.age}세</b><small>${ch.title}</small><small>${esc(ch.bio)}</small><span class="goal">목표: ${esc(ch.goal)}</span><small>시작 잔고 ${fmt(ch.bal)}원 · 부족한 것: ${ch.scarcity}</small><small class="lc" data-live-char="${k}">${liveLine(k)}</small></button>`).join('')}</div>`;
-    c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>startAs(b.dataset.k));
+    c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>startAs(b.dataset.k, s.mode));
     setLiveChar(null);
     return;
   }
@@ -1569,16 +1696,16 @@ function renderCard(){
           <tr><td>이번 달 들어올 돈 (예상)<small>${esc(P.incomeNote)}</small></td><td class="n">+${fmt(P.income)}</td></tr>
           <tr><td>정해진 지출</td><td class="n">-${fmt(P.fixed)}</td></tr>
           ${P.fixedList.map(b=>`<tr class="sub"><td>${b.day}일 · ${esc(b.name)}</td><td class="n">${fmt(b.amt)}</td></tr>`).join('')}
-          <tr class="total"><td>30일 동안 쓸 수 있는 돈</td><td class="n">${fmt(P.free)}</td></tr>
+          <tr class="total"><td>첫 30일 동안 쓸 수 있는 돈</td><td class="n">${fmt(P.free)}</td></tr>
         </table>
         <div class="perday"><span>밥값, 교통비, 갑자기 생기는 일까지 전부 포함해서 하루에</span><b>${fmt(P.perDay)}원</b></div>
         ${P.cashNote?`<p class="doc-note">${esc(P.cashNote)}</p>`:''}
         <small class="lc" data-live-char="${s.char}">${liveLine(s.char)}</small>
       </div>
     </div>
-    <div class="row"><button class="primary" type="button" id="beginBtn">이 조건으로 30일 시작</button><button class="ghost" type="button" id="backBtn">다른 사람 고르기</button></div>`;
-    $('beginBtn').onclick=()=>startDay();
-    $('backBtn').onclick=()=>{ s=fresh(); s.phase='pick'; render(); };
+    <div class="row"><button class="primary" type="button" id="beginBtn">이 조건으로 시작</button><button class="ghost" type="button" id="backBtn">다른 사람 고르기</button></div>`;
+    $('beginBtn').onclick=()=>{ beginRun(); startDay(); };
+    $('backBtn').onclick=()=>{ const m=s.mode; s=fresh(); s.mode=m; s.phase='pick'; render(); };
     return;
   }
   if(s.phase==='event'){
@@ -1629,7 +1756,7 @@ function renderFree(c){
     ${s.morning.length&&!s.eveLog.length?`<ul class="log">${s.morning.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
     ${s.eveLog.length?`<ul class="log">${s.eveLog.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
     ${s.bal<0?`<p class="memo warn"><b>잔고 ${fmt(s.bal)}원</b>이대로 잠들면 끝이다. 부탁하거나 현금서비스를 써야 한다.</p>`:''}
-    ${!s.cooked?`<p class="memo"><b>저녁</b>${s.stock>0?'장 봐둔 재료가 있다.':'집에 먹을 게 없다.'} 해 먹지 않으면 자기 전에 편의점에서 ${fmt(8500*CH().people)}원을 쓴다.</p>`:''}
+    ${!s.cooked?`<p class="memo"><b>저녁</b>${s.stock>0?'장 봐둔 재료가 있다.':'집에 먹을 게 없다.'} 해 먹지 않으면 자기 전에 편의점에서 ${fmt(round100(8500*priceUp())*CH().people)}원을 쓴다.</p>`:''}
     <h3>오늘 할 일</h3><div class="choices">${acts}</div>
     ${defers?`<h3>미룬 일</h3><div class="choices">${defers}</div>`:''}
     <h3>사람들</h3><div class="plist">${people}</div>
@@ -1658,25 +1785,23 @@ const sumMoney = p => p.reduce((a,id)=>a+s.nodes[id].money,0);
 function renderEnd(c){
   const C=CH();
   let head, body;
-  const rentOk = s.bal>=C.rent || (s.flags.rentDelay && s.bal>=C.rent*.5);
-  if(s.endType==='survived'){
-    head='30일을 버텼다.';
-    body = s.bal>=C.rent ? `내일 아침 월세 ${fmt(C.rent)}원을 보낼 수 있다. 보내고 나면 ${fmt(s.bal-C.rent)}원이 남는다.`
-      : rentOk ? `월세 ${fmt(C.rent)}원 중 ${fmt(C.rent-s.bal)}원이 모자라지만, ${C.rentWho}이(가) 일주일 미뤄주기로 했다.`
-      : `내일 아침 월세 ${fmt(C.rent)}원 중 ${fmt(C.rent-s.bal)}원이 모자란다. ${C.rentWho}에게 보낼 문자를 몇 번이고 고쳐 쓴다.`;
-  } else if(s.endType==='broke'){ head=`${s.day}일째, 잔고가 바닥난 채 잠들었다.`; body='다음 날 아침, 자동이체 실패 문자가 줄줄이 와 있었다.'; }
+  if(s.endType==='evicted'){ head=`${s.day}일째, 방을 빼야 했다.`; body='밀린 월세를 끝내 못 냈다. 짐을 싸면서 갈 곳을 검색했다.'; }
+  else if(s.endType==='broke'){ head=`${s.day}일째, 잔고가 바닥난 채 잠들었다.`; body='다음 날 아침, 자동이체 실패 문자가 줄줄이 와 있었다.'; }
   else if(s.endType==='collapse'){ head=`${s.day}일째, 쓰러졌다.`; body='깨어보니 응급실이었다. 진료비 영수증이 먼저 눈에 들어왔다.'; }
   else { head=`${s.day}일째, 더는 버틸 수 없었다.`; body='알람을 끄고 다시 누웠다. 휴대폰을 뒤집어 놓고 아무 연락도 받지 않았다.'; }
-  const goal = s.char==='grad' ? (s.flags.offer?'최종 합격. 다음 달부터 출근한다.':s.flags.intern?`공채 최종 합격은 아직이지만, 다음 달부터 인턴으로 출근한다. 면접 통과 ${s.pass}번.`:`최종 합격은 아직이다. 면접 통과 ${s.pass}번.`)
+  const goal = s.char==='grad' ? (s.flags.job?(s.flags.job==='office'?'회사에 다니고 있었다.':'인턴으로 일하고 있었다.'):s.flags.offer?'최종 합격. 다음 달부터 출근한다.':s.flags.intern?`공채 최종 합격은 아직이지만, 다음 달부터 인턴으로 출근한다. 면접 통과 ${s.pass}번.`:`최종 합격은 아직이다. 면접 통과 ${s.pass}번.`)
     : s.char==='mom' ? (s.rel.child>=50?`하린이는 아직 엄마 품에서 웃는다. (마음 ${Math.round(s.rel.child)})`:`하린이가 말수가 줄었다. (마음 ${Math.round(s.rel.child)})`)
-    : (s.flags.loanMissed?'대출 상환을 한 번 놓쳤다. 신용점수가 떨어졌다.':'대출은 한 번도 밀리지 않았다.') + (s.flags.steady?` 다음 달 10일에 첫 월급 ${fmt(s.pending)}원이 들어온다.`:'');
+    : (s.flags.loanMissed?'대출 상환을 한 번 놓쳤다. 신용점수가 떨어졌다.':'대출은 한 번도 밀리지 않았다.') + (s.flags.steady&&s.pending?` 받지 못한 고깃집 월급 ${fmt(s.pending)}원이 남았다.`:'');
   const ch = chains();
   const prem = Object.entries(s.premium).sort((a,b)=>b[1]-a[1]);
   c.innerHTML=`<div class="eyebrow">${C.name} · ${C.title}</div>
-    <h2>${esc(head)}</h2><p>${esc(body)}</p><p class="memo"><b>목표</b>${esc(goal)}</p>
+    <h2>${esc(head)}</h2><p>${esc(body)}</p>
+    <div class="endstats"><div>버틴 날<b>${s.day}일</b></div><div>낸 월세<b>${s.rentsPaid||0}번</b></div></div>
+    <div id="rankBox">${rankBoxHtml()}</div>
+    <p class="memo"><b>그때 상황</b>${esc(goal)}</p>
     <div class="emo">
       <div class="emo-top"><span>${esc(verdict())}</span><span>가난해서 더 낸 돈 <b>${fmt(premTotal())}원</b></span></div>
-      <div class="emo-grid" role="img" aria-label="30일 하루하루 기록">${dayCells().map((k,i)=>`<span title="${i+1}일">${EMO[k]}</span>`).join('')}</div>
+      <div class="emo-grid" role="img" aria-label="하루하루 기록">${dayCells().map((k,i,a)=>`<span title="${s.day-a.length+i+1}일">${EMO[k]}</span>`).join('')}</div>
       <div class="emo-legend">${EMO_LABEL.map(([k,l])=>`<span>${EMO[k]} ${l}</span>`).join('')}</div>
       <div class="share-row">
         <button class="primary" type="button" id="shareBtn" data-label="친구에게 공유하기">친구에게 공유하기</button>
@@ -1688,36 +1813,102 @@ function renderEnd(c){
       <textarea id="copyArea" readonly hidden></textarea>
     </div>
     <div class="endstats">
-      <div>버틴 날<b>${s.day}일</b></div>
       <div>번 돈<b class="tag plus">${fmt(s.totalIn)}</b></div>
       <div>쓴 돈<b class="tag minus">${fmt(s.totalOut)}</b></div>
       <div>가난해서 더 낸 돈<b class="tag minus">${fmt(premTotal())}</b></div>
-      <div>다음 달로 넘어가는 빚<b class="tag minus">${fmt(debtTotal())}</b></div>
+      <div>남은 빚<b class="tag minus">${fmt(debtTotal())}</b></div>
     </div>
     ${prem.length?`<h3>더 낸 돈은 어디서 생겼나</h3><div class="prem-list">${prem.map(([k,v])=>`<div><span>${esc(k)}</span><span class="n">${fmt(v)}원</span></div>`).join('')}</div>`:''}
     <h3>선택은 이렇게 이어졌다</h3>
     ${ch.length?`<div class="chains">${ch.map(p=>`<div class="chain">${p.map((id,i)=>{const n=s.nodes[id];return `${i?'<span class="arrow">→</span>':''}<div class="node ${n.bad?'bad':''}"><span class="d">${n.day}일</span><span>${esc(n.label)}</span>${n.money?`<span class="m ${n.money>0?'tag plus':'tag minus'}">${n.money>0?'+':'-'}${fmt(Math.abs(n.money))}</span>`:''}</div>`;}).join('')}</div>`).join('')}</div>`:'<p class="empty">이번 판은 크게 이어진 일이 없었다.</p>'}
-    <div class="row"><button class="ghost" type="button" id="againBtn">다른 사람으로 다시</button></div>`;
-  $('againBtn').onclick=()=>{ s=fresh(); s.phase='pick'; render(); };
+    <div class="row"><button class="ghost" type="button" id="againBtn">처음 화면으로</button></div>`;
+  $('againBtn').onclick=()=>{ s=fresh(); render(); };
+  bindRankBox();
   $('copyBtn').onclick=()=>copyText(shareText(true),'copyBtn');
   $('shareBtn').onclick=shareResult;
   $('imgBtn').onclick=saveImage;
 }
 
-function startAs(k){
+function startAs(k, mode){
   const C=CHARS[k];
-  s=fresh(); s.char=k; s.bal=C.bal; s.hp=C.hp; s.hpMax=k==='boss'?85:100; s.mp=C.mp;
+  s=fresh(); s.char=k; s.mode=mode||'daily';
+  let forced=null; try{ forced=new URLSearchParams(location.search).get('seed'); }catch(e){}
+  s.seed = forced==='random' || s.mode==='practice' ? 'p'+Math.floor(Math.random()*1e9) : (forced && /^\d{4}-\d{2}-\d{2}$/.test(forced) ? forced : kstDate());
+  s.ranked = !!API && s.mode==='daily' && forced!=='random';
+  reseed('start');
+  s.rent = C.rent; s.bal=C.bal; s.hp=C.hp; s.hpMax=k==='boss'?85:100; s.mp=C.mp;
   C.rels.forEach(r=>s.rel[r.key]=r.v);
   s.stock = k==='mom'?2:1;
   if(k==='grad'){ const cos=['한빛물산','세움로지스','다온식품']; [6,13,21].forEach((d,i)=>s.queue.push({id:'docCheck',day:d+rint(0,1),data:{co:cos[i]}})); }
+  queueShocks(1);
   s.docNo = String(rint(1000,9999));
   s.phase='contract';
   setLiveChar(k);
   render();
 }
+function seedLabel(sd){ if(!sd||sd[0]==='p') return '연습 판'; const [y,m,d]=sd.split('-').map(Number); return `${m}월 ${d}일`; }
+function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+function lsSet(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function dailyInfo(){ const d=lsGet('wolse_daily'); return d && d.seed===kstDate() ? d : {seed:kstDate()}; }
+function saveRun(){ if(!API || !s || !s.char || s.phase==='end' || s.phase==='contract') return; try{ localStorage.setItem('wolse_run', JSON.stringify(s)); }catch(e){} }
+function loadRun(){ if(!API) return null; const r=lsGet('wolse_run'); return r && r.char && CHARS[r.char] && r.day>0 && r.phase!=='end' ? r : null; }
+function clearRun(){ lsSet('wolse_run', null); }
+function confirmDrop(){ return window.confirm ? window.confirm('순위 판을 버리고 새로 시작할까요? 순위에는 올라가지 않습니다.') : true; }
+async function api(path, body){
+  const r = await fetch(API+path, body ? {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body)} : {});
+  if(!r.ok) throw new Error('http '+r.status);
+  return r.json();
+}
+function beginRun(){
+  if(!s.ranked) return;
+  lsSet('wolse_daily', {seed:s.seed, started:1});
+  api('/api/start', {seed:s.seed, char:s.char}).then(d=>{ if(d && d.id) s.runId=d.id; saveRun(); }).catch(()=>{});
+}
+function onRunEnd(){ clearRun(); if(API) fetchBoard(s.seed && s.seed[0]!=='p' ? s.seed : kstDate()); }
+let BOARD=null;
+async function fetchBoard(seed){
+  try{ BOARD = await api('/api/board?seed='+encodeURIComponent(seed)); BOARD.seed=seed; }catch(e){ BOARD={error:1}; }
+  const b=$('boardBox'); if(b) b.innerHTML=boardHtml();
+  const rb=$('rankBox'); if(rb && !rb.querySelector('input')) { rb.innerHTML=rankBoxHtml(); bindRankBox(); }
+}
+const CHAR_NAME = k => CHARS[k] ? CHARS[k].name : '';
+function boardHtml(myId){
+  if(!BOARD) return '<p class="empty">순위를 불러오는 중…</p>';
+  if(BOARD.error) return '<p class="empty">지금은 순위를 불러올 수 없다.</p>';
+  const top=BOARD.top||[];
+  return `<div class="label"><span>${seedLabel(BOARD.seed)} 순위</span><span>${(BOARD.total||0).toLocaleString('ko-KR')}명 도전</span></div>
+    ${top.length?`<ol>${top.map((r,i)=>`<li class="${myId&&r.id===myId?'me':''}"><span class="rk">${r.rank||i+1}</span><span class="nm">${esc(r.name)}</span><span class="ch">${esc(CHAR_NAME(r.char))}</span><span class="dy">${r.days}일</span></li>`).join('')}</ol>`:'<p class="empty">아직 아무도 기록을 남기지 않았다. 첫 번째가 되어보자.</p>'}`;
+}
+function rankBoxHtml(){
+  if(!API) return '';
+  const done=s.rankInfo;
+  if(done) return `<p class="memo"><b>${done.total.toLocaleString('ko-KR')}명 중 ${done.rank.toLocaleString('ko-KR')}위</b>${done.rank===1?'지금은 오늘 1등이다.':`상위 ${Math.max(1,Math.ceil(done.rank/done.total*100))}%.`} 자정까지 순위가 바뀔 수 있다.</p><div class="board" id="boardBox">${boardHtml(done.id)}</div>`;
+  if(!s.ranked) return `<p class="memo"><b>연습 판</b>순위에는 올라가지 않는다.</p><div class="board" id="boardBox">${boardHtml()}</div>`;
+  if(!s.runId) return `<p class="memo warn"><b>순위 서버에 연결되지 않았다</b>이번 판은 순위에 올릴 수 없다.</p>`;
+  const nick = lsGet('wolse_nick') || '';
+  return `<div class="submit"><label for="nick">순위표에 올릴 이름 (10자까지)</label>
+    <div class="in"><input id="nick" maxlength="10" autocomplete="nickname" value="${esc(nick)}" placeholder="익명의 세입자"><button class="primary" type="button" id="submitBtn">순위에 올리기</button></div>
+    <small id="submitMsg">오늘의 판은 처음 한 번만 올라간다. 욕설이 들어간 이름은 바뀐다.</small></div>
+    <div class="board" id="boardBox">${boardHtml()}</div>`;
+}
+function bindRankBox(){
+  const btn=$('submitBtn'); if(!btn) return;
+  btn.onclick=async()=>{
+    const name=($('nick').value||'').trim().slice(0,10);
+    lsSet('wolse_nick', name);
+    btn.disabled=true; btn.textContent='올리는 중…';
+    try{
+      const r = await api('/api/score', {id:s.runId, name, days:s.day, char:s.char, end:s.endType, rents:s.rentsPaid||0});
+      s.rankInfo={rank:r.rank,total:r.total,id:r.id};
+      BOARD={...r.board, seed:s.seed};
+      lsSet('wolse_daily', {seed:s.seed, started:1, done:{days:s.day, rank:r.rank, total:r.total}});
+      $('rankBox').innerHTML=rankBoxHtml();
+    }catch(e){ btn.disabled=false; btn.textContent='다시 시도'; $('submitMsg').textContent='올리지 못했다. 잠시 뒤 다시 눌러보자.'; }
+  };
+}
 FOLLOW.docCheck = (s,d) => {
   const p = clamp(.35 + s.career/90, .1, .92);
-  if(Math.random()<p) return FOLLOW.interview(s,d);
+  if(rnd()<p) return FOLLOW.interview(s,d);
   return FOLLOW.docFail(s,d);
 };
 function interviewP(){ return clamp(.3 + s.career/130 + (s.hp-50)/250 + (s.mp-50)/250, .05, .85); }
@@ -1839,7 +2030,9 @@ async function nightTransition(){ if(REDUCED) return; sleeping=true; s.pose='des
 /* ---------------- boot ---------------- */
 function boot(data){ s=(data&&data.s)?data.s:fresh(); render(); requestAnimationFrame(frame); }
 try{ window.claude?.hot?.snapshot?.(()=>({s})); }catch(e){}
-window.__game = { state:()=>s };
+window.__game = { state:()=>s, end:t=>endGame(t), share:()=>shareText(true) };
+const LIVE_URL = (()=>{ let u=null; try{ u=new URLSearchParams(location.search).get('live'); }catch(e){} if(!u && /(^|\.)wolseday\.(com|pages\.dev)$/.test(location.hostname)) u='wss://live.wolseday.com/ws'; return u; })();
+const API = LIVE_URL ? LIVE_URL.replace(/^ws/,'http').replace(/\/ws$/,'') : null;
 let liveSendFn=()=>{};
 function setLiveChar(c){ window.__liveChar=c; try{ liveSendFn(c); }catch(e){} }
 document.addEventListener('keydown',e=>{
@@ -1853,9 +2046,7 @@ document.addEventListener('keydown',e=>{
   }
 });
 (function live(){
-  let LIVE=null;
-  try{ LIVE = new URLSearchParams(location.search).get('live'); }catch(e){}
-  if(!LIVE && /(^|\.)wolseday\.(com|pages\.dev)$/.test(location.hostname)) LIVE='wss://live.wolseday.com/ws';
+  const LIVE=LIVE_URL;
   if(!LIVE || typeof WebSocket!=='function') return;
   let ws=null, ping=null, wait=2000;
   const pill=$('live'), n=$('liveN');

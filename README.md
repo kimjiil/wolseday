@@ -23,6 +23,21 @@
 
 `main` 브랜치에 push하면 자동으로 배포됩니다.
 
+## 실시간 접속자 수 (`live/`)
+
+`live/`는 접속자 수를 세는 Cloudflare Worker입니다. Durable Object 하나가 모든 접속을 WebSocket으로 받아 `{"online": N}`만 돌려줍니다.
+
+- 주소: `wss://live.wolseday.com/ws`
+- 허용 출처: wolseday.com, www.wolseday.com, *.wolseday.pages.dev, localhost
+- 배포: Cloudflare Workers Builds가 `live/` 폴더를 `npx wrangler deploy`로 배포합니다.
+- 비용: 무료 플랜 안에서 동작합니다. 대기 중인 접속은 하이버네이션으로 비용이 거의 들지 않고, 30초 ping은 자동 응답으로 처리합니다.
+
 ## 로컬에서 실행
 
-`index.html`을 브라우저로 열면 됩니다.
+`index.html`을 브라우저로 열면 게임이 됩니다. 접속자 수까지 시험하려면:
+
+```
+cd live && npm install && npx wrangler dev
+python3 -m http.server 8790   # 저장소 루트에서
+# http://localhost:8790/?live=ws://127.0.0.1:8787/ws 로 접속
+```

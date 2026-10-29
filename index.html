@@ -191,7 +191,21 @@ body{
 .mini:hover:not([disabled]){border-color:var(--sodium)}
 .mini:focus-visible{outline:3px solid var(--sodium);outline-offset:2px}
 .mini[disabled]{opacity:.4;cursor:default}
-@media (prefers-reduced-motion:reduce){.floater{animation:none}.cells.low i.on{animation:none}}
+.top-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.live{display:flex;align-items:center;gap:7px;font-size:13px;padding:6px 12px;border:2px solid var(--line);background:var(--panel);color:var(--muted);white-space:nowrap}
+.live b{font-family:var(--f-num);font-weight:400;color:var(--gain);font-variant-numeric:tabular-nums}
+.live i{width:8px;height:8px;background:var(--gain);display:block;animation:blink 1.6s steps(2) infinite}
+.emo{display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--panel-2);border:2px solid var(--line)}
+.emo-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px}
+.emo-top b{font-weight:400;color:var(--sodium)}
+.emo-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;max-width:420px}
+.emo-grid span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(14px,3.6vw,22px);line-height:1}
+.emo-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.share-row{display:flex;gap:8px;flex-wrap:wrap}
+.share-row .ghost,.share-row a.ghost{text-decoration:none;font-size:14px}
+#imgPrev{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+#imgPrev img{max-width:min(100%,360px);border:2px solid var(--line)}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}.floater{animation:none}.cells.low i.on{animation:none}}
 </style>
 
 </head>
@@ -199,7 +213,10 @@ body{
 <div class="app">
   <header class="top">
     <div class="brand">월세날까지<small>서울 30일 생존기 · 프로토타입 v2</small></div>
-    <div class="dday" id="dday">월세날 <b>D-30</b></div>
+    <div class="top-right">
+      <div class="live" id="live" hidden role="status"><i aria-hidden="true"></i>지금 <b id="liveN">0</b>명이 버티는 중</div>
+      <div class="dday" id="dday">월세날 <b>D-30</b></div>
+    </div>
   </header>
 
   <div class="grid">
@@ -529,7 +546,7 @@ const FOLLOW = {
 
 /* ---------------- state ---------------- */
 let s;
-function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null}; }
+function fresh(){ return {phase:'title',char:null,day:0,bal:0,hp:0,mp:0,flags:{},used:{},queue:[],ledger:[],defer:[],rel:{},relLast:{},asked:{},stock:0,cooked:false,did:{},log:[],nodes:[],premium:{},spent:0,free:0,sched:null,career:25,pass:0,strikes:0,fired:false,absentNext:false,pending:0,career0:25,ev:null,res:null,endType:null,eveLog:[],morning:[],totalIn:0,totalOut:0,chiefUntil:0,laidUntil:0,cardRepay:null,dayLog:[],dayStart:null}; }
 
 const CH = () => CHARS[s.char];
 function todayWork(){ return s.sched && s.sched.work; }
@@ -603,6 +620,7 @@ function makeSchedule(){
 /* ---------------- day ---------------- */
 function startDay(){
   s.day++; s.spent=0; s.cooked=false; s.did={}; s.eveLog=[]; s.morning=[]; s.pose='desk';
+  s.dayStart={bal:s.bal,hp:s.hp,mp:s.mp,nodes:s.nodes.length,ledger:s.ledger.length};
   s.rain = Math.random()<.2;
   makeSchedule();
   if(s.carry&&s.carry.length){ s.morning.push(...s.carry); s.carry=[]; }
@@ -890,6 +908,7 @@ async function sleep(){
     if(s.bal >= conv){ tx(P>1?'편의점 저녁 2인':'편의점 저녁', -conv, {cat:'편의점 끼니',amt:conv-H.food*P}); }
     else { s.hp=clamp(s.hp-8,0,s.hpMax); s.mp=clamp(s.mp-5); if(P>1) s.rel.child=clamp(s.rel.child-8); s.eveLog.push('저녁을 굶었다.'); }
   }
+  closeDay(false);
   if(s.bal<0) { busy=false; return endGame('broke'); }
   // sleep
   const cut = sleepCut();
@@ -918,7 +937,84 @@ async function sleep(){
 }
 function giveUp(){ s.flags.giveUp=1; sleep(); }
 
-function endGame(type){ s.endType=type; s.phase='end'; s.ev=null; render(); }
+function closeDay(failed){
+  if(!s.dayStart || !s.dayLog || s.dayLog.some(d=>d.day===s.day)) return;
+  const st=s.dayStart, txs=s.ledger.slice(st.ledger);
+  const payday = txs.some(l=>l.amt>0 && /급여|주급/.test(l.memo));
+  const bad = s.nodes.slice(st.nodes).some(n=>n.bad) || txs.some(l=>l.amt<=-100000) || (st.hp-s.hp)>=15 || (st.mp-s.mp)>=15;
+  const net = s.bal - st.bal;
+  const e = failed ? 'fail' : payday ? 'pay' : bad ? 'bad' : (net<=-30000 || sleepCut()>0) ? 'meh' : 'ok';
+  s.dayLog.push({day:s.day, e, net});
+}
+function endGame(type){
+  if(s.dayLog){ closeDay(type!=='survived'); if(type!=='survived'){ const last=s.dayLog[s.dayLog.length-1]; if(last && last.day===s.day) last.e='fail'; } }
+  s.endType=type; s.phase='end'; s.ev=null; render();
+}
+const SITE='https://wolseday.com';
+const EMO={ok:'🟩',meh:'🟨',bad:'🟥',pay:'💰',fail:'❌',none:'⬜'};
+const EMO_LABEL=[['ok','무난'],['meh','빠듯'],['bad','큰일'],['pay','월급날'],['fail','끝난 날'],['none','못 간 날']];
+function dayCells(){ const out=[]; for(let d=1;d<=30;d++){ const l=(s.dayLog||[]).find(x=>x.day===d); out.push(l?l.e:'none'); } return out; }
+function emojiGrid(){ const c=dayCells().map(k=>EMO[k]); return [0,10,20].map(i=>c.slice(i,i+10).join('')).join('\n'); }
+function rentOkNow(){ const C=CH(); return s.bal>=C.rent || (s.flags.rentDelay && s.bal>=C.rent*.5); }
+function verdict(){
+  if(s.endType==='survived') return rentOkNow() ? '✅ 30일 버팀 · 월세 냄' : '⚠️ 30일 버팀 · 월세 모자람';
+  return {broke:`💸 ${s.day}일째 잔고 바닥`, collapse:`🚑 ${s.day}일째 쓰러짐`, burnout:`🌧️ ${s.day}일째 번아웃`}[s.endType];
+}
+function shareText(withUrl=true){
+  const C=CH();
+  return `월세날까지 · ${C.name}(${C.age}) ${C.title}\n${verdict()}\n${emojiGrid()}\n가난해서 더 낸 돈 ${fmt(premTotal())}원${withUrl?'\n'+SITE:''}`;
+}
+function copyText(text, btnId){
+  const btn=$(btnId), ta=$('copyArea');
+  const fb=()=>{ ta.value=text; ta.hidden=false; ta.focus(); ta.select(); btn.textContent='아래 글을 길게 눌러 복사하세요'; };
+  try{ navigator.clipboard.writeText(text).then(()=>{ btn.textContent='복사했어요'; setTimeout(()=>{btn.textContent=btn.dataset.label;},1800); }, fb); }catch(e){ fb(); }
+}
+async function shareResult(){
+  if(navigator.share){
+    try{ await navigator.share({title:'월세날까지', text:shareText(false), url:SITE}); return; }
+    catch(e){ if(e && e.name==='AbortError') return; }
+  }
+  copyText(shareText(true),'shareBtn');
+}
+async function resultImage(){
+  const C=CH(), W=1080, H=1350, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const g=cv.getContext('2d');
+  try{ await document.fonts.ready; }catch(e){}
+  g.fillStyle='#15131d'; g.fillRect(0,0,W,H);
+  coins.length=0; zz.length=0; const keepPose=s.pose; s.pose='desk'; drawRoom(); drawChar(); drawDesk(); drawKid(); s.pose=keepPose;
+  g.imageSmoothingEnabled=false; g.drawImage($('scene'),60,60,960,540);
+  g.fillStyle='#3b3552'; g.fillRect(60,600,960,6);
+  g.textBaseline='top';
+  g.fillStyle='#ffa43f'; g.font='92px "Do Hyeon", sans-serif'; g.fillText('월세날까지',60,640);
+  g.fillStyle='#a29bb8'; g.font='34px "Gowun Dodum", sans-serif'; g.fillText(`${C.name}(${C.age}) · ${C.title}`,60,750);
+  g.fillStyle='#ebe6f3'; g.font='50px "Do Hyeon", sans-serif'; g.fillText(verdict().replace(/^\S+\s/,''),60,806);
+  const COL={ok:'#64d690',meh:'#f2c14e',bad:'#ff6a5f',pay:'#ffa43f',fail:'#5a2a33',none:'#2f2a40'};
+  const cells=dayCells(), sz=84, gap=12, gx=60, gy=890;
+  cells.forEach((k,i)=>{ const x=gx+(i%10)*(sz+gap), y=gy+Math.floor(i/10)*(sz+gap);
+    g.fillStyle=COL[k]; g.fillRect(x,y,sz,sz);
+    if(k==='pay'){ g.fillStyle='#6a3a10'; g.font='44px "Silkscreen", monospace'; g.fillText('$',x+28,y+18); }
+    if(k==='fail'){ g.strokeStyle='#ff6a5f'; g.lineWidth=8; g.beginPath(); g.moveTo(x+20,y+20); g.lineTo(x+sz-20,y+sz-20); g.moveTo(x+sz-20,y+20); g.lineTo(x+20,y+sz-20); g.stroke(); }
+  });
+  g.fillStyle='#ebe6f3'; g.font='34px "Gowun Dodum", sans-serif';
+  g.fillText(`가난해서 더 낸 돈  ${fmt(premTotal())}원`,60,1196);
+  g.fillStyle='#a29bb8'; g.font='30px "Silkscreen", monospace'; g.fillText('WOLSEDAY.COM',60,1262);
+  return cv;
+}
+async function saveImage(){
+  const btn=$('imgBtn'); btn.textContent='만드는 중…';
+  const cv=await resultImage();
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  btn.textContent=btn.dataset.label;
+  if(!blob) return;
+  const file = (typeof File==='function') ? new File([blob],'wolseday-result.png',{type:'image/png'}) : null;
+  if(file && navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:'월세날까지', text:SITE}); return; }
+    catch(e){ if(e && e.name==='AbortError') return; }
+  }
+  const url=URL.createObjectURL(blob);
+  try{ const a=document.createElement('a'); a.href=url; a.download='wolseday-result.png'; document.body.appendChild(a); a.click(); a.remove(); }catch(e){}
+  const pv=$('imgPrev'); pv.innerHTML=`<img src="${url}" alt="결과 카드 이미지"><span>저장이 안 됐다면 이미지를 길게 누르거나 우클릭해서 저장하세요.</span>`; pv.hidden=false;
+}
 
 /* ---------------- bills view ---------------- */
 function billsDue(){ return CH().bills; }
@@ -1103,9 +1199,21 @@ function renderEnd(c){
     : (s.flags.loanMissed?'대출 상환을 한 번 놓쳤다. 신용점수가 떨어졌다.':'대출은 한 번도 밀리지 않았다.') + (s.flags.steady?` 다음 달 10일에 첫 월급 ${fmt(s.pending)}원이 들어온다.`:'');
   const ch = chains();
   const prem = Object.entries(s.premium).sort((a,b)=>b[1]-a[1]);
-  const shareText = `월세날까지 | ${C.name}(${C.age}) ${C.title}\n${head} 잔고 ${fmt(s.bal)}원${debtTotal()?` · 남은 빚 ${fmt(debtTotal())}원`:''}\n가난해서 더 낸 돈 ${fmt(premTotal())}원\n${goal}`;
   c.innerHTML=`<div class="eyebrow">${C.name} · ${C.title}</div>
     <h2>${esc(head)}</h2><p>${esc(body)}</p><p class="memo"><b>목표</b>${esc(goal)}</p>
+    <div class="emo">
+      <div class="emo-top"><span>${esc(verdict())}</span><span>가난해서 더 낸 돈 <b>${fmt(premTotal())}원</b></span></div>
+      <div class="emo-grid" role="img" aria-label="30일 하루하루 기록">${dayCells().map((k,i)=>`<span title="${i+1}일">${EMO[k]}</span>`).join('')}</div>
+      <div class="emo-legend">${EMO_LABEL.map(([k,l])=>`<span>${EMO[k]} ${l}</span>`).join('')}</div>
+      <div class="share-row">
+        <button class="primary" type="button" id="shareBtn" data-label="친구에게 공유하기">친구에게 공유하기</button>
+        <button class="ghost" type="button" id="copyBtn" data-label="결과 복사">결과 복사</button>
+        <button class="ghost" type="button" id="imgBtn" data-label="결과 이미지 저장">결과 이미지 저장</button>
+        <a class="ghost" id="xBtn" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText(true))}" target="_blank" rel="noopener">X에 올리기</a>
+      </div>
+      <div id="imgPrev" hidden></div>
+      <textarea id="copyArea" readonly hidden></textarea>
+    </div>
     <div class="endstats">
       <div>버틴 날<b>${s.day}일</b></div>
       <div>번 돈<b class="tag plus">${fmt(s.totalIn)}</b></div>
@@ -1116,10 +1224,11 @@ function renderEnd(c){
     ${prem.length?`<h3>더 낸 돈은 어디서 생겼나</h3><div class="prem-list">${prem.map(([k,v])=>`<div><span>${esc(k)}</span><span class="n">${fmt(v)}원</span></div>`).join('')}</div>`:''}
     <h3>선택은 이렇게 이어졌다</h3>
     ${ch.length?`<div class="chains">${ch.map(p=>`<div class="chain">${p.map((id,i)=>{const n=s.nodes[id];return `${i?'<span class="arrow">→</span>':''}<div class="node ${n.bad?'bad':''}"><span class="d">${n.day}일</span><span>${esc(n.label)}</span>${n.money?`<span class="m ${n.money>0?'tag plus':'tag minus'}">${n.money>0?'+':'-'}${fmt(Math.abs(n.money))}</span>`:''}</div>`;}).join('')}</div>`).join('')}</div>`:'<p class="empty">이번 판은 크게 이어진 일이 없었다.</p>'}
-    <textarea id="copyArea" readonly hidden>${esc(shareText)}</textarea>
-    <div class="row"><button class="primary" type="button" id="againBtn">다른 사람으로 다시</button><button class="ghost" type="button" id="copyBtn">결과 복사</button></div>`;
+    <div class="row"><button class="ghost" type="button" id="againBtn">다른 사람으로 다시</button></div>`;
   $('againBtn').onclick=()=>{ s=fresh(); s.phase='pick'; render(); };
-  $('copyBtn').onclick=()=>{ const ta=$('copyArea'); const fb=()=>{ta.hidden=false;ta.focus();ta.select();$('copyBtn').textContent='위 글을 길게 눌러 복사하세요';}; try{navigator.clipboard.writeText(shareText).then(()=>{$('copyBtn').textContent='복사했어요';},fb);}catch(e){fb();} };
+  $('copyBtn').onclick=()=>copyText(shareText(true),'copyBtn');
+  $('shareBtn').onclick=shareResult;
+  $('imgBtn').onclick=saveImage;
 }
 
 function startAs(k){
@@ -1255,6 +1364,22 @@ async function nightTransition(){ if(REDUCED) return; sleeping=true; s.pose='des
 function boot(data){ s=(data&&data.s)?data.s:fresh(); render(); requestAnimationFrame(frame); }
 try{ window.claude?.hot?.snapshot?.(()=>({s})); }catch(e){}
 window.__game = { state:()=>s };
+(function live(){
+  let LIVE=null;
+  try{ LIVE = new URLSearchParams(location.search).get('live'); }catch(e){}
+  if(!LIVE && /(^|\.)wolseday\.(com|pages\.dev)$/.test(location.hostname)) LIVE='wss://live.wolseday.com/ws';
+  if(!LIVE || typeof WebSocket!=='function') return;
+  let ws=null, ping=null, wait=2000;
+  const pill=$('live'), n=$('liveN');
+  const open=()=>{
+    try{ ws=new WebSocket(LIVE); }catch(e){ return; }
+    ws.onopen=()=>{ wait=2000; ping=setInterval(()=>{ if(ws.readyState===1) ws.send('ping'); },30000); };
+    ws.onmessage=e=>{ try{ const d=JSON.parse(e.data); if(typeof d.online==='number'){ n.textContent=d.online.toLocaleString('ko-KR'); pill.hidden=false; } }catch(_){} };
+    ws.onclose=()=>{ clearInterval(ping); pill.hidden=true; setTimeout(open, wait); wait=Math.min(wait*2,60000); };
+    ws.onerror=()=>{ try{ ws.close(); }catch(_){} };
+  };
+  open();
+})();
 window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
 })();
 </script>

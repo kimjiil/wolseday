@@ -1,0 +1,17 @@
+name = "wolseday-live"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# wss://live.wolseday.com/ws 로 접속한다. 배포할 때 Cloudflare가 도메인을 자동으로 연결한다.
+routes = [
+  { pattern = "live.wolseday.com", custom_domain = true }
+]
+
+[[durable_objects.bindings]]
+name = "PRESENCE"
+class_name = "Presence"
+
+# 무료 플랜은 SQLite 기반 Durable Object만 쓸 수 있다.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Presence"]

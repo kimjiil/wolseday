@@ -1583,6 +1583,7 @@ function choose(i){
   const st=choiceState(c); if(st.fog||st.dis) return;
   const label = `${ev.short||'일'} → ${c.t}`;
   if(i!=='fb'){ const st2=choiceState(c); if(st2.fog||st2.dis) return; }
+  const wBefore=wonOf(c), fogN=ev.choices.filter(x=>choiceState(x).fog).length;
   let r = applyFx(c, s.ev.cause, label);
   let text = r.text, roll=null;
   if(c.chance){
@@ -1590,10 +1591,11 @@ function choose(i){
     const sub = applyFx(ok?c.chance.ok:c.chance.fail, r.node, ok?'잘 풀림':'안 풀림');
     text = sub.text || text; roll={p,ok};
   }
-  if(c.end){ s.log.push({day:s.day, pick:c.t, ev:ev.short}); return endGame(c.end); }
+  const logE={day:s.day, pick:c.t, ev:ev.short, id:(s.ev&&(s.ev.fid||s.ev.id))||ev.short, i, won:wBefore, ok:roll?roll.ok:null, night:s.nightPending?1:0, u:ev.ukka?1:0, fog:fogN};
+  if(c.end){ s.log.push(logE); return endGame(c.end); }
   if(ev.ukka){ s.ukkaN=(s.ukkaN||0)+1; if(s.flags.ukkaDay!==s.day && !s.flags.chainDay && rnd()<.13){ s.flags.chainDay=s.day; s.queue.push({id:'ukkaPick',day:s.day+1,data:{chain:1}}); } else if(s.flags.chainDay && s.day-s.flags.chainDay>3) s.flags.chainDay=0; }
   if(s.char==='grad' && s.pass>=3 && !s.flags.offerQueued && !s.flags.job){ s.flags.offerQueued=1; s.queue.push({id:'offer',day:s.day+2,data:{cause:r.node}}); }
-  s.log.push({day:s.day, pick:c.t, ev:ev.short});
+  s.log.push(logE);
   { const w=wonOf(c); diary(`${ev.short||'일'} → ${c.t}`+(w?` (${w>0?'+':'-'}${fmt(Math.abs(w))})`:''),'p'); }
   s.res = {text, note:ev.note||null, roll};
   s.phase='result';
@@ -1617,6 +1619,7 @@ function handleDefer(key, halfDay){
     if(rk in s.rel) s.rel[rk] = clamp(s.rel[rk]-6);
     if(s.char==='boss' && s.flags.steady && s.day>=s.flags.steadyFrom){ s.pending = Math.max(0, s.pending-52500); }
   }
+  act((halfDay?'defh:':'def:')+key);
   if(d.cost) tx(d.name, -d.cost, d.prem||null);
   if(d.key==='rent'){ s.rentsPaid++; s.flags.rentToday=1; }
   spend(d.h);
@@ -1677,7 +1680,7 @@ function doAction(id){
   if(a.wise && s.mp<25) return;
   if(a.won && s.bal < -a.won) return;
   if(!canSpend(a.h)) return;
-  s.did[id]=1; s.scene=ACTION_SCENE[id]||null;
+  s.did[id]=1; s.scene=ACTION_SCENE[id]||null; act(id);
   const small = Math.round(food*1.7/100)*100*P;
   let txt='';
   switch(id){
@@ -1718,7 +1721,7 @@ function doAction(id){
 /* relationships */
 function careRel(key){
   if(s.relLast[key]===s.day || !canSpend(.5)) return;
-  s.relLast[key]=s.day; spend(.5); s.scene='phone';
+  s.relLast[key]=s.day; spend(.5); s.scene='phone'; act('care:'+key);
   s.rel[key]=clamp(s.rel[key]+5); s.mp=clamp(s.mp+1);
   const r=CH().rels.find(x=>x.key===key);
   s.eveLog.push(`${r.name}에게 연락했다.`); s.pose='phone';
@@ -1732,7 +1735,7 @@ function askRel(key){
   if(!canSpend(.3)) return;
   s.asked[key]=s.day; spend(.3); s.scene='phone';
   const p = clamp(s.rel[key]/100*.92*Math.pow(.85,monthOf(s.day)-1),.05,.92), ok=rnd()<p;
-  const prideMp = r.ask.pride ? -10 : 0;
+  const prideMp = r.ask.pride ? -10 : 0; act('ask:'+key+(ok?'+':'-'));
   const n = node(`${r.name}에게 부탁: ${r.ask.label}`, null);
   let t;
   if(ok){
@@ -1778,7 +1781,7 @@ FOLLOW.kimLeadF = ()=>({short:'주방 자리 제안',text:'김사장이 전화�
 /* cash advance */
 function cashAdvance(){
   if(s.flags.cashUsed || s.flags.cardStop) return;
-  const amt=CH().cash; s.flags.cashUsed=1;
+  const amt=CH().cash; s.flags.cashUsed=1; act('cash');
   const n=node('카드 현금서비스', null, amt);
   tx('현금서비스', amt);
   addDeferRaw({key:'cash',name:'현금서비스 결제',left:8,cost:Math.round(amt*1.065),h:.1,expire:'billLate',data:{name:'현금서비스',amt:Math.round(amt*1.065)},prem:{cat:'현금서비스 수수료',amt:Math.round(amt*.065)}}, n);
@@ -1845,7 +1848,7 @@ function closeDay(failed){
   const bad = s.nodes.slice(st.nodes).some(n=>n.bad) || txs.some(l=>l.amt<=-100000) || (st.hp-s.hp)>=15 || (st.mp-s.mp)>=15;
   const net = s.bal - st.bal;
   const e = failed ? 'fail' : s.flags.rentToday ? 'rent' : payday ? 'pay' : bad ? 'bad' : (net<=-30000 || sleepCut()>0) ? 'meh' : 'ok';
-  s.dayLog.push({day:s.day, e, net}); s.flags.rentToday=0;
+  s.dayLog.push({day:s.day, e, net, bal:s.bal, hp:Math.round(s.hp), mp:Math.round(s.mp), cut:Math.round(sleepCut()*10)/10}); s.flags.rentToday=0;
 }
 function endGame(type){
   if(s.dayLog){ closeDay(true); const last=s.dayLog[s.dayLog.length-1]; if(last && last.day===s.day) last.e='fail'; }
@@ -2031,7 +2034,7 @@ function renderCard(){
     c.innerHTML=`<div class="eyebrow">오늘의 판 · ${seedLabel(today)}</div>
       <h2>월세날을 몇 번 넘길 수 있을까.</h2>
       <p>시간이 모자라면 돈으로 사야 하고, 돈이 모자라면 시간과 몸으로 메워야 한다. 미룬 일은 커져서 돌아오고, 부탁할 사람은 쓸수록 줄어든다. 30일마다 월세날이 오고, 달이 갈수록 버티기는 더 어려워진다.</p>
-      <p class="memo"><b>규칙</b>잔고가 바닥난 채 잠들거나, 체력이나 멘탈이 0이 되거나, 밀린 월세를 끝내 못 내면 끝. 누구로 태어날지는 무작위다. 마음에 안 들면 다시 뽑을 수 있다.${API?' 오늘의 판은 처음 한 번만 순위에 올라간다.':''}</p>
+      <p class="memo"><b>규칙</b>잔고가 바닥난 채 잠들거나, 체력이나 멘탈이 0이 되거나, 밀린 월세를 끝내 못 내면 끝. 누구로 태어날지는 무작위다. 마음에 안 들면 다시 뽑을 수 있다.${API?' 오늘의 판은 처음 한 번만 순위에 올라간다. 끝난 판의 선택과 결과는 이름 없이 저장돼 난이도 조정에 쓰인다.':''}</p>
       ${API?`<div class="board" id="boardBox">${boardHtml()}</div>`:''}
       ${practiceOnly&&dl.done?`<p class="mine">오늘 내 기록: <b>${dl.done.days}일</b>${dl.done.rank?` · ${dl.done.total}명 중 <b>${dl.done.rank}위</b>`:''}</p>`:''}
       ${practiceOnly&&!dl.done&&!(saved&&saved.ranked)?`<p class="mine">오늘의 판은 이미 시작했다. 다시 하는 판은 순위에 올라가지 않는다.</p>`:''}
@@ -2274,7 +2277,27 @@ function beginRun(){
   lsSet('wolse_daily', {seed:s.seed, started:1});
   api('/api/start', {seed:s.seed, char:s.char}).then(d=>{ if(d && d.id) s.runId=d.id; saveRun(); }).catch(()=>{});
 }
-function onRunEnd(){ clearRun(); if(API) fetchBoard(s.seed && s.seed[0]!=='p' ? s.seed : kstDate()); }
+function act(a){ (s.acts=s.acts||[]).push([s.day,a]); }
+// 판이 끝나면 익명 기록을 서버로 보낸다. 이름·닉네임·기기 정보는 보내지 않는다.
+function runLog(){
+  const P=s.person||{};
+  return {v:3, mode:s.ranked?'daily':(s.mode||'practice'), seed:(s.seed&&s.seed[0]!=='p')?s.seed:null, char:s.char,
+    person:{age:P.age, title:P.title, traits:P.traits, bal0:P.bal, rent0:P.rent, hpMax0:P.hpMax},
+    rerolls:s.rerolls||0, days:s.day, end:s.endType, rents:s.rentsPaid||0, ukka:s.ukkaN||0, prem:premTotal(), totalIn:s.totalIn, totalOut:s.totalOut,
+    fired:!!s.fired, job:s.flags.job||(s.flags.steady?'steady':null), offer:!!s.flags.offer, luck:s.luck||0, child:s.rel&&s.rel.child,
+    rel:s.rel, daysLog:(s.dayLog||[]).map(d=>[d.day,d.e,d.bal,d.hp,d.mp,d.cut||0]),
+    picks:(s.log||[]).slice(-500).map(l=>[l.day,l.id,l.i,l.pick,l.won||0,l.ok,l.night||0,l.u||0,l.fog||0,l.ev||'']),
+    acts:(s.acts||[]).slice(-1500), defer:(s.defer||[]).map(d=>[d.key,d.left,d.cost||0]),
+    lastMorning:(s.morning||[]).slice(-4)};
+}
+function sendRunLog(){
+  if(!API || s.logSent) return; s.logSent=1;
+  try{ const body=JSON.stringify(runLog());
+    if(body.length>120000) return;
+    fetch(API+'/api/log',{method:'POST',headers:{'content-type':'application/json'},body,keepalive:true}).catch(()=>{});
+  }catch(e){}
+}
+function onRunEnd(){ clearRun(); sendRunLog(); if(API) fetchBoard(s.seed && s.seed[0]!=='p' ? s.seed : kstDate()); }
 let BOARD=null;
 const FULL={};
 let RV={tab:'list', seed:null, char:null};

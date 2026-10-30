@@ -93,6 +93,9 @@ export class Board {
     const cols = this.sql.exec(`PRAGMA table_info(scores)`).toArray().map((c) => c.name);
     if (!cols.includes('who')) this.sql.exec(`ALTER TABLE scores ADD COLUMN who TEXT`);
     if (!cols.includes('look')) this.sql.exec(`ALTER TABLE scores ADD COLUMN look TEXT`);
+    // 끝난 판의 익명 기록 (난이도 조정용)
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS runlogs (id INTEGER PRIMARY KEY AUTOINCREMENT, t INTEGER, ip TEXT, mode TEXT, char TEXT, days INTEGER, endt TEXT, rents INTEGER, ukka INTEGER, body TEXT)`);
+    this.sql.exec(`CREATE INDEX IF NOT EXISTS runlogs_t ON runlogs (t)`);
   }
 
   board(seed, limit = 10, char = null) {
@@ -115,6 +118,12 @@ export class Board {
     const ip = request.headers.get('cf-connecting-ip') || 'local';
     const now = Date.now();
 
+    if (url.pathname === '/api/stats') {
+      const sinceDays = Math.max(1, Math.min(365, Number(url.searchParams.get('since')) || 30));
+      const mode = ['daily', 'practice'].includes(url.searchParams.get('mode')) ? url.searchParams.get('mode') : null;
+      return json(this.stats(now - sinceDays * 86400e3, mode));
+    }
+
     if (url.pathname === '/api/board') {
       const seed = url.searchParams.get('seed') || kstDate();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(seed)) return json({ error: 'seed' }, 400);
@@ -126,6 +135,21 @@ export class Board {
     let body = null;
     try { body = await request.json(); } catch (_) { return json({ error: 'body' }, 400); }
     if (!body || typeof body !== 'object') return json({ error: 'body' }, 400);
+
+    if (url.pathname === '/api/log') {
+      const raw = JSON.stringify(body);
+      if (raw.length > 120000) return json({ error: 'too big' }, 413);
+      if (!CHARS.includes(body.char)) return json({ error: 'bad' }, 400);
+      const days = Math.floor(Number(body.days));
+      if (!(days >= 1 && days <= 500)) return json({ error: 'days' }, 400);
+      const recent = this.sql.exec(`SELECT COUNT(*) AS n FROM runlogs WHERE ip = ? AND t > ?`, ip, now - 3600e3).one().n;
+      if (recent >= 60) return json({ error: 'slow down' }, 429);
+      this.sql.exec(`DELETE FROM runlogs WHERE t < ?`, now - 180 * 86400e3);
+      this.sql.exec(`INSERT INTO runlogs (t, ip, mode, char, days, endt, rents, ukka, body) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        now, ip, body.mode === 'daily' ? 'daily' : 'practice', body.char, days, ENDS.includes(body.end) ? body.end : 'broke',
+        Math.max(0, Math.floor(Number(body.rents) || 0)), Math.max(0, Math.floor(Number(body.ukka) || 0)), raw);
+      return json({ ok: true });
+    }
 
     if (url.pathname === '/api/start') {
       if (!validSeed(body.seed) || !CHARS.includes(body.char)) return json({ error: 'bad' }, 400);
@@ -163,6 +187,55 @@ export class Board {
   }
 }
 
+// ---------------- 기록 집계 ----------------
+function q(arr, p) { if (!arr.length) return null; const a = [...arr].sort((x, y) => x - y); return a[Math.min(a.length - 1, Math.floor(p * a.length))]; }
+function avg(arr) { return arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : null; }
+Board.prototype.stats = function (since, mode) {
+  const rows = this.sql.exec(`SELECT t, mode, char, days, endt, body FROM runlogs WHERE t >= ? ${mode ? 'AND mode = ?' : ''} ORDER BY t DESC LIMIT 1500`, ...(mode ? [since, mode] : [since])).toArray();
+  const runs = [];
+  for (const r of rows) { try { runs.push({ ...JSON.parse(r.body), t: r.t, mode: r.mode, char: r.char, days: r.days, end: r.endt }); } catch (_) {} }
+  const CH = ['grad', 'mom', 'boss'];
+  const by = (f) => Object.fromEntries(['all', ...CH].map((k) => [k, f(k === 'all' ? runs : runs.filter((r) => r.char === k))]));
+  const summary = by((rs) => {
+    const d = rs.map((r) => r.days);
+    const ends = {}; rs.forEach((r) => (ends[r.end] = (ends[r.end] || 0) + 1));
+    return { n: rs.length, avg: avg(d), p10: q(d, 0.1), med: q(d, 0.5), p90: q(d, 0.9), max: d.length ? Math.max(...d) : null, ends,
+      rents: avg(rs.map((r) => r.rents || 0)), ukka: avg(rs.map((r) => r.ukka || 0)), rerolls: avg(rs.map((r) => r.rerolls || 0)), prem: avg(rs.map((r) => r.prem || 0)) };
+  });
+  const maxDay = Math.min(150, Math.max(30, ...runs.map((r) => r.days)));
+  const survival = by((rs) => { const out = []; for (let d = 1; d <= maxDay; d++) out.push(rs.length ? Math.round((rs.filter((r) => r.days >= d).length / rs.length) * 1000) / 10 : null); return out; });
+  const curves = by((rs) => {
+    const sum = { bal: [], hp: [], mp: [] }, cnt = [];
+    for (const r of rs) for (const x of r.daysLog || []) {
+      const d = x[0]; if (d < 1 || d > maxDay) continue;
+      cnt[d] = (cnt[d] || 0) + 1; sum.bal[d] = (sum.bal[d] || 0) + x[2]; sum.hp[d] = (sum.hp[d] || 0) + x[3]; sum.mp[d] = (sum.mp[d] || 0) + x[4];
+    }
+    const out = { bal: [], hp: [], mp: [] };
+    for (let d = 1; d <= maxDay; d++) {
+      const n = cnt[d] || 0;
+      out.bal.push(n >= 3 ? Math.round(sum.bal[d] / n) : null); out.hp.push(n >= 3 ? Math.round((sum.hp[d] / n) * 10) / 10 : null); out.mp.push(n >= 3 ? Math.round((sum.mp[d] / n) * 10) / 10 : null);
+    }
+    return out;
+  });
+  // 이벤트별 선택: 고른 횟수, 그 판의 평균 버틴 날, 사흘 안에 끝난 비율
+  const ev = {};
+  for (const r of runs) for (const p of r.picks || []) {
+    const [day, id, i, pick, won, ok, night, u] = p; const e = (ev[id] = ev[id] || { id, label: p[9] || id, ukka: !!u, night: !!night, n: 0, choices: {} });
+    e.n++; const c = (e.choices[pick] = e.choices[pick] || { n: 0, days: 0, diedSoon: 0, ok: 0, rolled: 0, won: 0 });
+    c.n++; c.days += r.days; c.won += won || 0; if (r.days - day <= 3) c.diedSoon++; if (ok !== null && ok !== undefined) { c.rolled++; if (ok) c.ok++; }
+  }
+  const events = Object.values(ev).sort((a, b) => b.n - a.n).map((e) => ({ id: e.id, label: e.label, ukka: e.ukka, night: e.night, n: e.n,
+    choices: Object.entries(e.choices).map(([t, c]) => ({ t, n: c.n, share: Math.round((c.n / e.n) * 100), avgDays: Math.round((c.days / c.n) * 10) / 10, diedSoon: Math.round((c.diedSoon / c.n) * 100), okRate: c.rolled ? Math.round((c.ok / c.rolled) * 100) : null, avgWon: Math.round(c.won / c.n) })).sort((a, b) => b.n - a.n) }));
+  const lastEv = {}; runs.forEach((r) => { const p = (r.picks || []).slice(-1)[0]; if (p) { const k = p[9] || p[1]; lastEv[k] = (lastEv[k] || 0) + 1; } });
+  const acts = {}; runs.forEach((r) => (r.acts || []).forEach(([d, a]) => { const k = String(a).split(':')[0]; acts[k] = (acts[k] || 0) + 1; }));
+  const traits = {}; runs.forEach((r) => ((r.person && r.person.traits) || []).forEach((tr) => { (traits[tr] = traits[tr] || []).push(r.days); }));
+  return { at: Date.now(), n: runs.length, summary, survival, curves, events: events.slice(0, 120),
+    lastEvents: Object.entries(lastEv).sort((a, b) => b[1] - a[1]).slice(0, 15),
+    acts: Object.entries(acts).sort((a, b) => b[1] - a[1]).map(([k, n]) => [k, Math.round((n / Math.max(1, runs.length)) * 10) / 10]),
+    traits: Object.entries(traits).map(([k, d]) => [k, d.length, avg(d)]).sort((a, b) => b[2] - a[2]),
+    recent: runs.slice(0, 30).map((r) => ({ t: r.t, char: r.char, mode: r.mode, days: r.days, end: r.end, rents: r.rents, ukka: r.ukka, age: r.person && r.person.age, title: r.person && r.person.title, traits: r.person && r.person.traits })) };
+};
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
 }
@@ -183,7 +256,7 @@ export default {
       const origin = request.headers.get('Origin') || '';
       if (!ALLOWED.test(origin)) return new Response('Forbidden', { status: 403 });
       if (request.method === 'OPTIONS') return withCors(new Response(null, { status: 204 }), origin);
-      if (request.method !== (url.pathname === '/api/board' ? 'GET' : 'POST')) return withCors(json({ error: 'method' }, 405), origin);
+      if (request.method !== (['/api/board', '/api/stats'].includes(url.pathname) ? 'GET' : 'POST')) return withCors(json({ error: 'method' }, 405), origin);
       const stub = env.BOARD.get(env.BOARD.idFromName('global'));
       return withCors(await stub.fetch(request), origin);
     }

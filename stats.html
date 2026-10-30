@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>월세날까지 기록실</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --ink:#15131d; --panel:#1f1c2b; --panel-2:#2a2639; --line:#3b3552; --grid:#2c283b;
+  --text:#ebe6f3; --muted:#bdb6d1; --faint:#8a83a0; --sodium:#ffa43f;
+  --all:#ebe6f3; --grad:#3987e5; --mom:#d95926; --boss:#199e70;
+  --hp:#ff7d7d; --mp:#8fb5ff;
+  --f-display:"Do Hyeon","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.55}
+main{max-width:1080px;margin:0 auto;padding:24px 16px 64px;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--f-display);font-weight:400;font-size:34px;margin:0;color:var(--sodium)}
+h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0;font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar .grp{display:flex;gap:4px;background:var(--panel);border:2px solid var(--line);padding:3px}
+.bar button{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;padding:6px 12px;cursor:pointer;min-height:36px}
+.bar button.on{background:var(--panel-2);color:var(--text);font-weight:500}
+.bar button:focus-visible{outline:2px solid var(--sodium);outline-offset:1px}
+.bar .at{margin-left:auto;font-family:var(--f-mono);font-size:12px;color:var(--faint)}
+.card{background:var(--panel);border:2px solid var(--line);padding:16px 18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--panel);border:2px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi span{font-size:13px;color:var(--muted)}
+.kpi b{font-family:var(--f-display);font-weight:400;font-size:30px;line-height:1.1}
+.kpi small{font-size:12px;color:var(--faint)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-weight:500;text-align:left;color:var(--muted);font-size:13px;padding:6px 8px;border-bottom:2px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--grid);font-size:14px;vertical-align:top}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-size:13px}
+.sw{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:baseline}
+.ends{display:flex;height:12px;min-width:120px;gap:2px}
+.ends i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin:4px 0 8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:3px;display:inline-block}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:#0f0d16;border:1px solid var(--line);padding:8px 10px;font-size:12px;min-width:150px;display:none;z-index:2}
+.tip b{display:block;font-weight:500;margin-bottom:4px}
+.tip div{display:flex;justify-content:space-between;gap:12px}
+.tip div span:last-child{font-family:var(--f-mono)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.ev{border-bottom:1px solid var(--grid)}
+.ev summary{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;cursor:pointer;list-style:none}
+.ev summary::-webkit-details-marker{display:none}
+.ev summary:focus-visible{outline:2px solid var(--sodium)}
+.ev summary b{font-weight:500}
+.ev summary span{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.ev table{margin:0 0 10px}
+.share{display:flex;align-items:center;gap:6px}
+.share i{display:inline-block;height:8px;background:var(--sodium);border-radius:0 2px 2px 0}
+.empty{color:var(--muted);text-align:center;padding:30px 0}
+.note{font-size:12px;color:var(--faint)}
+.scroll{overflow-x:auto}
+.scroll table{min-width:600px}
+td:first-child,th:first-child{white-space:nowrap}
+.more{background:none;border:2px solid var(--line);color:var(--muted);font:inherit;font-size:14px;padding:8px 14px;margin-top:10px;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>월세날까지 기록실</h1>
+    <p class="sub">끝난 판의 익명 기록으로 본 난이도. 이름, 닉네임, 기기 정보는 저장하지 않는다.</p>
+  </header>
+  <div class="bar" role="toolbar" aria-label="보기 설정">
+    <div class="grp" id="since"><button data-v="1">오늘</button><button data-v="7">7일</button><button data-v="30" class="on">30일</button><button data-v="90">90일</button></div>
+    <div class="grp" id="mode"><button data-v="" class="on">전체</button><button data-v="daily">오늘의 판</button><button data-v="practice">연습 판</button></div>
+    <span class="at" id="at"></span>
+  </div>
+  <div id="body"><p class="empty">불러오는 중…</p></div>
+</main>
+<script>
+(function(){
+const NAMES={all:'전체',grad:'청년 알바생',mom:'한부모',boss:'중년 일용직'};
+const COLOR={all:'var(--all)',grad:'var(--grad)',mom:'var(--mom)',boss:'var(--boss)'};
+const END={broke:['잔고 바닥','#c98500'],collapse:['쓰러짐','#e66767'],burnout:['번아웃','#9085e9'],evicted:['쫓겨남','#8a83a0']};
+const ACT={small:'편의점 장보기',bulk:'마트 장보기',cook:'밥 해 먹기',rest:'누워서 쉬기',play:'아이랑 놀기',homework:'숙제 봐주기',study:'공부',gigG:'도보 배달',gigM:'재택 부업',drive:'대리운전',care:'연락',ask:'부탁',def:'미룬 일 처리',defh:'반차 쓰고 처리',cash:'현금서비스'};
+let LAST=null; let rz=null; addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(LAST) render(LAST); },200); });
+let LIVE=null; try{ LIVE=new URLSearchParams(location.search).get('live'); }catch(e){}
+const API = LIVE ? LIVE.replace(/^ws/,'http').replace(/\/ws$/,'') : 'https://live.wolseday.com';
+const st={since:30,mode:''};
+const esc=t=>String(t??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const f=n=>n==null?'–':Number(n).toLocaleString('ko-KR');
+function bind(id,key){ document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{ st[key]=key==='since'?+b.dataset.v:b.dataset.v; document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b)); load(); }); }
+bind('since','since'); bind('mode','mode');
+
+async function load(){
+  const body=document.getElementById('body');
+  try{
+    const r=await fetch(`${API}/api/stats?since=${st.since}${st.mode?'&mode='+st.mode:''}`);
+    if(!r.ok) throw new Error(r.status);
+    LAST=await r.json(); render(LAST);
+  }catch(e){ body.innerHTML='<p class="empty">기록을 불러오지 못했다. 잠시 뒤 다시 열어보자.</p>'; }
+}
+
+function lineChart(id, series, opts){
+  // series: [{key,label,color,values:[...]}], x = day index+1
+  const hostEl=document.getElementById(id), cw=(hostEl&&hostEl.clientWidth)||640;
+  const W=Math.max(320,Math.min(opts.w||640, cw-70)),H=opts.h||240,L=46,R=14,T=12,B=26;
+  const n=Math.max(...series.map(s=>s.values.length));
+  const all=series.flatMap(s=>s.values).filter(v=>v!=null);
+  const yMax=opts.yMax ?? Math.max(1,...all), yMin=opts.yMin ?? Math.min(0,...all);
+  const x=i=>L+(i)*(W-L-R)/Math.max(1,n-1), y=v=>T+(1-(v-yMin)/(yMax-yMin||1))*(H-T-B);
+  const ticks=5, grid=[]; for(let k=0;k<=ticks;k++){ const v=yMin+(yMax-yMin)*k/ticks; grid.push(`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" fill="var(--faint)" font-size="11" font-family="IBM Plex Mono,monospace">${opts.fmt?opts.fmt(v):Math.round(v)}</text>`); }
+  const xt=[]; const step=n>90?30:n>40?10:5; for(let d=step;d<=n;d+=step) xt.push(`<line x1="${x(d-1)}" x2="${x(d-1)}" y1="${H-B}" y2="${H-B+4}" stroke="var(--line)"/><text x="${x(d-1)}" y="${H-6}" text-anchor="middle" fill="var(--faint)" font-size="11" font-family="IBM Plex Mono,monospace">${d}일</text>`);
+  for(let d=30;d<n;d+=30) xt.push(`<line x1="${x(d)}" x2="${x(d)}" y1="${T}" y2="${H-B}" stroke="var(--line)" stroke-dasharray="3 4"/><text x="${x(d)+4}" y="${T+10}" fill="var(--faint)" font-size="10">월세날</text>`);
+  const paths=series.map(s=>{ let d='',pen=false; s.values.forEach((v,i)=>{ if(v==null){pen=false;return;} d+=(pen?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1); pen=true; }); return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.key==='all'?2.5:2}" stroke-linejoin="round" stroke-linecap="round" ${s.key==='all'?'stroke-dasharray="1 0"':''}/>`; }).join('');
+  // 선 끝 이름표: 겹치지 않게 위아래로 벌린다
+  const ends=series.map(s=>{ let i=s.values.length-1; while(i>0&&s.values[i]==null) i--; return s.values[i]==null?null:{s,i,yy:y(s.values[i])}; }).filter(Boolean).sort((a,b)=>a.yy-b.yy);
+  for(let k=1;k<ends.length;k++) if(ends[k].yy-ends[k-1].yy<13) ends[k].yy=ends[k-1].yy+13;
+  const labels=series.length<=4 ? ends.map(e=>`<text x="${x(e.i)+6}" y="${e.yy+4}" fill="var(--muted)" font-size="11">${esc(e.s.label)}</text>`).join('') : '';
+  const host=document.getElementById(id);
+  host.innerHTML=`<svg viewBox="0 0 ${W+70} ${H}" role="img" aria-label="${esc(opts.aria)}">${grid.join('')}${xt.join('')}${paths}${labels}<line class="cross" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--muted)" stroke-width="1" opacity="0"/><rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/></svg><div class="tip"></div>`;
+  const svg=host.querySelector('svg'), tip=host.querySelector('.tip'), cross=svg.querySelector('.cross');
+  const move=ev=>{ const rc=svg.getBoundingClientRect(), px=(ev.clientX-rc.left)*(W+70)/rc.width; let i=Math.round((px-L)/((W-L-R)/Math.max(1,n-1))); if(i<0||i>=n){ hide(); return; }
+    cross.setAttribute('x1',x(i)); cross.setAttribute('x2',x(i)); cross.setAttribute('opacity','.6');
+    tip.innerHTML=`<b>${i+1}일째</b>`+series.map(s=>`<div><span><i class="sw" style="background:${s.color}"></i>${esc(s.label)}</span><span>${s.values[i]==null?'–':(opts.fmt?opts.fmt(s.values[i]):s.values[i])}</span></div>`).join('');
+    tip.style.display='block'; const hr=host.getBoundingClientRect(); let lx=ev.clientX-hr.left+14; if(lx+170>hr.width) lx=ev.clientX-hr.left-180; tip.style.left=lx+'px'; tip.style.top=(ev.clientY-hr.top-10)+'px'; };
+  const hide=()=>{ tip.style.display='none'; cross.setAttribute('opacity','0'); };
+  svg.addEventListener('pointermove',move); svg.addEventListener('pointerleave',hide);
+}
+
+function render(d){
+  document.getElementById('at').textContent = d.at ? new Date(d.at+9*3600e3).toISOString().slice(5,16).replace('T',' ')+' 기준' : '';
+  const body=document.getElementById('body');
+  if(!d.n){ body.innerHTML='<div class="card"><p class="empty">이 기간에는 아직 끝난 판이 없다.</p></div>'; return; }
+  const S=d.summary, A=S.all, keys=['grad','mom','boss'];
+  const endBar=e=>{ const tot=Object.values(e||{}).reduce((a,b)=>a+b,0)||1; return `<div class="ends" role="img" aria-label="${Object.entries(e||{}).map(([k,v])=>END[k][0]+' '+v).join(', ')}">${Object.entries(END).map(([k,[l,c]])=>(e&&e[k])?`<i title="${l} ${e[k]}판" style="width:${e[k]/tot*100}%;background:${c}"></i>`:'').join('')}</div>`; };
+  const ev=(d.events||[]).filter(e=>e.n>=3);
+  body.innerHTML=`
+  <div class="kpis">
+    <div class="kpi"><span>끝난 판</span><b>${f(d.n)}</b><small>${st.mode==='daily'?'오늘의 판':st.mode==='practice'?'연습 판':'오늘의 판 + 연습 판'}</small></div>
+    <div class="kpi"><span>평균 버틴 날</span><b>${f(A.avg)}일</b><small>중간값 ${f(A.med)}일 · 최고 ${f(A.max)}일</small></div>
+    <div class="kpi"><span>평균 낸 월세</span><b>${f(A.rents)}번</b><small>30일마다 한 번</small></div>
+    <div class="kpi"><span>평균 억까</span><b>${f(A.ukka)}번</b><small>가난해서 더 낸 돈 평균 ${f(Math.round(A.prem||0))}원</small></div>
+    <div class="kpi"><span>평균 다시 뽑기</span><b>${f(A.rerolls)}번</b><small>시작 전 인물 리롤</small></div>
+  </div>
+  <section class="card scroll"><h2>유형별</h2>
+    <table><thead><tr><th>유형</th><th class="n">판</th><th class="n">평균</th><th class="n">하위 10%</th><th class="n">중간</th><th class="n">상위 10%</th><th class="n">최고</th><th>끝난 이유</th></tr></thead><tbody>
+    ${['all',...keys].map(k=>{ const r=S[k]; return `<tr><td><i class="sw" style="background:${COLOR[k]}"></i>${NAMES[k]}</td><td class="n">${f(r.n)}</td><td class="n">${f(r.avg)}</td><td class="n">${f(r.p10)}</td><td class="n">${f(r.med)}</td><td class="n">${f(r.p90)}</td><td class="n">${f(r.max)}</td><td>${endBar(r.ends)}</td></tr>`; }).join('')}
+    </tbody></table>
+    <div class="legend">${Object.values(END).map(([l,c])=>`<span><i class="sw" style="background:${c};height:10px;width:10px"></i>${l}</span>`).join('')}</div>
+  </section>
+  <section class="card"><h2>며칠째까지 살아남나</h2><p class="sub">그날까지 버틴 판의 비율. 점선은 월세날.</p>
+    <div class="legend">${['all',...keys].map(k=>`<span><i style="background:${COLOR[k]}"></i>${NAMES[k]}</span>`).join('')}</div>
+    <div class="chart" id="cSurv"></div></section>
+  <div class="two">
+    <section class="card"><h2>날짜별 평균 체력</h2><p class="sub">그날 살아 있던 판들의 평균</p><div class="legend">${keys.map(k=>`<span><i style="background:${COLOR[k]}"></i>${NAMES[k]}</span>`).join('')}</div><div class="chart" id="cHp"></div></section>
+    <section class="card"><h2>날짜별 평균 멘탈</h2><p class="sub">40 아래로 내려가면 좋은 선택지가 안 보인다</p><div class="legend">${keys.map(k=>`<span><i style="background:${COLOR[k]}"></i>${NAMES[k]}</span>`).join('')}</div><div class="chart" id="cMp"></div></section>
+  </div>
+  <section class="card"><h2>날짜별 평균 잔고</h2><div class="legend">${keys.map(k=>`<span><i style="background:${COLOR[k]}"></i>${NAMES[k]}</span>`).join('')}</div><div class="chart" id="cBal"></div></section>
+  <div class="two">
+    <section class="card"><h2>끝나기 직전 마지막 선택</h2><p class="sub">판이 끝난 날 고른 이벤트</p>
+      <table><tbody>${(d.lastEvents||[]).map(([k,n])=>`<tr><td>${esc(k)}</td><td class="n">${f(n)}판</td></tr>`).join('')||'<tr><td>없음</td></tr>'}</tbody></table></section>
+    <section class="card"><h2>한 판에 몇 번 했나</h2><p class="sub">자유 시간 행동, 판당 평균</p>
+      <table><tbody>${(d.acts||[]).map(([k,n])=>`<tr><td>${esc(ACT[k]||k)}</td><td class="n">${f(n)}번</td></tr>`).join('')}</tbody></table></section>
+  </div>
+  <section class="card scroll"><h2>성격별 평균 버틴 날</h2>
+    <table><thead><tr><th>성격</th><th class="n">판</th><th class="n">평균 버틴 날</th></tr></thead><tbody>${(d.traits||[]).map(([k,n,a])=>`<tr><td>${esc(k)}</td><td class="n">${f(n)}</td><td class="n">${f(a)}</td></tr>`).join('')}</tbody></table></section>
+  <section class="card"><h2>이벤트별 선택</h2><p class="sub">3번 이상 나온 이벤트만. 고른 비율, 그 선택을 한 판의 평균 버틴 날, 사흘 안에 끝난 비율, 운에 맡긴 선택이 잘 풀린 비율.</p>
+    ${ev.length?ev.map((e,ix)=>`<details class="ev" ${ix>=25?'hidden data-more':''}><summary><b>${esc(e.label||e.id)}${e.ukka?' · 억까':''}${e.night?' · 자기 전':''}</b><span>${f(e.n)}번</span></summary><div class="scroll"><table><thead><tr><th>선택</th><th>고른 비율</th><th class="n">평균 버틴 날</th><th class="n">사흘 안 끝남</th><th class="n">잘 풀림</th><th class="n">평균 돈</th></tr></thead><tbody>
+      ${e.choices.map(c=>`<tr><td>${esc(c.t)}</td><td><span class="share"><i style="width:${Math.max(2,c.share*.8)}px"></i>${c.share}%</span></td><td class="n">${f(c.avgDays)}</td><td class="n">${c.diedSoon}%</td><td class="n">${c.okRate==null?'–':c.okRate+'%'}</td><td class="n">${f(c.avgWon)}</td></tr>`).join('')}
+      </tbody></table></div></details>`).join('')+(ev.length>25?`<button class="more" type="button" id="moreEv">나머지 ${ev.length-25}개 더 보기</button>`:''):'<p class="empty">아직 표본이 적다.</p>'}
+  </section>
+  <section class="card scroll"><h2>최근 끝난 판</h2>
+    <table><thead><tr><th>시각</th><th>유형</th><th>인물</th><th>성격</th><th class="n">버틴 날</th><th class="n">월세</th><th class="n">억까</th><th>끝</th></tr></thead><tbody>
+    ${(d.recent||[]).map(r=>`<tr><td class="n">${new Date(r.t+9*3600e3).toISOString().slice(5,16).replace('T',' ')}</td><td><i class="sw" style="background:${COLOR[r.char]}"></i>${NAMES[r.char]}</td><td>${esc(r.age||'')}세 · ${esc(r.title||'')}</td><td>${esc((r.traits||[]).join(', '))}</td><td class="n">${f(r.days)}</td><td class="n">${f(r.rents)}</td><td class="n">${f(r.ukka)}</td><td>${END[r.end]?END[r.end][0]:esc(r.end)}${r.mode==='daily'?' · 순위':''}</td></tr>`).join('')}
+    </tbody></table></section>
+  <p class="note">기록은 180일 뒤 지워진다. 한 IP에서 한 시간에 60판까지만 받는다.</p>`;
+  const mb=document.getElementById('moreEv'); if(mb) mb.onclick=()=>{ document.querySelectorAll('[data-more]').forEach(x=>x.hidden=false); mb.remove(); };
+  lineChart('cSurv',['all',...keys].map(k=>({key:k,label:NAMES[k],color:COLOR[k],values:(d.survival[k]||[]).map(v=>S[k].n?v:null)})),{yMax:100,yMin:0,fmt:v=>Math.round(v)+'%',aria:'날짜별 생존 비율'});
+  lineChart('cHp',keys.map(k=>({key:k,label:NAMES[k],color:COLOR[k],values:d.curves[k].hp})),{yMax:100,yMin:0,h:260,w:420,aria:'날짜별 평균 체력'});
+  lineChart('cMp',keys.map(k=>({key:k,label:NAMES[k],color:COLOR[k],values:d.curves[k].mp})),{yMax:100,yMin:0,h:260,w:420,aria:'날짜별 평균 멘탈'});
+  lineChart('cBal',keys.map(k=>({key:k,label:NAMES[k],color:COLOR[k],values:d.curves[k].bal})),{fmt:v=>Math.abs(v)>=10000?Math.round(v/10000)+'만':Math.round(v),aria:'날짜별 평균 잔고'});
+}
+load();
+})();
+</script>
+</body>
+</html>

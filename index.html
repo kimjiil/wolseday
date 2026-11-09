@@ -21,7 +21,6 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>html,body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 <title>월세날까지</title>
-
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -363,15 +362,87 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
 .submit small{color:var(--muted);font-size:12px}
 @media (prefers-reduced-motion:reduce){.live i{animation:none}.floater{animation:none}.cells.low i.on{animation:none}}
 </style>
-
 </head>
 <body>
+
+<style>
+/* Hub: two game cabinets side by side, each previewing its own game's look. Uses the arcade's dark tokens. */
+.hub{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:22px;padding-block:12px 24px}
+.hub-head{display:flex;flex-direction:column;gap:6px}
+.hub-head h1{margin:0;font-family:var(--f-display);font-weight:400;font-size:clamp(34px,7vw,52px);line-height:1;color:var(--text);letter-spacing:.01em;text-wrap:balance}
+.hub-head h1 b{color:var(--sodium);font-weight:400}
+.hub-head p{margin:0;color:var(--muted);max-width:52ch}
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.cab{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;background:var(--panel);border:3px solid var(--line);box-shadow:0 6px 0 #0b0a10;min-width:0;transition:transform .12s steps(2)}
+.cab:hover{border-color:var(--sodium)}
+.cab:focus-visible{outline:3px solid var(--sodium);outline-offset:3px}
+.cab:active{transform:translateY(3px);box-shadow:0 3px 0 #0b0a10}
+.cab-art{position:relative;aspect-ratio:16/8;max-width:100%;overflow:hidden;border-bottom:3px solid var(--line)}
+.cab-body{display:flex;flex-direction:column;gap:8px;padding:16px 18px 18px}
+.cab-body b{font-family:var(--f-display);font-weight:400;font-size:28px;line-height:1.1}
+.cab-body p{margin:0;color:var(--muted);font-size:15px;line-height:1.6}
+.cab-tags{display:flex;gap:6px;flex-wrap:wrap}
+.cab-tags span{font-size:12px;padding:2px 8px;border:1px solid var(--line);color:var(--muted)}
+.cab-tags span.new{border-color:var(--sodium);color:var(--sodium)}
+.cab-go{margin-top:4px;font-family:var(--f-display);font-size:18px;color:var(--sodium)}
+/* 월세날까지 preview: a villa wall of windows and the D-day counter */
+.art-wolse{background:#262553;background-image:linear-gradient(180deg,#262553,#6b4174 70%,#b9636a)}
+.art-wolse .bld{position:absolute;left:8%;right:40%;bottom:0;top:22%;background:#1b1a2b;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px}
+.art-wolse .bld i{background:#2f2a40}.art-wolse .bld i.on{background:#ffcf6b}
+.art-wolse .dd{position:absolute;right:7%;top:24%;font-family:var(--f-num);font-size:clamp(26px,6vw,40px);color:#ffa43f;text-shadow:3px 3px 0 #0b0a10}
+.art-wolse .dd small{display:block;font-family:var(--f-body);font-size:13px;color:#ebe6f3;text-shadow:none;margin-top:6px}
+/* 무림초출 preview: ink mountains under a cinnabar sun */
+.art-murim{background:#dfe3d4}
+.art-murim .sun{position:absolute;right:16%;top:16%;width:22%;aspect-ratio:1;border-radius:50%;background:#b8321f}
+.art-murim .m1,.art-murim .m2,.art-murim .m3{position:absolute;left:-5%;right:-5%;bottom:0}
+.art-murim .m1{height:70%;background:#9aa597;clip-path:polygon(0 60%,12% 30%,22% 50%,36% 8%,50% 46%,62% 26%,78% 52%,90% 20%,100% 40%,100% 100%,0 100%)}
+.art-murim .m2{height:50%;background:#56604f;clip-path:polygon(0 50%,10% 70%,24% 20%,40% 64%,56% 30%,70% 72%,86% 36%,100% 60%,100% 100%,0 100%)}
+.art-murim .m3{height:26%;background:#1c201c;clip-path:polygon(0 40%,18% 70%,30% 30%,48% 60%,66% 20%,82% 64%,100% 30%,100% 100%,0 100%)}
+.art-murim .seal{position:absolute;left:7%;top:14%;font-family:"Song Myung",serif;font-size:clamp(22px,5vw,32px);line-height:1.05;color:#b8321f;border:3px solid #b8321f;padding:4px 6px;writing-mode:vertical-rl;background:rgba(238,240,230,.6)}
+.hub-foot{font-size:13px;color:var(--muted);margin:0}
+.hub-back{font-size:14px;padding:6px 12px}
+</style>
+<main class="hub" id="hub" hidden>
+  <header class="hub-head">
+    <h1>어떤 인생으로 <b>태어날까</b></h1>
+    <p>누구로 태어날지는 무작위다. 고를 수 있는 건 어떤 세상에 태어날지뿐이다.</p>
+  </header>
+  <div class="hub-grid">
+    <button class="cab" type="button" id="goWolse" data-go="wolse">
+      <span class="cab-art art-wolse" aria-hidden="true">
+        <span class="bld"><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i></span>
+        <span class="dd">D-30<small>월세날까지</small></span>
+      </span>
+      <span class="cab-body">
+        <b>월세날까지</b>
+        <p>2026년 서울. 청년 알바생, 한부모, 중년 일용직 중 하나로 태어나 월세날을 몇 번 넘길 수 있는지 버틴다.</p>
+        <span class="cab-tags"><span>생존</span><span>오늘의 판</span><span>순위표</span></span>
+        <span class="cab-go">들어가기 ›</span>
+      </span>
+    </button>
+    <button class="cab" type="button" id="goMurim" data-go="murim">
+      <span class="cab-art art-murim" aria-hidden="true">
+        <span class="sun"></span><span class="m1"></span><span class="m2"></span><span class="m3"></span>
+        <span class="seal">武林</span>
+      </span>
+      <span class="cab-body">
+        <b>무림초출</b>
+        <p>강호의 어느 집에 태어나 한 생을 산다. 문파에 들고, 기연을 만나고, 이름을 얻거나 잃는다. 어디서 끝날지는 아무도 모른다.</p>
+        <span class="cab-tags"><span class="new">신작</span><span>랜덤 인생</span><span>무협</span></span>
+        <span class="cab-go">입문하기 ›</span>
+      </span>
+    </button>
+  </div>
+</main>
+
+<div id="wolseApp" hidden>
 <div class="app">
   <header class="top">
     <div class="brand">월세날까지<small>월세날을 몇 번 넘길 수 있을까</small></div>
     <div class="top-right">
       <div class="live" id="live" hidden role="status"><i aria-hidden="true"></i>지금 <b id="liveN">0</b>명이 버티는 중</div>
       <div class="dday" id="dday">월세날 <b>D-30</b></div>
+      <button class="ghost hub-back" type="button" id="wolseHub">‹ 게임 목록</button>
     </div>
   </header>
 
@@ -433,6 +504,7 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
       </div>
     </aside>
   </div>
+</div>
 </div>
 
 <script>
@@ -2783,7 +2855,7 @@ function drawRoomProps(){
   if(monthOf(s.day||1)>=2 && !s.rain){ const wx=house==='banjiha'?92:house==='gosi'?null:108; if(wx!=null) for(let i=0;i<12;i++){ px(wx+((i*13+(tick>>2))%44), (i*7+(tick>>1))%(house==='banjiha'?12:28)+(house==='banjiha'?3:9),1,1,'#ffffff'); } }
 }
 
-function frame(){ tick++; if(s){ const sc=s.scene&&SCENES[s.scene]; if(sc){ const keep=s.pose; px(0,0,W,H,'#2a2440'); sc(); s.pose=keep; } else { drawRoom(); drawRoomProps(); drawChar(); drawDesk(); drawKid(); } drawCoins(); drawNight(); } requestAnimationFrame(frame); }
+function frame(){ tick++; if(s && !$('wolseApp').hidden){ const sc=s.scene&&SCENES[s.scene]; if(sc){ const keep=s.pose; px(0,0,W,H,'#2a2440'); sc(); s.pose=keep; } else { drawRoom(); drawRoomProps(); drawChar(); drawDesk(); drawKid(); } drawCoins(); drawNight(); } requestAnimationFrame(frame); }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function nightTransition(){ if(REDUCED) return; sleeping=true; s.pose='desk'; $('card').querySelectorAll('button').forEach(b=>b.disabled=true); await wait(1300); sleeping=false; zz=[]; await wait(250); }
 
@@ -2798,7 +2870,7 @@ function setLiveChar(c){ window.__liveChar=c; try{ liveSendFn(c); }catch(e){} }
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey) return;
   if(e.target && e.target.closest && e.target.closest('textarea,input,select')) return;
-  if(!s) return;
+  if(!s || $('wolseApp').hidden) return;
   if(s.phase==='event' && /^[1-9]$/.test(e.key)){
     const b=$('choice-'+(+e.key-1)); if(b && !b.disabled){ b.click(); e.preventDefault(); }
   } else if(e.key==='Enter' && (!document.activeElement || document.activeElement===document.body)){
@@ -2824,6 +2896,727 @@ document.addEventListener('keydown',e=>{
 window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
 })();
 </script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* 무림초출 layout: ink-wash scene and the year card on the left; the person's 명부(record) and 연보(chronicle) on the right. Celadon silk by day, ink at night. */
+:root{
+  --m-bg:#e2e5d8; --m-panel:#eef0e6; --m-panel2:#e6e9dc; --m-line:#c1c8b3;
+  --m-ink:#1c201c; --m-muted:#556052; --m-seal:#b8321f; --m-jade:#2f6b58; --m-gold:#8a5f0e; --m-cs:light;
+  --m-f-disp:"Song Myung","Nanum Myeongjo","Batang",serif;
+  --m-f-body:"Gowun Batang","Nanum Myeongjo","Batang",serif;
+  --m-f-num:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--m-bg:#111513;--m-panel:#1a1f1c;--m-panel2:#20261f;--m-line:#333d36;--m-ink:#e1e4d8;--m-muted:#a0aa9c;--m-seal:#e2603f;--m-jade:#7cc0a6;--m-gold:#d9a843;--m-cs:dark}}
+:root[data-theme="dark"]{--m-bg:#111513;--m-panel:#1a1f1c;--m-panel2:#20261f;--m-line:#333d36;--m-ink:#e1e4d8;--m-muted:#a0aa9c;--m-seal:#e2603f;--m-jade:#7cc0a6;--m-gold:#d9a843;--m-cs:dark}
+body.is-murim{background:var(--m-bg);color:var(--m-ink);font-family:var(--m-f-body);color-scheme:var(--m-cs)}
+body.is-murim::before{background:var(--m-bg)}
+#murimApp{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:16px;color:var(--m-ink)}
+.mh-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.mh-brand{display:flex;align-items:center;gap:12px}
+.mh-seal{font-family:var(--m-f-disp);color:var(--m-seal);border:2px solid var(--m-seal);padding:2px 4px;line-height:1;font-size:18px;writing-mode:vertical-rl}
+.mh-brand b{font-family:var(--m-f-disp);font-weight:400;font-size:30px;line-height:1}
+.mh-brand small{display:block;font-size:14px;color:var(--m-muted);margin-top:4px}
+.mh-btn{all:unset;box-sizing:border-box;cursor:pointer;font-family:var(--m-f-body);font-size:14px;padding:7px 12px;border:1px solid var(--m-line);color:var(--m-ink);background:var(--m-panel)}
+.mh-btn:hover{border-color:var(--m-ink)}
+.mh-btn:focus-visible,.mh-ch:focus-visible,.mh-go:focus-visible{outline:2px solid var(--m-seal);outline-offset:2px}
+.mh-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.mh-grid{grid-template-columns:minmax(0,1fr)}}
+.mh-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.mh-scene{position:relative;border:1px solid var(--m-line);background:var(--m-panel)}
+#mhScene{display:block;width:100%;max-width:100%;aspect-ratio:160/72;image-rendering:pixelated}
+.mh-cap{position:absolute;left:10px;bottom:8px;right:10px;display:flex;justify-content:space-between;gap:8px;font-family:var(--m-f-disp);font-size:clamp(13px,2.4vw,17px);color:var(--m-panel);text-shadow:0 1px 0 var(--m-ink),1px 0 0 var(--m-ink),-1px 0 0 var(--m-ink),0 -1px 0 var(--m-ink);pointer-events:none}
+.mh-card{background:var(--m-panel);border:1px solid var(--m-line);padding:22px;display:flex;flex-direction:column;gap:14px;min-height:240px}
+.mh-eye{font-size:14px;color:var(--m-muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap;letter-spacing:.02em}
+.mh-chip{font-size:12px;padding:1px 8px;border:1px solid var(--m-seal);color:var(--m-seal)}
+.mh-chip.j{border-color:var(--m-jade);color:var(--m-jade)}
+.mh-card h2{margin:0;font-family:var(--m-f-disp);font-weight:400;font-size:28px;line-height:1.3;text-wrap:balance}
+.mh-card h3{margin:6px 0 0;font-family:var(--m-f-disp);font-weight:400;font-size:19px}
+.mh-card p{margin:0;max-width:62ch;line-height:1.85}
+.mh-text{font-size:18px}
+.mh-res{font-size:17px;border-left:3px solid var(--m-ink);padding:2px 0 2px 14px}
+.mh-res.bad{border-color:var(--m-seal)}
+.mh-res.good{border-color:var(--m-jade)}
+.mh-chs{display:flex;flex-direction:column;gap:8px}
+.mh-ch{all:unset;box-sizing:border-box;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--m-line);background:var(--m-panel2);font-family:var(--m-f-body);font-size:16px;line-height:1.45;color:var(--m-ink)}
+.mh-ch:hover:not([disabled]){border-color:var(--m-ink)}
+.mh-ch[disabled]{opacity:.45;cursor:default}
+.mh-ch small{display:block;color:var(--m-muted);font-size:14px;margin-top:2px}
+.mh-ch .k{flex:none;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--m-line);font-family:var(--m-f-num);font-size:12px;color:var(--m-muted);margin-right:10px}
+.mh-ch > span:first-child{display:flex;align-items:flex-start}
+.mh-ch .odds{flex:none;font-family:var(--m-f-num);font-size:13px;color:var(--m-muted)}
+@media (pointer:coarse){.mh-ch .k{display:none}}
+.mh-go{all:unset;box-sizing:border-box;cursor:pointer;align-self:flex-start;padding:12px 24px;background:var(--m-ink);color:var(--m-panel);font-family:var(--m-f-disp);font-size:18px}
+.mh-go.seal{background:var(--m-seal);color:var(--m-panel)}
+.mh-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mh-note{font-size:14px;color:var(--m-muted);border-top:1px dashed var(--m-line);padding-top:10px}
+.mh-notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:15px;color:var(--m-muted)}
+.mh-notes li::before{content:"· ";color:var(--m-seal)}
+/* 명부: the person's record */
+.mh-rec{background:var(--m-panel);border:1px solid var(--m-line);padding:16px;display:flex;flex-direction:column;gap:12px}
+.mh-name{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.mh-name b{font-family:var(--m-f-disp);font-weight:400;font-size:26px;line-height:1.1}
+.mh-name span{font-size:14px;color:var(--m-muted)}
+.mh-alias{font-family:var(--m-f-disp);color:var(--m-seal);font-size:17px}
+.mh-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:15px}
+.mh-kv dt{color:var(--m-muted);font-size:13px;padding-top:2px}
+.mh-kv dd{margin:0;min-width:0}
+.mh-num{font-family:var(--m-f-num);font-variant-numeric:tabular-nums;font-size:14px}
+.mh-bar{height:6px;background:var(--m-panel2);border:1px solid var(--m-line);margin-top:4px;position:relative}
+.mh-bar i{position:absolute;inset:0 auto 0 0;background:var(--m-ink)}
+.mh-bar.hp i{background:var(--m-seal)}
+.mh-ladder{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;margin-top:4px}
+.mh-ladder i{height:8px;background:var(--m-panel2);border:1px solid var(--m-line)}
+.mh-ladder i.on{background:var(--m-ink);border-color:var(--m-ink)}
+.mh-ladder i.now{background:var(--m-seal);border-color:var(--m-seal)}
+.mh-tagl{display:flex;flex-wrap:wrap;gap:4px}
+.mh-tagl span{font-size:13px;padding:1px 7px;border:1px solid var(--m-line)}
+.mh-tagl span.m{border-color:var(--m-seal);color:var(--m-seal)}
+.mh-ax{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-size:13px;color:var(--m-muted)}
+.mh-axb{height:6px;background:linear-gradient(90deg,var(--m-jade),var(--m-panel2) 50%,var(--m-seal));position:relative;border:1px solid var(--m-line)}
+.mh-axb i{position:absolute;top:-4px;width:3px;height:12px;background:var(--m-ink);transform:translateX(-1px)}
+.mh-chron{background:var(--m-panel);border:1px solid var(--m-line);padding:14px 16px;max-height:340px;overflow:auto}
+.mh-chron h4,.mh-rec h4{margin:0 0 8px;font-family:var(--m-f-disp);font-weight:400;font-size:17px;display:flex;justify-content:space-between;gap:8px}
+.mh-chron h4 small,.mh-rec h4 small{font-family:var(--m-f-body);font-size:12px;color:var(--m-muted);align-self:center}
+.mh-chron ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mh-chron li{display:grid;grid-template-columns:46px 1fr;gap:8px;font-size:14px;line-height:1.6}
+.mh-chron li .a{font-family:var(--m-f-num);font-size:12px;color:var(--m-muted);padding-top:2px}
+.mh-chron li.big span:last-child{color:var(--m-ink);font-weight:700}
+.mh-chron li:not(.big) span:last-child{color:var(--m-muted)}
+/* birth & end */
+.mh-birth{display:flex;flex-direction:column;gap:10px;border:1px solid var(--m-ink);padding:18px;background:var(--m-panel2)}
+.mh-birth.rolling{opacity:.5}
+.mh-birth b{font-family:var(--m-f-disp);font-weight:400;font-size:30px}
+.mh-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.mh-stats div{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--m-muted)}
+.mh-pips{display:grid;grid-template-columns:repeat(10,1fr);gap:2px}
+.mh-pips i{height:7px;background:var(--m-panel);border:1px solid var(--m-line)}
+.mh-pips i.on{background:var(--m-ink);border-color:var(--m-ink)}
+.mh-trait{font-size:15px;color:var(--m-seal)}
+.mh-tomb{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 16px;border:1px solid var(--m-ink);background:var(--m-panel2);text-align:center}
+.mh-tomb .al{font-family:var(--m-f-disp);font-size:clamp(30px,7vw,46px);line-height:1.1;color:var(--m-seal)}
+.mh-tomb .nm{font-family:var(--m-f-disp);font-size:22px}
+.mh-tomb p{color:var(--m-muted);font-size:15px;max-width:44ch}
+.mh-grade{font-family:var(--m-f-disp);font-size:18px;border:2px solid var(--m-seal);color:var(--m-seal);padding:2px 12px}
+.mh-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.mh-sum div{border:1px solid var(--m-line);padding:8px 10px;font-size:13px;color:var(--m-muted);display:flex;flex-direction:column;gap:2px}
+.mh-sum b{font-family:var(--m-f-disp);font-weight:400;font-size:18px;color:var(--m-ink)}
+.mh-past{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.mh-past div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--m-line);padding-bottom:4px}
+.mh-past span:last-child{color:var(--m-muted);text-align:right}
+#mhCopy{width:100%;min-height:110px;background:var(--m-panel2);color:var(--m-ink);border:1px solid var(--m-line);font-family:var(--m-f-body);padding:8px}
+@media (prefers-reduced-motion:reduce){.mh-ch,.mh-go{transition:none}}
+</style>
 
+<div id="murimApp" hidden>
+  <header class="mh-top">
+    <div class="mh-brand"><span class="mh-seal" aria-hidden="true">武林</span><div><b>무림초출</b><small>강호에 한 번 태어나 본다</small></div></div>
+    <button class="mh-btn" type="button" id="mhHub">‹ 게임 목록</button>
+  </header>
+  <div class="mh-grid">
+    <section class="mh-col">
+      <div class="mh-scene"><canvas id="mhScene" width="160" height="72" aria-label="수묵 도트 장면"></canvas><div class="mh-cap"><span id="mhCapL"></span><span id="mhCapR"></span></div></div>
+      <div class="mh-card" id="mhCard" aria-live="polite"></div>
+    </section>
+    <aside class="mh-col" id="mhSide" hidden>
+      <div class="mh-rec" id="mhRec"></div>
+      <div class="mh-chron"><h4>연보<small>최근 순</small></h4><ol id="mhChron"></ol></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+const $m=id=>document.getElementById(id);
+const R=()=>Math.random(), ri=(a,b)=>a+Math.floor(R()*(b-a+1)), pick=a=>a[Math.floor(R()*a.length)], cl=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+const jo=(w,a,b)=>{w=String(w||'');const c=w.charCodeAt(w.length-1)-0xAC00;return (c>=0&&c<11172&&c%28)?a:b;};
+const eul=w=>w+jo(w,'을','를'), iga=w=>w+jo(w,'이','가'), eun=w=>w+jo(w,'은','는'), wa=w=>w+jo(w,'과','와'), ro=w=>w+jo(w,'으로','로');
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>Math.round(n).toLocaleString('ko-KR');
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+/* ---------- 강호의 기본값 ---------- */
+const LV=['범인','삼류','이류','일류','절정','초절정','화경','현경','생사경'];
+const LVX=[0,6,22,60,135,240,400,640,1000];
+const LVP=[0,10,20,32,46,62,80,100,125];
+const SURN=['남궁','제갈','독고','모용','사마','황보','당','진','이','왕','장','유','백','한','연','설','위','소','공손','하후'];
+const GIV=['무','진','천','운','호','명','성','백','청','소','혁','윤','결','도','준','하','린','설','연','화','영','월','현','강','휘','령','건','서'];
+const gname=()=>{let a=pick(GIV),b=pick(GIV);while(b===a)b=pick(GIV);return a+b;};
+const SECTS={
+  shaolin:{n:'소림사',side:'정',art:['나한권',12,'권'],inner:['역근공',10],robe:'#c98a2e',male:1},
+  wudang:{n:'무당파',side:'정',art:['태극검',15,'검'],inner:['순양무극공',8],robe:'#4f7590'},
+  huashan:{n:'화산파',side:'정',art:['매화검법',16,'검'],inner:['자하신공',7],robe:'#a8496a'},
+  emei:{n:'아미파',side:'정',art:['아미검법',14,'검'],inner:['정심공',7],robe:'#6f8a62',female:1},
+  beggar:{n:'개방',side:'정',art:['용음장',15,'장'],inner:['취선공',5],robe:'#8a7650'},
+  namgung:{n:'남궁세가',side:'정',art:['창궁무애검',17,'검'],inner:['제왕심법',6],robe:'#2f4a7a'},
+  tang:{n:'사천당가',side:'중',art:['만천화우',17,'암기'],inner:['독공',6],robe:'#3d5a3a'},
+  haomun:{n:'하오문',side:'중',art:['은형보',9,'보법'],robe:'#5d5d64'},
+  nokrim:{n:'녹림채',side:'사',art:['녹림도법',13,'도'],robe:'#6b5430'},
+  demon:{n:'천마신교',side:'마',art:['천마신공',24,'마공'],robe:'#7a1e1e'}
+};
+const ORIGINS=[
+  {id:'clan',t:'명문세가의 직계',d:'태어날 때부터 가문의 검을 쥐었다. 기대와 시기가 같이 따라다닌다.',gold:300,sur:'남궁',sect:'namgung',st:{body:1}},
+  {id:'bastard',t:'세가의 서자',d:'아버지의 성은 받았지만 가문의 무공은 어깨너머로만 보았다.',gold:40,sur:'남궁',st:{wit:1}},
+  {id:'tangc',t:'사천당가의 방계',d:'독 냄새를 맡으며 자랐다. 당가 사람은 쉽게 믿지 않는다.',gold:120,sur:'당',sect:'tang',st:{wit:1},f:{poisonwise:1}},
+  {id:'hunter',t:'산골 사냥꾼의 자식',d:'곰 발자국을 따라 산을 탔다. 몸 하나는 누구에게도 지지 않는다.',gold:15,st:{body:2}},
+  {id:'inn',t:'객잔 점소이',d:'술잔 너머로 강호의 소문을 다 듣고 자랐다.',gold:12,st:{charm:1,wit:1},hint:'haomun'},
+  {id:'orphan',t:'저잣거리 고아',d:'다리 밑에서 동냥 그릇을 들고 컸다. 거지들이 가족이었다.',gold:0,st:{luck:2},hint:'beggar'},
+  {id:'escort',t:'표국 표사의 자식',d:'아버지는 표물을 지키다 다리를 잃었다. 집에는 낡은 검 한 자루가 있다.',gold:60,st:{body:1},art:['삼재검법',6,'검']},
+  {id:'doctor',t:'시골 의원의 자식',d:'약초 이름부터 외웠다. 사람 몸의 혈도를 누구보다 잘 안다.',gold:50,st:{wit:2},f:{med:1}},
+  {id:'blood',t:'평범한 농가의 아이',d:'조용한 마을에서 태어났다. 어머니는 가끔 서쪽 하늘을 오래 보았다.',gold:20,st:{},f:{blood:1},hidden:'사실은 천마신교 교주의 핏줄'},
+  {id:'bandit',t:'산채에서 자란 아이',d:'녹림 산채 두목이 주워 길렀다. 칼부터 배웠다.',gold:30,st:{body:1},hint:'nokrim',ak:10},
+  {id:'farmer',t:'평범한 농가의 막내',d:'밭을 갈고 소를 몰았다. 무림은 장터에서 듣는 이야기였다.',gold:10,st:{}}
+];
+const TRAITS=[
+  {id:'cold',n:'천음절맥',d:'타고난 오성이 뛰어나지만, 스무 살을 넘기기 어려운 체질',st:{wit:3}},
+  {id:'might',n:'천생신력',d:'어려서부터 장정 셋의 힘',st:{body:3}},
+  {id:'immune',n:'만독불침',d:'어떤 독도 통하지 않는 몸'},
+  {id:'bone',n:'무골',d:'무공이 남보다 빨리 몸에 붙는다'},
+  {id:'blood',n:'혈마체',d:'마공과 이상하리만치 잘 맞는 몸'},
+  {id:'weak',n:'병약',d:'잔병이 잦고 명이 짧다',st:{body:-2}},
+  {id:'star',n:'천운',d:'하늘이 유난히 돌보는 아이',st:{luck:3}}
+];
+const SCENE_NAME={mountain:'산중',inn:'객잔',cave:'동굴',arena:'비무대',temple:'산문',battle:'싸움터',grave:'무덤',night:'밤',village:'마을',road:'관도'};
+
+/* ---------- 상태 ---------- */
+let m=null, roll=null, rolling=false;
+function stat3(){return cl(ri(1,4)+ri(1,4)+ri(0,2),1,10);}
+function makeBirth(){
+  const o=pick(ORIGINS), sex=(o.id==='clan'&&R()<.5)||R()<.5?'m':'f';
+  const st={body:stat3(),wit:stat3(),luck:stat3(),charm:stat3()};
+  for(const k in (o.st||{})) st[k]=cl(st[k]+o.st[k],1,10);
+  let trait=null; if(R()<.2){ trait=pick(TRAITS); if(trait.id==='blood'&&o.id!=='blood'&&R()<.5) trait=pick(TRAITS); for(const k in (trait.st||{})) st[k]=cl(st[k]+trait.st[k],1,10); }
+  return {o:o.id, sex, sur:o.sur||pick(SURN), given:gname(), st, trait:trait&&trait.id};
+}
+const OR=id=>ORIGINS.find(x=>x.id===id), TR=id=>TRAITS.find(x=>x.id===id);
+function fresh(b){
+  const o=OR(b.o);
+  const s={b, name:b.sur+b.given, sex:b.sex, age:0, hp:100, exp:0, lv:0, ng:0, gold:o.gold, hy:0, ak:o.ak||0, fame:0, sect:null, arts:[], rels:[], f:{...(o.f||{})}, log:[], q:[], used:{}, phase:'year', sim:0, kids:0, disc:0, scene:'village', alias:null, notes:[]};
+  if(b.trait==='blood') s.f.bloodBody=1;
+  if(o.art){ s.arts.push({n:o.art[0],p:o.art[1],k:o.art[2]}); s.f.martial=1; s.exp=3; }
+  if(o.sect){ s.sect=o.sect; const S=SECTS[o.sect]; s.arts.push({n:S.art[0],p:S.art[1],k:S.art[2]}); if(S.inner) s.arts.push({n:S.inner[0],p:0,k:'내공',ng:S.inner[1]}); s.f.martial=1; s.exp=4; }
+  return s;
+}
+const ST=k=>m.b.st[k];
+const hasT=t=>m.b.trait===t;
+const bestArt=()=>m.arts.filter(a=>a.k!=='내공').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null);
+const power=()=>LVP[m.lv]+(bestArt()?bestArt().p:0)+m.ng*.35+ST('body')*1.2+(m.f.magong?6:0);
+const fightP=e=>1/(1+Math.exp(-(power()-e)/9));
+const ngStr=n=>{n=Math.round(n); if(n<60) return `${n}년`; const g=Math.floor(n/60), r=n%60; return `${g}갑자${r?` ${r}년`:''}`;};
+function lifespan(){ return 48+ST('body')*1.8+Math.min(24,m.ng/10)+m.lv*2+(hasT('weak')?-12:0)+(m.spouse?2:0)+Math.min(15,m.f.elixirLife||0); }
+function note(t){ m.notes.push(t); }
+function log(t,big){ m.log.push({a:m.age,t,big:!!big}); }
+function addExp(n){ if(!m.f.martial) return; m.exp=Math.max(0,m.exp+n); }
+function learn(n,p,k,ng){ if(m.arts.some(a=>a.n===n)) return false; m.arts.push({n,p,k,ng}); m.f.martial=1; if(ng) m.ng+=ng; if(k==='마공') m.f.magong=1; return true; }
+function rel(role,name,v=60){ const r={role,name:name||gname(),v}; m.rels.push(r); return r; }
+const relOf=role=>m.rels.find(r=>r.role===role&&!r.dead);
+function gold(n){ m.gold=Math.max(0,Math.round(m.gold+n)); }
+function hurt(n,cause){ m.hp=cl(m.hp-n); if(m.hp<=0) m.deathCause=cause||'깊은 상처'; }
+function side(){ const d=m.hy-m.ak; return d>=15?'정':d<=-15?'사':'중'; }
+function prob(p){ return R()<cl(p,.03,.97); }
+function chanceTxt(p){ p=cl(p,.03,.97); return p>=.8?'자신 있다':p>=.6?'해볼 만하다':p>=.4?'반반':p>=.2?'어렵다':'무모하다'; }
+
+/* ---------- 별호 ---------- */
+function makeAlias(){
+  const a=bestArt(), k=a?a.k:'권';
+  const evil=m.ak>m.hy+10, hi=m.lv>=6;
+  const P=evil?['혈영','흑풍','귀면','독안','적혈','음풍']:['청풍','일월','백운','태산','신룡','유성','설화','현천'];
+  const S={검:hi?'검성':'검협',도:hi?'도왕':'도객',권:hi?'권왕':'신권',장:hi?'장왕':'신장',암기:'비영',보법:'신투',마공:hi?'마존':'마두'}[k]||'협객';
+  const pre=m.alias?m.alias.slice(0,2):pick(P);
+  return pre+(evil&&!/마/.test(S)?'마'+S.slice(-1):S);
+}
+
+/* ---------- 행보 (한 해에 하나) ---------- */
+function focuses(){
+  const F=[], S=m.sect&&SECTS[m.sect];
+  if(!m.f.martial) F.push({id:'dojo',t:'마을 무관에 다닌다',s:'수련비 10냥 · 무공의 첫걸음',need:10});
+  else F.push({id:'train',t:'수련한다',s:`${bestArt()?bestArt().n:'기본기'}를 다진다`});
+  if(m.f.martial&&(m.lv>=2||m.sect)&&m.age>=14) F.push({id:'seclude',t:'폐관수련에 든다',s:'한 해 동안 동굴에 든다 · 크게 늘지만 주화입마 위험'});
+  if(m.f.magong) F.push({id:'magong',t:'마공을 끌어올린다',s:`단숨에 강해진다 · 심마 ${Math.round(m.sim)}`});
+  if(m.age>=15) F.push({id:'wander',t:'강호를 떠돈다',s:'기연도 위기도 이 길 위에 있다'});
+  if(m.age>=16&&m.f.martial) F.push({id:'job',t:'표행과 청부를 맡는다',s:'은자를 번다 · 칼부림이 따른다'});
+  if(S) F.push({id:'duty',t:`${S.n}의 일을 돕는다`,s:'사문에서의 입지가 오른다'});
+  F.push({id:'work',t:'생업에 힘쓴다',s:'은자를 모은다'});
+  if(m.spouse) F.push({id:'family',t:'가족과 지낸다',s:`${m.spouse.name}${m.kids?` · 자식 ${m.kids}명`:''}`});
+  if(m.lv>=4&&m.age>=32) F.push({id:'teach',t:'제자를 기른다',s:`제자 ${m.disc}명 · 이름을 남긴다`});
+  if(m.hp<75) F.push({id:'rest',t:'몸을 추스른다',s:`체력 ${Math.round(m.hp)}`});
+  return F;
+}
+function ageMul(){ return m.age<25?1.1:m.age<40?.9:m.age<55?.65:.4; }
+function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1); }
+function doFocus(id){
+  const F=focuses().find(x=>x.id===id); if(!F) return;
+  let t='', tone='';
+  switch(id){
+    case 'dojo': gold(-10); learn('삼재검법',6,'검'); addExp(2); t='마을 무관에서 삼재검법을 배웠다. 목검을 쥔 손에 물집이 잡혔다.'; m.scene='village'; break;
+    case 'train': { const g=gain(); addExp(g); hurt(2); m.ng+=.3+ST('wit')/30; t=pick(['새벽마다 같은 초식을 천 번씩 펼쳤다.','폭포 아래 서서 한 해를 보냈다.','손이 기억할 때까지 같은 동작을 반복했다.','달빛 아래서 검로를 다시 그려 보았다.']); t+=` 무공이 늘었다. (+${g.toFixed(1)})`; m.scene='mountain'; break; }
+    case 'seclude': { const g=gain()*2.0; m.scene='cave';
+      const risk=.06+(m.f.magong?.1:0)+m.sim/400-ST('wit')*.006-(m.f.med?.02:0);
+      if(prob(risk)){ hurt(ri(35,60),'주화입마'); m.exp*=.85; t='폐관 중 기혈이 거꾸로 돌았다. 주화입마였다. 피를 토하고 겨우 동굴을 기어 나왔다.'; tone='bad'; log('폐관수련 중 주화입마를 당했다',true); }
+      else { addExp(g); m.ng+=2+ST('wit')/4; t=`동굴 문을 닫고 한 해를 앉아 있었다. 나올 때 눈빛이 달라져 있었다. (+${g.toFixed(1)}, 내공 +${(2+ST('wit')/4).toFixed(0)}년)`; tone='good'; }
+      break; }
+    case 'magong': { const g=gain()*2.6; addExp(g); m.ng+=3; m.sim+=20+R()*12; m.ak+=4; t=`핏빛 기운이 단전을 휘감았다. 무섭도록 강해졌다. 대신 밤마다 누군가의 비명이 들린다. (심마 ${Math.round(m.sim)})`; tone='bad'; m.scene='night'; break; }
+    case 'wander': m.scene=pick(['road','inn','mountain','village']); m.f.wanderBoost=1; m.fame+=1; t=pick(['남쪽 강을 따라 내려갔다.','북쪽 관도를 따라 장안까지 걸었다.','이름 모를 산과 객잔을 전전했다.','강호 사람들 틈에서 한 해를 떠돌았다.']); break;
+    case 'job': { m.scene='road'; const e=12+m.age*.4+ri(0,14); const p=fightP(e);
+      if(prob(p)){ const g=20+m.lv*22+ri(0,30); gold(g); m.fame+=2; m.hy+=1; addExp(gain()*.5); t=`표물을 지켜 무사히 날랐다. 산적 몇은 칼집째로 쫓아냈다. (+${g}냥)`; tone='good'; }
+      else { const g=10+m.lv*8; gold(g); hurt(ri(18,34),'표행 중 입은 칼상처'); t=`표행 길에 녹림도에게 습격당했다. 표물은 지켰지만 옆구리를 베였다. (+${g}냥)`; tone='bad'; }
+      break; }
+    case 'duty': m.scene='temple'; m.f.standing=(m.f.standing||0)+1; gold(10+m.lv*4); addExp(gain()*.5); m.hy+=SECTS[m.sect].side==='정'?2:0; m.ak+=SECTS[m.sect].side==='마'||SECTS[m.sect].side==='사'?2:0; t=`${SECTS[m.sect].n}에서 사제들을 가르치고 산문을 지켰다. 어른들의 눈길이 달라졌다.`; break;
+    case 'work': { m.scene='village'; const g=25+ST('charm')*4+ri(0,25)+(m.f.med?20:0); gold(g); t=m.f.med?`약방을 열어 사람들을 고쳤다. (+${g}냥)`:pick([`장터에서 짐을 나르고 품을 팔았다. (+${g}냥)`,`작은 장사를 벌였다. (+${g}냥)`]); if(m.f.med) m.hy+=1; break; }
+    case 'family': m.scene='village'; m.spouse.v=cl(m.spouse.v+12); m.hp=cl(m.hp+8); t=pick(['아이들과 강가에서 물수제비를 떴다.',`${wa(m.spouse.name)} 아무 일 없는 한 해를 보냈다. 그게 가장 귀했다.`,'마당의 매화가 피는 걸 같이 보았다.']); break;
+    case 'teach': m.scene='temple'; m.disc++; m.fame+=3; addExp(gain()*.4); t=`제자 ${m.disc}명째를 받았다. 가르치다 보니 내 무공의 빈틈이 보였다.`; log(`${m.disc}번째 제자를 받았다`,m.disc===1); break;
+    case 'rest': m.scene='village'; m.hp=cl(m.hp+25); t='약을 달여 먹고 한 해를 쉬었다. 상처가 아물었다.'; tone='good'; break;
+  }
+  m.focusRes={t,tone,fid:id};
+  if(m.deathCause) return die(m.deathCause);
+  if(m.f.magong&&m.sim>=100){ m.ev=EV.heartDemon; m.phase='event'; return render(); }
+  const ev=pickEvent(id);
+  if(ev){ m.ev=ev; m.phase='event'; if(ev.scene) m.scene=ev.scene; } else m.phase='after';
+  render();
+}
+
+/* ---------- 사건 ---------- */
+// 각 사건: min/max 나이, w 가중치, once, when(m), text(m), ch:[{t, s?, p?(m)=>확률, when?, go(m)=>결과문 or {t,tone}}]
+const EV={};
+function E(id,o){ o.id=id; EV[id]=o; }
+E('heartDemon',{scene:'night',text:()=>'심마가 목까지 차올랐다. 눈을 감으면 지금껏 벤 얼굴들이 웃는다. 이대로면 미쳐버린다.',ch:[
+  {t:'마공을 스스로 폐한다',s:'무공의 절반을 잃는다',go:()=>{ m.f.magong=0; m.arts=m.arts.filter(a=>a.k!=='마공'); m.exp*=.5; m.sim=0; m.ng*=.6; log('스스로 마공을 폐했다',true); return {t:'단전을 스스로 쳤다. 피를 한 사발 토했다. 무공의 절반이 사라졌지만, 머리가 맑아졌다.',tone:'good'}; }},
+  {t:'심마를 받아들인다',p:()=>.25+ST('wit')*.03,go:(ok)=>{ if(ok){ m.sim=20; addExp(80); m.ak+=30; m.f.demonLord=1; log('심마를 삼키고 마도의 끝을 보았다',true); return {t:'광기 끝에서 이상하리만치 고요한 곳에 닿았다. 이제 아무것도 두렵지 않다.',tone:'bad'}; } m.deathCause='심마에 먹혀 주화입마'; return {t:'웃음소리가 멈추지 않았다.',tone:'bad'}; }}]});
+E('child6',{min:6,max:6,once:1,scene:'village',text:()=>'장터 귀퉁이에서 허름한 노인이 배가 고프다며 손을 내민다. 손에는 엿 한 가락이 있다.',ch:[
+  {t:'엿을 나눠 준다',go:()=>{ m.f.oldman=1; m.b.st.luck=cl(ST('luck')+1,1,10); log('장터에서 굶주린 노인에게 엿을 나눠 주었다'); return '노인은 껄껄 웃으며 이마를 톡 쳤다. "눈이 맑구나." 그러고는 사라졌다.'; }},
+  {t:'모른 척 지나간다',go:()=>'뒤돌아보니 노인은 벌써 보이지 않았다.'},
+  {t:'노인의 지팡이를 걷어찬다',go:()=>{ m.ak+=5; m.f.oldmanBad=1; return '노인은 넘어지지 않았다. 지팡이도 꿈쩍하지 않았다. 발목만 시큰거렸다.'; }}]});
+E('child6b',{min:6,max:6,once:1,scene:'village',text:()=>'동네 덩치들이 작은 아이 하나를 둘러싸고 있다. 아이가 울면서 이쪽을 본다.',ch:[
+  {t:'끼어들어 막는다',p:()=>.3+ST('body')*.06,go:ok=>{ m.hy+=4; if(ok){ m.b.st.body=cl(ST('body')+1,1,10); rel('친구',null,70); return {t:'코피를 쏟으면서도 끝까지 버텼다. 덩치들이 먼저 도망쳤다. 그 아이와 친구가 되었다.',tone:'good'}; } hurt(10); return '셋을 당하지는 못했다. 그래도 그 아이는 내 이름을 기억했다.'; }},
+  {t:'어른을 부르러 뛴다',go:()=>{ m.b.st.wit=cl(ST('wit')+1,1,10); return '어른들이 오자 덩치들은 흩어졌다.'; }},
+  {t:'못 본 척한다',go:()=>{ m.ak+=2; return '그날 밤 이상하게 잠이 오지 않았다.'; }}]});
+E('exam',{min:9,max:9,once:1,scene:'temple',text:()=>'문파들이 제자를 뽑으러 고을에 내려왔다. 평생이 걸린 날이다.',ch:()=>{
+  const o=OR(m.b.o), list=[];
+  if(m.sect) return [{t:`${SECTS[m.sect].n}에서 본격적으로 수련을 시작한다`,go:()=>{ addExp(4); log(`${SECTS[m.sect].n}의 정식 제자가 되었다`,true); rel('사부',null,65); return '가문의 어른이 직접 손을 잡아 주었다.'; }}];
+  if(m.b.o==='bastard') list.push('namgung');
+  if(o.hint) list.push(o.hint);
+  const pool=['shaolin','wudang','huashan','emei'].filter(k=>!(SECTS[k].male&&m.sex!=='m')&&!(SECTS[k].female&&m.sex!=='f'));
+  while(list.length<3){ const k=pick(pool); if(!list.includes(k)) list.push(k); }
+  const out=list.map(k=>{ const S=SECTS[k]; const base=.15+(ST('body')+ST('wit'))/26+(k===o.hint?.35:0)+(k==='namgung'?.15:0)+(hasT('bone')?.15:0);
+    return {t:`${S.n} 입문 시험을 본다`,s:k==='namgung'?'서자라도 받아줄지':`${S.art[0]}의 문파`,p:()=>base,go:ok=>{ if(ok){ joinSect(k); return {t:`${S.n}의 제자가 되었다. 사부가 "이놈 물건이구나" 하고 웃었다.`,tone:'good'}; } log(`${S.n} 입문 시험에 떨어졌다`); return {t:`${S.n}의 시험관은 고개를 저었다. "근골이 아깝구나."`,tone:'bad'}; }}; });
+  out.push({t:'집에 남는다',go:()=>'문파 사람들이 떠난 장터는 다시 조용해졌다.'});
+  return out; }});
+function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(k==='demon'){ m.f.magong=1; m.ak+=20; } addExp(3); rel('사부',null,65); log(`${S.n}에 입문했다`,true); }
+E('envoy',{min:13,max:18,once:1,w:9,when:()=>m.f.blood,scene:'night',text:()=>'달 없는 밤, 검은 옷의 사내들이 집 앞에 무릎을 꿇었다. "소교주님. 교주께서 기다리십니다."',ch:[
+  {t:'그들을 따라 서쪽으로 간다',s:'천마신교',go:()=>{ m.sect=null; joinSect('demon'); m.f.heir=1; m.b.hidden=1; return {t:'어머니가 오래 보던 서쪽 하늘 끝에 그들의 성이 있었다. 피가 끓었다.',tone:'bad'}; }},
+  {t:'거절한다',go:()=>{ m.f.refusedDemon=1; m.hy+=8; m.b.hidden=1; log('천마신교의 핏줄임을 알았지만 거절했다',true); return '사내들은 아무 말 없이 물러났다. 그날부터 누군가 늘 지켜보는 느낌이 든다.'; }}]});
+E('master',{min:12,max:30,once:1,w:1.5,when:()=>(m.f.oldman||ST('luck')>=8)&&!m.f.master,scene:'mountain',text:()=>m.f.oldman?'어릴 적 장터에서 엿을 나눠 준 그 노인이 산길에 앉아 있다. "기다렸다. 내 무공을 이을 놈을."':'산길에서 장작을 패던 노인이 한 손으로 바위를 쪼갰다. 그리고 이쪽을 보았다.',ch:[
+  {t:'무릎을 꿇고 제자가 되겠다고 한다',go:()=>{ m.f.master=1; learn('태허검결',26,'검'); learn('태허무량공',0,'내공',20); addExp(15); rel('은사',null,80); log('은거기인의 제자가 되어 태허검결을 이었다',true); return {t:'노인은 세 해 동안 아무것도 가르치지 않다가, 어느 날 밤 한 초식을 보여 주었다. 그 한 초식에 다 들어 있었다.',tone:'good'}; }},
+  {t:'사문이 있어 정중히 사양한다',when:()=>!!m.sect,go:()=>{ addExp(5); return '노인은 "그것도 도리지"라며 손가락으로 혈도 하나를 짚어 주었다. 막혀 있던 기맥이 뚫렸다.'; }},
+  {t:'수상하다, 피한다',go:()=>'다시 돌아보니 바위는 원래부터 갈라져 있었던 것처럼 보였다.'}]});
+E('cliff',{min:13,max:50,once:1,w:1.2,wander:2,scene:'cave',text:()=>'쫓기다 발을 헛디뎌 절벽 아래로 떨어졌다. 정신을 차려보니 덩굴 뒤로 동굴이 있고, 백골 하나가 비급 두 권을 안고 있다.',ch:[
+  {t:'푸른 비단으로 묶인 비급을 집는다',s:'정종 심법',go:()=>{ learn('청명심경',0,'내공',30); addExp(20); log('절벽 아래 동굴에서 청명심경을 얻었다',true); return {t:'백골에게 절을 하고 비급을 펼쳤다. 동굴에서 나오기까지 석 달이 걸렸다. 내공이 크게 늘었다.',tone:'good'}; }},
+  {t:'핏자국이 번진 비급을 집는다',s:'마공 · 훨씬 강하다',go:()=>{ learn('혈하마공',28,'마공',15); addExp(35); m.ak+=10; log('동굴에서 혈하마공을 얻었다',true); return {t:'글자가 눈에 들어오자마자 손끝까지 뜨거워졌다. 이런 힘은 처음이었다.',tone:'bad'}; }},
+  {t:'둘 다 백골과 함께 묻어 준다',go:()=>{ m.hy+=10; m.b.st.luck=cl(ST('luck')+2,1,10); log('동굴의 백골을 묻어 주었다'); return '무덤을 만들어 주고 나오는 길에, 바위 틈에서 맑은 물이 솟는 것을 보았다. 마시자 몸이 가벼워졌다.'; }}]});
+E('herb',{min:12,max:70,once:1,w:1.2,wander:1.5,scene:'mountain',text:()=>`깊은 산 바위틈에서 기이한 향이 난다. ${pick(['붉게 빛나는 열매','사람 모양의 설삼','종유석 끝에 맺힌 젖빛 물방울'])}이다. 영약이다.`,ch:[
+  {t:'그 자리에서 먹는다',go:()=>{ const n=ri(25,60); m.ng+=n; m.f.elixirLife=(m.f.elixirLife||0)+5; if(hasT('cold')) m.f.coldCured=1; log(`영약을 먹고 내공이 ${n}년 늘었다`,true); return {t:`온몸이 불타는 듯하다가 얼음처럼 식었다. 내공 ${n}년이 단전에 자리 잡았다.${hasT('cold')?' 몸속의 한기가 녹아 없어졌다.':''}`,tone:'good'}; }},
+  {t:'캐서 팔아 은자로 바꾼다',go:()=>{ const g=ri(200,500); gold(g); return `저잣거리 약방 주인이 눈이 휘둥그레져서 ${g}냥을 내놓았다.`; }},
+  {t:'병든 마을 사람에게 가져다준다',go:()=>{ m.hy+=15; m.fame+=6; log('영약을 병자에게 주었다'); return '노파의 숨이 돌아왔다. 마을 사람들이 내 이름을 부르며 절을 했다.'; }}]});
+E('coldAttack',{min:16,max:19,when:()=>hasT('cold')&&!m.f.coldCured,w:9,scene:'night',text:()=>'한밤중에 뼛속에서 얼음이 자라는 것 같다. 천음절맥이 발작했다. 이번 겨울을 넘기기 어렵다.',ch:[
+  {t:'북해 빙궁의 한빙과를 찾아 떠난다',p:()=>.25+ST('luck')*.05,go:ok=>{ if(ok){ m.f.coldCured=1; m.ng+=20; log('북해에서 한빙과를 구해 천음절맥을 고쳤다',true); return {t:'눈보라 속에서 열매 하나를 찾았다. 한기가 한기를 먹었다. 살았다.',tone:'good'}; } hurt(45,'천음절맥'); return {t:'빈손으로 돌아왔다. 손끝이 검게 변했다.',tone:'bad'}; }},
+  {t:'고수에게 내공으로 맥을 뚫어 달라고 청한다',when:()=>!!(m.sect||m.f.master),p:()=>.6,go:ok=>{ if(ok){ m.f.coldCured=1; log('사부가 내공을 쏟아 천음절맥을 뚫었다',true); return {t:'사부가 사흘 밤낮 내공을 불어넣었다. 사부의 머리가 하얗게 셌다.',tone:'good'}; } hurt(40,'천음절맥'); return {t:'맥은 끝내 뚫리지 않았다.',tone:'bad'}; }},
+  {t:'남은 날을 받아들인다',go:()=>{ m.f.coldAccept=1; hurt(30,'천음절맥'); return '창밖의 눈을 오래 보았다.'; }}]});
+E('rival',{min:13,max:30,once:1,when:()=>!!m.sect,scene:'temple',text:()=>{ const r=rel('사형'); r.v=30; return `사형 ${iga(r.name)} 대련을 핑계로 일부러 급소를 노린다. 사부가 나를 더 아끼는 게 못마땅한 모양이다.`; },ch:[
+  {t:'정면으로 받아친다',p:()=>fightP(LVP[Math.max(1,m.lv)]+14),go:ok=>{ const r=relOf('사형'); if(ok){ r.v=20; m.fame+=3; addExp(4); return {t:`${eul(r.name)} 단상 아래로 날려 보냈다. 사형제들의 눈빛이 바뀌었다.`,tone:'good'}; } hurt(20,'사형의 암수'); r.v=10; return {t:'갈비뼈가 나갔다. 사형은 "실수였다"고 했다.',tone:'bad'}; }},
+  {t:'일부러 져 준다',go:()=>{ const r=relOf('사형'); r.v=55; m.b.st.wit=cl(ST('wit')+1,1,10); return '사형은 의기양양했다. 사부는 아무 말 없이 내 어깨를 두드렸다.'; }},
+  {t:'사부에게 알린다',go:()=>{ const r=relOf('사형'); r.v=5; r.role='원수'; return '사형은 벌을 받았다. 산문을 떠나며 나를 오래 노려보았다.'; }}]});
+E('contest',{min:16,max:28,w:1.6,when:()=>m.f.martial&&!m.used.contest,scene:'arena',text:()=>'무림맹이 여는 후기지수 비무대회가 열렸다. 강호의 젊은 고수들이 다 모였다. 여기서 이름을 얻으면 평생 따라다닌다.',ch:[
+  {t:'출전한다',p:()=>fightP(48),go:()=>contest()},
+  {t:'구경만 한다',go:()=>{ addExp(3); return '남궁세가의 소가주가 우승했다. 초식 하나하나를 머리에 새겼다.'; }}]});
+function contest(){
+  const rounds=[30,42,56]; let won=0;
+  for(const e of rounds){ if(prob(fightP(e))) won++; else break; }
+  if(won===3){ m.fame+=30; m.hy+=6; m.alias=makeAlias(); log(`후기지수 비무대회에서 우승했다. 강호가 '${m.alias}'라 불렀다`,true); return {t:`결승에서 상대의 검을 쳐냈다. 관중석이 뒤집혔다. 그날부터 강호는 나를 '${m.alias}'라 불렀다.`,tone:'good'}; }
+  if(won===2){ m.fame+=12; log('후기지수 비무대회 결승에서 졌다',true); hurt(15); return {t:'결승까지 갔다. 마지막 한 수가 모자랐다. 그래도 이름은 알려졌다.',tone:'good'}; }
+  if(won===1){ m.fame+=4; hurt(18); return '두 번째 판에서 졌다. 세상에 고수가 많다는 것을 알았다.'; }
+  hurt(22,'비무대회'); return {t:'첫 판에서 떨어졌다. 상대는 나보다 두 살 어렸다.',tone:'bad'};
+}
+E('bandit',{min:14,max:60,w:1.3,rep:6,wander:1.5,scene:'road',text:()=>'고갯길에서 녹림도 열댓이 길을 막았다. "목숨이 아까우면 가진 걸 다 내놔라."',ch:[
+  {t:'칼을 뽑는다',when:()=>m.f.martial,p:()=>fightP(22),go:ok=>{ if(ok){ m.hy+=4; m.fame+=3; gold(ri(10,40)); return {t:'두목의 칼을 부러뜨리자 나머지는 산으로 흩어졌다.',tone:'good'}; } hurt(ri(25,40),'녹림도의 칼'); gold(-m.gold*.6); return {t:'수가 너무 많았다. 다 털리고 피투성이로 기어 내려왔다.',tone:'bad'}; }},
+  {t:'가진 돈을 내놓는다',go:()=>{ gold(-m.gold*.7); return '산적들은 낄낄거리며 길을 터 주었다.'; }},
+  {t:'산채에 들어가겠다고 한다',when:()=>side()!=='정',go:()=>{ m.ak+=10; gold(30); if(!m.sect){ joinSect('nokrim'); } return {t:'두목이 껄껄 웃으며 술잔을 내밀었다. 녹림의 형제가 되었다.',tone:'bad'}; }}]});
+E('innFight',{min:15,max:60,w:1.2,rep:5,scene:'inn',text:()=>'객잔에서 술 취한 무인이 점소이를 때리고 있다. 허리에 찬 패를 보니 제법 이름 있는 문파다.',ch:[
+  {t:'말린다',when:()=>m.f.martial,p:()=>fightP(26),go:ok=>{ m.hy+=5; if(ok){ m.fame+=3; return {t:'젓가락 하나로 그의 손목을 눌렀다. 객잔이 조용해졌다.',tone:'good'}; } hurt(20); rel('원수',null,10); return {t:'얻어맞고 쫓겨났다. 그 무인이 내 얼굴을 기억하겠다고 했다.',tone:'bad'}; }},
+  {t:'술값을 대신 내주고 달랜다',when:()=>m.gold>=20,go:()=>{ gold(-20); m.b.st.charm=cl(ST('charm')+1,1,10); rel('지기',null,60); return '무인은 머쓱해하더니 형님 아우 하자고 했다.'; }},
+  {t:'구석에서 국수나 먹는다',go:()=>{ m.ak+=1; return '국수는 맛있었다.'; }}]});
+E('love',{min:16,max:32,once:1,w:1.4,when:()=>!m.spouse,scene:'inn',text:()=>{ const n=pick(SURN)+gname(); m.f.loveName=n; return `빗속에서 우산을 같이 쓴 ${n}. 눈이 마주친 순간 숨이 멎는 줄 알았다.${R()<.35?' 그런데 그쪽은 원수 집안 사람이라고 한다.':''}`; },ch:[
+  {t:'마음을 고백한다',p:()=>.25+ST('charm')*.06,go:ok=>{ if(ok){ const r=rel('정인',m.f.loveName,75); m.q.push({age:m.age+ri(1,3),id:'wedding'}); log(`${wa(r.name)} 마음을 나눴다`,true); return {t:'대답 대신 손을 잡아 주었다.',tone:'good'}; } return {t:'정중한 거절이었다. 그래서 더 아팠다.',tone:'bad'}; }},
+  {t:'무공이 먼저다',go:()=>{ addExp(3); return '그 얼굴을 떠올리지 않으려고 검을 더 휘둘렀다.'; }}]});
+E('wedding',{scene:'village',text:()=>`${wa(relOf('정인')?relOf('정인').name:'그 사람')} 혼례를 올리기로 했다. 붉은 비단이 걸렸다.`,ch:[
+  {t:'혼례를 올린다',go:()=>{ const r=relOf('정인')||rel('정인'); r.role='배우자'; m.spouse=r; gold(-Math.min(m.gold,40)); log(`${wa(r.name)} 혼인했다`,true); m.q.push({age:m.age+ri(1,3),id:'birth'}); return {t:'술에 취한 사형제들이 밤새 노래를 불렀다.',tone:'good'}; }},
+  {t:'강호의 원한이 무서워 떠난다',go:()=>{ const r=relOf('정인'); if(r) r.dead=1; m.f.lostLove=1; log('혼례를 앞두고 정인을 떠났다',true); return {t:'편지 한 장만 남겼다. 평생 그 편지를 후회했다.',tone:'bad'}; }}]});
+E('birth',{scene:'village',when:()=>!!m.spouse,text:()=>'아이가 태어났다. 손가락이 이렇게 작을 수가 있나.',ch:[
+  {t:'이름을 지어 준다',go:()=>{ m.kids++; const n=m.b.sur+gname(); rel('자식',n,80); log(`자식 ${iga(n)} 태어났다`,true); if(R()<.4) m.q.push({age:m.age+ri(2,4),id:'birth'}); return `${ro(n)} 이름을 지었다.`; }}]});
+E('doom',{min:16,max:32,once:1,w:1.1,when:()=>['clan','bastard','tangc','escort','doctor','farmer','hunter'].includes(m.b.o)&&!m.f.doom,scene:'night',text:()=>'집에 돌아오니 불길이 치솟고 있었다. 가솔들이 쓰러져 있다. 담장에 피로 그린 문양이 남았다. 혈겁이다.',ch:[
+  {t:'복수를 맹세한다',go:()=>{ m.f.doom=1; m.f.revenge=pick(['혈영문','흑룡방','귀면대','적사회']); gold(-m.gold*.8); hurt(20); m.q.push({age:m.age+ri(6,14),id:'revenge'}); log(`가문이 ${m.f.revenge}에게 멸문당했다`,true); return {t:`잿더미에서 문양의 이름을 찾아냈다. ${m.f.revenge}. 그 이름을 가슴에 새겼다.`,tone:'bad'}; }},
+  {t:'살아남은 가솔을 데리고 숨는다',go:()=>{ m.f.doom=1; gold(-m.gold*.5); m.hy+=6; log('가문이 멸문당했고, 남은 이들을 데리고 숨었다',true); return {t:'복수보다 산 사람이 먼저였다. 먼 남쪽 고을에 이름을 바꾸고 숨었다.',tone:'bad'}; }}]});
+E('revenge',{scene:'night',when:()=>!!m.f.revenge,text:()=>`${m.f.revenge}의 총단 위치를 알아냈다. 오늘 밤 담을 넘는다.`,ch:[
+  {t:'홀로 쳐들어간다',p:()=>fightP(58),go:ok=>{ if(ok){ m.fame+=25; m.ak+=6; m.hy+=6; addExp(12); log(`${m.f.revenge}의 총단을 홀로 무너뜨려 복수를 끝냈다`,true); m.f.revenge=null; return {t:'새벽이 되기 전에 끝났다. 원수의 목 앞에서 오래 울었다.',tone:'good'}; } m.deathCause='복수의 밤'; return {t:'담을 넘자마자 그물이 내려왔다.',tone:'bad'}; }},
+  {t:'무림맹에 고발해 함께 친다',when:()=>side()!=='사',p:()=>.55+m.fame/200,go:ok=>{ if(ok){ m.hy+=10; m.fame+=10; log(`무림맹과 함께 ${eul(m.f.revenge)} 멸했다`,true); m.f.revenge=null; return {t:'정파 고수들과 함께 총단을 쳤다. 원수의 목은 내가 베었다.',tone:'good'}; } m.q.push({age:m.age+ri(4,8),id:'revenge'}); return {t:'맹 안에 첩자가 있었다. 원수는 미리 달아났다.',tone:'bad'}; }},
+  {t:'더 강해진 다음에 한다',go:()=>{ m.q.push({age:m.age+ri(4,8),id:'revenge'}); return '이를 악물고 돌아섰다.'; }},
+  {t:'원한을 내려놓는다',go:()=>{ m.f.revenge=null; m.hy+=8; m.b.st.wit=cl(ST('wit')+1,1,10); log('평생의 원한을 내려놓았다',true); return {t:'칼을 강물에 던졌다. 이상하게 가벼웠다.',tone:'good'}; }}]});
+E('poison',{min:15,max:65,w:1,rep:12,wander:1.2,scene:'inn',text:()=>'찻잔을 내려놓는 순간 혀끝이 마비됐다. 독이다. 누가 넣었는지 모른다.',ch:[
+  {t:'내공으로 독을 밀어낸다',p:()=>hasT('immune')?1:.2+m.ng/150,go:ok=>{ if(ok) return {t:hasT('immune')?'독은 몸속에서 그냥 녹아 없어졌다. 만독불침이다.':'손끝으로 검은 피가 빠져나왔다.',tone:'good'}; hurt(55,'독'); return {t:'독이 심맥까지 번졌다.',tone:'bad'}; }},
+  {t:'의술로 해독한다',when:()=>m.f.med||m.f.poisonwise,p:()=>.85,go:ok=>{ if(ok) return {t:'혈도 세 곳을 찌르고 해독초를 씹었다.',tone:'good'}; hurt(50,'독'); return {t:'처음 보는 독이었다.',tone:'bad'}; }},
+  {t:'의원에게 달려간다',when:()=>m.gold>=50,go:()=>{ gold(-50); hurt(20); return '의원이 50냥을 받고 겨우 살려 주었다.'; }},
+  {t:'버틴다',go:()=>{ hurt(ri(35,70),'독'); return {t:'사흘을 앓았다.',tone:'bad'}; }}]});
+E('treasure',{min:15,max:60,once:1,wander:1.5,scene:'road',text:()=>'죽어가던 사내가 가죽 지도를 쥐여 주었다. "전대 고수의 보고(寶庫)다…."',ch:[
+  {t:'지도를 따라간다',p:()=>.25+ST('luck')*.055,go:ok=>{ if(ok){ const g=ri(300,900); gold(g); if(R()<.5){ learn('천뢰신장',23,'장'); log('보고에서 천뢰신장과 금은을 얻었다',true); return {t:`금은 ${g}냥, 그리고 벼락이 새겨진 비급 한 권.`,tone:'good'}; } log(`보고를 찾아 ${g}냥을 얻었다`,true); return {t:`이끼 낀 상자 안에 금괴가 가득했다. ${g}냥어치다.`,tone:'good'}; } hurt(25,'보고의 함정'); return {t:'함정이었다. 독침이 등에 박혔다.',tone:'bad'}; }},
+  {t:'관아에 넘긴다',go:()=>{ m.hy+=4; gold(20); return '현령이 상으로 20냥을 주었다.'; }}]});
+E('demonWar',{min:24,max:55,once:1,w:2,when:()=>m.f.martial&&m.lv>=2,scene:'battle',text:()=>'천마신교가 중원으로 쳐들어왔다. 정사대전이다. 무림맹이 격문을 돌렸다.',ch:()=>{
+  const c=[];
+  if(m.sect!=='demon') c.push({t:'무림맹의 깃발 아래 싸운다',p:()=>fightP(50),go:ok=>{ if(ok){ m.hy+=20; m.fame+=25; addExp(20); m.f.warHero=1; log('정사대전에서 큰 공을 세웠다',true); return {t:'열흘 밤낮 싸웠다. 마교의 장로 하나를 베었다. 이름이 강호 끝까지 퍼졌다.',tone:'good'}; } if(prob(.4)){ m.deathCause='정사대전에서 전사'; return {t:'핏빛 장력이 가슴을 꿰뚫었다.',tone:'bad'}; } hurt(45); return {t:'한쪽 팔을 쓰지 못하게 되었다. 그래도 살아남았다.',tone:'bad'}; }});
+  if(side()!=='정'||m.sect==='demon') c.push({t:'마교 편에 선다',p:()=>fightP(46),go:ok=>{ m.ak+=25; if(ok){ m.fame+=25; addExp(20); m.f.demonHero=1; log('정사대전에서 마교 편에 서 정파 고수들을 꺾었다',true); return {t:'정파의 깃발이 하나씩 쓰러졌다. 교주가 직접 술을 따라 주었다.',tone:'bad'}; } hurt(50,'정사대전'); return {t:'무당의 태극검에 막혔다. 피를 흘리며 물러났다.',tone:'bad'}; }});
+  c.push({t:'가족을 데리고 피난한다',go:()=>{ m.f.fled=1; m.fame-=5; return '산골로 들어가 전쟁이 끝나기를 기다렸다. 몇몇은 겁쟁이라 했다.'; }});
+  return c; }});
+E('leader',{min:40,max:75,once:1,w:3,when:()=>m.lv>=5&&m.hy>=35&&m.fame>=55,scene:'arena',text:()=>'무림맹주 자리가 비었다. 각 문파 장문인들이 내 이름을 올렸다.',ch:[
+  {t:'맹주의 자리를 받는다',go:()=>{ m.f.leader=1; m.fame+=40; log('무림맹주에 올랐다',true); return {t:'맹주의 인장을 받았다. 무겁다.',tone:'good'}; }},
+  {t:'사양하고 산으로 돌아간다',go:()=>{ m.hy+=10; m.b.st.wit=cl(ST('wit')+1,1,10); return '사람들은 더 존경했다.'; }}]});
+E('demonLord',{min:35,max:75,once:1,w:3,when:()=>m.sect==='demon'&&m.lv>=6&&(m.f.heir||m.ak>=60),scene:'night',text:()=>'교주가 쓰러졌다. 장로들이 칼을 품고 서로를 본다. 천마의 자리가 비었다.',ch:[
+  {t:'천마의 자리에 오른다',p:()=>fightP(80)+(m.f.heir?.2:0),go:ok=>{ if(ok){ m.f.tianmo=1; m.fame+=40; m.ak+=20; log('천마의 자리에 올랐다',true); return {t:'장로 셋의 목이 계단 아래로 굴렀다. 만마앙복(萬魔仰伏). 모두가 엎드렸다.',tone:'bad'}; } m.deathCause='교주 자리를 다투다 암살당함'; return {t:'등 뒤의 장로가 먼저 움직였다.',tone:'bad'}; }},
+  {t:'다른 장로를 밀어준다',go:()=>{ gold(300); return '새 교주는 은혜를 잊지 않겠다고 했다. 300냥이 왔다.'; }}]});
+E('disciple',{min:30,max:75,w:1,rep:8,when:()=>m.lv>=4,scene:'temple',text:()=>`눈발 속에 아이 하나가 사흘째 문 앞에 무릎 꿇고 있다. ${pick(['근골이 좋아 보인다.','삐쩍 말랐지만 눈빛이 매섭다.','어릴 적 나를 닮았다.'])}`,ch:[
+  {t:'제자로 받는다',go:()=>{ m.disc++; const r=rel('제자',null,70); m.fame+=3; log(`${eul(r.name)} 제자로 받았다`); if(R()<.25) m.q.push({age:m.age+ri(5,10),id:'betray'}); return `${r.name}. 내 무공을 이을 아이다.`; }},
+  {t:'돌려보낸다',go:()=>'아이는 나흘째 되는 날 떠났다.'}]});
+E('betray',{scene:'night',when:()=>!!relOf('제자'),text:()=>`제자 ${iga(relOf('제자').name)} 비급을 훔쳐 달아나려다 걸렸다. 눈빛이 차갑다.`,ch:[
+  {t:'무공을 폐하고 내쫓는다',go:()=>{ const r=relOf('제자'); r.role='원수'; r.v=0; return '아이는 문을 나서며 언젠가 돌아오겠다고 했다.'; }},
+  {t:'용서한다',p:()=>.5,go:ok=>{ if(ok) return {t:'제자는 사흘을 울더니 다시는 그러지 않았다.',tone:'good'}; hurt(35,'제자의 배신'); return {t:'그날 밤 제자의 검이 내 등을 노렸다.',tone:'bad'}; }}]});
+E('lastDuel',{min:55,max:95,w:1.5,rep:6,when:()=>m.fame>=25,scene:'arena',text:()=>'젊은 검객 하나가 찾아와 도전장을 던졌다. "천하에 이름난 분의 검을 보러 왔습니다."',ch:[
+  {t:'받아 준다',p:()=>fightP(40+m.age*.4-(m.hp-60)*.2),go:ok=>{ if(ok){ m.fame+=5; return {t:'세 초 만에 그의 검을 떨어뜨렸다. 아직은 아니다.',tone:'good'}; } if(prob(.25)){ m.deathCause='노년의 비무'; return {t:'젊은 검이 빨랐다.',tone:'bad'}; } hurt(35); m.fame-=6; return {t:'졌다. 젊은이는 깊이 절하고 떠났다. 강호가 바뀌고 있었다.',tone:'bad'}; }},
+  {t:'차를 따라 주고 돌려보낸다',go:()=>{ m.b.st.wit=cl(ST('wit')+1,1,10); return '검 대신 이야기를 나눴다. 젊은이는 그것도 배움이라 했다.'; }}]});
+E('enlight',{min:50,max:99,once:1,w:2.5,when:()=>m.lv>=6&&!m.f.magong,scene:'mountain',text:()=>'새벽, 산꼭대기에 앉아 해가 뜨는 것을 보는데 갑자기 모든 초식이 하나로 보였다. 검도 손도 필요 없는 곳이 저 앞에 있다.',ch:[
+  {t:'그 앞으로 한 걸음 나아간다',p:()=>.04+ST('wit')*.03+(m.f.master?.1:0)+(m.lv>=7?.15:0),go:ok=>{ if(ok){ m.exp=Math.max(m.exp,LVX[8]); m.lv=8; log('깨달음을 얻어 생사경에 들었다',true); return {t:'바람이 멎었다. 아니, 내가 바람이 되었다. 생사경이다.',tone:'good'}; } addExp(40); return '닿을 듯 말 듯하다가 해가 다 떴다. 그래도 많은 것이 보였다.'; }},
+  {t:'내려가 제자들에게 들려준다',go:()=>{ m.disc+=2; m.fame+=8; return '제자들 중 하나가 눈을 반짝였다. 언젠가 저 아이가 닿을 것이다.'; }}]});
+E('ascend',{min:60,max:120,once:1,w:20,when:()=>m.lv>=8,scene:'mountain',text:()=>'몸이 가볍다. 너무 가벼워서, 발이 땅에 닿지 않는다. 구름이 내려와 발밑에 깔린다.',ch:[
+  {t:'구름에 오른다',go:()=>{ m.f.ascended=1; m.deathCause='우화등선'; return {t:'뒤돌아보니 제자들이 엎드려 울고 있었다. 손을 한 번 흔들었다.',tone:'good'}; }},
+  {t:'아직 할 일이 남았다',go:()=>{ m.f.elixirLife=(m.f.elixirLife||0)+8; return '구름이 아쉬운 듯 흩어졌다.'; }}]});
+E('famine',{min:15,max:80,rep:10,w:.9,scene:'village',text:()=>'흉년이다. 성문 밖에 굶주린 사람들이 줄을 섰다.',ch:[
+  {t:'곳간을 연다',when:()=>m.gold>=50,go:()=>{ const g=Math.min(m.gold,ri(60,200)); gold(-g); m.hy+=12; m.fame+=6; return `${g}냥어치 쌀을 풀었다. 사람들이 '대협'이라 불렀다.`; }},
+  {t:'쌀값이 오를 때 판다',go:()=>{ gold(ri(80,180)); m.ak+=10; return '은자가 쌓였다. 등 뒤의 시선도 쌓였다.'; }},
+  {t:'모른 척한다',go:()=>'굶주린 아이와 눈이 마주쳤다.'}]});
+E('gamble',{min:16,max:70,rep:8,w:.8,scene:'inn',text:()=>'객잔 뒷방에서 골패 판이 벌어졌다. 판돈이 크다.',ch:[
+  {t:'가진 돈의 절반을 건다',when:()=>m.gold>=20,p:()=>.35+ST('luck')*.03,go:ok=>{ const g=Math.round(m.gold/2); if(ok){ gold(g); return {t:`따냈다. +${g}냥`,tone:'good'}; } gold(-g); return {t:`다 잃었다. -${g}냥`,tone:'bad'}; }},
+  {t:'속임수를 쓰는 놈을 찾아낸다',when:()=>m.lv>=2,go:()=>{ m.hy+=3; gold(30); return '소매 속 골패를 꺼내 보였다. 판주가 30냥을 쥐여 주며 조용히 해 달라 했다.'; }},
+  {t:'나간다',go:()=>'밖은 별이 많았다.'}]});
+E('assassin',{min:18,max:80,w:1,rep:9,when:()=>m.fame>=20||m.rels.some(r=>r.role==='원수'&&!r.dead),scene:'night',text:()=>'잠결에 지붕 기와가 아주 작게 울었다. 누군가 있다.',ch:[
+  {t:'먼저 친다',p:()=>fightP(36+m.age*.3),go:ok=>{ if(ok){ const r=m.rels.find(x=>x.role==='원수'&&!x.dead); if(r){ r.dead=1; return {t:`복면을 벗기니 ${r.name}${jo(r.name,'이었다','였다')}. 오랜 원한이 오늘 끝났다.`,tone:'good'}; } return {t:'자객은 피를 흘리며 달아났다.',tone:'good'}; } hurt(40,'자객의 비수'); return {t:'비수가 어깨를 꿰뚫었다.',tone:'bad'}; }},
+  {t:'모른 척 숨을 고른다',p:()=>.5,go:ok=>ok?'자객은 기척을 감추다 결국 물러났다.':(hurt(30,'자객의 비수'),{t:'자고 있는 줄 알고 내려온 칼이 옆구리를 스쳤다.',tone:'bad'})}]});
+E('sectHead',{min:35,max:75,once:1,w:2,when:()=>m.sect&&m.sect!=='demon'&&m.lv>=5&&(m.f.standing||0)>=4,scene:'temple',text:()=>`${SECTS[m.sect].n}의 장문인이 임종을 앞두고 나를 불렀다. "네가 맡아라."`,ch:[
+  {t:'장문인의 자리를 잇는다',go:()=>{ m.f.head=1; m.fame+=20; log(`${SECTS[m.sect].n}의 장문인이 되었다`,true); return {t:'장문인의 옥패를 받았다. 산문 아래 사형제들이 일제히 고개를 숙였다.',tone:'good'}; }},
+  {t:'사형에게 양보한다',go:()=>{ m.hy+=6; return '사형은 눈물을 흘리며 고맙다고 했다.'; }}]});
+E('masterDeath',{min:25,max:60,once:1,w:1.4,when:()=>!!(relOf('사부')||relOf('은사')),scene:'grave',text:()=>{ const r=relOf('은사')||relOf('사부'); return `사부 ${r.name}의 숨이 가늘다. 마지막으로 나를 불러 손을 잡았다.`; },ch:[
+  {t:'곁을 지킨다',go:()=>{ const r=relOf('은사')||relOf('사부'); r.dead=1; addExp(10); m.ng+=10; log(`사부 ${iga(r.name)} 세상을 떠났다`,true); return '사부는 마지막 내공을 내 손바닥에 흘려 넣고 눈을 감았다.'; }}]});
+E('spouseSick',{min:35,max:85,once:1,w:1,when:()=>!!m.spouse&&!m.spouse.dead,scene:'village',text:()=>`${iga(m.spouse.name)} 몸져누웠다. 의원은 고개를 젓는다.`,ch:[
+  {t:'천하의 명의를 찾아 나선다',when:()=>m.gold>=100,p:()=>.55,go:ok=>{ gold(-100); if(ok) return {t:'남쪽 끝 섬의 신의가 침 세 대로 살려냈다.',tone:'good'}; m.spouse.dead=1; log(`배우자 ${iga(m.spouse.name)} 세상을 떠났다`,true); m.spouse=null; return {t:'돌아왔을 때는 이미 늦었다.',tone:'bad'}; }},
+  {t:'내공을 불어넣는다',p:()=>.2+m.ng/200,go:ok=>{ m.ng*=.7; if(ok) return {t:'내공 삼 할을 잃었다. 대신 그 사람이 눈을 떴다.',tone:'good'}; m.spouse.dead=1; log(`배우자 ${iga(m.spouse.name)} 세상을 떠났다`,true); m.spouse=null; return {t:'손이 식어 가는 것을 막지 못했다.',tone:'bad'}; }}]});
+E('kidRun',{min:38,max:80,once:1,when:()=>m.kids>0,scene:'road',text:()=>{ const k=relOf('자식'); return `${iga(k?k.name:'자식')} 강호에 나가 이름을 떨치겠다고 한다. 내가 그 나이 때 하던 말이다.`; },ch:[
+  {t:'내 무공을 전부 물려주고 보낸다',go:()=>{ m.f.heirKid=1; m.fame+=4; log('자식에게 무공을 물려주었다',true); return '떠나는 등을 오래 보았다.'; }},
+  {t:'말린다',go:()=>{ const k=relOf('자식'); if(k) k.v-=20; return '자식은 문을 쾅 닫고 들어갔다.'; }}]});
+E('fakeAlias',{min:20,max:70,once:1,when:()=>!!m.alias,scene:'inn',text:()=>`객잔에서 누군가 '${m.alias}'를 사칭하며 행패를 부린다는 소문을 들었다.`,ch:[
+  {t:'찾아가 혼내 준다',p:()=>fightP(25),go:ok=>{ if(ok){ m.fame+=4; return {t:'가짜는 무릎을 꿇었다. 진짜를 처음 보는 눈치였다.',tone:'good'}; } m.fame-=5; hurt(15); return {t:'가짜가 생각보다 셌다. 소문이 더 우습게 퍼졌다.',tone:'bad'}; }},
+  {t:'웃어넘긴다',go:()=>{ m.b.st.wit=cl(ST('wit')+1,1,10); return '이름이란 원래 내 것이 아니다.'; }}]});
+E('fairy',{min:15,max:50,once:1,w:.6,when:()=>ST('luck')>=6,scene:'mountain',text:()=>'안개 낀 계곡에서 피리 소리가 들린다. 따라가 보니 백학 한 마리가 영지를 물고 서 있다.',ch:[
+  {t:'백학에게 절한다',go:()=>{ m.f.elixirLife=(m.f.elixirLife||0)+10; m.ng+=15; m.hp=100; return {t:'학은 영지를 내려놓고 날아갔다. 먹고 나니 십 년은 젊어진 것 같다.',tone:'good'}; }},
+  {t:'백학을 잡으려 한다',go:()=>{ m.ak+=5; return '학은 웃듯이 울더니 구름 속으로 사라졌다.'; }}]});
+E('injustice',{min:16,max:70,rep:7,w:1,scene:'village',text:()=>'고을의 토호가 관아와 짜고 과부의 논을 빼앗았다. 과부가 길바닥에서 울고 있다.',ch:[
+  {t:'밤에 토호의 집을 찾아간다',when:()=>m.f.martial,p:()=>fightP(24),go:ok=>{ m.hy+=10; if(ok){ m.fame+=5; return {t:'토호는 새벽에 논 문서를 과부 집 문 앞에 두고 갔다.',tone:'good'}; } hurt(20); return {t:'토호가 고용한 무사들이 셌다. 관아에 쫓기는 몸이 되었다.',tone:'bad'}; }},
+  {t:'은자로 논을 되사 준다',when:()=>m.gold>=80,go:()=>{ gold(-80); m.hy+=8; return '과부가 몇 번이고 절을 했다.'; }},
+  {t:'남의 일이다',go:()=>{ m.ak+=2; return '그날 저녁 밥이 잘 넘어가지 않았다.'; }}]});
+E('hire',{min:18,max:70,rep:8,w:.9,when:()=>m.f.martial&&m.lv>=2,scene:'night',text:()=>'복면을 쓴 사내가 금괴를 내밀었다. "한 사람만 없애 주시오. 정파의 장로요."',ch:[
+  {t:'받는다',p:()=>fightP(40),go:ok=>{ m.ak+=18; if(ok){ gold(ri(250,450)); log('돈을 받고 정파 장로를 암살했다',true); return {t:'일은 깔끔하게 끝났다. 손을 오래 씻었다.',tone:'bad'}; } hurt(40,'암살 실패'); return {t:'장로가 기다리고 있었다.',tone:'bad'}; }},
+  {t:'거절하고 장로에게 귀띔한다',go:()=>{ m.hy+=8; m.fame+=3; rel('지기',null,65); return '장로는 은혜를 잊지 않겠다고 했다.'; }},
+  {t:'거절한다',go:()=>'사내는 혀를 차고 사라졌다.'}]});
+
+function pickEvent(fid){
+  const due=m.q.findIndex(q=>q.age<=m.age);
+  if(due>=0){ const q=m.q.splice(due,1)[0]; const e=EV[q.id]; if(!e.when||e.when()) return e; }
+  const fixed=Object.values(EV).filter(e=>e.min!=null&&e.min===e.max&&e.min===m.age&&!m.used[e.id]);
+  if(fixed.length){ const e=pick(fixed); m.used[e.id]=m.age; return e; }
+  const forced=Object.values(EV).find(e=>e.w>=9&&e.min!=null&&m.age>=e.min&&m.age<=e.max&&(!e.when||e.when())&&!m.used[e.id]);
+  if(forced&&R()<.7){ m.used[forced.id]=m.age; return forced; }
+  const chance=fid==='wander'?.85:fid==='seclude'?.25:.55;
+  if(m.age<12||R()>chance) return null;
+  const pool=Object.values(EV).filter(e=>e.min!=null&&e.min!==e.max&&m.age>=e.min&&m.age<=e.max&&(!e.when||e.when())&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)&&!(!e.once&&!e.rep&&m.used[e.id]!=null));
+  if(!pool.length) return null;
+  const wt=e=>(e.w||1)*(fid==='wander'&&e.wander?e.wander:1)*(e.once?1.2:1);
+  let tot=pool.reduce((a,e)=>a+wt(e),0), r=R()*tot;
+  for(const e of pool){ r-=wt(e); if(r<=0){ m.used[e.id]=m.age; return e; } }
+  return null;
+}
+function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
+function choose(i){
+  const ev=m.ev, c=choicesOf(ev)[i]; if(!c) return;
+  let ok=null, p=null; if(c.p){ p=cl(c.p(),.03,.97); ok=prob(p); }
+  let r=c.go(ok); if(typeof r==='string') r={t:r};
+  m.evRes={...r, p, ok, txt:typeof ev.text==='function'?m.evText:ev.text, pick:c.t};
+  m.ev=null; m.evCh=null; m.phase='after';
+  if(m.deathCause) return die(m.deathCause);
+  render();
+}
+
+/* ---------- 한 해의 끝 ---------- */
+function endYear(){
+  m.focusRes=null; m.evRes=null; m.notes=[];
+  const step=m.age<6?6-m.age:m.age<9?9-m.age:m.age<12?12-m.age:1;
+  m.age+=step; m.f.wanderBoost=0;
+  // 나이 듦
+  const cap=100-Math.max(0,m.age-50)*1.1+Math.min(20,m.ng/10);
+  m.hp=Math.min(cl(cap,20,100), m.hp+(m.age<40?8:m.age<55?5:2));
+  if(m.f.magong) m.sim+=4;
+  if(m.ak>m.hy+25&&m.sect&&SECTS[m.sect].side==='정'){ note(`악명이 높아져 ${SECTS[m.sect].n}에서 파문당했다.`); log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
+  // 경지
+  if(m.f.martial){ let nl=0; for(let i=1;i<LVX.length;i++) if(m.exp+m.ng*.3>=LVX[i]) nl=i; if(m.lv<8&&nl>m.lv){ m.lv=Math.min(nl,7); note(`경지가 올랐다. ${LV[m.lv]}의 벽을 넘었다.`); if(m.lv>=3) log(`${LV[m.lv]}의 경지에 올랐다`,m.lv>=4); } }
+  // 별호
+  if(!m.alias&&m.fame>=30){ m.alias=makeAlias(); note(`강호가 나를 '${m.alias}'라 부르기 시작했다.`); log(`별호 '${m.alias}'를 얻었다`,true); }
+  else if(m.alias&&m.lv>=6&&!m.f.aliasUp){ m.f.aliasUp=1; const a=makeAlias(); if(a!==m.alias){ m.alias=a; note(`이제 사람들은 나를 '${a}'라 부른다.`); log(`별호가 '${a}'로 바뀌었다`,true); } }
+  // 천음절맥
+  if(hasT('cold')&&!m.f.coldCured&&m.age>=20){ return die('천음절맥'); }
+  // 천수
+  const L=lifespan(); if(m.age>L&&prob(.25+(m.age-L)*.1)) return die(m.age>=60?'천수를 누림':'병으로 세상을 떠남');
+  if(m.age>=45&&R()<.0025*(m.age-45)*(m.hp<50?2:1)) return die('병으로 세상을 떠남');
+  if(m.age>=12&&m.age%10===0&&m.age<70) note(`${m.age}세가 되었다.`);
+  m.scene=m.age<12?'village':m.scene;
+  m.phase=m.age<12?'child':'year';
+  if(m.age<12){ const ev=pickEvent('child'); if(ev){ m.ev=ev; m.phase='event'; m.scene=ev.scene||m.scene; } }
+  save(); render();
+}
+function die(cause){
+  m.deathCause=cause; m.phase='end'; m.scene=cause==='우화등선'?'mountain':'grave';
+  log(cause==='우화등선'?`${m.age}세, 구름을 타고 떠났다`:`${m.age}세, ${cause}`,true);
+  const g=grade(); try{ const past=lsGet('murim_past')||[]; past.unshift({n:m.name,al:m.alias,age:m.age,lv:m.lv,c:cause,g:g.n,o:OR(m.b.o).t}); lsSet('murim_past',past.slice(0,30)); }catch(e){}
+  lsSet('murim_run',null); render();
+}
+function grade(){
+  if(m.f.ascended) return {n:'우화등선',d:'강호의 전설이 되었다'};
+  if(m.f.tianmo) return {n:'천마',d:'마도의 정점에 섰다'};
+  if(m.f.leader) return {n:'무림맹주',d:'천하가 그 이름 아래 모였다'};
+  if(m.lv>=7) return {n:'천하제일인',d:'더 오를 곳이 없었다'};
+  if(m.lv>=5||m.f.head) return {n:'일대종사',d:'한 시대의 기둥이었다'};
+  if(m.lv>=3) return {n:'강호의 고수',d:'어디서든 이름을 대면 알아주었다'};
+  if(m.lv>=1) return {n:'이름 없는 무인',d:'칼을 쥐고 살다 갔다'};
+  return {n:'범부',d:'무림 밖에서 조용히 살았다'};
+}
+function epitaph(){
+  const c=m.deathCause, s=side();
+  if(c==='우화등선') return '그가 앉았던 바위에는 지금도 눈이 쌓이지 않는다.';
+  if(/주화입마|심마/.test(c)) return '너무 빨리 높이 오르려 했다.';
+  if(/천음절맥/.test(c)) return '스무 해 동안 남들의 백 년만큼 보고 갔다.';
+  if(/전사/.test(c)) return '깃발은 쓰러졌어도 그 자리를 비우지 않았다.';
+  if(c==='천수를 누림') return m.spouse||m.kids?'자식들 곁에서, 창밖의 매화를 보며 눈을 감았다.':s==='사'?'원수는 많았으나 끝내 아무도 그를 베지 못했다.':'마지막 날까지 아침마다 검을 닦았다.';
+  if(m.lv===0) return '강호의 이야기는 늘 남의 이야기였다.';
+  return pick(['강호는 그를 오래 기억하지 않았다. 그래도 그는 살았다.','칼끝에 살고 칼끝에 갔다.','바람 부는 날이면 그의 검명이 들린다고 한다.']);
+}
+
+/* ---------- 저장 ---------- */
+function save(){ if(m&&m.b&&m.phase!=='end'){ m.evId=m.ev&&m.ev.id; const ch=m.evCh; m.evCh=null; lsSet('murim_run',m); m.evCh=ch; } }
+function load(){ const r=lsGet('murim_run'); return r&&r.b&&r.phase!=='end'?r:null; }
+function rehydrate(r){ m=r; m.evCh=null; if(m.evId){ m.ev=EV[m.evId]; } if(m.phase==='event'&&!m.ev) m.phase='after'; if(m.spouse) m.spouse=m.rels.find(x=>x.role==='배우자'&&x.name===m.spouse.name)||m.spouse; }
+
+/* ---------- 그리기: 명부·연보·카드 ---------- */
+const pips=v=>`<span class="mh-pips">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span>`;
+function renderRec(){
+  const S=m.sect&&SECTS[m.sect];
+  const next=m.lv<8?LVX[m.lv+1]:LVX[8], cur=LVX[m.lv], prog=m.f.martial?cl(((m.exp+m.ng*.3)-cur)/(next-cur)*100):0;
+  const d=m.hy-m.ak, pos=cl(50-d/2,2,98);
+  $m('mhRec').innerHTML=`
+    <div class="mh-name"><b>${esc(m.name)}</b><span>${m.age}세 · ${m.sex==='m'?'남':'여'}</span></div>
+    ${m.alias?`<div class="mh-alias">별호 · ${esc(m.alias)}</div>`:''}
+    <dl class="mh-kv">
+      <dt>출신</dt><dd>${esc(OR(m.b.o).t)}${m.b.hidden&&OR(m.b.o).hidden?` <small style="color:var(--m-seal)">(${esc(OR(m.b.o).hidden)})</small>`:''}</dd>
+      <dt>경지</dt><dd><b style="font-family:var(--m-f-disp);font-weight:400;font-size:18px">${LV[m.lv]}</b>${m.f.martial?'':' <small style="color:var(--m-muted)">무공을 모른다</small>'}<div class="mh-ladder" aria-label="경지 ${m.lv+1}/9">${LV.map((_,i)=>`<i class="${i<m.lv?'on':i===m.lv?'now':''}"></i>`).join('')}</div>${m.lv<8&&m.f.martial?`<div class="mh-bar" aria-label="다음 경지까지"><i style="width:${prog}%"></i></div>`:''}</dd>
+      <dt>내공</dt><dd class="mh-num">${ngStr(m.ng)}</dd>
+      <dt>체력</dt><dd><span class="mh-num">${Math.round(m.hp)}</span><div class="mh-bar hp"><i style="width:${m.hp}%"></i></div></dd>
+      <dt>은자</dt><dd class="mh-num">${fmt(m.gold)}냥</dd>
+      <dt>사문</dt><dd>${S?esc(S.n)+(m.f.head?' 장문인':''):'없음'}${m.f.leader?' · 무림맹주':''}${m.f.tianmo?' · 천마':''}</dd>
+      <dt>명성</dt><dd class="mh-num">${Math.round(m.fame)}</dd>
+    </dl>
+    <div class="mh-ax"><span>협</span><span class="mh-axb" aria-label="정사 성향"><i style="left:${pos}%"></i></span><span>악</span></div>
+    <div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.length?m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}">${esc(a.n)}</span>`).join(''):'<span>아직 없다</span>'}</div></div>
+    <div><h4>인연</h4><div class="mh-tagl">${m.rels.filter(r=>!r.dead).slice(-8).map(r=>`<span class="${r.role==='원수'?'m':''}">${esc(r.role)} ${esc(r.name)}</span>`).join('')||'<span>아직 없다</span>'}</div></div>
+    <dl class="mh-kv"><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span style="color:var(--m-seal)">${TR(m.b.trait).n}</span>`:''}</dd></dl>`;
+  const L=m.log.slice().reverse();
+  $m('mhChron').innerHTML=L.map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('')||'<li><span class="a">-</span><span>아직 기록이 없다</span></li>';
+}
+function resHtml(r){ if(!r||!r.t) return ''; return `<p class="mh-res ${r.tone||''}">${esc(r.t)}</p>`; }
+function chBtn(c,i){ const p=c.p?cl(c.p(),.03,.97):null; return `<button class="mh-ch" type="button" data-i="${i}"><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span>${p!=null?`<span class="odds">${chanceTxt(p)}</span>`:''}</button>`; }
+function render(){
+  const card=$m('mhCard'); if(!card) return;
+  const playing=m&&m.phase!=='title'&&m.phase!=='birth';
+  $m('mhSide').hidden=!playing;
+  $m('mhCapL').textContent=playing?`${m.name} · ${m.age}세`:'무림초출';
+  $m('mhCapR').textContent=playing?(SCENE_NAME[m.scene]||''):'';
+  if(playing) renderRec();
+  if(!m||m.phase==='title') return renderTitle(card);
+  if(m.phase==='birth') return renderBirth(card);
+  if(m.phase==='end') return renderEnd(card);
+  const eye=`<div class="mh-eye"><span>${m.age}세의 해</span>${m.alias?`<span class="mh-chip">${esc(m.alias)}</span>`:''}<span class="mh-chip j">${LV[m.lv]}</span></div>`;
+  const notes=m.notes.length?`<ul class="mh-notes">${m.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`:'';
+  if(m.phase==='event'){
+    const ev=m.ev; if(!m.evText) m.evText=typeof ev.text==='function'?ev.text():ev.text;
+    const chs=choicesOf(ev);
+    card.innerHTML=`${eye}${notes}${resHtml(m.focusRes)}<p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${chs.map(chBtn).join('')}</div>`;
+    card.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ m.evText=null; choose(+b.dataset.i); });
+    save(); return;
+  }
+  if(m.phase==='after'){
+    const r=m.evRes;
+    card.innerHTML=`${eye}${notes}${resHtml(m.focusRes)}${r?`<p class="mh-note">${esc(r.pick)}${r.p!=null?` · ${r.ok?'뜻대로 됐다':'뜻대로 되지 않았다'}`:''}</p>${resHtml(r)}`:''}${!m.focusRes&&!r?'<p class="mh-text">조용한 한 해가 지나갔다.</p>':''}<button class="mh-go" type="button" id="mhNext">${m.age<12?'자란다':'한 해를 넘긴다'}</button>`;
+    $m('mhNext').onclick=endYear; save(); return;
+  }
+  if(m.phase==='child'){
+    card.innerHTML=`${eye}${notes}<p class="mh-text">${m.age}살. 아직 강호는 멀다.</p><button class="mh-go" type="button" id="mhNext">자란다</button>`;
+    $m('mhNext').onclick=endYear; return;
+  }
+  // year: 행보 고르기
+  const F=focuses();
+  card.innerHTML=`${eye}${notes}<h2>올해는 무엇을 할까.</h2><div class="mh-chs">${F.map((f,i)=>`<button class="mh-ch" type="button" data-f="${f.id}" ${f.need&&m.gold<f.need?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(f.t)}<small>${f.need&&m.gold<f.need?'은자가 모자란다':esc(f.s)}</small></span></span></button>`).join('')}</div>
+    <p class="mh-note">한 해에 한 가지만 할 수 있다. 강호를 떠돌면 사건을 만날 일이 많아진다.</p>`;
+  card.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>doFocus(b.dataset.f));
+  save();
+}
+function renderTitle(card){
+  const saved=load(), past=lsGet('murim_past')||[];
+  card.innerHTML=`<div class="mh-eye"><span>武林初出</span></div>
+    <h2>강호의 어느 집에, 누군가로 태어난다.</h2>
+    <p>출신도 근골도 고를 수 없다. 해마다 한 가지 길을 고르고, 길 위에서 만나는 일에 답한다. 문파에 들고, 기연을 얻고, 원수를 만들고, 이름을 남긴다. 아니면 이름 없이 간다.</p>
+    <p class="mh-note">경지는 삼류에서 시작해 이류, 일류, 절정, 초절정, 화경, 현경을 지나 생사경까지 있다. 대부분은 절정 문턱에서 생을 마친다.</p>
+    <div class="mh-row">${saved?`<button class="mh-go" type="button" id="mhResume">이어 살기 · ${esc(saved.name)} ${saved.age}세</button>`:''}<button class="mh-go ${saved?'':'seal'}" type="button" id="mhStart">${saved?'새로 태어나기':'태어나기'}</button></div>
+    ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${p.age}세 · ${LV[p.lv]}</span><span>${esc(p.g)} · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
+  $m('mhStart').onclick=()=>{ roll=makeBirth(); m={phase:'birth'}; render(); };
+  if(saved) $m('mhResume').onclick=()=>{ rehydrate(saved); render(); };
+}
+function renderBirth(card){
+  const b=roll, o=OR(b.o), t=b.trait&&TR(b.trait);
+  card.innerHTML=`<div class="mh-eye"><span>이번 생</span></div>
+    <div class="mh-birth${rolling?' rolling':''}">
+      <b>${esc(b.sur+b.given)}</b>
+      <span>${b.sex==='m'?'사내아이':'계집아이'} · ${esc(o.t)}</span>
+      <p>${esc(o.d)}</p>
+      <div class="mh-stats"><div>근골${pips(b.st.body)}</div><div>오성${pips(b.st.wit)}</div><div>기연${pips(b.st.luck)}</div><div>매력${pips(b.st.charm)}</div></div>
+      ${t?`<p class="mh-trait">타고난 체질 · ${esc(t.n)} — ${esc(t.d)}</p>`:''}
+      <span class="mh-num">가진 것 ${o.gold}냥</span>
+    </div>
+    <div class="mh-row"><button class="mh-go seal" type="button" id="mhLive">이 생을 산다</button><button class="mh-btn" type="button" id="mhReroll">다시 태어나기</button></div>
+    <p class="mh-note">근골은 몸과 수명, 오성은 무공을 깨치는 속도, 기연은 뜻밖의 인연, 매력은 사람의 마음을 얻는 힘이다.</p>`;
+  $m('mhLive').onclick=()=>{ m=fresh(roll); log(`${ro(o.t)} 태어났다`,true); m.phase='child'; m.scene='village'; endYearChildStart(); };
+  $m('mhReroll').onclick=()=>{ if(rolling) return; if(RED){ roll=makeBirth(); render(); return; } rolling=true; let n=0; const t=setInterval(()=>{ roll=makeBirth(); render(); if(++n>=6){ clearInterval(t); rolling=false; render(); } },70); };
+}
+function endYearChildStart(){ m.age=0; m.notes=[]; m.phase='after'; m.focusRes={t:'첫울음이 컸다. 산파가 "장차 큰 인물이 되겠다"고 했다. 산파는 아이마다 그렇게 말한다.'}; render(); }
+function renderEnd(card){
+  const g=grade(), S=m.sect&&SECTS[m.sect], big=m.log.filter(x=>x.big);
+  card.innerHTML=`<div class="mh-tomb">
+      ${m.alias?`<span class="al">${esc(m.alias)}</span>`:''}
+      <span class="nm">${esc(m.name)}</span>
+      <span class="mh-grade">${esc(g.n)}</span>
+      <p>향년 ${m.age}세 · ${esc(m.deathCause)}</p>
+      <p>"${esc(epitaph())}"</p>
+    </div>
+    <div class="mh-sum">
+      <div>최고 경지<b>${LV[m.lv]}</b></div><div>내공<b>${ngStr(m.ng)}</b></div><div>사문<b>${S?esc(S.n):'없음'}</b></div><div>제자 · 자식<b>${m.disc} · ${m.kids}</b></div>
+    </div>
+    <h3>강호열전</h3>
+    <div class="mh-past">${big.map(x=>`<div><span>${esc(x.t)}</span><span>${x.a}세</span></div>`).join('')}</div>
+    <div class="mh-row"><button class="mh-go seal" type="button" id="mhAgain">다시 태어나기</button><button class="mh-btn" type="button" id="mhShare" data-label="결과 복사">결과 복사</button></div>
+    <textarea id="mhCopy" readonly hidden></textarea>`;
+  $m('mhAgain').onclick=()=>{ roll=makeBirth(); m={phase:'birth'}; render(); };
+  $m('mhShare').onclick=()=>{ const txt=shareText(), btn=$m('mhShare'), ta=$m('mhCopy'); const fb=()=>{ ta.value=txt; ta.hidden=false; ta.select(); btn.textContent='아래 글을 복사하세요'; };
+    try{ navigator.clipboard.writeText(txt).then(()=>{ btn.textContent='복사했어요'; setTimeout(()=>btn.textContent=btn.dataset.label,1800); },fb); }catch(e){ fb(); } };
+}
+function shareText(){
+  const g=grade(), a=bestArt();
+  const bar=LV.map((_,i)=>i<=m.lv?'■':'□').join('');
+  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${OR(m.b.o).t} 출신 · 향년 ${m.age}세\n${g.n} · ${LV[m.lv]} ${bar}\n${a?'🗡️ '+a.n+' · ':''}내공 ${ngStr(m.ng)}\n사인: ${m.deathCause}\nwolseday.com/#murim`;
+}
+
+/* ---------- 수묵 도트 장면 ---------- */
+const RED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cv=$m('mhScene'), g=cv.getContext('2d'); g.imageSmoothingEnabled=false;
+const W=160,H=72; let tk=0, C={};
+function readTok(){ const cs=getComputedStyle(document.documentElement); ['m-bg','m-panel','m-panel2','m-line','m-ink','m-muted','m-seal','m-jade','m-gold'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim()||'#888'); }
+function rgba(hex,a){ const h=hex.replace('#',''); const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+function P(x,y,w,h,c){ g.fillStyle=c; g.fillRect(Math.round(x),Math.round(y),w,h); }
+function disc(cx,cy,r,c){ for(let y=-r;y<=r;y++){ const w=Math.round(Math.sqrt(r*r-y*y)); P(cx-w,cy+y,w*2,1,c); } }
+function ridge(seed,base,amp,col,off){ for(let x=0;x<W;x++){ const xx=x+off; const y=base-amp*(.5+.5*Math.sin(xx*.045+seed)*Math.cos(xx*.017+seed*2))-2.5*Math.sin(xx*.23+seed); P(x,y,1,H-y,col); } }
+const HERO=["..hhh..",".hhhhh.",".hsssh.","..sss..",".rrrrr.","rrrrrrr","s.rrr.s","..rrr..","..rrr..","..r.r..","..k.k.."];
+function spr(rows,x,y,pal){ rows.forEach((r,j)=>{ for(let i=0;i<r.length;i++){ const k=r[i]; if(k!=='.'&&pal[k]) P(x+i,y+j,1,1,pal[k]); } }); }
+function hero(x,y){
+  if(!m||!m.b) return;
+  const robe=(m.sect&&SECTS[m.sect].robe)||(m.ak>m.hy+15?'#3a2a2a':'#6a7468');
+  const old=m.age>=58, kid=m.age<12;
+  let rows=HERO.slice(); if(kid) rows=[rows[0],rows[1],rows[2],rows[4],rows[5],rows[6],rows[9],rows[10]];
+  const pal={h:old?'#d8d8d0':(m.b.sex==='f'?'#2a1f22':'#1f1d1f'),s:'#e9c39b',r:robe,k:'#1c1c1c'};
+  const bob=RED?0:((tk>>5)%2);
+  spr(rows,x,y-rows.length-bob,pal);
+  if(old) P(x+2,y-rows.length+4-bob,3,2,'#d8d8d0');
+  const a=bestArt(); if(a&&!kid&&a.k!=='권'&&a.k!=='장'){ const sw=m.focusRes&&m.focusRes.fid==='train'&&!RED?((tk>>3)%4):0; const c=a.k==='마공'?C['m-seal']:'#cfd3d6'; if(sw===1||sw===2){ P(x+7,y-9-bob,6,1,c);} else P(x+7,y-11-bob,1,8,c); }
+}
+function scene(){
+  tk++; if(tk%90===1) readTok();
+  const sc=(m&&m.scene)||'mountain', ink=C['m-ink'], night=sc==='night'||sc==='grave'&&m&&m.phase==='end';
+  P(0,0,W,H,night?rgba(ink,.9):C['m-panel']);
+  // 해 또는 달
+  if(night){ disc(126,14,7,C['m-panel2']); for(let i=0;i<18;i++){ if(((i*37+(tk>>4))%23)>2) P((i*53)%W,(i*29)%34,1,1,C['m-panel2']); } }
+  else disc(122,18,9,C['m-seal']);
+  const off=RED?0:tk*.03, mul=night?.5:1;
+  ridge(1.3,40,22,rgba(ink,.18*mul+.06),off*.4);
+  // 안개
+  for(let i=0;i<3;i++){ const y=34+i*5, x=((i*61+(RED?0:tk*.08*(i+1)))%(W+60))-60; P(x,y,60,2,rgba(night?ink:C['m-panel'],.55)); }
+  ridge(4.1,52,16,rgba(ink,.38*mul+.08),off);
+  ridge(7.7,62,8,rgba(ink,.8),off*2);
+  const gy=64;
+  P(0,gy,W,H-gy,rgba(ink,.92));
+  const prop=PROPS[sc]; if(prop) prop(gy,ink);
+  hero(sc==='cave'?40:62,gy);
+  requestAnimationFrame(scene);
+}
+const PROPS={
+  village(gy,ink){ for(const [x,w] of [[92,22],[120,28]]){ P(x,gy-12,w,12,rgba(ink,.85)); P(x-3,gy-15,w+6,3,ink); P(x+w/2-2,gy-7,4,7,C['m-gold']); } P(20,gy-18,1,18,ink); for(let i=0;i<4;i++) P(16+i*2,gy-18+i*3,9-i*2,2,rgba(C['m-jade'],.9)); },
+  inn(gy,ink){ P(96,gy-22,50,22,rgba(ink,.88)); P(90,gy-26,62,4,ink); P(93,gy-29,56,3,ink); P(112,gy-12,10,12,C['m-gold']); const b=RED?1:((tk>>4)%2); P(100,gy-20,4,6,b?C['m-seal']:rgba(C['m-seal'],.6)); P(138,gy-20,4,6,b?rgba(C['m-seal'],.6):C['m-seal']); P(124,gy-33,14,6,C['m-panel2']); },
+  cave(gy,ink){ for(let y=0;y<30;y++){ const w=Math.round(Math.sqrt(Math.max(0,900-(30-y)*(30-y)))*.8); P(110-w,gy-30+y,w*2,1,ink); } P(100,gy-10,8,10,rgba(C['m-gold'],.7)); },
+  arena(gy,ink){ P(70,gy-8,80,8,rgba(ink,.95)); P(68,gy-9,84,2,C['m-gold']); for(const x of [74,146]){ P(x,gy-34,1,26,ink); const wv=RED?0:((tk>>3)%3)-1; P(x+1,gy-34+wv,8,5,C['m-seal']); } P(118,gy-17,7,9,rgba(C['m-panel2'],.9)); },
+  temple(gy,ink){ for(let i=0;i<4;i++){ const w=34-i*7; P(118-w/2,gy-8-i*9,w,7,rgba(ink,.9)); P(118-w/2-3,gy-9-i*9,w+6,2,ink); } P(117,gy-46,2,8,ink); P(20,gy-14,3,14,C['m-seal']); P(36,gy-14,3,14,C['m-seal']); P(17,gy-16,25,3,ink); },
+  battle(gy,ink){ P(0,0,W,H,rgba(C['m-seal'],.16)); for(let i=0;i<14;i++){ const x=86+(i%7)*10, y=gy-(i<7?6:10); P(x,y,3,6,rgba(ink,.95)); P(x+1,y-2,1,2,rgba(ink,.95)); } for(const x of [90,130]){ P(x,gy-30,1,22,ink); P(x+1,gy-30,9,6,x===90?C['m-seal']:C['m-jade']); } },
+  grave(gy,ink){ disc(118,gy,12,rgba(ink,.95)); P(98,gy-20,6,20,C['m-panel2']); P(97,gy-21,8,2,C['m-line']); },
+  road(gy,ink){ for(let i=0;i<8;i++) P(80+i*10,gy-2-(i%2),6,1,rgba(C['m-panel2'],.4)); P(140,gy-30,2,30,ink); for(let i=0;i<5;i++) P(132+i,gy-30+i*4,18-i*3,3,rgba(ink,.9)); },
+  night(gy,ink){ P(100,gy-10,18,10,rgba(C['m-panel2'],.3)); P(106,gy-6,4,4,C['m-gold']); },
+  mountain(gy,ink){ P(130,gy-28,2,28,ink); for(let i=0;i<5;i++) P(122+i,gy-28+i*4,18-i*3,3,rgba(ink,.9)); }
+};
+
+/* ---------- 키보드·시작 ---------- */
+document.addEventListener('keydown',e=>{
+  if($m('murimApp').hidden||e.ctrlKey||e.metaKey||e.altKey) return;
+  if(e.target&&e.target.closest&&e.target.closest('textarea,input')) return;
+  if(/^[1-9]$/.test(e.key)){ const b=$m('mhCard').querySelectorAll('.mh-ch')[+e.key-1]; if(b&&!b.disabled){ b.click(); e.preventDefault(); } }
+  else if(e.key==='Enter'&&(!document.activeElement||document.activeElement===document.body)){ const b=$m('mhNext'); if(b){ b.click(); e.preventDefault(); } }
+});
+$m('mhHub').onclick=()=>{ location.hash=''; window.__route&&window.__route(); };
+readTok();
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTok); new MutationObserver(readTok).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']}); }catch(e){}
+window.__murimRender=()=>{ readTok(); render(); };
+render(); requestAnimationFrame(scene);
+})();
+</script>
+<script>
+(function(){
+  const hub=document.getElementById('hub'), wol=document.getElementById('wolseApp'), mur=document.getElementById('murimApp');
+  function route(){
+    const h=(location.hash||'').replace('#','');
+    hub.hidden=!(h!=='wolse'&&h!=='murim'); wol.hidden=h!=='wolse'; mur.hidden=h!=='murim';
+    document.body.classList.toggle('is-murim',h==='murim');
+    if(h==='murim'&&window.__murimRender) window.__murimRender();
+    window.scrollTo&&window.scrollTo(0,0);
+  }
+  window.__route=route;
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.go; route(); });
+  const back=document.getElementById('wolseHub'); if(back) back.onclick=()=>{ location.hash=''; route(); };
+  window.addEventListener('hashchange',route);
+  route();
+})();
+</script>
 </body>
 </html>

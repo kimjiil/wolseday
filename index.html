@@ -391,7 +391,7 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
 .art-wolse .bld i{background:#2f2a40}.art-wolse .bld i.on{background:#ffcf6b}
 .art-wolse .dd{position:absolute;right:7%;top:24%;font-family:var(--f-num);font-size:clamp(26px,6vw,40px);color:#ffa43f;text-shadow:3px 3px 0 #0b0a10}
 .art-wolse .dd small{display:block;font-family:var(--f-body);font-size:13px;color:#ebe6f3;text-shadow:none;margin-top:6px}
-/* 무림일생 preview: ink mountains under a cinnabar sun */
+/* 무림초출 preview: ink mountains under a cinnabar sun */
 .art-murim{background:#dfe3d4}
 .art-murim .sun{position:absolute;right:16%;top:16%;width:22%;aspect-ratio:1;border-radius:50%;background:#b8321f}
 .art-murim .m1,.art-murim .m2,.art-murim .m3{position:absolute;left:-5%;right:-5%;bottom:0}
@@ -426,7 +426,7 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
         <span class="seal">武林</span>
       </span>
       <span class="cab-body">
-        <b>무림일생</b>
+        <b>무림초출</b>
         <p>강호의 어느 집에 태어나 한 생을 산다. 문파에 들고, 기연을 만나고, 이름을 얻거나 잃는다. 어디서 끝날지는 아무도 모른다.</p>
         <span class="cab-tags"><span class="new">신작</span><span>랜덤 인생</span><span>무협</span></span>
         <span class="cab-go">입문하기 ›</span>
@@ -2898,7 +2898,7 @@ window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Gowun+Batang:wght@400;700&display=swap">
 <style>
-/* 무림일생 layout: ink-wash scene and the year card on the left; the person's 명부(record) and 연보(chronicle) on the right. Celadon silk by day, ink at night. */
+/* 무림초출 layout: ink-wash scene and the year card on the left; the person's 명부(record) and 연보(chronicle) on the right. Celadon silk by day, ink at night. */
 :root{
   --m-bg:#e2e5d8; --m-panel:#eef0e6; --m-panel2:#e6e9dc; --m-line:#c1c8b3;
   --m-ink:#1c201c; --m-muted:#556052; --m-seal:#b8321f; --m-jade:#2f6b58; --m-gold:#8a5f0e; --m-cs:light;
@@ -3009,7 +3009,7 @@ body.is-murim::before{background:var(--m-bg)}
 
 <div id="murimApp" hidden>
   <header class="mh-top">
-    <div class="mh-brand"><span class="mh-seal" aria-hidden="true">武林</span><div><b>무림일생</b><small>강호에 한 번 태어나 본다</small></div></div>
+    <div class="mh-brand"><span class="mh-seal" aria-hidden="true">武林</span><div><b>무림초출</b><small>강호에 한 번 태어나 본다</small></div></div>
     <button class="mh-btn" type="button" id="mhHub">‹ 게임 목록</button>
   </header>
   <div class="mh-grid">
@@ -3448,7 +3448,7 @@ function render(){
   const card=$m('mhCard'); if(!card) return;
   const playing=m&&m.phase!=='title'&&m.phase!=='birth';
   $m('mhSide').hidden=!playing;
-  $m('mhCapL').textContent=playing?`${m.name} · ${m.age}세`:'무림일생';
+  $m('mhCapL').textContent=playing?`${m.name} · ${m.age}세`:'무림초출';
   $m('mhCapR').textContent=playing?(SCENE_NAME[m.scene]||''):'';
   if(playing) renderRec();
   if(!m||m.phase==='title') return renderTitle(card);
@@ -3481,7 +3481,7 @@ function render(){
 }
 function renderTitle(card){
   const saved=load(), past=lsGet('murim_past')||[];
-  card.innerHTML=`<div class="mh-eye"><span>武林一生</span></div>
+  card.innerHTML=`<div class="mh-eye"><span>武林初出</span></div>
     <h2>강호의 어느 집에, 누군가로 태어난다.</h2>
     <p>출신도 근골도 고를 수 없다. 해마다 한 가지 길을 고르고, 길 위에서 만나는 일에 답한다. 문파에 들고, 기연을 얻고, 원수를 만들고, 이름을 남긴다. 아니면 이름 없이 간다.</p>
     <p class="mh-note">경지는 삼류에서 시작해 이류, 일류, 절정, 초절정, 화경, 현경을 지나 생사경까지 있다. 대부분은 절정 문턱에서 생을 마친다.</p>
@@ -3530,7 +3530,7 @@ function renderEnd(card){
 function shareText(){
   const g=grade(), a=bestArt();
   const bar=LV.map((_,i)=>i<=m.lv?'■':'□').join('');
-  return `무림일생 · ${m.alias?m.alias+' ':''}${m.name}\n${OR(m.b.o).t} 출신 · 향년 ${m.age}세\n${g.n} · ${LV[m.lv]} ${bar}\n${a?'🗡️ '+a.n+' · ':''}내공 ${ngStr(m.ng)}\n사인: ${m.deathCause}\nwolseday.com/#murim`;
+  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${OR(m.b.o).t} 출신 · 향년 ${m.age}세\n${g.n} · ${LV[m.lv]} ${bar}\n${a?'🗡️ '+a.n+' · ':''}내공 ${ngStr(m.ng)}\n사인: ${m.deathCause}\nwolseday.com/#murim`;
 }
 
 /* ---------- 수묵 도트 장면 ---------- */

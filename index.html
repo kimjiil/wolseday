@@ -3544,9 +3544,9 @@ function epitaph(){
 }
 
 /* ---------- 저장 ---------- */
-function save(){ if(!m||!m.b||m.phase==='end'||m.headless) return; const keep={ev:m.pending,ch:m.evCh}; m.pendingId=m.pending&&m.pending.id; m.tevIdx=m.tev?(m.tev.final?-2:TEV.indexOf(m.tev)):-1; const tv=m.tev; m.pending=null; m.evCh=null; m.tev=null; lsSet('murim_run',m); m.pending=keep.ev; m.evCh=keep.ch; m.tev=tv; }
+function save(){ if(!m||!m.b||m.phase==='end'||m.headless) return; const keep={ev:m.pending,ch:m.evCh}; m.pendingId=m.pending&&m.pending.id; m.tevIdx=m.tev?(m.tev.final?-2:m.tev.ep?`E|${m.tev.ep}|${m.tev.bi}`:TEV.indexOf(m.tev)):-1; const tv=m.tev; m.pending=null; m.evCh=null; m.tev=null; lsSet('murim_run',m); m.pending=keep.ev; m.evCh=keep.ch; m.tev=tv; }
 function load(){ const r=lsGet('murim_run'); return r&&r.b&&r.others&&(r.phase==='play'||r.phase==='farewell')?r:null; }
-function rehydrate(r){ m=r; m.evCh=null; m.pending=m.pendingId?EV[m.pendingId]:null; m.tev=m.tevIdx===-2?TEV_FINAL:m.tevIdx>=0?TEV[m.tevIdx]:null; if(m.spouse) m.spouse=m.rels.find(x=>x.role==='배우자'&&x.name===m.spouse.name)||m.spouse; paused=true; }
+function rehydrate(r){ m=r; m.evCh=null; m.pending=m.pendingId?EV[m.pendingId]:null; m.tev=m.tevIdx===-2?TEV_FINAL:typeof m.tevIdx==='string'?EPI_T[m.tevIdx.split('|')[1]].beats[+m.tevIdx.split('|')[2]]:m.tevIdx>=0?TEV[m.tevIdx]:null; if(m.spouse) m.spouse=m.rels.find(x=>x.role==='배우자'&&x.name===m.spouse.name)||m.spouse; paused=true; }
 
 /* ---------- 그리기 ---------- */
 const pips=v=>`<span class="mh-pips">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span>`;
@@ -3602,7 +3602,7 @@ function renderPlay(card){
     return;
   }
   if(m.train) return renderTrain(card,eye);
-  const dec=m.pending?`<div class="mh-dec"><p class="mh-qa">갈림길</p><p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(m.pending).map(chBtn).join('')}</div></div>`:'';
+  const dec=m.pending?`<div class="mh-dec"><p class="mh-qa">${m.pending.epn?`${esc(m.pending.epn)} · ${m.pending.epi}`:'갈림길'}</p><p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(m.pending).map(chBtn).join('')}</div></div>`:'';
   const last=m.lastRes&&m.lastRes.age===m.age&&!m.pending?`${diceHtml(m.lastRes.dice)}<p class="mh-res ${m.lastRes.tone}">${esc(m.lastRes.t)}</p>`:'';
   const feed=m.log.slice(-6).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   const seg=`<div class="mh-focus"><span class="mh-lab">올해의 중심</span><div class="mh-seg" role="radiogroup" aria-label="올해의 중심">${FOCUS.map(f=>`<button type="button" role="radio" aria-checked="${m.focus===f.id&&m.age>=6}" data-focus="${f.id}" ${m.age<6?'disabled':''}>${f.n}</button>`).join('')}</div><span class="mh-hint">${m.age<6?'아직 어리다. 하루하루가 그냥 흘러간다.':esc((FOCUS.find(f=>f.id===m.focus)||FOCUS[1]).h)}</span></div>`;
@@ -3725,7 +3725,7 @@ const mt=i=>m.mates[i];
 function startTrain(){
   m.f.trainDone=1;
   m.mates=[{role:m.sex==='m'?'사형':'사저',name:pick(SURN)+gname(),v:55},{role:m.sex==='m'?'사매':'사제',name:pick(SURN)+gname(),v:45,love:1},{role:'맞수',name:pick(SURN)+gname(),v:30,rival:1}];
-  m.train={turn:0,rep:30,craft:0,place:trainPlace()};
+  m.train={turn:0,rep:30,craft:0,place:trainPlace()}; scheduleEpisodes(m.train);
   m.scene=m.sect?'temple':'mountain'; m.lastRes=null;
   log(`${m.train.place}에서 삼 년 수련기를 시작했다`,true);
 }
@@ -3747,7 +3747,9 @@ function trainAct(id,mi){
   T.turn++;
   if(T.turn%6===0){ m.age++; ambient(); m.joy=cl(m.joy+(55-m.joy)*.08); if(!m.headless&&MILES[m.age]) m.milestone=m.age; const dc=hazard(); if(dc) return die(dc); }
   if(T.turn>=18){ m.tev=TEV_FINAL; m.tevText=TEV_FINAL.text(); return; }
-  if(R()<.4){ const pool=TEV.filter(e=>!e.when||e.when()); const e=pick(pool); m.tev=e; m.tevText=e.text(); }
+  const due=(T.epq||[]).find(x=>x.turn<=T.turn);
+  if(due){ T.epq.splice(T.epq.indexOf(due),1); const b=EPI_T[due.id].beats[due.bi]; m.tev=b; m.tevText=b.text(); return; }
+  if(R()<.28){ const pool=TEV.filter(e=>!e.when||e.when()); const e=pick(pool); m.tev=e; m.tevText=e.text(); }
 }
 const TEV=[
   {text:()=>`${iga(mt(0).name)} 자기 잡일을 슬쩍 떠넘긴다.`,ch:[{t:'웃으며 받아 준다',go:()=>{ mt(0).v+=8; hurt(3); return '어깨가 빠질 것 같았지만 사형은 고마워했다.'; }},{t:'정중히 거절한다',p:()=>.55,go:ok=>{ if(ok) return '사형이 머쓱하게 웃었다.'; mt(0).v-=8; return '사형이 한동안 말을 걸지 않았다.'; }}]},
@@ -3786,6 +3788,8 @@ function resolveT(i,auto){
   if(m.mates) m.mates.forEach(x=>x.v=cl(x.v));
   m.lastRes={age:m.age,pick:c.t,t:r.t,tone:r.tone||'',dice:d,auto:!!auto,train:1};
   log(`${auto?'(맡김) ':''}${c.t}. ${r.t}`);
+  if(r.big) log(r.big,true);
+  if(e.ep&&m.train&&(r.end||e.bi===EPI_T[e.ep].beats.length-1)) m.train.epq=(m.train.epq||[]).filter(x=>x.id!==e.ep);
   m.tev=null; m.tevText=null;
   if(m.deathCause||m.hp<=0) die(m.deathCause||'수련 중 입은 상처');
 }
@@ -3801,7 +3805,7 @@ function renderTrain(card,eye){
   const stats=`<div class="mh-meters">${meter('체력',m.hp,'hp')}${meter('신망',T.rep,'')}${meter('기예',Math.min(100,T.craft*25),'joy')}</div>`;
   const mates=`<div class="mh-mates"><span class="mh-lab">동문</span>${m.mates.map((x,i)=>`<div class="mh-mate"><span><b>${esc(x.name)}</b><small>${esc(x.role)}</small></span><span class="mh-bar bond"><i style="width:${cl(x.v)}%"></i></span><button type="button" class="mh-btn" data-mate="${i}" ${m.tev?'disabled':''}>어울리기</button></div>`).join('')}</div>`;
   const last=m.lastRes&&m.lastRes.train?`${diceHtml(m.lastRes.dice)}<p class="mh-res ${m.lastRes.tone}">${esc(m.lastRes.t)}</p>`:'';
-  const body=m.tev?`<div class="mh-dec"><p class="mh-qa">${m.tev.final?'시험':'일'}</p><p class="mh-text">${esc(m.tevText)}</p><div class="mh-chs">${m.tev.ch.filter(c=>!c.when||c.when()).map(chBtn).join('')}</div></div>`
+  const body=m.tev?`<div class="mh-dec"><p class="mh-qa">${m.tev.final?'시험':m.tev.ep?`${esc(EPI_T[m.tev.ep].n)} · ${m.tev.bi+1}/${EPI_T[m.tev.ep].beats.length}`:'일'}</p><p class="mh-text">${esc(m.tevText)}</p><div class="mh-chs">${m.tev.ch.filter(c=>!c.when||c.when()).map(chBtn).join('')}</div></div>`
     :`<div class="mh-acts">${TACT.map((a,i)=>`<button class="mh-ch" type="button" data-t="${a.id}"><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(a.id==='craft'?craftName():a.n)}<small>${esc(a.s)}</small></span></span></button>`).join('')}</div>`;
   card.innerHTML=`${eye}${head}${last}${body}${stats}${mates}`;
   card.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ resolveT(+b.dataset.i); afterTrain(); });
@@ -3809,6 +3813,123 @@ function renderTrain(card,eye){
   card.querySelectorAll('[data-mate]').forEach(b=>b.onclick=()=>{ trainAct('mate',+b.dataset.mate); afterTrain(); });
 }
 function afterTrain(){ acc=0; if(!m.train&&!m.dead) m.lastRes=m.lastRes&&{...m.lastRes,age:m.age}; render(); save(); }
+/* ---------- 에피소드: 수련기마다 몇 개를 무작위로 뽑아 사이사이에 끼운다 ---------- */
+const EP=id=>{ m.ep=m.ep||{}; return m.ep[id]=m.ep[id]||{}; };
+const EPI_T={
+  kid:{n:'산문 밖의 아이',beats:[
+    {text:()=>'산문 밖 바위 뒤에서 마을 아이 하나가 연무장을 훔쳐보며 나뭇가지를 휘두른다.',ch:[
+      {t:'몰래 기본기를 가르쳐 준다',go:()=>{ m.joy+=4; return '아이 이름은 소두라고 했다. 해 질 녘마다 오겠다고 했다.'; }},
+      {t:'규칙대로 쫓아낸다',go:()=>({t:'아이는 울면서 산을 내려갔다.',end:1})}]},
+    {text:()=>'소두가 오늘도 바위 뒤에 와 있다. 그런데 순찰 도는 사형이 이쪽으로 온다.',ch:[
+      {t:'아이를 덤불에 숨긴다',p:()=>.45+ST('luck')*.04,go:ok=>{ if(ok) return '숨을 죽였다. 사형은 그냥 지나갔다.'; m.train.rep-=10; EP('kid').caught=1; return {t:'들켰다. 사부 앞에 불려 갔다.',tone:'bad'}; }},
+      {t:'사부에게 먼저 털어놓는다',go:()=>{ m.train.rep+=2; return '사부는 한참 말이 없다가 "기본기까지만이다"라고 했다.'; }}]},
+    {text:()=>EP('kid').caught?'벌 받은 일도 잊혀 갈 무렵, 산 아래 마을에서 소식이 왔다.':'산 아래 마을에서 소식이 왔다.',ch:[
+      {t:'소식을 듣는다',go:()=>{ m.fame+=4; m.joy+=8; return {t:'산적이 마을에 들이닥쳤을 때 소두가 배운 걸음으로 아이들을 데리고 산으로 피했다고 한다. 마을 사람들이 쌀 한 가마를 산문에 두고 갔다.',tone:'good',big:'몰래 가르친 마을 아이가 아이들을 구했다'}; }}]}]},
+  book:{n:'사라진 비급',beats:[
+    {text:()=>'비급각에서 비급 한 권이 사라졌다. 그날 밤 근처에 있었던 사람은 나뿐이다.',ch:[
+      {t:'결백을 주장한다',p:()=>.35+cl(m.train.rep)/200,go:ok=>{ if(ok) return '장로가 일단은 믿어 주었다. 대신 사흘 안에 범인을 찾으라 했다.'; m.train.rep-=12; return {t:'아무도 믿어 주지 않았다. 등 뒤에서 수군거렸다.',tone:'bad'}; }},
+      {t:'직접 찾아내겠다고 나선다',go:()=>'장로가 사흘을 주었다.'}]},
+    {text:()=>`밤중에 ${iga(mt(2).name)} 비급각 뒤에서 누군가와 속삭이는 것을 보았다.`,ch:[
+      {t:'그 자리에서 추궁한다',p:()=>fightP(18),go:ok=>{ if(ok){ EP('book').clue=1; return '맞수는 결백했다. 그도 낯선 잡역부를 쫓고 있었다.'; } mt(2).v-=12; hurt(10); return {t:'오해였다. 맞수와 주먹다짐만 했다.',tone:'bad'}; }},
+      {t:'조용히 미행한다',p:()=>.4+ST('wit')*.04,go:ok=>{ if(ok){ EP('book').clue=1; mt(2).v+=8; return '맞수도 범인을 쫓고 있었다. 새로 들어온 잡역부였다.'; } return '놓쳤다.'; }}]},
+    {text:()=>EP('book').clue?'잡역부가 비급을 품고 담을 넘으려 한다. 녹림의 첩자였다.':'사흘째 밤, 담을 넘으려는 그림자가 보인다.',ch:[
+      {t:'막아선다',p:()=>fightP(EP('book').clue?17:22),go:ok=>{ if(ok){ m.train.rep+=18; m.fame+=4; addExp(4); return {t:'첩자를 쓰러뜨리고 비급을 되찾았다. 장로가 처음으로 내 이름을 불렀다.',tone:'good',big:'사라진 비급을 되찾아 누명을 벗었다'}; } hurt(22,'첩자의 칼'); m.train.rep-=6; return {t:'칼에 베였다. 첩자는 달아났고 누명은 그대로 남았다.',tone:'bad'}; }},
+      {t:'종을 쳐서 사람을 부른다',go:()=>{ m.train.rep+=6; return '사형들이 몰려와 첩자를 잡았다. 공은 나눠 가졌다.'; }}]}]},
+  beast:{n:'다친 새끼 범',beats:[
+    {text:()=>'뒷산 덫에 새끼 범 한 마리가 걸려 울고 있다.',ch:[
+      {t:'덫을 풀고 돌봐 준다',p:()=>.6,go:ok=>{ if(ok) return '할퀴고 물었지만 결국 품에서 잠들었다.'; hurt(12); return {t:'손등을 깊게 물렸다. 새끼는 숲으로 달아났다.',tone:'bad',end:1}; }},
+      {t:'못 본 척한다',go:()=>({t:'울음소리가 밤새 들렸다.',end:1})}]},
+    {text:()=>'몰래 먹이를 주던 새끼 범이 훌쩍 자랐다. 사부가 냄새를 맡은 눈치다.',ch:[
+      {t:'산 깊은 곳에 놓아준다',go:()=>{ m.joy-=3; return '몇 번이나 돌아보다 사라졌다.'; }},
+      {t:'계속 몰래 키운다',p:()=>.4,go:ok=>{ if(ok) return '들키지 않았다. 범이 내 발소리를 알아듣는다.'; m.train.rep-=8; return {t:'들켰다. 범은 산으로 쫓겨났다.',tone:'bad'}; }}]},
+    {text:()=>'안개 낀 새벽, 큰 범 한 마리가 산문 앞에 무언가를 내려놓고 사라졌다.',ch:[
+      {t:'다가가 본다',go:()=>{ const n=ri(10,25); m.ng+=n; return {t:`붉은 영지 한 뿌리였다. 먹고 나니 내공이 ${n}년 늘었다.`,tone:'good',big:'키워 준 범이 영지를 물어다 주었다'}; }}]}]},
+  master:{n:'사부의 밤',beats:[
+    {text:()=>'사부가 밤마다 혼자 뒷산으로 사라진다.',ch:[
+      {t:'몰래 따라간다',p:()=>.35+ST('luck')*.04,go:ok=>{ if(ok){ EP('master').saw=1; return '사부가 바위 앞에서 피를 토하고 있었다. 옛 상처가 도진 모양이다.'; } m.train.rep-=6; return {t:'금세 들켰다. 사부가 말없이 꿀밤을 먹였다.',tone:'bad'}; }},
+      {t:'모른 척한다',go:()=>'사부의 기침 소리가 점점 잦아졌다.'}]},
+    {text:()=>EP('master').saw?'사부가 나를 불렀다. "봤으면 됐다. 내 사형이 이십 년 전에 남긴 상처다. 보름 뒤 그자가 온다."':'낯선 검객이 산문 앞에 와서 사부의 이름을 부른다. 보름 뒤에 다시 오겠단다.',ch:[
+      {t:'사부 곁에서 함께 막겠다고 한다',go:()=>{ m.train.rep+=6; return '사부가 처음으로 웃었다.'; }},
+      {t:'약을 구해 온다',when:()=>m.gold>=10,go:()=>{ gold(-10); EP('master').med=1; return '읍내 의원에게서 귀한 약재를 구해 왔다.'; }}]},
+    {text:()=>'보름 뒤, 백발의 검객이 산문을 넘었다.',ch:[
+      {t:'사부의 등 뒤를 지킨다',p:()=>fightP(22)+(EP('master').med?.15:0),go:ok=>{ if(ok){ learn(`${m.sect?SECTS[m.sect].n.slice(0,2):'사부의'} 비전검`,18,'검'); m.train.rep+=12; return {t:'사부가 이겼다. 그날 밤 사부는 아무에게도 보여 주지 않던 초식을 가르쳐 주었다.',tone:'good',big:'사부의 원수를 함께 막고 비전 초식을 받았다'}; } hurt(25,'사부의 원수'); return {t:'검풍에 날아가 기절했다. 깨어 보니 검객은 떠났고 사부는 부쩍 늙어 있었다.',tone:'bad'}; }}]}]},
+  granny:{n:'주방 할멈',beats:[
+    {text:()=>'주방 할멈이 물동이 둘을 지고 산길을 오른다. 발이 땅에 닿지 않는 것 같다.',ch:[
+      {t:'짐을 대신 들어 준다',go:()=>{ EP('granny').kind=1; hurt(3); return '할멈이 "기특하네" 하고 웃었다. 물동이가 생각보다 훨씬 무거웠다.'; }},
+      {t:'걸음걸이를 유심히 본다',p:()=>.3+ST('wit')*.05,go:ok=>{ if(ok){ EP('granny').saw=1; return '발끝이 아니라 바람을 밟고 있었다.'; } return '그냥 잘 걷는 할멈이었다.'; }}]},
+    {text:()=>'밤에 부엌 앞을 지나는데 할멈이 혼잣말을 한다. "요즘 애들은 걸음이 무거워."',ch:[
+      {t:'걸음을 가르쳐 달라고 조른다',p:()=>.25+(EP('granny').kind?.3:0)+(EP('granny').saw?.2:0),go:ok=>{ if(ok) return '할멈이 국자로 내 정강이를 때렸다. "내일 새벽 장작더미 앞으로 와."'; return {t:'"설거지나 해."',end:1}; }},
+      {t:'인사만 하고 지나간다',go:()=>({t:'할멈이 등 뒤에서 혀를 찼다.',end:1})}]},
+    {text:()=>'석 달 동안 새벽마다 장작더미 위를 걸었다. 마지막 날 할멈이 장작 하나를 걷어찼다.',ch:[
+      {t:'떨어지는 장작을 밟고 선다',p:()=>.45+ST('body')*.04,go:ok=>{ if(ok){ learn('유운보',12,'보법'); addExp(5); return {t:'장작이 땅에 닿기 전에 세 번을 밟았다. 할멈은 "이제 됐다"며 부엌으로 들어갔고, 그 뒤로 아무것도 모르는 척했다.',tone:'good',big:'주방 할멈에게 유운보를 배웠다'}; } addExp(2); return '굴러떨어졌다. 할멈은 "그래도 반은 했다"고 했다.'; }}]}]},
+  letter:{n:'집에서 온 편지',beats:[
+    {text:()=>`${iga(mt(1).name)} 편지를 쥐고 뒷산에서 울고 있다.`,ch:[
+      {t:'곁에 앉아 묻는다',go:()=>{ mt(1).v+=6; return '집안 빚 때문에 부잣집 노인에게 혼인시키겠다는 편지였다.'; }},
+      {t:'자리를 피해 준다',go:()=>({t:'다음 날 눈이 퉁퉁 부어 있었다.',end:1})}]},
+    {text:()=>`빚은 은자 40냥이다. ${iga(mt(1).name)} 몰래 하산할 생각을 한다.`,ch:[
+      {t:'내 은자를 보탠다',when:()=>m.gold>=15,go:()=>{ const g=Math.min(m.gold,40); gold(-g); mt(1).v+=g>=40?20:10; return `${g}냥을 쥐여 주었다. 한참을 말없이 쳐다봤다.`; }},
+      {t:'같이 하산해 담판을 짓는다',p:()=>.35+ST('charm')*.04,go:ok=>{ m.train.rep-=8; if(ok){ mt(1).v+=18; return {t:'중매쟁이 앞에서 문파 이름을 댔다. 혼담이 깨졌다.',tone:'good'}; } return {t:'쫓겨났다. 산문에서도 벌을 받았다.',tone:'bad'}; }},
+      {t:'사부에게 도움을 청한다',go:()=>{ m.train.rep+=2; mt(1).v+=6; return '사부가 편지 한 장을 써 주었다.'; }}]},
+    {text:()=>`${iga(mt(1).name)} 집에서 온 두 번째 편지를 들고 뛰어왔다.`,ch:[
+      {t:'편지를 같이 읽는다',go:()=>{ m.joy+=8; mt(1).v+=8; return {t:'혼담이 없던 일이 되었다고 한다. 그날 처음으로 손을 잡았다.',tone:'good',big:`${mt(1).name}의 혼담을 막아 주었다`}; }}]}]},
+  rival:{n:'맞수의 밤',beats:[
+    {text:()=>`새벽, ${iga(mt(2).name)} 아무도 없는 연무장에서 혼자 검을 휘두르다 피를 토한다.`,ch:[
+      {t:'다가가 부축한다',go:()=>{ mt(2).v+=10; return '"보지 마." 그래도 손을 뿌리치지는 않았다.'; }},
+      {t:'못 본 척 돌아선다',go:()=>'다음 날 맞수는 아무렇지 않은 얼굴이었다.'}]},
+    {text:()=>`${mt(2).name}의 가문은 삼 년 전 멸문당했다고 한다. 원수를 갚으려 금지된 심법을 익히고 있다.`,ch:[
+      {t:'비밀을 지켜 준다',go:()=>{ mt(2).v+=10; return '맞수가 처음으로 고맙다는 말을 했다.'; }},
+      {t:'사부에게 알린다',go:()=>{ mt(2).v-=25; m.train.rep+=6; return {t:'맞수는 근신 처분을 받았다. 나를 보는 눈빛이 얼음 같았다.',tone:'bad'}; }}]},
+    {text:()=>`${mt(2).name}의 기혈이 거꾸로 돌기 시작했다. 주화입마 직전이다.`,ch:[
+      {t:'내공을 불어넣어 막는다',p:()=>.3+m.ng/80,go:ok=>{ if(ok){ const x=mt(2); x.v=Math.max(x.v,80); x.rival=0; x.role='지기'; m.ng*=.85; return {t:'밤새 손바닥을 맞댔다. 새벽에 맞수가 눈을 떴다. 그날부터 맞수가 아니라 지기가 되었다.',tone:'good',big:`맞수 ${eul(x.name)} 주화입마에서 구했다`}; } hurt(25,'역류한 내공'); return {t:'둘 다 피를 토하고 쓰러졌다. 맞수는 살았지만 무공을 잃었다.',tone:'bad'}; }},
+      {t:'사람을 부르러 뛴다',go:()=>{ mt(2).v+=5; return '장로들이 달려와 겨우 살렸다.'; }}]}]}
+};
+for(const id in EPI_T) EPI_T[id].beats.forEach((b,i)=>{ b.ep=id; b.bi=i; });
+function scheduleEpisodes(T){
+  const ids=Object.keys(EPI_T).sort(()=>R()-.5).slice(0,ST('luck')>=7?3:2);
+  T.eps=ids; T.epq=[];
+  ids.forEach((id,k)=>{ let t=ri(1,4)+k*2; EPI_T[id].beats.forEach((b,bi)=>{ T.epq.push({id,bi,turn:Math.min(17,t)}); t+=ri(2,4); }); });
+  T.epq.sort((a,b)=>a.turn-b.turn||a.bi-b.bi);
+}
+
+/* ---------- 삶의 에피소드: 첫 장면만 무작위로 나오고, 뒷장면은 몇 해 뒤에 이어진다 ---------- */
+function epNext(id,bi,lo=1,hi=3){ m.q.push({age:m.age+ri(lo,hi),id:id+bi}); }
+const EPL=(id,n,i,o)=>E(id+i,Object.assign({epn:n,epi:`${i+1}/3`},o));
+EPL('swd','떠돌이 검객',0,{min:18,max:50,once:1,scene:'inn',text:'객잔 마구간에 피투성이 검객이 숨어 있다. "하룻밤만… 아무에게도 말하지 마시오."',ch:[
+  {t:'숨겨 주고 상처를 싸맨다',go:()=>{ epNext('swd',1); return '검객은 새벽에 은자 한 닢을 두고 사라졌다.'; }},
+  {t:'객잔 주인에게 알린다',go:()=>({t:'관군이 와서 끌고 갔다. 등 뒤로 욕설이 들렸다.'})}]});
+EPL('swd','떠돌이 검객',1,{scene:'night',text:'검은 옷의 사내들이 찾아와 그 검객의 행방을 묻는다. 칼자루에 손이 가 있다.',ch:[
+  {t:'모른다고 잡아뗀다',p:()=>.4+ST('charm')*.04,go:ok=>{ epNext('swd',2,2,5); if(ok) return '사내들은 한참 노려보다 돌아갔다.'; hurt(25,'추격자의 칼'); return {t:'거짓말이 들통났다. 칼등으로 얻어맞았다.',tone:'bad'}; }},
+  {t:'방향을 알려 준다',go:()=>{ m.ak+=8; gold(30); return {t:'사내들이 은자 30냥을 던져 주었다. 그 검객의 소식은 다시 듣지 못했다.',tone:'bad'}; }}]});
+EPL('swd','떠돌이 검객',2,{scene:'road',text:'관도에서 낯익은 얼굴과 마주쳤다. 그때 숨겨 준 검객이다. 이제는 한 문파의 장문인이라고 한다.',ch:[
+  {t:'검을 한 수 청한다',go:()=>{ learn('추풍검',20,'검'); addExp(10); log('숨겨 줬던 검객에게 추풍검을 배웠다',true); return {t:'석 달을 따라다니며 검을 배웠다.',tone:'good'}; }},
+  {t:'은혜는 됐다고 한다',go:()=>{ gold(150); m.hy+=6; log('숨겨 줬던 검객이 은혜를 갚았다',true); return {t:'검객이 웃으며 은자 150냥을 내밀었다. 거절해도 소용없었다.',tone:'good'}; }}]});
+EPL('well','마른 우물',0,{min:20,max:60,once:1,scene:'village',text:'가뭄에 마을 우물이 말랐다. 노인들이 산 너머 옛 샘 이야기를 한다.',ch:[
+  {t:'샘을 찾으러 나선다',go:()=>{ epNext('well',1,1,1); return '사흘 동안 산을 헤맨 끝에 물소리를 들었다.'; }},
+  {t:'비를 기다린다',go:()=>{ m.hp-=6; m.joy-=6; return {t:'비는 가을이 되어서야 왔다.',tone:'bad'}; }}]});
+EPL('well','마른 우물',1,{scene:'mountain',text:'샘은 녹림 산채 바로 아래에 있었다. 물을 길으려면 산채를 지나야 한다.',ch:[
+  {t:'두목과 담판을 짓는다',p:()=>.35+ST('charm')*.05+(m.f.martial?m.lv*.04:0),go:ok=>{ if(ok){ epNext('well',2,1,3); return {t:'두목이 물 한 동이에 쌀 한 되로 합의했다.',tone:'good'}; } hurt(20,'녹림도의 몽둥이'); return {t:'두들겨 맞고 쫓겨났다.',tone:'bad'}; }},
+  {t:'관아에 알린다',p:()=>.4,go:ok=>{ if(ok){ epNext('well',2,1,3); return '관군이 산채를 쳤다.'; } return {t:'현령은 뇌물만 받고 움직이지 않았다.',tone:'bad'}; }}]});
+EPL('well','마른 우물',2,{scene:'village',text:'샘에서 마을까지 대나무 물길이 놓였다. 마을 잔치가 열렸다.',ch:[
+  {t:'잔치에 간다',go:()=>{ m.bond+=15; m.joy+=10; m.fame+=4; log('마을에 물길을 냈다',true); return {t:'노인들이 샘 옆에 내 이름을 새긴 비석을 세우자고 했다.',tone:'good'}; }}]});
+EPL('jade','전당포의 옥패',0,{min:16,max:60,once:1,when:()=>m.gold>=15,scene:'inn',text:'전당포 구석에 핏빛 무늬의 옥패가 굴러다닌다. 주인은 15냥이면 가져가란다.',ch:[
+  {t:'산다',go:()=>{ gold(-15); epNext('jade',1,1,3); return '손에 쥐자 이상하게 따뜻했다.'; }},
+  {t:'지나친다',go:()=>'옥패는 다음 날 팔렸다고 한다.'}]});
+EPL('jade','전당포의 옥패',1,{scene:'night',text:'붉은 옷의 사내가 찾아왔다. "그 옥패는 천마신교의 신물이오. 300냥에 넘기시오."',ch:[
+  {t:'판다',go:()=>{ gold(300); m.ak+=5; log('천마신교의 신물을 300냥에 팔았다',true); return {t:'300냥이 든 주머니가 묵직했다.',tone:'good'}; }},
+  {t:'무림맹에 넘긴다',go:()=>{ m.hy+=12; m.fame+=8; log('천마신교의 신물을 무림맹에 넘겼다',true); return {t:'맹에서 감사패가 왔다. 붉은 옷의 사내는 다시 오지 않았다.',tone:'good'}; }},
+  {t:'버티며 비밀을 캔다',p:()=>.3+ST('wit')*.05,go:ok=>{ if(ok){ epNext('jade',2,1,2); return '옥패 뒷면에 지도가 새겨져 있다는 걸 알아냈다.'; } hurt(30,'마교도의 장력'); return {t:'사내의 손바닥이 가슴에 닿았다. 옥패를 빼앗겼다.',tone:'bad'}; }}]});
+EPL('jade','전당포의 옥패',2,{scene:'cave',text:'지도가 가리킨 동굴 깊은 곳에 석함 하나가 있다.',ch:[
+  {t:'연다',go:()=>{ learn('혈옥수',22,'마공',10); m.ak+=8; log('옥패의 지도로 혈옥수를 얻었다',true); return {t:'핏빛 장법이 새겨진 옥판이었다. 손바닥이 붉게 물들었다.',tone:'bad'}; }},
+  {t:'봉인한 채 다시 묻는다',go:()=>{ m.hy+=10; m.b.st.luck=cl(ST('luck')+1,1,10); return {t:'석함을 다시 묻고 돌아섰다. 마음이 가벼웠다.',tone:'good'}; }}]});
+EPL('sib','집 나간 동생',0,{min:20,max:55,once:1,when:()=>m.sib>0,scene:'village',text:'집을 나간 동생이 사파 흑룡방에 들어갔다는 소문이 들린다.',ch:[
+  {t:'찾으러 간다',go:()=>{ epNext('sib',1,1,1); gold(-10); return '흑룡방이 있는 강가 마을까지 열흘을 걸었다.'; }},
+  {t:'제 인생이다',go:()=>{ m.bond-=6; return '어머니가 밤마다 우셨다.'; }}]});
+EPL('sib','집 나간 동생',1,{scene:'inn',text:'도박장 뒷문에서 동생을 찾았다. 팔에 흑룡 문신이 있다.',ch:[
+  {t:'집에 가자고 설득한다',p:()=>.3+ST('charm')*.05+m.bond/300,go:ok=>{ if(ok){ epNext('sib',2,1,3); return {t:'동생이 한참을 울더니 고개를 끄덕였다.',tone:'good'}; } m.bond-=5; return {t:'"네가 뭘 알아." 문이 닫혔다.',tone:'bad'}; }},
+  {t:'빚을 대신 갚아 준다',when:()=>m.gold>=60,go:()=>{ gold(-60); epNext('sib',2,1,3); return '흑룡방 부두목이 장부에서 동생 이름을 지웠다.'; }},
+  {t:'흑룡방을 친다',when:()=>m.f.martial,p:()=>fightP(35),go:ok=>{ if(ok){ m.fame+=8; epNext('sib',2,1,3); return {t:'부두목의 팔을 꺾고 동생을 데리고 나왔다.',tone:'good'}; } hurt(35,'흑룡방의 칼'); return {t:'수가 너무 많았다.',tone:'bad'}; }}]});
+EPL('sib','집 나간 동생',2,{scene:'village',text:'고향에 돌아온 동생이 혼례를 올린다. 혼례상 앞에서 나를 보고 웃는다.',ch:[
+  {t:'술잔을 받는다',go:()=>{ m.joy+=12; m.bond+=12; log('집 나간 동생을 데려와 혼례를 올려 주었다',true); return {t:'동생이 처음으로 "고마워"라고 했다.',tone:'good'}; }}]});
 function render(){
   const card=$m('mhCard'); if(!card) return;
   const playing=m&&['play','farewell','end'].includes(m.phase);

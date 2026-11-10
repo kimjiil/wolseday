@@ -3183,7 +3183,7 @@ body.is-murim::before{background:var(--m-bg)}
   <div class="mh-grid" id="mhGrid">
     <section class="mh-col">
       <div class="mh-scene">
-        <canvas id="mhScene" width="192" height="108" role="img" aria-label="도트로 그린 지금의 장면"></canvas>
+        <canvas id="mhScene" width="384" height="216" role="img" aria-label="도트로 그린 지금의 장면"></canvas>
         <div id="mhTags" aria-hidden="true"></div><div id="mhFl" aria-hidden="true"></div>
         <div id="mhHud" hidden></div>
         <div id="mhCall" class="mh-call" hidden aria-hidden="true"></div>
@@ -3369,10 +3369,13 @@ function sfx(k){ if(!SND||(m&&m.headless)) return; try{ AC=AC||new (window.Audio
 /* ==== murim:gfx-base — 도트 장면 엔진: 색, 하늘, 산, 지형 ==== */
 const RED=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const W=192,H=108,GY=86;
-const cv=$m('mhScene'), g0=cv.getContext('2d'); g0.imageSmoothingEnabled=false;
+const cv=$m('mhScene'), g0=cv.getContext('2d'); g0.imageSmoothingEnabled=false; g0.scale(2,2);   // 화면은 384×216, 좌표는 192×108 그대로 쓴다
 let cx=g0, tk=0, SC=null, FX=[], LIGHTS=[], shake=0, flashA=0, flashC='#ffffff', fadeA=0, bars=0;
 const rnd=Math.round;
-function P(x,y,w,h,c){ cx.fillStyle=c; cx.fillRect(rnd(x),rnd(y),w,h); }
+let SEQ=null, SEQN=0, SEQW=0, SEQH=0, HQ=null;
+function P(x,y,w,h,c){ cx.fillStyle=c; x=rnd(x); y=rnd(y); cx.fillRect(x,y,w,h); if(SEQ){ const n=++SEQN, x1=Math.min(SEQW,x+w), y1=Math.min(SEQH,y+h); for(let j=Math.max(0,y);j<y1;j++) for(let i=Math.max(0,x);i<x1;i++) SEQ[j*SEQW+i]=n; } }
+// 반 칸 단위로 적는 고해상도 덧그림. 스프라이트를 2배로 키운 뒤에 얹는다.
+const hq=(x,y,w,h,c)=>{ if(HQ) HQ.push([x,y,w,h,c,SEQN]); };
 function hx(c){ const n=parseInt(c.slice(1),16); return [n>>16&255,n>>8&255,n&255]; }
 const _mx=new Map();
 function mix(a,b,t){ t=rnd(t*20)/20; const k=a+b+t; let v=_mx.get(k); if(v) return v; const A=hx(a),B=hx(b); v='#'+[0,1,2].map(i=>rnd(A[i]+(B[i]-A[i])*t).toString(16).padStart(2,'0')).join(''); _mx.set(k,v); return v; }
@@ -3673,6 +3676,24 @@ function hairTones(hr){ const a=hx(hr), l=a[0]*.3+a[1]*.59+a[2]*.11, sat=Math.ma
   if(l>80) return [hr,lt(hr,.5),mix(hr,'#3a3550',.4)];
   if(sat<16) return [mix(hr,'#4c5184',.42),mix(hr,'#b4c0f6',.62),mix(hr,'#2c2a44',.3)];
   const b=lt(vivid(hr,.8),.1); return [b,mix(lt(b,.4),'#ffe2c0',.2),dk(b,.42)]; }
+/* 고해상도 덧그림: 눈, 광택. 좌표는 1칸=2픽셀, 0.5 단위. */
+function hqEye(hp,x,y,eh,kind,n,closed,iris,sk,brow){ const ink='#2a2630', il=lt(iris,.45), W='#ffffff';
+  if(closed===2){ const k=eh<4?-.5:0, a=n?[1,.5,0,.5,1]:[0,.5,1,.5,0]; a.forEach((o,i)=>hp(x+o,y+1+k+i*.5,1,.5,ink)); return; }
+  if(closed){ const y0=y+eh-1.5; hp(x,y0+.5,2,.5,ink); hp(x-.5,y0,.5,.5,ink); hp(x+2,y0,.5,.5,ink); return; }
+  if(kind==='f'){ hp(x-.5,y,3,.5,ink); hp(n?x+2.5:x-1,y-.5,.5,.5,ink); hp(x,y+.5,2,3,ink); hp(x,y+2,2,1.5,iris); hp(x+.5,y+1.5,1,1,ink); hp(x,y+1,1,1,W); hp(x+1.5,y+2.5,.5,.5,il); hp(x,y+3,.5,.5,sk); hp(x+1.5,y+3,.5,.5,sk); }
+  else if(kind==='m'){ hp(x-.5+(n?.5:0),y-.5,2,.5,brow); hp(x,y+.5,2,3,ink); hp(x,y+2.5,2,1,iris); hp(x,y+1,1,1,W); hp(x+1.5,y+2.5,.5,.5,il); hp(x,y+3,.5,.5,sk); hp(x+1.5,y+3,.5,.5,sk); hp(x,y+.5,.5,.5,sk); hp(x+1.5,y+.5,.5,.5,sk); }
+  else { hp(x,y,2,3,ink); hp(x,y+1.5,2,1.5,iris); hp(x+.5,y+1.5,1,.5,ink); hp(x,y+2.5,.5,.5,sk); hp(x+1.5,y+2.5,.5,.5,sk); hp(x,y+.5,1,1,W); hp(x+1.5,y+2,.5,.5,il); } }
+function hqGloss(hp,hy0,kid,cL,bald,hood,sym){ if(hood){ hp(-2,hy0+1,3.5,.5,cL); return; } if(bald){ hp(-3,hy0+1,2.5,.5,cL); hp(-4.5,hy0+2,1,1,cL); return; }
+  const c=sym?-.5:-1, y0=hy0+(kid?1:1.5), r=kid?3.5:4.5;
+  for(let x=c-r;x<c+r;x+=.5){ const d=Math.abs(x+.25-c), yy=y0+(d>2?.5:0)+(d>3.5?.5:0), th=.5+((rnd(x*2)&1)?.5:0)+(d<1?.5:0); if(d>.5||!sym) hp(x,yy,.5,th,cL); }
+  hp(c-2,y0-.5,1.5,.5,lt(cL,.45)); }
+function hqMouth(hp,x,y,open,smile,sk){ const c=mix(sk,'#8a3a32',.65); if(open){ hp(x-.5,y,1.5,1,'#7a2a2e'); hp(x,y+.5,1,.5,'#e88a94'); } else { hp(x,y+.5,1,.5,c); if(smile){ hp(x-.5,y,.5,.5,c); hp(x+1,y,.5,.5,c); } } }
+function hqBlush(hp,x,y,c){ hp(x,y,2,.5,c); hp(x+.5,y+.5,1,.5,c); }
+// Scale2x: 계단 진 모서리를 다듬으며 2배로 키운다
+function epxInto(s,w,h,d){ const W2=w*2;
+  for(let y=0;y<h;y++){ const r=y*w, j0=y*2*W2; for(let x=0;x<w;x++){ const i=r+x, p=s[i], A=y>0?s[i-w]:p, D=y<h-1?s[i+w]:p, C=x>0?s[i-1]:p, B=x<w-1?s[i+1]:p, j=j0+x*2;
+    if(A!==D&&C!==B){ d[j]=C===A?A:p; d[j+1]=A===B?B:p; d[j+W2]=C===D?C:p; d[j+W2+1]=D===B?B:p; } else { d[j]=p; d[j+1]=p; d[j+W2]=p; d[j+W2+1]=p; } } } }
+function epx(src){ const w=src.width, h=src.height, a=src.getContext('2d').getImageData(0,0,w,h), o=new ImageData(w*2,h*2); epxInto(new Uint32Array(a.data.buffer),w,h,new Uint32Array(o.data.buffer)); return o; }
 /* 머리: 몸의 절반을 차지하는 큰 머리, 큰 눈, 머리카락 광택. 오른쪽을 보는 반측면. */
 const HEADROWS={a:[[-3,2],[-5,4],[-6,5],[-7,6],[-7,6],[-7,6],[-7,6],[-7,6],[-7,6],[-6,6],[-5,5],[-3,4]],k:[[-3,2],[-5,4],[-6,5],[-6,5],[-6,5],[-6,5],[-6,5],[-6,5],[-5,4],[-3,3]]};
 function drawHead(L,up,hy0,closed,kid,mouth){
@@ -3692,14 +3713,19 @@ function drawHead(L,up,hy0,closed,kid,mouth){
   // 머리통
   rows.forEach((r,i)=>{ const cut=full?0:Math.max(0,i-(HH-4)); R(i,r[0]+(cut>0?cut+(HH-1-i===0?0:0):0),r[1],cap); });
   // 광택과 음영
-  if(!hood){ R(2,-4,kid?1:2,capL); R(3,-hw+1,-hw+2,capL); R(3,kid?2:3,kid?3:4,capL); R(1,-1,0,bald?capL:lt(capL,.35)); }
-  else { R(1,-2,1,capL); R(2,-4,-3,capL); }
-  if(!bald){ for(let i=4;i<HH-4+(full?2:0);i++) up(rows[i][0],hy0+i,1,1,capD); R(HH-5+(full?2:0),-hw+1,fx-1,capD); }
+  const hp=(x,y,w,h,c)=>up.h(x,y,w,h,c);
+  hqGloss(hp,hy0,kid,capL,bald,hood,0);
+  if(!bald){ for(let i=4;i<HH-4+(full?2:0);i++) up(rows[i][0],hy0+i,1,1,capD); R(HH-5+(full?2:0),-hw+1,fx-1,capD); if(!hood){ hp(-hw+1.5,hy0+4.5,.5,HH-8.5,capD); hp(-hw+3,hy0+5,.5,HH-9.5,capD); hp(-hw+2,hy0+4,.5,HH-9,capL); } }
   // 얼굴
   for(let i=f0+1;i<HH;i++){ if(hood&&(i<ey-1||i>=my)) continue; R(i,Math.max(fx,rows[i][0]),Math.min(rows[i][1],i>=my-1?99:fr),sk); }
   if(bald){ R(f0,fx,fr,sk); }
   else if(!hood){ const m=kid?0:1; up(fx,hy0+f0+1,2,1,hr); up(m,hy0+f0+1,2,1,hr); up(fr-1,hy0+f0+1,2,1,hr); up(fx,hy0+f0+2,1,fem?eh+1:1,hr); if(fem) up(fr,hy0+f0+2,1,eh-1,hr); R(f0+1,fx+2,m-1,mix(sk,skD,.55)); R(f0+1,m+2,fr-2,mix(sk,skD,.55)); }
   if(bald&&!kid){ const d=mix(sk,'#a0563c',.5); up(0,hy0+2,1,1,d); up(2,hy0+2,1,1,d); up(1,hy0+1,1,1,d); }
+  if(!bald&&!hood){ const m=kid?0:1; hp(fx+.5,hy0+f0+2,1,.5,hr); hp(m+.5,hy0+f0+2,1,.5,hr); hp(fr-.5,hy0+f0+2,1,.5,hr); hp(m+1,hy0+f0+.5,.5,1.5,hrD); hp(fx+1,hy0+f0+.5,.5,1.5,hrD); }
+  // 눈, 볼, 입 (고해상도)
+  { const iris=L.eye||(L.ol&&L.ol!=='#22202a'?'#e8452e':mix(vivid(L.robe,.9),'#2c2a44',.42)), kind=kid?'k':fem?'f':'m', brow=mix(hr,ink,.45);
+    [ex0,ex1].forEach((x,n)=>hqEye(hp,x,hy0+ey,eh,kind,n,closed,iris,sk,brow));
+    if(!hood){ const bl=mix(sk,'#f2606e',fem||kid||L.blush?.55:.22), mx=kid?1:2; hqBlush(hp,ex0-1.5,hy0+my-.5,bl); hqBlush(hp,ex1+1,hy0+my-.5,bl); hqMouth(hp,mx,hy0+my,mouth,fem||kid,sk); } }
   // 머리 장식
   if(hs==='top'){ up(-2,hy0-3,4,3,hr); up(-1,hy0-4,2,1,hr); up(-1,hy0-3,2,1,hrL); up(-2,hy0-1,4,1,L.trim); up(1,hy0-1,1,1,lt(L.trim,.3)); }
   if(hs==='pony'){ up(-hw+1,hy0+1,2,2,L.trim); up(-hw+1,hy0+1,1,1,lt(L.trim,.35)); }
@@ -3712,19 +3738,7 @@ function drawHead(L,up,hy0,closed,kid,mouth){
   if(hs==='crown'){ up(-2,hy0-3,4,3,hr); up(-3,hy0-1,6,1,PAL.gold); up(-1,hy0-5,2,2,PAL.gold); up(-3,hy0-2,1,1,PAL.gold); up(2,hy0-2,1,1,PAL.gold); up(0,hy0-4,1,1,'#e0503a'); }
   if(hs==='granny'){ R(2,rows[2][0],rows[2][1],'#9a86b0'); R(3,rows[3][0],rows[3][1],'#9a86b0'); R(4,rows[4][0],fx-1,'#7a6a90'); R(2,-3,0,'#b8a6cc'); }
   if(hs==='messy'){ up(-hw-1,hy0+3,1,2,hr); up(-hw-1,hy0+7,1,2,hr); up(-5,hy0,1,1,hr); up(-2,hy0-1,2,1,hr); up(2,hy0-1,1,1,hr); up(4,hy0,1,1,hr); up(hw,hy0+3,1,2,hr); up(-hw,hy0+HH-2,2,2,hr); }
-  // 눈: 세로로 긴 눈동자에 하이라이트 한 점
-  const iris=L.eye||(L.ol&&L.ol!=='#22202a'?'#e8452e':mix(vivid(L.robe,.9),'#2c2a44',.42)), irisL=lt(iris,.45);
-  [ex0,ex1].forEach((x,n)=>{
-    if(closed===2){ const a=n?1:0, b=n?0:1; up(x+a,hy0+ey+1,1,1,ink); up(x+b,hy0+ey+2,1,1,ink); up(x+a,hy0+ey+3-(kid?1:0),1,1,ink); }
-    else if(closed){ up(x,hy0+ey+eh-2,2,1,ink); up(n?x+1:x,hy0+ey+eh-1,1,1,ink); }
-    else if(kid){ up(x,hy0+ey,2,3,ink); up(x,hy0+ey,1,1,'#ffffff'); up(x+1,hy0+ey+2,1,1,irisL); up(x,hy0+ey+2,1,1,iris); }
-    else if(!fem){ up(x,hy0+ey+1,2,3,ink); up(x,hy0+ey+1,1,1,'#ffffff'); up(x,hy0+ey+3,1,1,iris); up(x+1,hy0+ey+3,1,1,irisL); }
-    else { up(x,hy0+ey,2,4,ink); up(x,hy0+ey+1,1,1,'#ffffff'); up(x+1,hy0+ey+2,1,1,iris); up(x,hy0+ey+3,1,1,iris); up(x+1,hy0+ey+3,1,1,irisL); up(n?x+2:x-1,hy0+ey,1,1,ink); }
-  });
-  // 볼, 입
-  const bl=mix(sk,'#f2606e',fem||kid||L.blush?.5:.2), mx=kid?1:2;
-  if(!hood){ up(ex0-1,hy0+my,2,1,bl); up(ex1+1,hy0+my,2,1,bl);
-    if(mouth){ up(mx-1,hy0+my,2,1,'#7a2a2e'); up(mx-1,hy0+my+1,2,1,'#e07a86'); } else up(mx,hy0+my,1,1,mix(sk,'#8a3a32',.6)); }
+  const mx=kid?1:2;
   if(L.extra==='scar'){ up(ex1+2,hy0+ey,1,2,'#c0392b'); up(ex1+1,hy0+ey+eh,1,1,'#c0392b'); up(ex1+2,hy0+ey+eh-1,1,1,'#c0392b'); }
   if(L.extra==='mask'){ for(let i=my-1;i<HH;i++) R(i,Math.max(fx,rows[i][0]),rows[i][1],'#2b2b36'); R(my-1,fx+1,fx+3,'#474759'); }
   const bt=hairTones(L.beardC||L.hairC), bc=bt[0], bd=bt[2];
@@ -3762,6 +3776,8 @@ function drawHeld(L,pose,f,up,hand){
   if(w==='staff'||w==='stick'){ const c=PAL.wood, n=w==='staff'?17:9;
     if(dir==='up') for(let i=-4;i<n-4;i++) pix(hx0+1,hy-i,c); else if(dir==='fwd') for(let i=-3;i<n-3;i++) pix(hx0+i,hy,c); else if(dir==='dn') for(let i=0;i<n-5;i++) pix(hx0+i,hy+rnd(i*.7),c); else for(let i=0;i<n-5;i++) pix(hx0-rnd(i*.5),hy-i,c); return; }
   const saber=w==='saber', len=saber?9:10;
+  if(dir==='up'){ up.h(hx0,hy-len+1,.5,len-1.5,'#ffffff'); }
+  if(dir==='fwd'){ up.h(hx0+1,hy,len-2.5,.5,'#ffffff'); }
   if(dir==='up'){ pix(hx0,hy+2,'#3a3440'); up(hx0-1,hy,3,1,PAL.gold); for(let i=1;i<=len;i++){ const sx=i>6?1:0; pix(hx0+sx,hy-i,i%3?wc:steelD); if(saber&&i>2) pix(hx0+1+sx,hy-i,steelD); } }
   else if(dir==='fwd'){ pix(hx0-2,hy,'#3a3440'); up(hx0-1,hy-1,1,3,PAL.gold); for(let i=0;i<len;i++){ pix(hx0+i,hy,i%3?wc:steelD); if(saber&&i>1&&i<len-1) pix(hx0+i,hy+1,steelD); } }
   else if(dir==='dn'){ up(hx0-1,hy-1,2,1,PAL.gold); for(let i=0;i<len;i++){ const yy=hy+rnd(i*.75); pix(hx0+i,yy,i%3?wc:steelD); if(saber&&i>1) pix(hx0+i,yy+1,steelD); } }
@@ -3789,7 +3805,7 @@ function drawBody(L,pose,f){
   if(pose==='cry'||pose==='sleep'||pose==='down'||pose==='lie'||pose==='dead') closed=1;
   if(L.eyes==='closed') closed=1;
   const yB=-(3+legsH)+sink, yT=yB-torsoH, hy0=yT-HH;
-  const up=(x,y,w,h,c)=>q(x+dx,y+dy,w,h,c);
+  const up=(x,y,w,h,c)=>q(x+dx,y+dy,w,h,c), hu=(x,y,w,h,c)=>hq(OX+x+dx,OY+y+dy,w,h,c), hq0=(x,y,w,h,c)=>hq(OX+x,OY+y,w,h,c);
   const xb=-tw-bw, xf=tw-1+bw, XB=xb-2, XF=xf+1;
   const wpn=L.weapon, armed=pose==='guard'||pose==='atk'||pose==='atk2';
   const vest=L.extra==='vest', sl=vest?skin:robe, slD=vest?skinD:robeD, slL=vest?lt(skin,.2):robeL;
@@ -3809,8 +3825,9 @@ function drawBody(L,pose,f){
     if(!gown){ q(fb+1,-4,2,2,pants); q(fa,-4,2,2,pants); q(fa+1,-4,1,2,dk(pants,.14)); }
     q(fb,-2-lb,3,2-lb,shoe); q(fa,-2-la,3,2-la,shoe); q(fb,-2-lb,1,1,lt(shoe,.25)); q(fa,-2-la,1,1,lt(shoe,.25));
     for(let y=top;y<=hem;y++){ const t=hem>top?(y-top)/(hem-top):1, a=rnd(xb+(lx-xb)*t), b=rnd(xf+(rx-xf)*t); q(a,y,b-a+1,1,robe); q(b,y,1,1,robeD); if(y===hem) q(a,y,b-a+1,1,robeD); }
-    if(gown){ q(lx+1,hem-1,1,1,robeL); q(-1,hem-2,1,2,robeD); q(2,hem-1,1,1,robeD); }
-    else if(stance>0) q(-1,hem-1,1,2,robeD);
+    if(gown){ q(lx+1,hem-1,1,1,robeL); q(-1,hem-2,1,2,robeD); q(2,hem-1,1,1,robeD); hq0(xb+1,top+1,.5,hem-top-1,robeD); hq0(xf-1.5,top+.5,.5,hem-top-.5,robeD); hq0(lx,hem+.5,rx-lx+1,.5,dk(robeD,.2)); }
+    else { if(stance>0) q(-1,hem-1,1,2,robeD); hq0(xb+1.5,top+.5,.5,hem-top,robeD); hq0(xf-1.5,top+.5,.5,hem-top,robeD); }
+    if(!lb){ hq0(fb,-.5,3,.5,dk(shoe,.4)); hq0(fb+.5,-2,1.5,.5,lt(shoe,.3)); } if(!la){ hq0(fa,-.5,3,.5,dk(shoe,.4)); hq0(fa+.5,-2,1.5,.5,lt(shoe,.3)); }
   }
   // 뒤쪽 팔
   switch(pose){
@@ -3819,16 +3836,17 @@ function drawBody(L,pose,f){
     case 'cheer': up(XB,yT-1,2,2,slD); up(XB-1,yT-3,2,2,slD); up(XB-2,yT-5,2,2,skinD); break;
     case 'guard': case 'atk2': case 'tool': up(XB,yT+1,2,al-1,slD); up(XB+1,yT+al,2,1,skinD); break;
     case 'cast': case 'bow': break;
-    default: { const sw=pose==='walk'?(f===1?-1:f===3?1:0):0; up(XB+sw,yT,2,al,slD); up(XB+sw,yT+al,2,1,skinD); }
+    default: { const sw=pose==='walk'?(f===1?-1:f===3?1:0):0; up(XB+sw,yT,2,al,slD); up(XB+sw,yT+al,2,1,skinD); if(!vest) hu(XB+sw,yT+al-.5,2,.5,dk(slD,.25)); }
   }
   // 몸통
   up(xb,yT,xf-xb+1,torsoH,robe); up(xf,yT,1,torsoH,robeD); up(xb,yT,2,1,robeL); up(xb,yT+1,1,1,robeL);
   up(0,yT,2,1,skin); up(-1,yT,1,1,trim); up(2,yT,1,1,trim); up(0,yT+1,2,1,trim); up(0,yT+2,1,1,trim); if(!kid) up(-1,yT+3,1,1,trim);
   if(L.extra==='patch'){ up(xb+1,yT+2,2,2,dk(robe,.4)); up(xf-1,yB+2,2,2,dk(robe,.4)); }
   up(xb,yB,xf-xb+1,1,trim); up(xf,yB,1,1,dk(trim,.25)); up(1,yB,1,1,L.sash||lt(trim,.35)); if(!sit&&!kneel) up(1,yB+1,1,2,L.sash||trim);
+  hu(xb,yB-.5,xf-xb+1,.5,robeD); hu(xb,yB,xf-xb,.5,lt(trim,.3)); hu(xb+.5,yT+1.5,.5,torsoH-2.5,robeL); hu(1,yB+2.5,.5,.5,L.sash?'#f4d070':lt(trim,.4));
   if(L.extra==='apron'){ up(xb+1,yT+2,xf-xb-1,torsoH-2,'#efe8d2'); if(!sit&&!kneel) up(xb+1,yB+1,xf-xb-1,2,'#efe8d2'); up(xb+1,yB,xf-xb-1,1,'#cfc6aa'); }
   // 머리
-  drawHead(L,(x,y,w,h,c)=>up(x+hdx,y+hdy,w,h,c),hy0,closed,kid,pose==='cheer'||pose==='hit'||pose==='cry'?1:0);
+  { const uh=(x,y,w,h,c)=>up(x+hdx,y+hdy,w,h,c); uh.h=(x,y,w,h,c)=>hu(x+hdx,y+hdy,w,h,c); drawHead(L,uh,hy0,closed,kid,pose==='cheer'||pose==='hit'||pose==='cry'?1:0); }
 if(slung){ const sw=pose==='walk'?(f===1?-1:f===3?1:0):0, c1=wpn==='sword'?'#41405a':'#7a5236', c2=dk(c1,.3), x0=XB+sw, y0=yT+al-3;
     up(x0,y0-1,1,2,'#2e2a36'); up(x0-1,y0+1,3,1,PAL.gold); for(let i=0;i<(kid?5:8);i++){ const xx=x0-rnd(i*.45); up(xx,y0+2+i,1,1,c1); up(xx-1,y0+2+i,1,1,wpn==='saber'?c1:c2); if(wpn==='saber'&&i>1&&i<6) up(xx-2,y0+2+i,1,1,c2); } up(x0-rnd((kid?5:8)*.45),y0+2+(kid?5:8),1,1,PAL.gold); }
   // 앞쪽 팔
@@ -3847,11 +3865,103 @@ if(slung){ const sw=pose==='walk'?(f===1?-1:f===3?1:0):0, c1=wpn==='sword'?'#414
     case 'tool': up(XF,yT+1,3,2,sl); up(XF+3,yT+1,2,2,skin); hand=[XF+3,yT,'tool']; break;
     case 'drink': up(XF,yT-1,2,3,sl); up(XF-1,yT-2,2,1,skin); up(XF-1,yT-5,3,3,'#c9a25a'); up(XF,yT-6,1,1,PAL.cloth); up(XF-1,yT-5,1,1,'#e2c078'); break;
     case 'bow': up(xf-1,yT+2,4,2,slD); up(XF,yT+1,3,2,sl); up(XF+3,yT+1,2,3,skin); break;
-    default: { const sw=pose==='walk'?(f===1?1:f===3?-1:0):0; up(XF+sw,yT,2,al,sl); up(XF+sw,yT,1,1,slL); up(XF+sw,yT+al,2,1,skin); }
+    default: { const sw=pose==='walk'?(f===1?1:f===3?-1:0):0; up(XF+sw,yT,2,al,sl); up(XF+sw,yT,1,1,slL); up(XF+sw,yT+al,2,1,skin); if(!vest){ hu(XF+sw,yT+al-.5,2,.5,robeD); hu(XF+sw+1.5,yT+1,.5,al-1.5,robeD); } hu(XF+sw,yT+al+.5,2,.5,skinD); }
   }
   if(wpn==='glove'&&pose==='guard'){ up(XF+3,yT,2,3,steel); }
-  if(hand) drawHeld(L,pose,f,up,hand);
+  if(hand){ up.h=hu; drawHeld(L,pose,f,up,hand); }
   if(L.extra==='umbrella'){ up(XF+2,hy0-5,1,yT-hy0+9,PAL.woodD); for(let j=0;j<4;j++) up(-3-j*3,hy0-9+j,8+j*6,1,j%2?'#efe0b4':'#d8bc78'); up(XF+2,hy0-10,1,1,PAL.woodD); up(-12,hy0-5,26,1,'#b89a5a'); }
+}
+/* ---- 맵에서 쓰는 앞모습(d)·뒷모습(u). 옆모습은 위의 그림을 그대로 쓴다. ---- */
+const HEADSYM={a:[[-3,2],[-5,4],[-6,5],[-7,6],[-7,6],[-7,6],[-7,6],[-7,6],[-7,6],[-6,5],[-5,4],[-3,2]],k:[[-3,2],[-5,4],[-6,5],[-6,5],[-6,5],[-6,5],[-6,5],[-6,5],[-5,4],[-3,2]]};
+function drawHeadTop(L,up,hy0,kid,back){
+  const sk=L.skin, skD=mix(sk,'#c8785a',.32), ink='#2a2630', hs=L.hair, fem=L.sex==='f';
+  const ht=hairTones(L.hairC), hr=ht[0], hrL=ht[1], hrD=ht[2];
+  const rows=kid?HEADSYM.k:HEADSYM.a, HH=rows.length, hw=kid?6:7, R=(r,a,b,c)=>{ if(b>=a) up(a,hy0+r,b-a+1,1,c); };
+  const bald=hs==='bald', hood=hs==='hood', cap=hood?'#2b2b36':bald?sk:hr, capL=hood?'#474759':bald?lt(sk,.4):hrL, capD=hood?'#1a1a22':bald?skD:hrD;
+  const f0=kid?3:4, ey=f0+2, eh=kid?3:4, my=ey+eh, fl=kid?-4:-5, fr=kid?3:4, long=hs==='long'||(fem&&hs!=='bun'&&hs!=='buns'&&hs!=='granny'&&!bald&&!hood);
+  // 뒤로 늘어진 머리 (앞에서는 양옆으로 보인다)
+  if(!back){
+    if(hs==='long'){ up(-hw-1,hy0+4,3,HH+3,hr); up(hw-2,hy0+4,3,HH+3,hr); up(-hw-1,hy0+HH+6,2,1,hrD); up(hw-1,hy0+HH+6,2,1,hrD); up(-hw-1,hy0+6,1,HH,hrD); up(hw,hy0+6,1,HH,hrD); }
+    if(hs==='pony'){ up(hw-2,hy0+1,3,3,hr); up(hw,hy0+3,2,7,hr); up(hw,hy0+10,1,2,hrD); up(hw+1,hy0+4,1,5,hrD); }
+    if(hs==='band'){ up(hw-1,hy0+4,3,1,PAL.cloth); up(hw+1,hy0+5,1,4,PAL.cloth); up(hw,hy0+5,1,2,PAL.redD); }
+    if(hs==='bun'||hs==='granny'){ up(-2,hy0-2,4,3,hr); up(-1,hy0-2,2,1,hrL); }
+  }
+  rows.forEach((r,i)=>R(i,r[0],r[1],cap));
+  const hp=(x,y,w,h,c)=>up.h(x,y,w,h,c);
+  hqGloss(hp,hy0,kid,capL,bald,hood,1);
+  if(back){
+    if(!bald){ for(let i=4;i<HH-2;i++){ up(rows[i][0],hy0+i,1,1,capD); up(rows[i][1],hy0+i,1,1,capD); } R(HH-2,rows[HH-2][0],rows[HH-2][1],capD); R(HH-1,rows[HH-1][0],rows[HH-1][1],capD); if(!long&&!hood) R(HH-1,-1,0,sk); }
+    else { R(HH-1,-2,1,skD); }
+    if(!bald&&!hood){ hp(-3,hy0+4.5,.5,HH-7,capD); hp(2.5,hy0+4.5,.5,HH-7,capD); hp(-.5,hy0+5,.5,HH-8,capL); }
+    if(hs==='long'||long){ up(-hw+1,hy0+HH-1,2*hw-2,6,hr); up(-hw+2,hy0+HH+5,2*hw-4,2,hr); up(-hw+1,hy0+HH,1,5,hrD); up(hw-2,hy0+HH,1,5,hrD); up(-2,hy0+HH,1,6,hrL); up(2,hy0+HH+1,1,5,hrD); }
+    if(hs==='pony'){ up(-2,hy0+2,4,HH+2,hr); up(-1,hy0+HH+4,2,2,hr); up(-2,hy0+4,1,HH-1,hrD); up(0,hy0+4,1,HH-2,hrL); up(-2,hy0+1,4,2,L.trim); up(-2,hy0+1,2,1,lt(L.trim,.35)); }
+    if(hs==='bun'||hs==='granny'){ up(-3,hy0+2,6,5,hr); up(-2,hy0+2,3,1,hrL); up(-3,hy0+6,6,1,hrD); if(hs==='bun'){ up(-5,hy0+3,10,1,PAL.gold); up(5,hy0+3,1,1,'#e0503a'); } }
+    if(hs==='band'){ R(3,rows[3][0],rows[3][1],PAL.cloth); up(-1,hy0+4,2,2,PAL.cloth); up(-2,hy0+6,1,4,PAL.cloth); up(1,hy0+6,1,5,PAL.redD); }
+  } else {
+    if(!bald){ for(let i=4;i<HH-3;i++){ up(rows[i][0],hy0+i,1,1,capD); up(rows[i][1],hy0+i,1,1,capD); } }
+    // 얼굴
+    for(let i=f0+1;i<HH;i++){ if(hood&&(i<ey-1||i>=my)) continue; R(i,Math.max(fl,rows[i][0]+(i>=HH-2?0:0)),Math.min(fr,rows[i][1]),sk); }
+    if(bald) R(f0,fl,fr,sk);
+    else if(!hood){ up(fl,hy0+f0+1,2,1,hr); up(-1,hy0+f0+1,2,1,hr); up(fr-1,hy0+f0+1,2,1,hr); R(f0+1,fl+2,-2,mix(sk,skD,.55)); R(f0+1,1,fr-2,mix(sk,skD,.55));
+      up(fl,hy0+f0+2,1,fem?eh+1:1,hr); up(fr,hy0+f0+2,1,fem?eh+1:1,hr); if(!fem){ R(HH-2,rows[HH-2][0],fl,sk); R(HH-2,fr,rows[HH-2][1],sk); } }
+    if(bald&&!kid){ const d=mix(sk,'#a0563c',.5); up(-2,hy0+2,1,1,d); up(1,hy0+2,1,1,d); up(-1,hy0+1,2,1,d); }
+    const iris=L.eye||(L.ol&&L.ol!=='#22202a'?'#e8452e':mix(vivid(L.robe,.9),'#2c2a44',.42)), irisL=lt(iris,.45), closed=L.eyes==='closed';
+    if(!bald&&!hood){ hp(fl+.5,hy0+f0+2,1,.5,hr); hp(-.5,hy0+f0+2,1,.5,hr); hp(fr-.5,hy0+f0+2,1,.5,hr); hp(-1.5,hy0+f0+.5,.5,1.5,hrD); hp(1,hy0+f0+.5,.5,1.5,hrD); }
+    { const kind=kid?'k':fem?'f':'m', brow=mix(hr,ink,.45); [-3,1].forEach((x,n)=>hqEye(hp,x,hy0+ey,eh,kind,n,closed?1:0,iris,sk,brow));
+      if(!hood){ const bl=mix(sk,'#f2606e',fem||kid||L.blush?.55:.22); hqBlush(hp,fl,hy0+my-.5,bl); hqBlush(hp,fr-1,hy0+my-.5,bl); hqMouth(hp,-1,hy0+my,0,fem||kid,sk); } }
+    if(L.extra==='scar'){ up(3,hy0+ey,1,3,'#c0392b'); up(2,hy0+ey+eh,1,1,'#c0392b'); }
+    if(L.extra==='mask'){ for(let i=my-1;i<HH;i++) R(i,Math.max(fl,rows[i][0]),Math.min(fr,rows[i][1]),'#2b2b36'); }
+    const bt=hairTones(L.beardC||L.hairC), bc=bt[0], bd=bt[2];
+    if(L.beard==='short'&&!kid){ up(-3,hy0+my,6,1,bc); up(-2,hy0+my+1,4,1,bc); up(-1,hy0+my,2,1,mix(sk,'#8a3a32',.5)); }
+    if(L.beard==='long'&&!kid){ up(-3,hy0+my,6,1,bc); up(-3,hy0+my+1,6,1,bc); up(-2,hy0+my+2,4,3,bc); up(-1,hy0+my+5,2,2,bc); up(-2,hy0+my+2,1,3,bd); up(-1,hy0+my,2,1,mix(sk,'#8a3a32',.5)); }
+  }
+  // 머리 장식 (앞뒤 공통)
+  if(hs==='top'){ up(-2,hy0-3,4,3,hr); up(-1,hy0-4,2,1,hr); up(-1,hy0-3,2,1,hrL); up(-2,hy0-1,4,1,L.trim); }
+  if(hs==='bun'&&!back){ up(-4,hy0-1,8,1,PAL.gold); up(4,hy0-1,1,1,'#e0503a'); }
+  if(hs==='buns'){ up(-hw,hy0-2,4,4,hr); up(hw-4,hy0-2,4,4,hr); up(-hw+1,hy0-2,2,1,hrL); up(hw-3,hy0-2,2,1,hrL); up(-hw+1,hy0+2,3,1,PAL.cloth); up(hw-4,hy0+2,3,1,PAL.cloth); }
+  if(hs==='tuft'){ up(-2,hy0-2,3,2,hr); up(-1,hy0-3,2,1,hr); up(-2,hy0-2,1,1,hrL); up(-2,hy0,3,1,PAL.cloth); }
+  if(hs==='band'&&!back){ R(3,rows[3][0],rows[3][1],PAL.cloth); R(3,-1,2,lt(PAL.cloth,.3)); }
+  if(hs==='hat'){ up(-3,hy0-4,5,1,'#b89a5a'); up(-6,hy0-3,11,1,'#dcc488'); up(-9,hy0-2,17,1,'#dcc488'); up(-11,hy0-1,21,1,'#d2b878'); up(-12,hy0,23,1,'#b89a5a'); up(-11,hy0+1,21,1,'#8f7640'); up(-5,hy0-3,4,1,'#f0e0aa'); }
+  if(hs==='cap'){ up(-hw+1,hy0-1,2*hw-2,4,ink); up(-hw+3,hy0-4,2*hw-6,3,ink); up(-hw-3,hy0+1,4,1,ink); up(hw-2,hy0+1,4,1,ink); up(-hw+4,hy0-3,3,1,'#55506a'); }
+  if(hs==='crown'){ up(-2,hy0-3,4,3,hr); up(-3,hy0-1,6,1,PAL.gold); up(-1,hy0-5,2,2,PAL.gold); up(0,hy0-4,1,1,'#e0503a'); }
+  if(hs==='granny'){ R(2,rows[2][0],rows[2][1],'#9a86b0'); R(3,rows[3][0],rows[3][1],'#9a86b0'); R(2,-3,0,'#b8a6cc'); }
+  if(hs==='messy'){ up(-hw-1,hy0+3,1,2,hr); up(hw,hy0+3,1,2,hr); up(-5,hy0,1,1,hr); up(-2,hy0-1,2,1,hr); up(2,hy0-1,1,1,hr); up(4,hy0,1,1,hr); }
+}
+function drawBodyTop(L,dir,pose,f){
+  const q=(x,y,w,h,c)=>P(OX+x,OY+y,w,h,c), back=dir==='u';
+  const kid=L.size==='kid', bw=L.size==='big'?1:0, gown=L.sex==='f'&&!kid;
+  const robe=vivid(L.robe), robeD=dk(robe,.24), robeL=lt(robe,.2), trim=L.trim, skin=L.skin, skinD=dk(skin,.14);
+  const shoe=L.shoe||'#3b2f33', pants=L.pants||mix(robe,'#f1ead8',.6);
+  const HH=kid?10:12, tw=kid?3:4, torsoH=kid?3:5, legsH=kid?3:4, al=kid?2:4, walk=pose==='walk';
+  const dy=(pose==='idle'&&f===1)||(walk&&(f===1||f===3))?1:0, la=walk&&f===1?1:0, lb=walk&&f===3?1:0;
+  const yB=-(3+legsH), yT=yB-torsoH, hy0=yT-HH, xb=-tw-bw, xf=tw-1+bw;
+  const up=(x,y,w,h,c)=>q(x,y+dy,w,h,c), vest=L.extra==='vest', sl=vest?skin:robe, slD=vest?skinD:robeD, wpn=L.weapon;
+  const hu=(x,y,w,h,c)=>hq(OX+x,OY+y+dy,w,h,c), hq0=(x,y,w,h,c)=>hq(OX+x,OY+y,w,h,c); up.h=hu;
+  if(back&&L.extra==='pack'){ /* 뒤에서 그림 */ }
+  if(!back&&(wpn==='sword'||wpn==='saber')){ for(let i=0;i<6;i++) up(xb-1-rnd(i*.5),yB-1+i,1,1,wpn==='sword'?'#41405a':'#7a5236'); }
+  if(wpn==='staff') for(let y=hy0+3;y<0;y++) q(back?xb-3:xf+3,y,1,1,y%5?PAL.wood:PAL.woodD);
+  // 다리
+  const hem=gown?-2:-4;
+  if(!gown){ q(-3,-4,2,2,pants); q(1,-4,2,2,pants); }
+  q(-3,-2-la,2,2-la,shoe); q(1,-2-lb,2,2-lb,shoe);
+  for(let y=yB+1+dy;y<=hem;y++){ const t=hem>yB+1?(y-yB-1)/(hem-yB-1):1, e=gown?rnd(t):0; q(xb-e,y,xf-xb+1+2*e,1,y===hem?robeD:robe); q(xf+e,y,1,1,robeD); }
+  hq0(xb+1.5,yB+1.5+dy,.5,hem-yB-1-dy,robeD); hq0(xf-1.5,yB+1.5+dy,.5,hem-yB-1-dy,robeD); if(!la){ hq0(-3,-.5,2,.5,dk(shoe,.4)); hq0(-3,-2,1.5,.5,lt(shoe,.3)); } if(!lb){ hq0(1,-.5,2,.5,dk(shoe,.4)); hq0(1,-2,1.5,.5,lt(shoe,.3)); }
+  // 팔
+  const sa=walk?(f===1?1:f===3?-1:0):0;
+  up(xb-2,yT,2,al+sa,slD); up(xb-2,yT+al+sa,2,1,skinD); up(xf+1,yT,2,al-sa,sl); up(xf+1,yT+al-sa,2,1,skin);
+  if(!vest){ hu(xb-2,yT+al+sa-.5,2,.5,dk(slD,.25)); hu(xf+1,yT+al-sa-.5,2,.5,robeD); }
+  // 몸통
+  up(xb,yT,xf-xb+1,torsoH,robe); up(xf,yT,1,torsoH,robeD); up(xb,yT,2,1,robeL);
+  if(back){ up(-1,yT,2,1,trim); }
+  else { up(-1,yT,2,1,skin); up(-2,yT,1,1,trim); up(1,yT,1,1,trim); up(-1,yT+1,2,1,trim); up(0,yT+2,1,1,trim); if(!kid) up(1,yT+3,1,1,trim); }
+  if(L.extra==='patch') up(xb+1,yT+2,2,2,dk(robe,.4));
+  up(xb,yB,xf-xb+1,1,trim); up(xf,yB,1,1,dk(trim,.25)); if(!back){ up(-1,yB,1,1,L.sash||lt(trim,.35)); up(-1,yB+1,1,2,L.sash||trim); }
+  hu(xb,yB-.5,xf-xb+1,.5,robeD); hu(xb,yB,xf-xb,.5,lt(trim,.3));
+  if(L.extra==='apron'&&!back){ up(xb+1,yT+2,xf-xb-1,torsoH-2,'#efe8d2'); up(xb+1,yB+1,xf-xb-1,2,'#efe8d2'); up(xb+1,yB,xf-xb-1,1,'#cfc6aa'); }
+  if(back&&(wpn==='sword'||wpn==='saber')){ const c1=wpn==='sword'?'#41405a':'#7a5236'; for(let i=0;i<9;i++){ up(xf-i,yT-1+i,1,1,c1); up(xf-i-1,yT-1+i,1,1,dk(c1,.3)); } }
+  if(back&&L.extra==='pack'){ up(-4,yT,8,6,'#8a6a4a'); up(-4,yT,8,1,'#b08a5e'); up(-4,yT+5,8,1,'#6a4e36'); up(-1,yT+2,2,1,'#e9d9b0'); }
+  drawHeadTop(L,up,hy0,kid,back);
+  if(back&&(wpn==='sword'||wpn==='saber')){ up(xf+1,yT-3,2,2,wpn==='sword'?'#4a4654':'#7a5a3e'); up(xf,yT-2,1,2,PAL.gold); }
 }
 function drawAnimal(L,pose,f){ const q=(x,y,w,h,c)=>P(OX+x,OY+y,w,h,c), a=L.animal, ink='#2a2630';
   if(a==='tiger'||a==='cub'){ const o='#f09a34', od=dk(o,.22), ol=lt(o,.22), wh='#fff4e0', pk='#e0808e', lie=pose==='sit'||pose==='down', s=pose==='walk'&&f%2?1:0, t=f?1:0;
@@ -3896,20 +4006,30 @@ function drawAnimal(L,pose,f){ const q=(x,y,w,h,c)=>P(OX+x,OY+y,w,h,c), a=L.anim
 function outline(c,col){ const k=c.getContext('2d'), w=c.width, h=c.height, im=k.getImageData(0,0,w,h), d=im.data, mk=[];
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=(y*w+x)*4; if(d[i+3]) continue; if((x>0&&d[i-1])||(x<w-1&&d[i+7])||(y>0&&d[i-w*4+3])||(y<h-1&&d[i+w*4+3])) mk.push(i); }
   const v=hx(col); for(const i of mk){ d[i]=v[0]; d[i+1]=v[1]; d[i+2]=v[2]; d[i+3]=255; } k.putImageData(im,0,0); }
-function charSprite(L,pose,f){
-  f=f|0; const key=L.key+'/'+pose+'/'+f; let c=SPR.get(key); if(c) return c;
-  c=document.createElement('canvas'); c.width=SW; c.height=SH; const k=c.getContext('2d'), keep=cx; cx=k;
-  const lying=pose==='down'||pose==='lie'||pose==='dead';
-  if(lying&&!L.animal){ k.save(); k.translate(OX+12,OY-8); k.rotate(-Math.PI/2); k.translate(-OX,-OY); drawBody(L,pose,0); k.restore(); }
-  else if(L.animal) drawAnimal(L,pose,f); else drawBody(L,pose,f);
-  cx=keep; outline(c,L.ol||'#22202a');
-  if(SPR.size>1200) SPR.clear();
+function charSprite(L,pose,f,dir){
+  f=f|0; if(dir&&(L.animal||(dir!=='d'&&dir!=='u'))) dir=''; if(dir&&pose!=='walk') pose='idle';
+  const key=L.key+'/'+pose+'/'+f+(dir?'/'+dir:''); let c=SPR.get(key); if(c) return c;
+  const lying=!L.animal&&(pose==='down'||pose==='lie'||pose==='dead');
+  const c1=document.createElement('canvas'); c1.width=SW; c1.height=SH; const keep=cx; cx=c1.getContext('2d');
+  SEQ=new Uint16Array(SW*SH); SEQN=0; SEQW=SW; SEQH=SH; HQ=[];
+  try{ if(dir) drawBodyTop(L,dir,pose,f); else if(L.animal) drawAnimal(L,pose,f); else drawBody(L,pose,lying?0:f); }
+  finally{ cx=keep; }
+  const ops=HQ, seq=SEQ; HQ=null; SEQ=null;
+  // 2배로 키우고 고해상도 덧그림을 얹는다. 나중에 그린 1배 그림에 가려진 칸은 건너뛴다.
+  const im=epx(c1), d=new Uint32Array(im.data.buffer), W2=SW*2, H2=SH*2;
+  for(const o of ops){ const v=hx(o[4]), col=(255<<24|v[2]<<16|v[1]<<8|v[0])>>>0, x0=Math.max(0,rnd(o[0]*2)), y0=Math.max(0,rnd(o[1]*2)), x1=Math.min(W2,rnd((o[0]+o[2])*2)), y1=Math.min(H2,rnd((o[1]+o[3])*2));
+    for(let y=y0;y<y1;y++) for(let x=x0;x<x1;x++){ const j=(y>>1)*SW+(x>>1); if(seq[j]<=o[5]&&seq[j]>0) d[y*W2+x]=col; } }
+  c=document.createElement('canvas'); c.width=W2; c.height=H2; const k=c.getContext('2d'); k.imageSmoothingEnabled=false;
+  if(lying){ const t=document.createElement('canvas'); t.width=W2; t.height=H2; t.getContext('2d').putImageData(im,0,0); k.translate((OX+12)*2,(OY-8)*2); k.rotate(-Math.PI/2); k.translate(-OX*2,-OY*2); k.drawImage(t,0,0); k.setTransform(1,0,0,1,0,0); }
+  else k.putImageData(im,0,0);
+  outline(c,L.ol||'#22202a');
+  if(SPR.size>1600) SPR.clear();
   SPR.set(key,c); return c;
 }
 function whiteSprite(s){ let w=s._w; if(w) return w; w=document.createElement('canvas'); w.width=s.width; w.height=s.height; const k=w.getContext('2d'); k.drawImage(s,0,0); k.globalCompositeOperation='source-in'; k.fillStyle='#ffffff'; k.fillRect(0,0,w.width,w.height); return s._w=w; }
 const _pt=new Map();
-function portrait(L){ let u=_pt.get(L.key); if(u) return u; const s=charSprite(L,'idle',0), c=document.createElement('canvas'); c.width=28; c.height=28; const k=c.getContext('2d'); k.imageSmoothingEnabled=false;
-  if(L.animal) k.drawImage(s,OX-12,OY-24,28,28,0,0,28,28); else { const top=L.size==='kid'?OY-21:OY-25; k.drawImage(s,OX-7,top,14,14,0,0,28,28); }
+function portrait(L){ let u=_pt.get(L.key); if(u) return u; const s=charSprite(L,'idle',0), c=document.createElement('canvas'); c.width=56; c.height=56; const k=c.getContext('2d'); k.imageSmoothingEnabled=false;
+  if(L.animal) k.drawImage(s,(OX-12)*2,(OY-24)*2,56,56,0,0,56,56); else { const top=L.size==='kid'?OY-21:OY-25; k.drawImage(s,(OX-7)*2,top*2,28,28,0,0,56,56); }
   u=c.toDataURL(); _pt.set(L.key,u); return u; }
 
 const SKIN=['#f6cfa6','#f0c298','#fbdcba','#e6b086'];
@@ -4102,7 +4222,7 @@ function stepActor(a){ a.t++; if(a.flash>0) a.flash--; if(RED) return;
 function drawActor(a){ const s=charSprite(a.L,a.pose,a.f), x=rnd(a.x+a.ax), y=rnd(a.y+a.ay), lying=a.pose==='down'||a.pose==='lie'||a.pose==='dead';
   if(!a.noShadow&&SC.ter!=='cave'){ const sw=lying?11:a.L.animal==='tiger'?12:6; P(x-sw,a.y,sw*2,1,rgba('#1c1a22',.28)); P(x-sw+2,a.y+1,sw*2-4,1,rgba('#1c1a22',.18)); }
   cx.save(); if(a.alpha!=null) cx.globalAlpha=a.alpha;
-  if(a.face<0){ cx.translate(x,y); cx.scale(-1,1); cx.drawImage(a.flash>0&&a.flash%2?whiteSprite(s):s,-OX,-OY); } else cx.drawImage(a.flash>0&&a.flash%2?whiteSprite(s):s,x-OX,y-OY);
+  if(a.face<0){ cx.translate(x,y); cx.scale(-1,1); cx.drawImage(a.flash>0&&a.flash%2?whiteSprite(s):s,-OX,-OY,SW,SH); } else cx.drawImage(a.flash>0&&a.flash%2?whiteSprite(s):s,x-OX,y-OY,SW,SH);
   cx.restore(); }
 function drawFrame(){
   if(onFrame){ try{ onFrame(); }catch(e){ if(!drawFrame.err){ drawFrame.err=1; console.error(e); } } }
@@ -4110,8 +4230,9 @@ function drawFrame(){
   if(st.scroll&&!RED) st.scrollX+=st.scroll;
   g0.save();
   if(shake>0){ if(!RED) g0.translate(rnd((hsh(tk)-.5)*shake*.9),rnd((hsh(tk*1.7)-.5)*shake*.9)); shake--; }
-  TER[st.ter](st);
-  for(const p of st.props){ const o=p[2]; if(o&&o.front) continue; PROP[p[0]](p[1],GY+2+((o&&o.dy)||0),st,o); }
+  // 배경은 1배로 그린 뒤 모서리를 다듬어 2배로 올린다
+  cx=BGX; try{ TER[st.ter](st); for(const p of st.props){ const o=p[2]; if(o&&o.front) continue; PROP[p[0]](p[1],GY+2+((o&&o.dy)||0),st,o); } } finally{ cx=g0; }
+  epxInto(new Uint32Array(BGX.getImageData(0,0,W,H).data.buffer),W,H,BG2D); BG2X.putImageData(BG2I,0,0); g0.drawImage(BG2,0,0,W,H);
   const as=st.actors.slice().sort((a,b)=>a.y-b.y);
   for(const a of as){ stepActor(a); if(!a.hide) drawActor(a); }
   for(const p of st.props){ const o=p[2]; if(o&&o.front) PROP[p[0]](p[1],GY+2+(o.dy||0),st,o); }
@@ -4130,6 +4251,8 @@ function drawFrame(){
   syncTags();
 }
 let barsT=0, onFrame=null;
+const BGC=document.createElement('canvas'); BGC.width=W; BGC.height=H; const BGX=BGC.getContext('2d',{willReadFrequently:true});
+const BG2=document.createElement('canvas'); BG2.width=W*2; BG2.height=H*2; const BG2X=BG2.getContext('2d'), BG2I=new ImageData(W*2,H*2), BG2D=new Uint32Array(BG2I.data.buffer);
 function frame(){ tk++; if(!$m('murimApp').hidden){ try{ drawFrame(); }catch(e){ if(!frame.err){ frame.err=1; console.error(e); } } } requestAnimationFrame(frame); }
 
 /* ---- 장면 위 DOM: 이름표, 떠오르는 글자, 획득 알림, 외침 ---- */

@@ -427,8 +427,8 @@ details.help ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:col
       </span>
       <span class="cab-body">
         <b>무림초출</b>
-        <p>강호의 어느 해, 어느 고을, 누군가의 아이로 무작위로 태어난다. 대부분은 무공을 모르는 농사꾼이다. 도트로 그린 장면 속에서 기연을 만나고, 장비를 얻고, 낌새를 읽어 결투를 치른다. 지면 죽는다.</p>
-        <span class="cab-tags"><span class="new">신작</span><span>랜덤 인생</span><span>무협</span><span>결투</span></span>
+        <p>강호의 어느 해, 어느 고을, 누군가의 아이로 무작위로 태어난다. 대부분은 무공을 모르는 농사꾼이다. 고향 마을을 걸어 다니며 철마다 할 일을 고르고, 기연을 만나고, 장비를 얻고, 낌새를 읽어 결투를 치른다. 지면 죽는다.</p>
+        <span class="cab-tags"><span class="new">신작</span><span>랜덤 인생</span><span>무협</span><span>맵 탐험</span><span>결투</span></span>
         <span class="cab-go">입문하기 ›</span>
       </span>
     </button>
@@ -3173,6 +3173,25 @@ body.is-murim::before{background:var(--m-bg)}
   .mh-dacts .mh-hint{flex:1 1 100%;margin:0}
 }
 @media (prefers-reduced-motion:reduce){.mh-float,.mh-call,.mh-toastc{animation:none}.mh-hud i{transition:none}}
+/* 맵 */
+.mh-tag.pl{background:rgba(28,26,34,.62);color:#f4efe0;font-size:11px;padding:1px 6px;border:0;letter-spacing:.02em}
+.mh-tag.pl.me{background:rgba(160,52,36,.82)}
+.mh-seas{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0 12px;font-size:13px}
+.mh-seas>span{padding:2px 10px;border:1px solid var(--m-line);color:var(--m-muted)}
+.mh-seas>span.on{background:var(--m-ink);color:var(--m-bg);border-color:var(--m-ink)}
+.mh-seas>span.done{text-decoration:line-through;opacity:.55}
+.mh-rep{margin-left:auto;color:var(--m-muted);display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.mh-pl{font-family:var(--m-f-disp);font-size:22px;margin:2px 0 4px;font-weight:400}
+.mh-mk{color:var(--m-seal);font-weight:600}
+.mh-talk{margin:0 0 10px;padding:10px 12px;border:1px solid var(--m-line);background:var(--m-panel2);font-size:15px}
+.mh-talk b{margin-right:8px;color:var(--m-jade);font-weight:600}
+.mh-shop{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.mh-shop .mh-ch{padding:9px 12px;font-size:15px}
+.mh-places{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0 4px}
+.mh-places .mh-btn{font-size:13px;padding:5px 10px}
+.mh-places .mh-btn.on{border-color:var(--m-ink)}
+.mh-places .mh-btn[disabled]{opacity:.45;cursor:default}
+.mh-scene.map canvas{cursor:pointer}
 </style>
 
 <div id="murimApp" hidden>
@@ -4226,6 +4245,7 @@ function drawActor(a){ const s=charSprite(a.L,a.pose,a.f), x=rnd(a.x+a.ax), y=rn
   cx.restore(); }
 function drawFrame(){
   if(onFrame){ try{ onFrame(); }catch(e){ if(!drawFrame.err){ drawFrame.err=1; console.error(e); } } }
+  if(MAPON&&MAPV){ drawMapFrame(); return; }
   const st=SC; if(!st) return; cx=g0;
   if(st.scroll&&!RED) st.scrollX+=st.scroll;
   g0.save();
@@ -4260,9 +4280,224 @@ function renderTags(){ const el=$m('mhTags'); if(!el) return; el.textContent='';
   for(const a of SC.actors){ a._tag=null; if(!a.tag) continue; const s=document.createElement('span'); s.className='mh-tag'+(a.tagc?' '+a.tagc:''); s.textContent=a.tag; el.appendChild(s); a._tag=s; a._tx=null; } }
 function syncTags(){ if(!SC) return; for(const a of SC.actors){ if(!a._tag) continue; const x=rnd(a.x+a.ax), y=rnd(a.y+a.ay)-lookH(a.L)-(a.emote?13:3); if(a._tx!==x||a._ty!==y){ a._tx=x; a._ty=y; a._tag.style.left=(x/W*100)+'%'; a._tag.style.top=(y/H*100)+'%'; } } }
 function floatText(x,y,txt,cls){ const el=$m('mhFl'); if(!el) return; const s=document.createElement('span'); s.className='mh-float '+(cls||''); s.textContent=txt; s.style.left=(x/W*100)+'%'; s.style.top=(y/H*100)+'%'; el.appendChild(s); setTimeout(()=>s.remove(),1500); }
-function heroFloat(txt,cls,dy){ const h=actorOf('hero'); floatText(h?h.x:70,(h?h.y:FY)-30-(dy||0),txt,cls); }
+function heroFloat(txt,cls,dy){ if(MAPON&&MAPV&&MAPV.hero.sx!=null) return floatText(MAPV.hero.sx,MAPV.hero.sy-30-(dy||0),txt,cls); const h=actorOf('hero'); floatText(h?h.x:70,(h?h.y:FY)-30-(dy||0),txt,cls); }
 function toast(html,cls,ms){ const el=$m('mhToast'); if(!el) return; const d=document.createElement('div'); d.className='mh-toastc '+(cls||''); d.innerHTML=html; el.appendChild(d); while(el.children.length>3) el.firstChild.remove(); setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),400); },ms||3200); }
 function callout(txt,cls,ms){ const el=$m('mhCall'); if(!el) return; el.className='mh-call '+(cls||''); el.textContent=txt; el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; clearTimeout(callout.t); callout.t=setTimeout(()=>{ el.hidden=true; },ms||1300); }
+/* ==== murim:gfx-map — 위에서 내려다본 맵: 타일, 건물·나무, 그리기. 타일 한 칸은 32×32(좌표로는 16). ==== */
+const TS=32, TL=16;
+const MP=[
+  {g:'#8fce6a',g2:'#78b957',g3:'#a8de84',fl:['#ffffff','#ffd84a','#ff9ab8'],lf:'#6dbb52',lfD:'#4e9a45',lfL:'#93d66e',bl:'#ffb3cc',dirt:'#e4c796',dirtD:'#cfae7b',dirtL:'#f0dab0',soil:'#b98f5e',soilD:'#9a7448',crop:'#6dbb52',wat:'#62bfe0',watL:'#b4e8f6',watD:'#3f9fca'},
+  {g:'#7ac455',g2:'#62ad45',g3:'#93d66a',fl:['#ffffff','#ffd84a','#c9a0ff'],lf:'#4fa348',lfD:'#37823c',lfL:'#74c25c',bl:null,dirt:'#e0c08c',dirtD:'#c9a672',dirtL:'#ecd4a6',soil:'#b08656',soilD:'#916c42',crop:'#4fa348',wat:'#55b4dc',watL:'#a8e0f2',watD:'#3792c4'},
+  {g:'#cdc76c',g2:'#b4ab54',g3:'#dfda88',fl:['#ffe6a0','#ff9a4a'],lf:'#e8923a',lfD:'#c46d28',lfL:'#f6b458',bl:null,dirt:'#dcc090',dirtD:'#c4a474',dirtL:'#e8d2a8',soil:'#b08656',soilD:'#916c42',crop:'#e6b83c',wat:'#5eb0d0',watL:'#acdcee',watD:'#3f90b8'},
+  {g:'#f0f5f8',g2:'#d8e4eb',g3:'#ffffff',fl:[],lf:'#c8d5dc',lfD:'#9fb0ba',lfL:'#ffffff',bl:null,dirt:'#e8e3d6',dirtD:'#cfc8b6',dirtL:'#f6f3ea',soil:'#cfc3ae',soilD:'#b0a48e',crop:null,wat:'#8cc8e0',watL:'#d6f0f8',watD:'#6aa8c8'}
+];
+const MINK='#2a2630', WOODC='#8a5f3a', WOODD='#6a4528', WOODL='#a87848';
+function mkSpr(w,h,fn,ol){ const c=document.createElement('canvas'); c.width=w; c.height=h; const keep=cx; cx=c.getContext('2d'); try{ fn(w,h); } finally{ cx=keep; } if(ol!==0) outline(c,ol||MINK); return c; }
+const th=(tx,ty,i)=>hsh(tx*7.13+ty*13.37+i*3.71);
+/* ---- 바닥 타일 ---- */
+function tGrass(X,Y,S,tx,ty,fl){ P(X,Y,TS,TS,S.g);
+  for(let i=0;i<6;i++){ const x=X+2+rnd(th(tx,ty,i)*26), y=Y+3+rnd(th(tx,ty,i+9)*24); if(i<3){ P(x,y+1,1,2,S.g2); P(x+1,y,1,3,S.g2); P(x+2,y+1,1,2,S.g2); } else if(i<5) P(x,y,2,1,S.g3); else P(x,y,3,1,S.g2); }
+  if(fl) for(let i=0;i<3;i++){ const h=th(tx,ty,i+20), x=X+3+rnd(h*24), y=Y+4+rnd(th(tx,ty,i+30)*22), c=S.fl[rnd(h*97)%Math.max(1,S.fl.length)]; if(!c) continue; P(x,y+1,3,1,c); P(x+1,y,1,3,c); P(x+1,y+1,1,1,'#f0a030'); } }
+function tPath(X,Y,S,tx,ty,nb,stone){ tGrass(X,Y,S,tx,ty,0);
+  const m=stone?2:4, x0=X+(nb[3]?0:m), x1=X+TS-(nb[1]?0:m), y0=Y+(nb[0]?0:m), y1=Y+TS-(nb[2]?0:m), c=stone?'#d8d0be':S.dirt, cD=stone?'#b9b09c':S.dirtD, cL=stone?'#ebe5d6':S.dirtL;
+  P(x0,y0,x1-x0,y1-y0,c);
+  if(!nb[2]) P(x0,y1-2,x1-x0,2,cD); if(!nb[1]) P(x1-2,y0,2,y1-y0,cD); if(!nb[0]) P(x0,y0,x1-x0,1,cL); if(!nb[3]) P(x0,y0,1,y1-y0,cL);
+  if(!nb[0]&&!nb[3]){ P(x0,y0,3,1,S.g); P(x0,y0,1,3,S.g); } if(!nb[0]&&!nb[1]){ P(x1-3,y0,3,1,S.g); P(x1-1,y0,1,3,S.g); } if(!nb[2]&&!nb[3]){ P(x0,y1-1,3,1,S.g); P(x0,y1-3,1,3,S.g); } if(!nb[2]&&!nb[1]){ P(x1-3,y1-1,3,1,S.g); P(x1-1,y1-3,1,3,S.g); }
+  if(stone){ for(let j=0;j<2;j++){ const yy=Y+j*16; if(yy>=y0&&yy<y1) P(x0,yy+15,x1-x0,1,cD); const off=((ty*2+j)%2)*8; for(let i=0;i<2;i++){ const xx=X+off+i*16; if(xx>x0&&xx<x1) P(xx,Math.max(y0,yy),1,Math.min(15,y1-yy),cD); } } for(let i=0;i<2;i++) P(X+4+rnd(th(tx,ty,i)*22),Y+3+rnd(th(tx,ty,i+5)*24),3,1,cL); }
+  else for(let i=0;i<7;i++){ const x=x0+2+rnd(th(tx,ty,i+40)*(x1-x0-6)), y=y0+2+rnd(th(tx,ty,i+50)*(y1-y0-5)); if(i<3) P(x,y,2,1,cD); else if(i<5) P(x,y,1,1,cL); else { P(x,y,3,2,cD); P(x,y,2,1,cL); } } }
+function tWater(X,Y,S,tx,ty,nb){ P(X,Y,TS,TS,S.wat);
+  for(let i=0;i<3;i++){ const x=X+2+rnd(th(tx,ty,i+60)*22), y=Y+6+rnd(th(tx,ty,i+70)*22); P(x,y,6,1,S.watD); }
+  if(!nb[0]){ P(X,Y,TS,7,S.watD); P(X,Y,TS,3,'#5a6a4a'); P(X,Y+7,TS,1,S.watL); } if(!nb[3]){ P(X,Y,3,TS,S.watD); P(X,Y,1,TS,'#5a6a4a'); } if(!nb[1]){ P(X+TS-3,Y,3,TS,S.watD); P(X+TS-1,Y,1,TS,'#5a6a4a'); } if(!nb[2]){ P(X,Y+TS-2,TS,2,S.watL); } }
+function tBridge(X,Y,S,tx,ty,nb){ P(X,Y,TS,TS,'#c49a62'); for(let i=0;i<4;i++){ P(X+i*8,Y,1,TS,'#a47a48'); P(X+i*8+1,Y,1,TS,'#d8b27a'); }
+  if(!nb[0]){ P(X,Y,TS,5,WOODC); P(X,Y,TS,1,WOODL); P(X,Y+5,TS,2,rgba('#3a2a20',.3)); P(X+2,Y-0,4,6,WOODD); P(X+18,Y,4,6,WOODD); } if(!nb[2]){ P(X,Y+TS-6,TS,6,WOODC); P(X,Y+TS-6,TS,1,WOODL); P(X+2,Y+TS-7,4,7,WOODD); P(X+18,Y+TS-7,4,7,WOODD); } }
+function tField(X,Y,S,tx,ty,sea){ P(X,Y,TS,TS,S.soil);
+  for(let j=0;j<4;j++){ const y=Y+j*8; P(X,y+6,TS,2,S.soilD); P(X,y,TS,1,lt(S.soil,.12));
+    for(let i=0;i<4;i++){ const x=X+3+i*8+((j%2)*2);
+      if(sea===0){ P(x,y+1,2,5,S.crop); P(x-2,y+1,2,2,lt(S.crop,.2)); P(x+2,y,2,2,lt(S.crop,.2)); }
+      else if(sea===1){ P(x-2,y-1,6,6,S.crop); P(x-1,y-3,4,2,S.crop); P(x-2,y-1,2,2,lt(S.crop,.25)); P(x+1,y-3,2,2,lt(S.crop,.25)); P(x-2,y+4,6,1,dk(S.crop,.25)); P(x,y+5,2,1,dk(S.crop,.3)); }
+      else if(sea===2){ P(x,y,1,6,'#c9962e'); P(x-1,y-2,3,3,S.crop); P(x,y-3,1,1,'#f6d870'); P(x+2,y+1,1,4,'#c9962e'); P(x+1,y-1,2,2,'#f0c850'); }
+      else if(th(tx*4+i,ty*4+j,1)<.4){ P(x,y+3,3,2,'#ffffff'); } } } }
+function tCliff(X,Y,S,tx,ty,nb,sea){ const c='#9c988e', d='#7b776f', l='#bdb9ae', dd='#5f5c56'; P(X,Y,TS,TS,c);
+  for(let j=0;j<4;j++){ const y=Y+j*8+rnd(th(tx,ty,j)*3); P(X,y,TS,1,d); const x=X+rnd(th(tx,ty,j+8)*24); P(x,y+1,1,5,d); P(x+1,y+1,5,1,l); P(X+rnd(th(tx,ty,j+16)*26),y+4,4,1,l); }
+  if(!nb[2]){ P(X,Y+TS-8,TS,8,d); P(X,Y+TS-3,TS,3,dd); for(let i=0;i<4;i++) P(X+2+i*8+rnd(th(tx,ty,i+30)*3),Y+TS-10,4,3,c); }
+  if(!nb[0]){ P(X,Y,TS,4,sea===3?'#ffffff':S.g2); P(X,Y+4,TS,2,sea===3?'#d8e4eb':dk(S.g2,.2)); }
+  if(sea===3) for(let i=0;i<3;i++) P(X+rnd(th(tx,ty,i+40)*26),Y+rnd(th(tx,ty,i+44)*26),5,2,'#ffffff'); }
+function tFloor(X,Y,tx,ty){ P(X,Y,TS,TS,'#c99b62'); for(let j=0;j<4;j++){ P(X,Y+j*8+7,TS,1,'#a67a46'); P(X,Y+j*8,TS,1,'#d8ae76'); const x=X+((tx*5+j*11+ty*3)%4)*8; P(x,Y+j*8,1,8,'#a67a46'); } if(th(tx,ty,1)<.3) P(X+8+rnd(th(tx,ty,2)*14),Y+10+rnd(th(tx,ty,3)*12),2,2,'#a67a46'); }
+function tWall(X,Y,tx,ty,face){ if(!face){ P(X,Y,TS,TS,'#2b2630'); return; } P(X,Y,TS,TS,'#efe6d0'); P(X,Y,TS,6,WOODD); P(X,Y+6,TS,2,WOODC); P(X,Y+TS-5,TS,5,WOODC); P(X,Y+TS-5,TS,1,WOODL); if(tx%2===0){ P(X,Y+8,4,TS-13,WOODC); P(X,Y+8,1,TS-13,WOODL); } P(X,Y+8,TS,3,rgba('#3a2a20',.18)); }
+const PATHISH={'=':1,'s':1,'B':1}, WATERISH={'~':1,'B':1};
+function drawGround(M,sea){ const key=M.id+'/'+sea; if(M._gc&&M._gk===key) return M._gc; const S=MP[sea], c=M._gc||document.createElement('canvas'); c.width=M.w*TS; c.height=M.h*TS; const keep=cx; cx=c.getContext('2d');
+  const at=(x,y)=>x<0||y<0||x>=M.w||y>=M.h?null:M.g[y][x];
+  try{ for(let y=0;y<M.h;y++) for(let x=0;x<M.w;x++){ const k=M.g[y][x], X=x*TS, Y=y*TS, nbf=(f)=>[f(at(x,y-1),0),f(at(x+1,y),1),f(at(x,y+1),2),f(at(x-1,y),3)];
+      if(k==='.'||k===':') tGrass(X,Y,S,x,y,k===':');
+      else if(k==='='||k==='s') tPath(X,Y,S,x,y,nbf(n=>n==null||!!PATHISH[n]||n==='D'),k==='s');
+      else if(k==='~') tWater(X,Y,S,x,y,nbf(n=>n==null||!!WATERISH[n]||n==='^'));
+      else if(k==='B'){ tWater(X,Y,S,x,y,[1,1,1,1]); tBridge(X,Y,S,x,y,nbf(n=>n==='B')); }
+      else if(k==='F') tField(X,Y,S,x,y,sea);
+      else if(k==='^') tCliff(X,Y,S,x,y,nbf(n=>n==null||n==='^'),sea);
+      else if(k==='o'||k==='D') tFloor(X,Y,x,y);
+      else if(k==='#') tWall(X,Y,x,y,at(x,y+1)==='o'||at(x,y+1)==='D');
+      else P(X,Y,TS,TS,'#1c1a22');
+      if(k==='D'){ P(X+4,Y+TS-10,TS-8,10,'#8a3a2a'); P(X+6,Y+TS-8,TS-12,6,'#c0503a'); } }
+  } finally{ cx=keep; }
+  M._gc=c; M._gk=key; return c; }
+/* ---- 물건: 나무, 바위, 건물 ---- */
+function canopy(cxm,by,lf,D,L,r,seed){ disc(cxm,by-r,r+2,D); disc(cxm-rnd(r*.55),by-rnd(r*.5),rnd(r*.7),D); disc(cxm+rnd(r*.58),by-rnd(r*.55),rnd(r*.66),D);
+  disc(cxm,by-r-3,r,lf); disc(cxm-rnd(r*.55),by-rnd(r*.5)-4,rnd(r*.6),lf); disc(cxm+rnd(r*.55),by-rnd(r*.55)-4,rnd(r*.56),lf);
+  disc(cxm-rnd(r*.3),by-r-rnd(r*.45),rnd(r*.42),L); disc(cxm+rnd(r*.38),by-r-rnd(r*.2),rnd(r*.25),L); disc(cxm-rnd(r*.62),by-rnd(r*.62),rnd(r*.22),L);
+  for(let i=0;i<16;i++){ const a=hsh(seed+i*1.7)*6.28, rr=hsh(seed+i*2.9)*r*.85, x=cxm+Math.cos(a)*rr, y=by-r-3+Math.sin(a)*rr*.85; P(x,y,2,1,i%3?D:L); P(x+1,y+1,1,1,i%3?D:L); } }
+const OBJ={
+  tree:{w:1,h:1,ax:36,ay:86,spr:(S,o,sea)=>mkSpr(72,90,()=>{ const x=36, by=88, plum=o.v==='plum';
+    P(x-5,by-28,10,28,WOODC); P(x-5,by-28,3,28,WOODL); P(x+2,by-28,3,28,WOODD); P(x-8,by-3,5,3,WOODD); P(x+4,by-3,5,3,WOODD); P(x-2,by-14,2,4,WOODD);
+    if(sea===3){ const b=(x0,y0,x1,y1)=>{ line(x0,y0,x1,y1,WOODC); line(x0+1,y0,x1+1,y1,WOODD); P(x1-3,y1-2,7,2,'#ffffff'); };
+      b(x,by-28,x-16,by-52); b(x,by-28,x+15,by-50); b(x,by-30,x-2,by-66); b(x-8,by-40,x-22,by-44); b(x+8,by-40,x+22,by-46); b(x-2,by-48,x+8,by-62); P(x-6,by-30,12,3,'#ffffff'); }
+    else canopy(x,by-22,plum&&S.bl?S.bl:S.lf,plum&&S.bl?dk(S.bl,.2):S.lfD,plum&&S.bl?lt(S.bl,.4):S.lfL,24,o.x*3.1+o.y*7.7); }) },
+  pine:{w:1,h:1,ax:28,ay:88,spr:(S,o,sea)=>mkSpr(56,92,()=>{ const x=28, by=90, c='#3f8a5c', d='#2c6a48', l='#5aa874'; P(x-4,by-14,8,14,WOODC); P(x-4,by-14,2,14,WOODL); P(x+2,by-14,2,14,WOODD);
+    for(let t=0;t<3;t++){ const w=24-t*5, y1=by-12-t*18, hh=26; for(let r=0;r<hh;r++){ const hw=rnd(2+(w-2)*(r/hh)); P(x-hw,y1-hh+r,hw*2,1,r>hh-4?d:c); P(x-hw+1,y1-hh+r,Math.max(1,rnd(hw*.45)),1,l); if(sea===3&&r<8) P(x-hw,y1-hh+r,hw*2,1,'#ffffff'); else if(sea===3&&r<11&&(r+t)%2) P(x-hw+2,y1-hh+r,hw,1,'#ffffff'); } P(x-w+2,y1-1,3,2,d); P(x+w-5,y1-1,3,2,d); } }) },
+  bush:{w:1,h:1,ax:16,ay:28,spr:(S,o,sea)=>mkSpr(32,30,()=>{ const c=sea===3?'#e4edf2':S.lf, d=sea===3?'#b8c8d2':S.lfD, l=sea===3?'#ffffff':S.lfL; disc(16,19,9,d); disc(9,21,6,d); disc(23,21,6,d); disc(16,17,8,c); disc(9,19,5,c); disc(23,19,5,c); disc(13,14,4,l); disc(22,17,2,l); if(sea===0||sea===1){ P(8,18,2,2,'#ff7a8a'); P(19,13,2,2,'#ff7a8a'); P(24,20,2,2,'#ff7a8a'); } }) },
+  rock:{w:1,h:1,ax:16,ay:28,spr:(S,o,sea)=>mkSpr(32,30,()=>{ const c='#a9a59b', d='#827e76', l='#cdc9bf'; for(let r=0;r<18;r++){ const hw=rnd(13*Math.sqrt(1-Math.pow((r-10)/11,2))); P(16-hw,9+r,hw*2,1,r>12?d:c); } P(8,12,8,2,l); P(7,14,4,2,l); P(18,17,6,1,d); P(20,13,1,5,d); if(sea===3){ P(8,9,14,3,'#ffffff'); P(6,12,5,2,'#ffffff'); } }) },
+  flat:{w:2,h:1,solid:0,ax:32,ay:26,flat:1,spr:(S,o,sea)=>mkSpr(64,30,()=>{ const c='#b5b1a6', d='#8a867d', l='#d6d2c7'; for(let r=0;r<16;r++){ const hw=rnd(28*Math.sqrt(1-Math.pow((r-7)/8.5,2))); P(32-hw,7+r,hw*2,1,r>11?d:c); } P(12,9,34,2,l); P(40,15,10,1,d); P(20,17,8,1,d); }) },
+  fence:{w:1,h:1,ax:16,ay:28,spr:(S,o,sea)=>mkSpr(32,30,()=>{ P(0,10,32,3,WOODC); P(0,10,32,1,WOODL); P(0,18,32,3,WOODC); P(0,18,32,1,WOODL); for(const x of [3,19]){ P(x,4,5,24,WOODC); P(x,4,2,24,WOODL); P(x+4,4,1,24,WOODD); P(x,3,5,2,sea===3?'#ffffff':WOODL); } }) },
+  well:{w:1,h:1,ax:18,ay:36,spr:(S,o,sea)=>mkSpr(36,40,()=>{ const c='#b3afa4', d='#8a867d', l='#d4d0c5'; P(4,2,3,26,WOODC); P(29,2,3,26,WOODC); P(2,0,32,4,WOODD); P(2,0,32,1,WOODL); P(17,4,1,10,'#d9d2bc'); P(14,13,7,6,WOODC); P(14,13,7,1,WOODL);
+    for(let r=0;r<16;r++){ const hw=rnd(15*Math.sqrt(1-Math.pow((r-6)/9,2))); P(18-hw,20+r,hw*2,1,r>7?d:c); } for(let r=0;r<8;r++){ const hw=rnd(11*Math.sqrt(1-Math.pow((r-3.5)/4,2))); P(18-hw,21+r,hw*2,1,r<2?'#2c4a5a':'#3f7a94'); } P(6,22,4,1,l); P(24,30,6,1,d); P(10,33,4,1,l); }) },
+  sign:{w:1,h:1,ax:16,ay:30,spr:()=>mkSpr(32,32,()=>{ P(14,10,4,20,WOODC); P(14,10,1,20,WOODL); P(4,4,24,12,WOODL); P(4,4,24,1,'#c89a66'); P(4,15,24,1,WOODD); P(8,8,10,1,WOODD); P(8,11,14,1,WOODD); }) },
+  lantern:{w:1,h:1,ax:16,ay:30,spr:(S,o,sea)=>mkSpr(32,34,()=>{ const c='#b3afa4', d='#8a867d', l='#d4d0c5'; P(11,28,10,4,d); P(13,18,6,10,c); P(13,18,2,10,l); P(9,8,14,10,c); P(9,8,14,2,l); P(12,11,8,5,'#ffd870'); P(7,5,18,4,d); P(10,2,12,3,c); P(14,0,4,2,d); if(sea===3) P(8,3,16,2,'#ffffff'); }) },
+  dummy:{w:1,h:1,ax:16,ay:38,spr:()=>mkSpr(32,40,()=>{ P(13,10,6,28,WOODC); P(13,10,2,28,WOODL); P(4,14,24,5,WOODC); P(4,14,24,1,WOODL); P(10,2,12,10,'#d8b86a'); P(10,2,12,2,'#ecd088'); P(10,6,12,1,'#b89448'); P(10,9,12,1,'#b89448'); P(9,20,14,10,'#d8b86a'); P(9,23,14,1,'#b89448'); P(9,27,14,1,'#b89448'); P(10,36,12,3,WOODD); }) },
+  vat:{w:1,h:1,ax:16,ay:28,spr:(S,o,sea)=>mkSpr(32,30,()=>{ const c='#8a5a3e', d='#6a4028', l='#a8744e'; for(let r=0;r<20;r++){ const hw=rnd(4+7*Math.sin(Math.min(1,(r+2)/20)*3.1)); P(16-hw,8+r,hw*2,1,r>14?d:c); } P(11,6,10,3,d); P(12,6,8,1,l); P(10,12,2,8,l); if(sea===3) P(11,4,10,3,'#ffffff'); }) },
+  anvil:{w:1,h:1,ax:18,ay:30,spr:()=>mkSpr(40,34,()=>{ P(4,6,14,22,'#8a5a48'); P(4,6,14,2,'#a8705a'); P(7,12,8,10,'#2a2228'); P(8,16,6,6,'#ff9a3a'); P(9,18,4,4,'#ffe07a'); P(6,2,4,5,'#6a4a40'); P(22,18,14,5,'#4a4a56'); P(22,18,14,1,'#7a7a8a'); P(26,23,6,5,'#3a3a44'); P(23,28,12,3,'#4a4a56'); P(20,19,3,2,'#4a4a56'); }) },
+  stall:{w:2,h:1,ax:32,ay:44,spr:(S,o,sea)=>mkSpr(64,48,()=>{ const c=o.c||'#d8452c', c2='#fff4e0'; P(3,14,3,32,WOODC); P(58,14,3,32,WOODC); P(3,14,1,32,WOODL);
+    P(2,30,60,12,WOODC); P(2,30,60,2,WOODL); P(2,40,60,2,WOODD); P(4,34,56,1,WOODD);
+    for(let i=0;i<8;i++){ const col=i%2?c2:c; P(i*8,2,8,12,col); P(i*8,12,8,3,dk(col,.18)); P(i*8+1,15,6,2,col); } P(0,2,64,1,lt(c,.3)); if(sea===3) P(0,0,64,3,'#ffffff');
+    const gs=o.goods||['#e0503a','#f0c040','#6fbf5a','#e08a3a']; for(let i=0;i<6;i++){ const x=7+i*9; P(x,24,7,6,gs[i%gs.length]); P(x,24,7,2,lt(gs[i%gs.length],.3)); P(x+1,22,5,2,gs[i%gs.length]); } }) },
+  fire:{w:1,h:1,ax:16,ay:28,anim:1,spr:(S,o,sea,f)=>mkSpr(32,32,()=>{ P(6,24,20,4,WOODD); P(8,22,6,3,WOODC); P(18,22,6,3,WOODC); const k=f%2; P(11,12+k,10,12-k,'#ff8a2a'); P(13,8+k*2,6,10,'#ff8a2a'); P(13,15,6,8,'#ffd84a'); P(15,11+k,2,6,'#ffd84a'); P(15,18,2,4,'#ffffff'); },0) },
+  scare:{w:1,h:1,ax:16,ay:42,spr:()=>mkSpr(32,44,()=>{ P(15,8,3,34,WOODC); P(4,16,24,3,WOODC); P(8,14,16,12,'#c9a25a'); P(8,24,16,2,'#a8823e'); P(11,3,10,10,'#e8d2a0'); P(8,1,16,3,'#d2b878'); P(13,7,2,2,MINK); P(18,7,2,2,MINK); P(4,19,3,6,'#d8c070'); P(25,19,3,6,'#d8c070'); }) },
+  gate:{w:4,h:1,solid:0,ax:64,ay:74,posts:[0,3],spr:(S,o,sea)=>mkSpr(128,78,()=>{ for(const x of [10,106]){ P(x,14,12,62,'#a8402e'); P(x,14,4,62,'#c8553e'); P(x+9,14,3,62,'#7f281d'); P(x-2,72,16,5,'#8a867d'); }
+    P(4,18,120,8,'#a8402e'); P(4,18,120,2,'#c8553e'); P(0,4,128,10,'#4d6072'); P(0,4,128,2,'#7f95a8'); P(0,12,128,3,'#2f3c4a'); for(let i=0;i<16;i++) P(i*8+3,6,1,6,'#3a4a5a'); P(-0,2,6,3,'#4d6072'); P(122,2,6,3,'#4d6072'); P(48,28,32,12,'#2a2630'); P(50,30,28,8,'#d9a441'); P(54,32,20,1,'#2a2630'); P(54,35,20,1,'#2a2630'); if(sea===3) P(0,2,128,3,'#ffffff'); }) },
+  bed:{w:1,h:2,ax:16,ay:60,spr:(S,o)=>mkSpr(32,62,()=>{ P(2,4,28,56,WOODC); P(2,4,28,3,WOODL); P(4,8,24,50,'#f2ead8'); P(4,22,24,36,o.c||'#b8504a'); P(4,22,24,3,lt(o.c||'#b8504a',.25)); P(7,10,18,9,'#ffffff'); P(7,17,18,2,'#d8d0c0'); P(4,56,24,2,dk(o.c||'#b8504a',.25)); }) },
+  mat:{w:1,h:2,ax:16,ay:58,spr:()=>mkSpr(32,60,()=>{ P(3,6,26,52,'#d8c07a'); for(let i=0;i<13;i++) P(3,8+i*4,26,1,'#b89a52'); P(3,6,26,2,'#ecd898'); P(6,10,16,8,'#c9b8a0'); P(5,26,22,30,'#8a7a62'); P(5,26,22,2,'#a8987c'); }) },
+  table:{w:2,h:1,ax:32,ay:30,spr:()=>mkSpr(64,34,()=>{ P(6,8,52,16,WOODL); P(6,8,52,2,'#c89a66'); P(6,22,52,4,WOODC); P(9,26,4,7,WOODD); P(51,26,4,7,WOODD); P(18,11,8,6,'#f4efe0'); P(19,12,6,3,'#8fb0c0'); P(34,10,10,7,'#f4efe0'); P(36,12,6,3,'#d8a060'); P(48,13,5,4,'#c9a25a'); }) },
+  stove:{w:1,h:1,ax:16,ay:30,spr:()=>mkSpr(32,34,()=>{ P(2,8,28,24,'#b8a890'); P(2,8,28,3,'#d2c4ac'); P(2,28,28,4,'#8a7e6a'); P(10,18,12,12,'#2a2228'); P(12,22,8,8,'#ff8a2a'); P(14,25,4,5,'#ffe07a'); P(6,2,20,8,'#3a3a44'); P(6,2,20,2,'#6a6a78'); P(4,5,24,2,'#2a2a32'); }) },
+  chest:{w:1,h:1,ax:16,ay:28,spr:()=>mkSpr(32,30,()=>{ P(3,8,26,20,WOODC); P(3,8,26,3,WOODL); P(3,14,26,2,WOODD); P(3,25,26,3,WOODD); P(13,13,6,6,'#d9a441'); P(15,15,2,2,MINK); P(3,8,2,20,'#d9a441'); P(27,8,2,20,'#d9a441'); }) },
+  shelf:{w:1,h:1,ax:16,ay:30,spr:(S,o)=>mkSpr(32,46,()=>{ P(2,2,28,42,WOODC); P(2,2,28,2,WOODL); P(4,6,24,10,'#4a3524'); P(4,19,24,10,'#4a3524'); P(4,32,24,10,'#4a3524'); const cs=o.cs||['#c0503a','#3f6fae','#e0a83c','#6f9a62','#e9e2c8']; for(let j=0;j<3;j++) for(let i=0;i<4;i++){ const c=cs[(i+j*2)%cs.length]; P(6+i*5,8+j*13+(i%2),4,8-(i%2),c); P(6+i*5,8+j*13+(i%2),1,8-(i%2),lt(c,.3)); } }) },
+  screen:{w:2,h:1,ax:32,ay:30,spr:()=>mkSpr(64,50,()=>{ for(let i=0;i<4;i++){ const x=2+i*15; P(x,4+(i%2)*2,14,42,'#3a2a20'); P(x+1,6+(i%2)*2,12,38,'#f2ead2'); P(x+3,12+(i%2)*2,8,1,'#7a8a6a'); line(x+4,36+(i%2)*2,x+9,18+(i%2)*2,'#5a6a5a'); P(x+8,16+(i%2)*2,3,3,'#e07a8a'); P(x+4,24+(i%2)*2,2,2,'#e07a8a'); } }) },
+  rug:{w:2,h:2,solid:0,flat:1,ax:32,ay:60,spr:(S,o)=>mkSpr(64,64,()=>{ const c=o.c||'#a8402e'; P(4,6,56,52,c); P(4,6,56,2,lt(c,.25)); P(8,10,48,44,dk(c,.15)); P(10,12,44,40,c); P(28,28,8,8,'#d9a441'); P(14,16,4,4,'#d9a441'); P(46,16,4,4,'#d9a441'); P(14,44,4,4,'#d9a441'); P(46,44,4,4,'#d9a441'); },0) }
+};
+/* 건물: 지붕(기와·초가)과 앞벽. o: w,h(칸), roof 't'|'h', rc 지붕색, door 문이 있는 칸, sign, pillar, lamp, chim, two */
+function sprHouse(o,sea){ const wt=o.w, ht=o.h, w=wt*TS+8, wallH=30, top=o.two?30:0, h=ht*TS+14+top, wy=h-wallH, thatch=o.roof==='h';
+  return mkSpr(w,h,()=>{ const X=4, ww=wt*TS, wall=o.wall||'#f3ead4', post=o.pillar?'#b8402e':WOODC, postL=o.pillar?'#d85a44':WOODL, dx=X+o.door*TS+16, dw=o.dw||20;
+    const wallAt=(y0)=>{ P(X+2,y0,ww-4,wallH,wall); P(X+2,y0+wallH-5,ww-4,5,'#a9a59b'); P(X+2,y0+wallH-5,ww-4,1,'#cdc9bf');
+      for(let i=0;i<=wt;i++){ const px=Math.min(X+ww-6,Math.max(X+2,X+i*TS-2)); if(i>0&&i<wt&&!o.pillar&&wt<4) continue; P(px,y0,4,wallH-5,post); P(px,y0,1,wallH-5,postL); } };
+    if(o.two){ wallAt(wy-30); for(let i=0;i<wt;i++){ const x=X+i*TS+8; P(x,wy-24,16,13,WOODD); P(x+1,wy-23,14,11,'#fff3d0'); P(x+8,wy-23,1,11,WOODD); P(x+1,wy-18,14,1,WOODD); } P(X-2,wy-6,ww+4,8,dk(o.rc||'#4d6072',.1)); P(X-2,wy-6,ww+4,2,lt(o.rc||'#4d6072',.3)); P(X+2,wy-30,ww-4,4,rgba('#3a2a20',.3)); }
+    wallAt(wy);
+    for(let i=0;i<wt;i++){ if(i===o.door||(o.dw>24&&Math.abs(i-o.door)<1)) continue; if(o.nowin&&o.nowin.includes(i)) continue; const x=X+i*TS+8; P(x,wy+8,16,13,WOODD); P(x+1,wy+9,14,11,'#fff3d0'); P(x+5,wy+9,1,11,WOODD); P(x+10,wy+9,1,11,WOODD); P(x+1,wy+14,14,1,WOODD); }
+    P(dx-dw/2-2,wy+3,dw+4,wallH-3,WOODD); if(o.open){ P(dx-dw/2,wy+5,dw,wallH-5,'#2a2228'); P(dx-dw/2,wy+5,dw,5,'#8a2e22'); P(dx-dw/2+2,wy+10,2,3,'#8a2e22'); P(dx+dw/2-4,wy+10,2,3,'#8a2e22'); } else { P(dx-dw/2,wy+5,dw,wallH-5,o.dc||'#9a6a40'); P(dx-dw/2,wy+5,dw,1,lt(o.dc||'#9a6a40',.25)); P(dx-1,wy+5,2,wallH-5,WOODD); P(dx-5,wy+17,2,3,'#d9a441'); P(dx+3,wy+17,2,3,'#d9a441'); for(let i=0;i<3;i++) P(dx-dw/2+2+i*4,wy+8,1,wallH-10,dk(o.dc||'#9a6a40',.12)); }
+    P(X+2,wy,ww-4,5,rgba('#3a2a20',.3));
+    // 지붕
+    const rh=wy-top+5, ry=top?0:0, rc=o.rc||(thatch?'#e0bd6e':'#4d6072'), rD=dk(rc,.25), rL=lt(rc,.3), yb=top?wy-30+5:wy+5, y0=yb-rh;
+    for(let r=0;r<rh;r++){ const t=r/rh, ins=rnd((1-t)*(thatch?9:6)+(thatch&&r<5?(5-r)*2.5:0)), y=y0+r, c=thatch?mix(lt(rc,.18),dk(rc,.12),t):rc; P(X-4+ins,y,ww+8-ins*2,1,c); }
+    if(thatch){ for(let i=0;i<wt*ht*14;i++){ const x=X+rnd(hsh(i*1.9+o.x)*(ww-6)), y=y0+6+rnd(hsh(i*3.3+o.y)*(rh-12)); P(x,y,1,4,i%3?rD:rL); } for(let i=0;i<ww+8;i+=4){ P(X-4+i,yb-3,2,3+((i>>2)%2)*2,rD); } P(X-2,yb-5,ww+4,2,rD); for(let i=0;i<3;i++) P(X+10,y0+rnd(rh*(.3+i*.22)),ww-20,1,dk(rc,.1)); if(sea===3){ for(let r=0;r<rh*.5;r++){ const ins=rnd((1-r/rh)*9+(r<5?(5-r)*2.5:0)); P(X-4+ins+((r>rh*.4)?6:0),y0+r,ww+8-ins*2-((r>rh*.4)?12:0),1,'#ffffff'); } } }
+    else { for(let r=7;r<rh-3;r+=6){ const t=r/rh, ins=rnd((1-t)*6); P(X-4+ins,y0+r,ww+8-ins*2,1,rD); for(let x=X-2+ins+((r/6|0)%2)*3;x<X+ww+2-ins;x+=6){ P(x,y0+r-5,1,5,rD); P(x+1,y0+r-5,1,4,rL); } }
+      P(X+2,y0,ww-4,6,lt(rc,.18)); P(X+2,y0,ww-4,2,rL); P(X,y0-1,6,8,rD); P(X+ww-6,y0-1,6,8,rD); P(X+1,y0-3,3,3,rD); P(X+ww-4,y0-3,3,3,rD);
+      P(X-4,yb-3,ww+8,3,rD); P(X-4,yb-5,ww+8,2,rL); P(X-6,yb-6,4,4,rD); P(X+ww+2,yb-6,4,4,rD); P(X-7,yb-8,3,3,rD); P(X+ww+4,yb-8,3,3,rD);
+      if(sea===3){ P(X+2,y0-1,ww-4,3,'#ffffff'); for(let r=3;r<rh*.45;r++){ const ins=rnd((1-r/rh)*6); if(r%6<4) P(X-2+ins,y0+r,ww+4-ins*2,1,'#ffffff'); } } }
+    if(o.chim){ const x=X+ww-22; P(x,y0-6,10,14,'#8a7e6a'); P(x,y0-6,10,2,'#a89c86'); P(x-1,y0-8,12,3,'#6a6052'); }
+    if(o.sign){ const sx=dx-9, sy=wy-8; P(sx,sy,18,12,WOODD); P(sx+1,sy+1,16,10,o.sc||'#2f4a3a'); const g='#f4e9c8', k=o.sign;
+      if(k==='inn'){ P(sx+6,sy+3,6,6,g); P(sx+7,sy+2,4,1,g); P(sx+8,sy+5,2,2,o.sc||'#2f4a3a'); } else if(k==='med'){ P(sx+8,sy+2,2,8,g); P(sx+5,sy+5,8,2,g); } else if(k==='forge'){ P(sx+4,sy+4,10,2,g); P(sx+7,sy+6,4,2,g); P(sx+5,sy+8,8,1,g); } else if(k==='book'){ P(sx+4,sy+3,10,6,g); P(sx+8,sy+3,1,6,o.sc||'#2f4a3a'); } else if(k==='sword'){ line(sx+4,sy+9,sx+13,sy+2,g); P(sx+5,sy+6,4,1,g); } else if(k==='seal'){ P(sx+5,sy+3,8,6,g); P(sx+7,sy+5,4,2,o.sc||'#2f4a3a'); } }
+    if(o.lamp){ for(const lx of [dx-dw/2-9,dx+dw/2+4]){ P(lx+2,wy+1,1,4,MINK); P(lx,wy+5,5,7,'#d8452c'); P(lx,wy+5,5,1,'#f0705a'); P(lx+1,wy+12,3,1,'#d9a441'); } }
+    if(o.flag){ const fx=X+ww-8; P(fx,y0-18,2,22,WOODD); P(fx+2,y0-17,10,14,o.flag); P(fx+2,y0-17,10,2,lt(o.flag,.3)); P(fx+5,y0-12,4,4,'#fff4e0'); }
+  }); }
+OBJ.house={solid:1,custom:1};
+const _os=new Map();
+function objSprite(o,sea,f){ const d=OBJ[o.k], key=o.k==='house'?'h'+o.x+','+o.y+','+o.w+','+o.h+','+(o.roof||'')+(o.rc||'')+(o.sign||'')+sea+(o.mid||''):o.k+'|'+(o.v||'')+(o.c||'')+'|'+(d.seeded?o.x+','+o.y:(o.k==='tree'?(o.x*3+o.y*7)%5:''))+'|'+sea+'|'+(d.anim?f%2:0);
+  let s=_os.get(key); if(!s){ s=o.k==='house'?sprHouse(o,sea):d.spr(MP[sea],o,sea,f||0); if(_os.size>700) _os.clear(); _os.set(key,s); } return s; }
+/* ---- 맵 그리기 ---- */
+let MAPV=null;      // {M, season, actors:[], hero, cam:{x,y}, marks:[], step()}
+function actorSpr(a){ const d=a.dir, pose=a.moving?'walk':(a.pose||'idle'), f=a.moving?(a.wf>>2)%4:pose==='tool'?(((tk+a.ph)%40)<13?1:0):(a.L.animal?((tk+a.ph)>>4)%2:((tk+a.ph)>>5)%2); return (d==='d'||d==='u')&&!a.L.animal&&pose!=='tool'&&pose!=='sit'?charSprite(a.L,pose,f,d):charSprite(a.L,pose,f); }
+function drawMapFrame(){ const V=MAPV, M=V.M; cx=g0; if(V.step){ try{ V.step(); }catch(e){ if(!drawMapFrame.err){ drawMapFrame.err=1; console.error(e); } } }
+  const sea=V.season, S=MP[sea], gc=drawGround(M,sea), h=V.hero, mw=M.w*TL, mh=M.h*TL;
+  let camx=h?h.px-W/2:0, camy=h?h.py-12-H/2:0; camx=mw<=W?(mw-W)/2:cl(camx,0,mw-W); camy=mh<=H?(mh-H)/2:cl(camy,0,mh-H); camx=rnd(camx*2)/2; camy=rnd(camy*2)/2; V.cam.x=camx; V.cam.y=camy;
+  g0.save(); if(shake>0){ if(!RED) g0.translate(rnd((hsh(tk)-.5)*shake*.9),rnd((hsh(tk*1.7)-.5)*shake*.9)); shake--; }
+  P(0,0,W,H,'#1c1a22'); g0.drawImage(gc,camx*2,camy*2,W*2,H*2,0,0,W,H);
+  // 물결
+  const t=anim(), x0=Math.max(0,Math.floor(camx/TL)), y0=Math.max(0,Math.floor(camy/TL)), x1=Math.min(M.w-1,Math.floor((camx+W)/TL)), y1=Math.min(M.h-1,Math.floor((camy+H)/TL));
+  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){ const k=M.g[y][x]; if(k!=='~') continue; for(let i=0;i<2;i++){ const ph=th(x,y,i+80), px=x*TL+((ph*40+t*(.06+i*.03))%14), py=y*TL+3+((ph*90+i*7)%11)+((t*.05+ph*9)%3); cx.fillStyle=S.watL; cx.fillRect(px-camx,rnd(py*2)/2-camy,2.5,.5); } }
+  // 폭포
+  for(const f of M.falls||[]){ const fx=f.x*TL-camx, fy=f.y*TL-camy, fw=f.w*TL, fh=f.h*TL; if(fx>W||fx+fw<0||fy>H) continue; cx.fillStyle='#8fd4ec'; cx.fillRect(fx+1,fy,fw-2,fh); cx.fillStyle='#62bfe0'; cx.fillRect(fx+1,fy,1.5,fh); cx.fillRect(fx+fw-2.5,fy,1.5,fh);
+    for(let i=0;i<fw*1.4;i++){ const sx=fx+2+hsh(i*3.7)*(fw-5), sp=.5+hsh(i*5.1)*.7, sy=((hsh(i*9.3)*fh+t*sp)%fh); cx.fillStyle=i%3?'#ffffff':'#d6f2fa'; cx.fillRect(rnd(sx*2)/2,fy+rnd(sy*2)/2,.5+(i%2)*.5,2+(i%3)); }
+    for(let i=0;i<10;i++){ const bx=fx-1+hsh(i*2.3+(t>>3))*(fw+1), by=fy+fh-2+hsh(i*4.1+(t>>3))*4; cx.fillStyle='#ffffff'; cx.fillRect(rnd(bx*2)/2,rnd(by*2)/2,1.5,1); } }
+  // 물건과 사람을 발 높이 순서로
+  const list=[]; for(const o of M.objs){ const d=OBJ[o.k], bx=(o.x+o.w/2)*TL, by=(o.y+o.h)*TL; if(bx<camx-70||bx>camx+W+70||by<camy-10||by>camy+H+60) continue; list.push({y:d.flat?by-TL*o.h-1:by-2,o}); }
+  for(const a of V.actors){ if(a.hide) continue; if(a.px<camx-20||a.px>camx+W+20||a.py<camy-4||a.py>camy+H+30) continue; list.push({y:a.py,a}); }
+  list.sort((p,q)=>p.y-q.y);
+  for(const it of list){ if(it.o){ const o=it.o, d=OBJ[o.k], s=objSprite(o,sea,(t>>3)), bx=(o.x+o.w/2)*TL-camx, by=(o.y+o.h)*TL-camy; if(o.k==='house') g0.drawImage(s,bx-s.width/4,by-s.height/2,s.width/2,s.height/2); else g0.drawImage(s,bx-d.ax/2,by-d.ay/2-(TL-14),s.width/2,s.height/2); if(o.k==='fire') glow(bx,by-8,14,'#ffb060',.35); }
+    else { const a=it.a, s=actorSpr(a), x=rnd((a.px-camx)*2)/2, y=rnd((a.py-camy+(a.ay||0))*2)/2; cx.fillStyle=rgba('#1c1a22',.25); cx.fillRect(x-5,a.py-camy-1,10,2); cx.fillRect(x-3.5,a.py-camy+1,7,.5);
+      if(a.dir==='l'){ cx.save(); cx.translate(x,y); cx.scale(-1,1); cx.drawImage(s,-OX,-OY,SW,SH); cx.restore(); } else cx.drawImage(s,x-OX,y-OY,SW,SH); a.sx=x; a.sy=y; } }
+  if(!M.indoor) drawWeather({wx:V.wx||null,season:sea,ter:'plain',time:'day'},0); drawFx(0);
+  if(V.tint){ g0.save(); g0.globalCompositeOperation='multiply'; g0.globalAlpha=V.tint[1]; P(0,0,W,H,V.tint[0]); g0.restore(); }
+  drawLights(); drawFx(1);
+  for(const a of V.actors){ if(a.emote&&!a.hide&&a.sx!=null) drawEmote({emote:a.emote,x:a.sx,y:a.sy,ax:0,ay:0,face:1,L:a.L}); }
+  for(const k of V.marks||[]){ const x=k.x*TL+8-camx, y=k.y*TL-camy-(k.up||0)-((t>>4)%2); if(x<-8||x>W+8||y<-4||y>H+20) continue; const d=MINK; P(x-4,y-13,9,1,d); P(x-4,y-3,9,1,d); P(x-5,y-12,1,9,d); P(x+5,y-12,1,9,d); P(x-4,y-12,9,9,k.c||'#ffe9a0'); P(x,y-2,1,2,d); P(x,y-11,1,5,'#d8452c'); P(x,y-5,1,1,'#d8452c'); }
+  if(flashA>0){ P(0,0,W,H,rgba(flashC,Math.min(1,flashA))); flashA-=.07; }
+  if(fadeA>0){ P(0,0,W,H,rgba('#17161c',Math.min(1,fadeA))); fadeA-=.1; }
+  g0.restore();
+  for(let i=FX.length-1;i>=0;i--) if(--FX[i].life<=0) FX.splice(i,1);
+  if(V.after) V.after();
+}
+/* ==== murim:mapdata — 고향 마을과 집 안의 생김새 ==== */
+function mkMap(id,w,h,fill,name){ const M={id,w,h,name,g:[],objs:[],spots:[],falls:[],solid:null}; for(let y=0;y<h;y++) M.g.push(new Array(w).fill(fill)); return M; }
+const mrect=(M,x,y,w,h,c)=>{ for(let j=Math.max(0,y);j<Math.min(M.h,y+h);j++) for(let i=Math.max(0,x);i<Math.min(M.w,x+w);i++) M.g[j][i]=c; };
+function mobj(M,k,x,y,o){ const d=OBJ[k], ob=Object.assign({k,x,y,w:d.w||1,h:d.h||1},o||{}); M.objs.push(ob); return ob; }
+function mfin(M){ M.solid=new Uint8Array(M.w*M.h);
+  for(let y=0;y<M.h;y++) for(let x=0;x<M.w;x++){ const k=M.g[y][x]; if(k==='~'||k==='^'||k==='#'||k===' ') M.solid[y*M.w+x]=1; }
+  for(const o of M.objs){ const d=OBJ[o.k]; if(d.solid===0){ if(d.posts) for(const px of d.posts) M.solid[o.y*M.w+o.x+px]=1; continue; }
+    for(let j=0;j<o.h;j++) for(let i=0;i<o.w;i++){ const x=o.x+i, y=o.y+j; if(x>=0&&y>=0&&x<M.w&&y<M.h) M.solid[y*M.w+x]=1; } }
+  return M; }
+const walkable=(M,x,y)=>x>=0&&y>=0&&x<M.w&&y<M.h&&!M.solid[y*M.w+x];
+const spotOf=(M,id)=>M.spots.find(s=>s.id===id);
+const HT=[{w:3,h:2,roof:'h',rc:'#cfae66'},{w:4,h:3,roof:'h'},{w:5,h:3,roof:'t'},{w:7,h:4,roof:'t',pillar:1,lamp:1,rc:'#3f5266'}];
+const FAMTIER={beggar:0,tenant:0,farmer:1,hunter:1,artisan:1,bandit:1,blood:1,merchant:2,inn:2,doctor:2,escort:2,official:3,clan:3,tangc:3};
+const WORKSPOT={tenant:'field',farmer:'field',blood:'field',beggar:'market',artisan:'smithy',merchant:'market',hunter:'forest',inn:'inn',bandit:'forest',escort:'office',doctor:'apoth',official:'office',clan:'home',tangc:'home'};
+function buildVillage(fam,tier){ const M=mkMap('vil:'+fam+tier,46,32,'.','고향 마을');
+  mrect(M,0,0,46,3,'^'); mrect(M,33,3,6,2,'~'); mrect(M,35,5,2,27,'~'); M.falls.push({x:35,y:0,w:2,h:3});
+  mrect(M,0,15,46,2,'='); mrect(M,21,9,2,23,'='); mrect(M,2,22,31,1,'='); mrect(M,35,15,2,2,'B');
+  mrect(M,17,12,10,7,'s'); mrect(M,17,9,10,2,'s'); mrect(M,27,9,5,1,'='); mrect(M,31,5,1,5,'='); mrect(M,28,7,1,2,'=');
+  mrect(M,2,24,17,6,'F'); mrect(M,25,24,8,6,'F');
+  const H=(x,y,w,h,o)=>mobj(M,'house',x,y,Object.assign({w,h},o));
+  H(18,5,8,4,{roof:'t',door:3,dw:28,pillar:1,sign:'sword',sc:'#7a2a22',lamp:1,mid:'dojo'});
+  H(27,5,3,2,{roof:'t',rc:'#7a3a32',door:1,wall:'#ecdcc4',pillar:1,nowin:[0,2],mid:'shrine'});
+  H(2,12,4,3,{roof:'h',door:1,sign:'book',sc:'#3a4a6a',open:1,mid:'school'});
+  H(7,12,4,3,{roof:'t',rc:'#4f7060',door:1,sign:'med',sc:'#2f5a44',mid:'apoth'});
+  H(12,12,4,3,{roof:'h',rc:'#c9a45e',door:1,sign:'forge',sc:'#4a3a34',chim:1,open:1,mid:'smithy'});
+  H(28,11,5,4,{roof:'t',rc:'#7a4a3e',door:2,two:1,sign:'inn',sc:'#7a2a22',lamp:1,flag:'#d8452c',mid:'inn'});
+  H(27,18,5,4,{roof:'t',door:2,dw:24,pillar:1,sign:'seal',sc:'#3a3a5a',mid:'office'});
+  const t=HT[tier], hx=4+((7-t.w)>>1), hy=22-t.h; H(hx,hy,t.w,t.h,{roof:t.roof,rc:t.rc,door:t.w>>1,pillar:t.pillar,lamp:t.lamp,mid:'home'});
+  for(let x=2;x<=12;x++) mobj(M,'fence',x,17); mobj(M,'tree',12,19,{v:'plum'}); mobj(M,'vat',11,21); if(tier>0) mobj(M,'vat',12,21); mobj(M,'tree',2,19);
+  mobj(M,'stall',17,12,{c:'#d8452c'}); mobj(M,'stall',19,12,{c:'#3f8f6a',goods:['#f4efe0','#c9a0ff','#6fb0e0','#f0c040']}); mobj(M,'stall',24,12,{c:'#3f6fae',goods:['#b8804a','#e9e2c8','#8a6a4a']});
+  mobj(M,'well',25,17); mobj(M,'dummy',18,10); mobj(M,'dummy',25,10); mobj(M,'anvil',16,14); mobj(M,'flat',30,4); mobj(M,'gate',20,30); mobj(M,'sign',24,29); mobj(M,'scare',8,26); mobj(M,'scare',29,26); mobj(M,'fire',41,13);
+  mobj(M,'lantern',26,8); mobj(M,'lantern',30,8); mobj(M,'rock',33,6); mobj(M,'rock',38,5); mobj(M,'bush',23,20); mobj(M,'bush',16,20); mobj(M,'tree',24,24,{v:'plum'}); mobj(M,'tree',19,23);
+  const used=new Set(M.objs.flatMap(o=>{ const a=[]; for(let j=-1;j<=o.h;j++) for(let i=-1;i<=o.w;i++) a.push((o.x+i)+','+(o.y+j)); return a; }));
+  const free=(x,y)=>M.g[y][x]==='.'&&!used.has(x+','+y);
+  for(let y=3;y<32;y++) for(let x=0;x<46;x++){ if(!free(x,y)) continue; const h=hsh(x*5.3+y*9.1+1.7); let p=0, pine=0;
+    if(x>=38){ p=(x>=38&&x<=44&&y>=11&&y<=20)?0:.6; pine=h*7%1<.4; } else if(y<=4&&x<30){ p=.45; pine=1; } else if(y<=10&&x<17){ p=.28; pine=h*7%1<.6; } else if(x<=1&&y>=17){ p=.55; } else if(y===31&&(x<20||x>23)){ p=.45; } else if(x>=23&&x<=33&&y>=3&&y<=4){ p=.2; pine=1; } else if(x>=37){ p=.5; }
+    if(h<p){ mobj(M,pine?'pine':'tree',x,y,{v:h*13%1<.2?'plum':''}); used.add(x+','+y); for(const d of [[1,0],[-1,0]]) used.add((x+d[0])+','+y); }
+    else if(hsh(x*3.1+y*7.7)<.12) M.g[y][x]=':'; }
+  const sp=(id,n,x,y,o)=>M.spots.push(Object.assign({id,n,x,y},o||{}));
+  sp('home','우리 집',7,22,{door:[7,21],lab:[7.5,hy-.7]}); sp('dojo','무관',21,9,{lab:[22,4.2]}); sp('shrine','사당',28,7,{lab:[28.5,4.2]}); sp('school','서당',3,15,{lab:[4,11.2]}); sp('apoth','약방',8,15,{lab:[9,11.2]}); sp('smithy','대장간',13,15,{lab:[14,11.2]});
+  sp('inn','객잔',30,15,{lab:[30.5,9.2]}); sp('office',fam==='escort'?'표국':'관아',29,22,{lab:[29.5,17.2]}); sp('market','장터',20,13,{zone:[17,13,10,1],lab:[22,11.6]}); sp('well','우물',24,17,{lab:[25.5,16]});
+  sp('fall','뒷산 폭포',31,5,{zone:[30,4,3,2],lab:[36,2.6]}); sp('field','밭',10,23,{zone:[2,23,17,7],lab:[10,24.6]}); sp('forest',fam==='bandit'?'산채':'숲',41,15,{zone:[39,12,5,8],lab:[41.5,11.2]});
+  sp('gate','마을 어귀',21,29,{zone:[21,28,2,4],lab:[22,27.4]}); sp('bridge','다리',34,15,{zone:[34,15,4,2]});
+  M.start=[7,22]; M.wander=[[17,13,10,6],[2,15,30,2],[21,9,2,13],[2,22,30,1]];
+  return mfin(M); }
+function buildHome(tier){ const iw=[4,6,8,11][tier], ih=[3,4,5,6][tier], w=iw+2, h=ih+3, M=mkMap('home:'+tier,w,h,'#','우리 집');
+  mrect(M,1,2,iw,ih,'o'); const dx=1+(iw>>1); M.g[h-1][dx]='D';
+  const O=(k,x,y,o)=>mobj(M,k,x,y,o);
+  if(tier===0){ O('mat',1,2); O('stove',iw,2); }
+  else if(tier===1){ O('bed',1,2); O('stove',iw,2); O('table',3,3); O('chest',iw,ih+1); }
+  else if(tier===2){ O('bed',1,2); O('bed',2,2,{c:'#4f7590'}); O('stove',iw,2); O('shelf',4,2); O('table',4,4); O('chest',iw,ih+1); O('chest',iw-1,ih+1); O('rug',2,5,{c:'#7a5a8a'}); }
+  else { O('bed',1,2); O('bed',2,2,{c:'#4f7590'}); O('bed',3,2,{c:'#6f9a62'}); O('screen',5,2); O('shelf',8,2); O('shelf',9,2,{cs:['#3f6fae','#e9e2c8','#7a5a8a']}); O('stove',iw,2); O('table',5,5); O('chest',iw,ih+1); O('chest',iw-1,ih+1); O('chest',1,ih+1); O('rug',8,5); O('rug',2,5,{c:'#3f5a7a'}); }
+  const sp=(id,n,x,y,o)=>M.spots.push(Object.assign({id,n,x,y},o||{}));
+  sp('exit','문',dx,h-1,{}); sp('rest','잠자리',tier===0?2:tier===1?2:tier===2?3:4,3,{}); sp('hearth','부뚜막',iw,3,{});
+  M.start=[dx,h-2]; M.inner=[1,2,iw,ih]; M.indoor=1;
+  return mfin(M); }
 /* ==== murim:items — 장비·행낭·무위 ==== */
 const TIER=['범품','양품','명품','신병'];
 // s: w 무기 · a 갑옷 · c 장신구 · u 소모품 · m 재료 / k: 무기 갈래 / t: 등급 / v: 값(냥)
@@ -4720,11 +4955,13 @@ const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
 // 맡겨 두었을 때의 승률을 재서 맞춘 어림식: 힘의 비, 지금 건강, 버티기·조력·연전을 본다
 function duelOdds(sp){ let r=foePow(sp)/Math.max(1,power())*(1.62-.0072*cl(m.hp)); if(sp.ally) r*=.82; if(sp.survive) r*=sp.survive<=3?.62:.86; if(sp.qi) r*=1-sp.qi/400; let p=1/(1+Math.exp(7.5*(r-1.13))); if(sp.chain) p*=.8; return p; }
 function duelHint(c){ const sp=duelSpecOf(c), p=duelOdds(sp); return {lethal:!!sp.lethal,lab:(sp.survive?'버티기 · ':'')+(p>=.8?'우세':p>=.55?'호각':p>=.3?'열세':'위험'),cls:p>=.8?'hi':p>=.55?'':p>=.3?'lo':'no'}; }
-function tick(){
+// 맵에서는 철마다 한 일이 이미 반영돼 있으니 해가 바뀔 때는 기본 살림만 셈한다
+function baseEcon(){ const a=m.age, o=OR(m.b.o), work=a<10?0:a<16?.5:a<60?1:.6, inc=o.inc*work*.6+(m.f.shop?20:0), cost=a<16?0:o.inc*.55+m.kids*2; gold(inc-cost); m.focusRes={fid:'map'};
+  if(a>=16&&m.gold<=0&&inc<cost){ m.hp-=5; m.joy-=6; if(R()<.35) log('끼니를 거르는 날이 많았다.'); } }
+function tick(mp){
   m.age++; m.lastRes=null;
-  if(m.age===6&&!m.focus) m.focus=m.f.martial?'train':'work';
-  if(m.auto&&m.age>=6&&m.age%5===0) m.focus=autoFocus();
-  doFocus(); ambient();
+  if(mp) baseEcon(); else { if(m.age===6&&!m.focus) m.focus=m.f.martial?'train':'work'; if(m.auto&&m.age>=6&&m.age%5===0) m.focus=autoFocus(); doFocus(); }
+  ambient();
   m.joy=cl(m.joy+(55-m.joy)*.08); m.bond=cl(m.bond+(40-m.bond)*.04);
   m.hp=cl(m.age<45?m.hp+3:m.hp-(m.age-45)*.12,0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
@@ -5484,6 +5721,184 @@ function scheduleEpisodes(T){
   ids.forEach((id,k)=>{ let t=ri(1,4)+k*2; EPI_T[id].beats.forEach((b,bi)=>{ T.epq.push({id,bi,turn:Math.min(17,t)}); t+=ri(2,4); }); });
   T.epq.sort((a,b)=>a.turn-b.turn||a.bi-b.bi);
 }
+/* ==== murim:map — 맵 위에서 사는 법: 걷기, 장소, 철마다 하는 일 ==== */
+const MAPAGE=5, SEAN=['봄','여름','가을','겨울'];
+let MAPON=false, VIL=null, HOMEM=null, CUTQ=[], KEYS={}, MSPOT=null, MTALK=null, MSHOP=null;
+const cutNow=()=>CUTQ[0]||null;
+const resWait=()=>!!(m&&m.lastRes&&m.lastRes.age===m.age&&!m.lastRes.seen&&!m.train&&m.age>=MAPAGE);
+const mapMode=()=>!!(m&&m.phase==='play'&&!m.dead&&m.age>=MAPAGE&&!m.train&&!DUEL&&!m.pending&&!m.milestone&&!CUTQ.length&&!resWait());
+const MAPSPEC={map:1,key:'map'};
+function curMap(){ const t=FAMTIER[m.b.o]||0; if(m.map.id==='home'){ if(!HOMEM||HOMEM.id!=='home:'+t) HOMEM=buildHome(t); return HOMEM; } const id='vil:'+m.b.o+t; if(!VIL||VIL.id!==id) VIL=buildVillage(m.b.o,t); return VIL; }
+function mkMA(id,L,x,y,o){ return Object.assign({id,L,tx:x,ty:y,fx:x,fy:y,px:x*TL+8,py:y*TL+13,dir:'d',ph:rnd(hsh(seedOf(id))*60),wf:0,moving:false,mv:0,path:null},o||{}); }
+const spotAt=(M,x,y)=>M.spots.find(s=>(s.x===x&&s.y===y)||(s.zone&&x>=s.zone[0]&&y>=s.zone[1]&&x<s.zone[0]+s.zone[2]&&y<s.zone[1]+s.zone[3]))||null;
+/* ---- 맵에 사는 사람들 ---- */
+const VSAY=['올해 농사는 어떨는지.','장터에 방물장수가 왔다더라.','뒷산 폭포 물이 불었어.','무관 사범이 새 제자를 받는다던데.','객잔에 낯선 칼잡이가 묵고 있대.','세금이 또 오른다는 소문이야.','밤길 조심하게.','사당에 절이라도 올리고 가게.'];
+function mapNpcs(M){ const out=[], a=m.age, add=(id,L,x,y,o)=>{ out.push(mkMA(id,L,x,y,o)); };
+  if(M.indoor){ const I=M.inner, c=[[I[0]+1,I[1]+2],[I[0]+I[2]-2,I[1]+1],[I[0]+2,I[1]+I[3]-1],[I[0]+I[2]-2,I[1]+I[3]-1],[I[0]+3,I[1]+1]].filter(p=>walkable(M,p[0],p[1])); let i=0;
+    const put=(id,L,o)=>{ const p=c[i++]; if(p) add(id,L,p[0],p[1],Object.assign({wander:I,kin:1},o)); };
+    const mo=relOf('어머니'), fa=relOf('아버지');
+    if(mo&&a<45) put('mo',relLook(mo),{n:'어머니',say:()=>pick(a<12?['밥은 먹었니?','멀리 가지 말고 놀아라.','옷 좀 여며라.']:['몸은 성하냐.','끼니 거르지 마라.','네 아버지를 꼭 닮았구나.'])});
+    if(fa&&a<45) put('fa',relLook(fa),{n:'아버지',say:()=>pick(a<12?['어른 말씀 잘 들어라.','이리 와서 이것 좀 잡아라.']:['사내는 제 밥벌이는 해야지.','세상이 어수선하다. 조심해라.','요즘 일은 할 만하냐.'])});
+    if(m.spouse&&!m.spouse.dead) put('sp',relLook(m.spouse),{n:m.spouse.name,say:()=>pick(['오셨어요.','오늘은 일찍 들어왔네요.','아이들이 당신을 찾았어요.','같이 저녁 들어요.'])});
+    m.rels.filter(r=>r.role==='자식'&&!r.dead).slice(0,2).forEach((k,j)=>put('kd'+j,relLook(k),{n:k.name,say:()=>pick(relAge(k)<13?['놀아 줘요!','오늘 냇가에서 가재 잡았어요.','저도 칼 가르쳐 주세요.']:['다녀오셨습니까.','저도 이제 다 컸습니다.'])}));
+    if(m.sib>0&&a<16) put('sb',a>9?LOOK.child():LOOK.girl(),{n:'동생',say:()=>pick(['같이 놀자!','나도 데려가.','엄마가 찾았어.'])});
+    return out; }
+  const W=M.wander;
+  for(let i=0;i<5;i++){ const w=W[i%W.length]; let x=w[0]+rnd(hsh(i*3.7+2)*(w[2]-1)), y=w[1]+rnd(hsh(i*5.1+4)*(w[3]-1)); if(!walkable(M,x,y)){ x=21; y=17+i; } add('v'+i,npcLook({name:'마을'+i+m.b.reg,age:16+((i*17)%50)}),x,y,{wander:w,n:'마을 사람',say:()=>pick(VSAY)}); }
+  add('k0',LOOK.child(),19,16,{wander:[17,14,10,5],n:'아이',say:()=>pick(['잡아 봐라!','나도 크면 무림인이 될 거야.','저기 폭포에 도사가 산대.'])});
+  add('k1',LOOK.girl(),23,16,{wander:[17,14,10,5],n:'아이',say:()=>pick(['술래잡기 하자.','엿 사 먹고 싶다.'])});
+  add('m0',LOOK.merchant({size:'adult'}),18,12,{n:'과일 장수',say:()=>'어서 오게. 싱싱한 것만 있네.'}); add('m1',LOOK.woman(),20,12,{n:'비단 장수',say:()=>'색이 곱지요?'}); add('m2',LOOK.peddler(),25,12,{n:'잡화 장수',say:()=>'없는 것 빼고 다 있소.'});
+  add('sm',LOOK.smith({tool:'hammer'}),15,15,{dir:'r',pose:'tool',n:'대장장이',say:()=>pick(['쇠는 정직하지.','좋은 칼은 값을 하네.'])});
+  add('ik',LOOK.merchant({robe:'#8a6f5a'}),31,15,{n:'객잔 주인',say:()=>pick(['한잔하고 가시게.','요즘 손님들 입이 무겁다네.'])});
+  add('tc',LOOK.swordsman({hair:'band'}),23,10,{n:'무관 사범',say:()=>pick(m.f.martial?['자세가 좋아졌군.','검은 손이 아니라 허리로 쓰는 거다.']:['배우고 싶으면 열 냥을 가져오너라.','구경은 공짜다.'])});
+  if(m.f.dog&&a-m.f.dog<14) add('dog',LOOK.dog(),8,23,{wander:[2,22,12,2],n:'누렁이',say:()=>'멍!'});
+  const R1=[['친구',24,18],['지기',20,17],['맞수',19,10],['정인',34,16],['은사',32,5]];
+  for(const [role,x,y] of R1){ const r=relOf(role); if(r&&walkable(M,x,y)) add('r_'+role,relLook(r),x,y,{n:r.name,tag:role,kin:1,say:()=>pick(role==='맞수'?['다음엔 내가 이긴다.','게을러진 건 아니겠지.']:role==='정인'?['기다렸어요.','오늘은 달이 밝겠네요.']:role==='은사'?['서두르지 마라. 물은 낮은 데로 흐른다.']:['오랜만이야.','한잔할까?','요즘 어떻게 지내?'])}); }
+  return out; }
+function mapEnter(force){ if(!m.map) m.map={id:'vil',x:7,y:22,dir:'d'}; if(m.sea==null) m.sea=0;
+  const M=curMap(); if(MAPV&&MAPV.M===M&&MAPV.b===m.b&&!force){ MAPV.season=m.sea; const L=heroLook(); if(L.key!==MAPV.hero.L.key) MAPV.hero.L=L; return; }
+  if(!walkable(M,m.map.x,m.map.y)){ m.map.x=M.start[0]; m.map.y=M.start[1]; }
+  const hero=mkMA('hero',heroLook(),m.map.x,m.map.y,{dir:m.map.dir||'d'});
+  MAPV={M,b:m.b,season:m.sea,actors:[hero].concat(mapNpcs(M)),hero,cam:{x:0,y:0},marks:[],step:mapStep,after:mapAfter,tint:M.indoor?['#ffe6c0',.18]:null};
+  fadeA=RED?0:1; MSPOT=spotAt(M,hero.tx,hero.ty); MTALK=null; MSHOP=null; mapTags(); mapMarks(); }
+function mapTags(){ const el=$m('mhTags'); if(!el||!MAPV) return; el.textContent=''; MAPV.tags=[];
+  for(const s of MAPV.M.spots){ if(!s.lab) continue; const d=document.createElement('span'); d.className='mh-tag pl'+(s.id===WORKSPOT[m.b.o]||s.id==='home'?' me':''); d.textContent=s.n+(s.id===WORKSPOT[m.b.o]&&s.id!=='home'?' · 일터':''); el.appendChild(d); MAPV.tags.push({d,x:s.lab[0],y:s.lab[1]}); }
+  for(const a of MAPV.actors){ if(!a.tag) continue; const d=document.createElement('span'); d.className='mh-tag'; d.textContent=a.tag; el.appendChild(d); MAPV.tags.push({d,a}); } }
+function mapMarks(){ if(!MAPV) return; MAPV.marks=[]; if(m.mark&&!MAPV.M.indoor){ const s=spotOf(MAPV.M,m.mark.spot); if(s){ const z=s.zone; MAPV.marks.push({x:z?z[0]+(z[2]-1)/2:s.x,y:z?z[1]+(z[3]-1)/2:s.y,up:14,c:EV[m.mark.id]&&EV[m.mark.id].gi?'#ffe9a0':'#ffffff'}); } } }
+function mapAfter(){ const V=MAPV; if(!V.tags) return; const c=V.cam; for(const t of V.tags){ const x=t.a?t.a.px:t.x*TL, y=t.a?t.a.py-lookH(t.a.L)-3:t.y*TL, sx=x-c.x, sy=y-c.y, vis=sx>4&&sx<W-4&&sy>4&&sy<H-2; if(t.v!==vis){ t.v=vis; t.d.style.display=vis?'':'none'; } if(vis&&(t.sx!==sx||t.sy!==sy)){ t.sx=sx; t.sy=sy; t.d.style.left=(sx/W*100)+'%'; t.d.style.top=(sy/H*100)+'%'; } } }
+/* ---- 걷기 ---- */
+function stepTo(a,dx,dy){ a.dir=dx>0?'r':dx<0?'l':dy>0?'d':'u'; a.fx=a.tx; a.fy=a.ty; a.tx+=dx; a.ty+=dy; a.mv=0; a.moving=true; }
+function bfs(M,sx,sy,tx,ty){ if(sx===tx&&sy===ty) return []; if(!walkable(M,tx,ty)) return null; const w=M.w, prev=new Int32Array(w*M.h).fill(-1), q=[sy*w+sx]; prev[sy*w+sx]=sy*w+sx;
+  for(let qi=0;qi<q.length;qi++){ const c=q[qi], x=c%w, y=(c-x)/w; if(x===tx&&y===ty){ const out=[]; let k=c; while(k!==sy*w+sx){ out.push([k%w,(k-k%w)/w]); k=prev[k]; } return out.reverse(); }
+    for(const d of [[0,1],[1,0],[0,-1],[-1,0]]){ const nx=x+d[0], ny=y+d[1], n=ny*w+nx; if(walkable(M,nx,ny)&&prev[n]<0){ prev[n]=c; q.push(n); } } }
+  return null; }
+function goTile(x,y,then){ const V=MAPV, h=V.hero; const p=bfs(V.M,h.tx,h.ty,x,y); if(!p) return false; h.path=p; h.then=then||null; if(!p.length&&then){ h.then=null; then(); } return true; }
+function goSpot(id){ if(!MAPV) return; if(MAPV.M.indoor){ if(id==='home'||id==='rest'){ const s=spotOf(MAPV.M,'rest'); if(s) goTile(s.x,s.y); return; } leaveHome(); }
+  const s=spotOf(MAPV.M,id); if(!s) return false; return goTile(s.x,s.y); }
+function heroStep(dx,dy){ const V=MAPV, M=V.M, h=V.hero, nx=h.tx+dx, ny=h.ty+dy; h.path=null; h.then=null; h.dir=dx>0?'r':dx<0?'l':dy>0?'d':'u';
+  if(!walkable(M,nx,ny)){ const s=M.spots.find(s=>s.door&&s.door[0]===nx&&s.door[1]===ny); if(s&&s.id==='home') enterHome(); return; }
+  stepTo(h,dx,dy); }
+function enterHome(){ m.map={id:'home',x:-1,y:-1,dir:'u'}; mapEnter(true); sfx('ok'); render(); save(); }
+function leaveHome(){ m.map={id:'vil',x:7,y:22,dir:'d'}; mapEnter(true); render(); save(); }
+function heroArrive(){ const V=MAPV, M=V.M, h=V.hero; m.map.x=h.tx; m.map.y=h.ty; m.map.dir=h.dir;
+  if(M.g[h.ty][h.tx]==='D'){ leaveHome(); return; }
+  const s=spotAt(M,h.tx,h.ty);
+  if(m.mark&&s&&s.id===m.mark.spot&&!M.indoor){ h.path=null; h.then=null; MSPOT=s; triggerMark(); return; }
+  if(s!==MSPOT||MTALK||MSHOP){ MSPOT=s; MTALK=null; MSHOP=null; if(!(h.path&&h.path.length)) render(); }
+  if(h.then&&!(h.path&&h.path.length)){ const f=h.then; h.then=null; f(); } }
+function mapStep(){ const V=MAPV, M=V.M, h=V.hero; if(!m||!MAPON) return; const fast=m.auto&&!paused?SPD[spd]:1;
+  for(const a of V.actors){
+    if(a.moving){ a.wf++; a.mv+=a===h?fast/8:1/20; if(a.mv>=1){ a.mv=1; a.moving=false; } a.px=(a.fx+(a.tx-a.fx)*a.mv)*TL+8; a.py=(a.fy+(a.ty-a.fy)*a.mv)*TL+13; if(!a.moving&&a===h) heroArrive(); if(MAPV!==V) return; }
+    else if(a!==h&&a.wander&&!RED&&(tk+a.ph*13)%130===0&&R()<.7&&!(MTALK&&MTALK.a===a)){ const d=pick([[1,0],[-1,0],[0,1],[0,-1]]), nx=a.tx+d[0], ny=a.ty+d[1], w=a.wander; if(nx>=w[0]&&ny>=w[1]&&nx<w[0]+w[2]&&ny<w[1]+w[3]&&walkable(M,nx,ny)&&!(nx===h.tx&&ny===h.ty)) stepTo(a,d[0],d[1]); }
+    if(a.emoT&&--a.emoT<=0) a.emote=null; }
+  if(!h.moving&&mapMode()){ if(h.path&&h.path.length){ const p=h.path.shift(), dx=p[0]-h.tx, dy=p[1]-h.ty; if(Math.abs(dx)+Math.abs(dy)===1&&walkable(M,p[0],p[1])) stepTo(h,dx,dy); else h.path=null; }
+    else if(!m.auto||paused){ const d=KEYS.u?[0,-1]:KEYS.d?[0,1]:KEYS.l?[-1,0]:KEYS.r?[1,0]:null; if(d) heroStep(d[0],d[1]); } } }
+function mapTap(lx,ly){ if(!MAPON||!MAPV||!mapMode()||(m.auto&&!paused)) return; const V=MAPV, M=V.M, wx=V.cam.x+lx, wy=V.cam.y+ly, tx=Math.floor(wx/TL), ty=Math.floor(wy/TL);
+  const n=V.actors.find(a=>a!==V.hero&&Math.abs(a.px-wx)<8&&wy<a.py+3&&wy>a.py-26); if(n){ goTalk(n); return; }
+  if(walkable(M,tx,ty)){ goTile(tx,ty); return; }
+  const o=M.objs.find(o=>o.mid&&tx>=o.x&&tx<o.x+o.w&&ty>=o.y-1&&ty<o.y+o.h); if(o){ const s=spotOf(M,o.mid); if(s){ goTile(s.x,s.y,o.mid==='home'?()=>{ MAPV.hero.dir='u'; }:null); return; } }
+  let best=null, bd=9; for(let j=-2;j<=2;j++) for(let i=-2;i<=2;i++){ const d=Math.abs(i)+Math.abs(j); if(d<bd&&walkable(M,tx+i,ty+j)){ bd=d; best=[tx+i,ty+j]; } } if(best) goTile(best[0],best[1]); }
+function goTalk(a){ const V=MAPV, h=V.hero; let best=null, bd=1e9; for(const d of [[0,1],[1,0],[-1,0],[0,-1],[0,0]]){ const x=a.tx+d[0], y=a.ty+d[1]; if(!walkable(V.M,x,y)) continue; const p=bfs(V.M,h.tx,h.ty,x,y); if(p&&p.length<bd){ bd=p.length; best=[x,y]; } }
+  if(!best) return; goTile(best[0],best[1],()=>{ const dx=a.tx-h.tx, dy=a.ty-h.ty; if(dx||dy) h.dir=Math.abs(dx)>=Math.abs(dy)?(dx>0?'r':'l'):(dy>0?'d':'u'); talk(a); }); }
+function talk(a){ const k=m.age*4+m.sea; MTALK={a,t:a.say?a.say():'…'}; MSHOP=null; if(a.kin&&a.tk!==k){ a.tk=k; m.bond=cl(m.bond+1); m.joy=cl(m.joy+.5); a.emote='heart'; a.emoT=70; } else { a.emote=a.L.animal?'note':'...'; a.emoT=50; } sfx('ok'); render(); }
+/* ---- 철마다 하는 일 ---- */
+const WORKN={tenant:'지주의 논에서 일한다',farmer:'밭일을 한다',blood:'밭일을 한다',beggar:'동냥을 한다',artisan:'쇠를 두드린다',merchant:'가게를 본다',hunter:'사냥을 나간다',inn:'객잔 일을 돕는다',bandit:'길목을 지킨다',escort:'표행을 나선다',doctor:'약방 일을 돕는다',official:'관아에서 문서를 쓴다',clan:'가문의 일을 거든다',tangc:'가문의 일을 거든다'};
+function seasonAct(fid,o){ const a=m.age, O=OR(m.b.o), work=a<10?0:a<16?.5:a<60?1:.6, q=.25; let t='';
+  switch(fid){
+    case 'train': if(m.f.martial){ addExp(gain()*q*(o.fall?.85:1.05)); m.ng+=(.3+ST('wit')/30)*q*(o.fall?1.6:1); m.hp-=q; t=pick(o.fall?['폭포 아래 서서 한 철을 보냈다.','물소리에 맞춰 숨을 골랐다.']:['같은 초식을 천 번씩 펼쳤다.','달빛 아래서 검로를 다시 그려 보았다.','손이 기억할 때까지 같은 동작을 되풀이했다.']); }
+      else if(a>=8){ m.joy+=.5; t='어깨너머로 무관 사범의 동작을 따라 했다.'; } else { m.joy+=1; t='나뭇가지를 칼 삼아 휘두르며 놀았다.'; } break;
+    case 'enroll': gold(-10); learn('삼재검법',6,'검'); addExp(2); if(!m.inv.w) give('wsword',{quiet:1}); log('마을 무관에 들어가 삼재검법을 배웠다.',true); return '무관에 들어가 삼재검법을 배웠다.';
+    case 'work': gold(O.inc*work*.3*((m.f.lit||0)>=4?1.1:1)+(a>=10?(m.f.smith?2.5:0)+(m.f.martial&&m.lv>=2?m.lv*1.5:0)+(m.f.med?2:0):0)); m.joy-=q; t=a<10?'집안일을 거들었다.':pick(WORK[m.b.o]||WORK.farmer); break;
+    case 'family': m.bond+=7*q; m.joy+=4*q; t=pick(['가족과 둘러앉아 저녁을 먹는 날이 많았다.','부모님의 일손을 덜어 드렸다.','이웃 잔치에 빠짐없이 갔다.','식구들과 마루에 앉아 한 철을 보냈다.']); break;
+    case 'rest': m.hp+=9*q*(o.fall?1.15:1); m.joy+=2*q; t=pick(o.fall?['폭포 소리를 들으며 몸을 쉬었다.']:['일을 줄이고 잠을 늘렸다.','약수터에 다니며 몸을 돌봤다.','아랫목에서 한 철을 났다.']); break;
+    case 'study': m.f.lit=(m.f.lit||0)+1; m.joy+=.5; t=m.f.lit>=4?'천자문을 뗐다.':'서당에서 글을 배웠다.'; if(m.f.lit===4){ log('글을 깨쳤다',true); return t; } break;
+    case 'rumor': { gold(-3); m.joy+=1; let got=null; if(!m.mark&&R()<.65){ const pool=Object.values(EV).filter(e=>e.min!==e.max&&evOK(e)&&m.used[e.id]==null&&markable(e)); if(pool.length){ got=wpick(pool,x=>x.w||1); m.mark={id:got.id,spot:spotForEv(got)}; mapMarks(); } }
+      t=got?'객잔에서 귀가 솔깃한 이야기를 들었다.':'술잔만 비우고 나왔다. 별 이야기가 없었다.'; break; }
+    default: m.joy+=.3; t=pick(['하릴없이 한 철이 갔다.','별일 없이 한 철을 보냈다.']);
+  }
+  m.hp=cl(m.hp); m.joy=cl(m.joy); m.bond=cl(m.bond); if(R()<.3) log(t); return t; }
+function actStage(fid,o){ const keep=m.focus; let s;
+  try{ m.focus=fid==='enroll'?'train':fid==='rumor'||fid==='idle'||fid==='study'?'rest':fid;
+    if(fid==='study') s=fixStage(Sg('school',{hero:{x:124,pose:'sit',face:-1},cast:[N('tc',LOOK.official(),86,{face:1,pose:'point',tag:'훈장'})]}));
+    else if(fid==='rumor') s=fixStage(Sg('innroom',{time:'night',hero:{x:60,pose:'drink',face:1},cast:[N('g1',LOOK.swordsman(),30,{pose:'drink',face:1}),N('kp',LOOK.merchant(),150,{dy:-2})]}));
+    else if(o.fall&&fid==='train'&&m.f.martial) s=fixStage(Sg('mountain',{time:'dawn',hero:{x:136,pose:'sit',act:'meditate',auraC:m.f.magong?'#ff5a3a':'#ffe9a0'}}));
+    else if(o.fall) s=fixStage(Sg('mountain',{hero:{x:124,pose:'sit'}}));
+    else if(fid==='idle') s=fixStage(Sg('village',{hero:{x:70,act:'wander',xmin:40,xmax:110}}));
+    else s=lifeStage();
+  } finally{ m.focus=keep; }
+  s=Object.assign({},s); s.key='act:'+fid+':'+m.age+':'+m.sea; s.season=m.sea; return s; }
+function doSeason(fid,o){ if(!mapMode()) return; o=o||{}; const b=snap(), sea=m.sea, txt=seasonAct(fid,o); MSHOP=null; MTALK=null; if(MAPV){ MAPV.hero.path=null; MAPV.hero.then=null; }
+  CUTQ.push({spec:actStage(fid,o),ms:fid==='idle'?600:1150,txt,sea,t:0});
+  if(m.repOn&&!m.rep&&fid!=='enroll') m.rep={fid,o};
+  diffFx(b); m.sea++; if(m.sea>3){ m.sea=0; yearTurn(); }
+  acc=0; render(); save(); }
+const AUTOEV=new Set(['heartDemon','coldAttack','wedding','birth','doom','revenge','poison','demonWar','leader','demonLord','betray','lastDuel','ascend','famine','assassin','sectHead','masterDeath','spouseSick','kidRun','fever','flee','parentCare','friendDeath','avenge','succession','kinRevenge','sparedReturn','rivalReturn','envoy','exam','child6','child6b','disciple','enlight']);
+const markable=ev=>!(AUTOEV.has(ev.id)||ev.epn||(ev.w||0)>=9||ev.min===ev.max);
+const BGSPOT={market:'market',shop:'market',village:'market',inn:'inn',innroom:'inn',stable:'inn',den:'inn',forge:'smithy',mountain:'fall',hermit:'fall',pond:'fall',peak:'fall',cave:'fall',tomb:'fall',cliff:'fall',forest:'forest',bamboo:'forest',fort:'forest',road:'gate',snow:'gate',battle:'gate',river:'bridge',well:'well',school:'school',dojo:'dojo',arena:'dojo',temple:'dojo',library:'dojo',kitchen:'dojo',manor:'office',hall:'office',home:'home',yard:'home',room:'home',wedding:'home',field:'field',grave:'shrine'};
+function spotForEv(ev){ let bg='village'; try{ const s=ev.st&&ev.st(); if(s&&s.bg) bg=s.bg; }catch(e){} return BGSPOT[bg]||'market'; }
+function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; if(m.mark){ delete m.used[m.mark.id]; m.mark=null; }
+  tick(true); if(m.dead){ CUTQ.length=0; return; }
+  const fromQ=m.q.length<qn; checkTrain();
+  if(m.pending&&!m.train&&!fromQ&&markable(m.pending)){ const ev=m.pending; m.pending=null; m.mark={id:ev.id,spot:spotForEv(ev)}; }
+  mapMarks(); const d=Math.round(m.gold-g0), age=m.age; vfx(()=>toast(`<b>${age}세</b> 새해가 밝았다 · 한 해 살림 ${d>=0?'+':'−'}${fmt(Math.abs(d))}냥`,'t1',2600));
+  if(m.yst){ const s=yearStage(), last=m.log[m.log.length-1]; if(s) CUTQ.push({spec:s,ms:1700,txt:last?last.t:'',sea:0,t:0}); } }
+function triggerMark(){ const ev=EV[m.mark.id]; m.mark=null; m.ai=null; mapMarks();
+  if(ev&&m.age>=ev.min&&m.age<=ev.max&&(!ev.when||ev.when())){ m.used[ev.id]=m.age; m.lastRes=null; m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi) vfx(()=>{ callout('奇緣','gi',1500); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; }); }
+  acc=0; render(); save(); }
+/* ---- 맡기기: 알아서 걸어가서 한다 ---- */
+function autoMap(){ const V=MAPV; if(!V) return; const h=V.hero; if(h.moving||(h.path&&h.path.length)) return;
+  if(!m.ai){ if(m.mark&&!m.mark.skip){ if(R()<.8) m.ai={sid:m.mark.spot,mark:1,n:0}; else m.mark.skip=1; }
+    if(!m.ai){ let fid=m.age<10?pick(['family','family','rest','train']):autoFocus(), sid='home', o={}; if(fid==='work'&&m.age<10) fid='family';
+      if(fid==='train'){ if(!m.f.martial&&m.age>=8&&m.gold>=10&&R()<.1) fid='enroll'; sid='dojo'; if(m.f.martial&&R()<.35){ sid='fall'; o.fall=1; } } else if(fid==='work') sid=WORKSPOT[m.b.o]||'home';
+      m.ai={fid,sid,o,n:0}; } }
+  const ai=m.ai, at=V.M.indoor?'home':(MSPOT?MSPOT.id:null);
+  if(at===ai.sid||ai.n>2){ m.ai=null; if(!ai.mark) doSeason(ai.fid,ai.o); return; }
+  ai.n++; if(V.M.indoor) leaveHome(); if(goSpot(ai.sid)===false) ai.n=9; }
+function mapLoop(dt){
+  if(resWait()){ if(m.auto&&!paused&&!m.wait){ acc+=dt*SPD[spd]; if(acc>=1300){ acc=0; m.lastRes.seen=1; render(); save(); } } return; }
+  if(!mapMode()) return;
+  if(m.mark&&MAPV&&MAPON&&!MAPV.M.indoor&&MSPOT&&MSPOT.id===m.mark.spot&&!MAPV.hero.moving){ triggerMark(); return; }
+  if(m.rep){ const r=m.rep; doSeason(r.fid,r.o); return; }
+  if(m.auto&&!paused) autoMap(); }
+function cutTick(dt){ const c=CUTQ[0]; if(!c) return; if(!m||m.phase!=='play'){ CUTQ.length=0; return; } c.t+=dt*(m.auto&&!paused?SPD[spd]:m.rep?2:1); if(c.t>=c.ms){ CUTQ.shift(); acc=0; render(); save(); } }
+/* ---- 카드 ---- */
+function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home':(s?s.id:null), acts=[], add=(t,sub,fn,free)=>acts.push({t,s:sub,fn,free}), S=(fid,opt)=>()=>doSeason(fid,opt);
+  if(id==='home'){ add(a<10?'식구들 곁에서 논다':'가족과 지낸다','행복과 인연이 오른다',S('family')); add('푹 쉰다','건강이 오른다',S('rest')); if(WORKSPOT[o]==='home'&&a>=10) add(WORKN[o],'은자를 번다',S('work')); if(!M.indoor) add('안으로 들어간다','',enterHome,1); }
+  if(!M.indoor&&id&&id===WORKSPOT[o]&&id!=='home') add(a<10?'일을 거든다':WORKN[o]||'일한다',a<10?'아직 어려서 벌이는 없다':'은자를 번다',S('work'));
+  if(id==='dojo'){ if(m.f.martial) add('수련한다','무공이 는다',S('train')); else if(a>=8){ if(m.gold>=10) add('입문한다','10냥 · 삼재검법을 배운다',S('enroll')); add('어깨너머로 본다','',S('train')); } else add('나뭇가지로 칼싸움을 한다','',S('train')); }
+  if(id==='fall'){ if(m.f.martial) add('폭포 아래서 수련한다','내공이 더 붙는다',S('train',{fall:1})); add('물소리를 들으며 쉰다','건강이 오른다',S('rest',{fall:1})); }
+  if(id==='school'&&a>=6&&a<16&&(m.f.lit||0)<4) add('글을 배운다',`${m.f.lit||0}/4 · 깨치면 벌이가 는다`,S('study'));
+  if(id==='shrine') add('절을 올린다','한 해에 한 번, 마음이 가라앉는다',()=>{ if(m.f.pray===m.age){ toast('올해는 이미 절을 올렸다.','',1800); return; } m.f.pray=m.age; m.joy=cl(m.joy+3); sfx('ok'); vfx(()=>heroFloat('행복 +3','good')); render(); save(); },1);
+  if(id==='inn'&&a>=15&&m.gold>=3) add('소문을 듣는다','3냥 · 일이 생길 수 있다',S('rumor'));
+  if(id==='market'||id==='apoth'||id==='smithy') add('물건을 본다','',()=>{ MSHOP=MSHOP?null:id; render(); },1);
+  if(id==='apoth'&&m.hp<80&&m.gold>=12) add('진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); vfx(()=>heroFloat('건강 +18','good')); render(); save(); },1);
+  return acts; }
+const SHOPS={market:['salve','antidote','sachet','talis','lvest'],apoth:['salve','antidote','pill'],smithy:null};
+function shopList(id){ let ids=SHOPS[id]; if(!ids){ const k=myKind(); ids=[wOf(0,k),wOf(1,k),'lvest','chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
+const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'나무 사이로 볕이 든다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
+function renderMapCard(card,eye){ const M=MAPV.M, s=MSPOT, acts=mapActs(), id=M.indoor?'home':(s?s.id:null), busy=m.auto&&!paused;
+  const seas=`<div class="mh-seas" aria-label="올해의 철">${SEAN.map((n,i)=>`<span class="${i===m.sea?'on':i<m.sea?'done':''}">${n}</span>`).join('')}<label class="mh-rep"><input type="checkbox" id="mhRep" ${m.repOn?'checked':''}> 고른 일을 연말까지 되풀이</label></div>`;
+  const talk=MTALK?`<p class="mh-talk"><b>${esc(MTALK.a.n||'')}</b>${esc(MTALK.t)}</p>`:'';
+  const mk=m.mark&&!M.indoor?spotOf(M,m.mark.spot):null;
+  const place=`<p class="mh-qa">${M.indoor?'집 안':'고향 마을'}${mk?` · <span class="mh-mk">${esc(mk.n)}에 무슨 일이 있다</span>`:''}</p><h3 class="mh-pl">${esc(M.indoor?'우리 집':s?s.n:'마을 길')}</h3><p class="mh-hint">${esc(id?PLACEHINT[id]||'':'방향키·WASD로 걷거나, 가고 싶은 곳을 누른다. 장소에 서면 할 일이 나온다.')}</p>`;
+  const ah=acts.length?`<div class="mh-chs">${acts.map((c,i)=>`<button class="mh-ch" type="button" data-ma="${i}" ${busy?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span><span class="odds">${c.free?'':'한 철'}</span></button>`).join('')}</div>`:'';
+  const shop=MSHOP?`<div class="mh-shop"><p class="mh-qa">파는 물건 · 가진 돈 ${fmt(m.gold)}냥</p>${shopList(MSHOP).map((x,i)=>`<button class="mh-ch" type="button" data-buy="${i}" ${m.gold<x.pr?'disabled':''}><span><span>${icImg(itIcon(x.id),'sm')} ${esc(ITEMS[x.id].n)}<small>${esc(itDesc(ITEMS[x.id]))}</small></span></span><span class="odds">${x.pr}냥</span></button>`).join('')}</div>`:'';
+  const ids=['home',WORKSPOT[m.b.o],'dojo','fall','market','smithy','apoth','inn',m.age<16?'school':null,'shrine'].filter((x,i,a)=>x&&a.indexOf(x)===i), V=VIL||M;
+  const go=`<div class="mh-places"><span class="mh-lab">바로 가기</span>${ids.map(k=>{ const sp=spotOf(M.indoor?(VIL||buildVillage(m.b.o,FAMTIER[m.b.o]||0)):M,k); if(!sp) return ''; return `<button type="button" class="mh-btn${id===k?' on':''}" data-go="${k}" ${busy?'disabled':''}>${esc(sp.n)}${m.mark&&m.mark.spot===k?' <b class="mh-mk">!</b>':''}</button>`; }).join('')}<button type="button" class="mh-btn" data-idle="1" ${busy?'disabled':''}>한 철 그냥 보내기</button></div>`;
+  const feed=m.log.slice(-4).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
+  card.innerHTML=`${eye}${seas}${talk}<div class="mh-dec">${place}${ah}${shop}</div>${go}<ol class="mh-feed">${feed}</ol>`;
+  card.querySelectorAll('[data-ma]').forEach(b=>b.onclick=()=>{ const c=acts[+b.dataset.ma]; if(c) c.fn(); });
+  card.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{ const x=shopList(MSHOP)[+b.dataset.buy]; if(!x||m.gold<x.pr) return; gold(-x.pr); give(x.id,{}); sfx('get'); render(); save(); });
+  card.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ goSpot(b.dataset.go); });
+  const idle=card.querySelector('[data-idle]'); if(idle) idle.onclick=()=>doSeason('idle');
+  const rp=$m('mhRep'); if(rp) rp.onchange=()=>{ m.repOn=rp.checked; if(!m.repOn) m.rep=null; save(); }; }
+function renderCut(card,eye){ const c=cutNow(); card.innerHTML=`${eye}<div class="mh-dec"><p class="mh-qa">${SEAN[c.sea]||''}이 간다</p><p class="mh-text">${esc(c.txt||'')}</p></div>`; }
+/* ---- 입력 ---- */
+const KEYMAP={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',w:'u',s:'d',a:'l',d:'r',W:'u',S:'d',A:'l',D:'r','ㅈ':'u','ㄴ':'d','ㅁ':'l','ㅇ':'r'};
+document.addEventListener('keydown',e=>{ const k=KEYMAP[e.key]; if(!k||$m('murimApp').hidden||e.ctrlKey||e.metaKey||e.altKey) return; if(e.target&&e.target.closest&&e.target.closest('textarea,input')) return; if(!MAPON||!mapMode()) return; KEYS[k]=1; e.preventDefault(); });
+document.addEventListener('keyup',e=>{ const k=KEYMAP[e.key]; if(k) KEYS[k]=0; });
+window.addEventListener('blur',()=>{ KEYS={}; });
+cv.parentNode.addEventListener('pointerdown',e=>{ if(!MAPON) return; const r=cv.getBoundingClientRect(); if(!r.width) return; mapTap((e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H); });
 /* ==== murim:stage — 누가 어떤 모습으로, 지금 어떤 장면에 서 있는가 ==== */
 function heroLook(o){ const a=m.age, s=seedOf(m.name), kid=a<13, old=a>=58, S=m.sect&&SECTS[m.sect];
   let robe=S?S.robe:FAMROBE[m.b.o]||'#8f8a78'; if(m.f.leader) robe='#e3ded0'; if(m.f.tianmo) robe='#3a1418';
@@ -5503,7 +5918,7 @@ function relLook(r,o){ if(!r) return LOOK.villager(o); if(r.role==='은사') ret
   if(/맞수|원수|사부|사형|사저|제자/.test(r.role)&&m.f.martial) p.weapon='sword';
   if(r.role==='배우자'||r.role==='정인') p.blush=1;
   return npcLook(Object.assign(p,o||{})); }
-const seasonNow=()=>(!m||m.age==null)?1:((m.age%4)+4)%4;
+const seasonNow=()=>(!m||m.age==null)?1:(m.sea!=null&&m.age>=MAPAGE&&m.phase==='play'?m.sea:((m.age%4)+4)%4);
 function fixStage(s,key){ s=Object.assign({},s); if(key) s.key=key;
   if(s.hero!==null){ if(m.age<3&&!m.train) s.hero=null; else s.hero=Object.assign({look:heroLook(),x:64,face:1},s.hero||{}); }
   if(s.biome===undefined&&!(BG[s.bg]&&BG[s.bg].biome)&&!m.f.migrated){ const b=regOf(m.b.reg).biome; if(b) s.biome=b; }
@@ -5513,7 +5928,7 @@ function fixStage(s,key){ s=Object.assign({},s); if(key) s.key=key;
 function evStage(ev){ if(m.evSt) return m.evSt; const s=ev.st?ev.st():Sg('village'); if(ev.gi) giTint(s); return m.evSt=fixStage(s,'ev:'+ev.id+':'+m.age); }
 function giTint(s){ if(!s.wx) s.wx='gold'; const t=s.time||(BG[s.bg]&&BG[s.bg].time)||'day'; if(!s.tint&&t!=='night') s.tint='gold'; }
 let LASTSPEC=null;
-function applyStage(spec){ const prev=SC; LASTSPEC=spec; const st=setStage(spec); if(st!==prev&&spec.show){ try{ spec.show(); }catch(e){} } const cr=$m('mhCapR'); if(cr) cr.textContent=st.name||''; return st; }
+function applyStage(spec){ if(spec&&spec.map){ const was=MAPON; MAPON=true; SC=null; LASTSPEC=spec; mapEnter(); if(!was){ mapTags(); FX.length=0; DICE=null; } const c0=$m('mhCapR'); if(c0) c0.textContent=MAPV.M.name; return null; } MAPON=false; const prev=SC; LASTSPEC=spec; const st=setStage(spec); if(st!==prev&&spec.show){ try{ spec.show(); }catch(e){} } const cr=$m('mhCapR'); if(cr) cr.textContent=st.name||''; return st; }
 
 /* ---- 아무 일 없는 해의 풍경 ---- */
 const HOMEBG={tenant:'home',farmer:'home',beggar:'village',artisan:'forge',merchant:'market',hunter:'hermit',inn:'inn',bandit:'fort',escort:'home',doctor:'home',official:'manor',clan:'manor',tangc:'manor',blood:'home'};
@@ -5601,9 +6016,11 @@ function stageFor(){
   if(m.phase==='birth') return birthStage();
   if(m.phase==='end') return endStage();
   if(m.phase==='farewell') return farewellStage();
+  if(cutNow()) return cutNow().spec;
   if(m.train){ if(m.tev) return tevStage(); if(m.lastRes&&m.lastRes.train&&m.lastRes.stage) return m.lastRes.stage; return fixStage(trainStage()); }
   if(m.pending) return evStage(m.pending);
-  if(m.lastRes&&m.lastRes.age===m.age&&m.lastRes.stage) return m.lastRes.stage;
+  if(m.lastRes&&m.lastRes.age===m.age&&m.lastRes.stage&&!(m.age>=MAPAGE&&m.lastRes.seen)) return m.lastRes.stage;
+  if(mapMode()) return MAPSPEC;
   if(m.yst){ const s=yearStage(); if(s) return s; }
   return lifeStage(); }
 function postStage(){ if(!m||!SC) return; const h=A('hero');
@@ -5670,8 +6087,9 @@ function glimpse(age){
   return `${where}${jo(o.name,'은','는')} 지금 ${age}세. ${last?esc(last.t):''}`;
 }
 function renderPlay(card){
-  const eye=`<div class="mh-eye"><span class="mh-age">${m.age}세</span><span>${esc(ERAS[m.era].n)} · ${esc(regOf(m.b.reg).n)}</span>${m.alias?`<span class="mh-chip">${esc(m.alias)}</span>`:''}${m.f.martial?`<span class="mh-chip j">${LV[m.lv]}</span>`:''}</div>`;
+  const eye=`<div class="mh-eye"><span class="mh-age">${m.age}세</span>${m.age>=MAPAGE&&!m.train?`<span>${SEAN[cutNow()?cutNow().sea:m.sea]||''}</span>`:''}<span>${esc(ERAS[m.era].n)} · ${esc(regOf(m.b.reg).n)}</span>${m.alias?`<span class="mh-chip">${esc(m.alias)}</span>`:''}${m.f.martial?`<span class="mh-chip j">${LV[m.lv]}</span>`:''}</div>`;
   if(DUEL) return renderDuel(card,eye);
+  if(cutNow()) return renderCut(card,eye);
   if(m.milestone){
     card.innerHTML=`${eye}<div class="mh-q"><p class="mh-qa">${m.milestone}세 · 잠깐 멈춤</p><h2>${esc(MILES[m.milestone])}</h2>
       <label class="mh-lab" for="mhAns">한 줄로 남겨도 되고, 비워 둬도 된다</label><input id="mhAns" type="text" maxlength="60" autocomplete="off">
@@ -5681,23 +6099,26 @@ function renderPlay(card){
     return;
   }
   if(m.train) return renderTrain(card,eye);
-  const ev=m.pending;
+  if(mapMode()) return renderMapCard(card,eye);
+  const ev=m.pending, mp=m.age>=MAPAGE;
   const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.gi?'기연':'갈림길'}</p><p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}</div></div>`:'';
   const last=m.lastRes&&m.lastRes.age===m.age&&!ev?resHtml(m.lastRes):'';
   const feed=m.log.slice(-5).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   const seg=`<div class="mh-focus"><span class="mh-lab">올해의 중심</span><div class="mh-seg" role="radiogroup" aria-label="올해의 중심">${FOCUS.map(f=>`<button type="button" role="radio" aria-checked="${m.focus===f.id&&m.age>=6}" data-focus="${f.id}" ${m.age<6?'disabled':''}>${f.n}</button>`).join('')}</div><span class="mh-hint">${m.age<6?'아직 어리다. 하루하루가 그냥 흘러간다.':esc((FOCUS.find(f=>f.id===m.focus)||FOCUS[1]).h)}</span></div>`;
-  card.innerHTML=ev?`${eye}${dec}`:`${eye}${last}${seg}<ol class="mh-feed">${feed}</ol>`;
+  card.innerHTML=ev?`${eye}${dec}`:mp?`${eye}${last}<button class="mh-go" type="button" id="mhNext" ${m.wait?'disabled':''}>계속</button><ol class="mh-feed">${feed}</ol>`:`${eye}${last}${seg}<ol class="mh-feed">${feed}</ol>`;
+  const nx=$m('mhNext'); if(nx) nx.onclick=()=>{ if(m.wait) return; if(m.lastRes) m.lastRes.seen=1; acc=0; render(); save(); };
   card.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ resolve(+b.dataset.i); if(!DUEL) checkTrain(); acc=0; render(); save(); });
   card.querySelectorAll('[data-focus]').forEach(b=>b.onclick=()=>{ m.focus=b.dataset.focus; render(); save(); });
 }
 function optGroup(key,label,opts){ return `<fieldset class="mh-opt"><legend>${label}</legend><div class="mh-seg">${opts.map(([v,t])=>`<button type="button" data-k="${key}" data-v="${v}" aria-pressed="${setup[key]===v}">${t}</button>`).join('')}</div><p class="mh-hint" id="mhHint-${key}"></p></fieldset>`; }
-const HINTS={era:{peace:ERAS.peace.d,chaos:ERAS.chaos.d,demon:ERAS.demon.d,any:'세 시대 중 하나에 무작위로 태어난다.'},basis:{births:'이 해에 아이가 많이 태어나는 집일수록 그 집에 태어나기 쉽다. 가난한 집일수록 아이가 많다.',pop:'지금 강호에 살아 있는 사람 수만큼의 확률. 살아남은 사람 쪽으로 조금 기운다.'},pace:{fast:'한 해가 1.5초에 지나간다.',normal:'한 해가 3초에 지나간다.',slow:'한 해가 6초에 지나간다.'}};
+const HINTS={era:{peace:ERAS.peace.d,chaos:ERAS.chaos.d,demon:ERAS.demon.d,any:'세 시대 중 하나에 무작위로 태어난다.'},basis:{births:'이 해에 아이가 많이 태어나는 집일수록 그 집에 태어나기 쉽다. 가난한 집일수록 아이가 많다.',pop:'지금 강호에 살아 있는 사람 수만큼의 확률. 살아남은 사람 쪽으로 조금 기운다.'},pace:{fast:'걷기 전 어린 시절은 한 해가 1.5초에 지나간다.',normal:'걷기 전 어린 시절은 한 해가 3초에 지나간다.',slow:'걷기 전 어린 시절은 한 해가 6초에 지나간다.'}};
 function renderTitle(card){
   const saved=load(), past=lsGet('murim_past')||[];
   card.innerHTML=`<div class="mh-eye"><span>武林初出</span></div>
     <h2>강호의 어느 해, 누군가로 태어난다.</h2>
-    <p>어디서 누구의 아이로 태어날지는 고를 수 없다. 강호 사람 대부분은 무공을 모르는 농사꾼으로 태어나 농사꾼으로 죽는다. 삶은 저절로 흘러가고, 당신은 해마다 무엇에 마음을 쏟을지와 갈림길에서 어느 쪽으로 갈지만 정한다.</p>
+    <p>어디서 누구의 아이로 태어날지는 고를 수 없다. 강호 사람 대부분은 무공을 모르는 농사꾼으로 태어나 농사꾼으로 죽는다. 다섯 살부터는 고향 마을을 직접 걸어 다닌다. 걷는 데는 시간이 들지 않고, 무엇을 할 때마다 한 철이 간다. 네 철이면 한 해다.</p>
     <ul class="mh-how">
+      <li>${icImg(iconUrl('dice',0),'sm')}<span><b>마을</b> 집, 일터, 무관, 뒷산 폭포, 장터를 오간다. 어딘가에 느낌표가 뜨면 거기 일이 생긴 것이다.</span></li>
       <li>${icImg(iconUrl('sword',1),'sm')}<span><b>결투</b> 강공·수비·변초·절초. 상대의 낌새를 읽고 수를 낸다. 생사결에서 지면 죽을 수 있다.</span></li>
       <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 범품에서 신병까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
       <li>${icImg(iconUrl('scroll',2),'sm')}<span><b>기연</b> 절벽 아래 동굴, 별똥 쇳덩이, 죽어 가는 노승. 드물게 온다.</span></li>
@@ -5705,7 +6126,7 @@ function renderTitle(card){
     </ul>
     ${optGroup('era','태어날 시대',[['peace','태평성대'],['chaos','정사대전기'],['demon','마교 천하'],['any','아무 시대나']])}
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
-    ${optGroup('pace','삶의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
+    ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
     <div class="mh-row">${saved?`<button class="mh-btn" type="button" id="mhResume">이어 살기 · ${esc(saved.name)} ${saved.age}세</button>`:''}<button class="mh-go seal" type="button" id="mhStart">태어나기</button></div>
     ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
   const hint=()=>['era','basis','pace'].forEach(k=>{ $m('mhHint-'+k).textContent=HINTS[k][setup[k]]; });
@@ -5808,10 +6229,12 @@ function loop(t){
   if(!$m('murimApp').hidden){
     if(m&&m.phase==='play'){
       const busy=!!DUEL||!!m.wait, Y=PACE[m.pace]||3000;
-      if(m.train){ if(m.auto&&!paused&&!m.milestone&&!m.dead&&!busy){ acc+=dt*SPD[spd]; if(acc>=(m.tev?1100:700)){ acc=0; autoTrainStep(); if(!DUEL) afterTrain(); } } }
+      if(CUTQ.length) cutTick(dt);
+      else if(m.train){ if(m.auto&&!paused&&!m.milestone&&!m.dead&&!busy){ acc+=dt*SPD[spd]; if(acc>=(m.tev?1100:700)){ acc=0; autoTrainStep(); if(!DUEL) afterTrain(); } } }
       else if(m.pending){ if(m.auto&&!paused&&!m.milestone&&!busy){ acc+=dt*SPD[spd]; if(acc>=1300){ acc=0; autoResolve(); if(!DUEL){ checkTrain(); render(); save(); } } } }
+      else if(m.age>=MAPAGE){ if(!busy&&!m.dead) mapLoop(dt); }
       else if(!paused&&!m.milestone&&!m.dead&&!busy){ acc+=dt*SPD[spd]; if(acc>=Y){ acc=0; step(); } }
-      const pb=$m('mhProg'); if(pb) pb.style.width=(m.train?m.train.turn/18*100:m.pending||m.milestone||busy?100:Math.min(100,acc/Y*100))+'%';
+      const pb=$m('mhProg'); if(pb) pb.style.width=(m.train?m.train.turn/18*100:CUTQ.length?Math.min(100,CUTQ[0].t/CUTQ[0].ms*100):m.age>=MAPAGE&&!m.pending&&!m.milestone&&!busy?m.sea/4*100:m.pending||m.milestone||busy?100:Math.min(100,acc/Y*100))+'%';
     } else if(!m||!m.phase||m.phase==='title'){ titleT+=dt; if(titleT>9000){ titleT=0; titleIx++; applyStage(stageFor()); } }
   }
   requestAnimationFrame(loop);

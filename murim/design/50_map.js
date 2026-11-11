@@ -39,11 +39,14 @@ function tCliff(X,Y,S,tx,ty,nb,sea){ const c='#9c988e', d='#7b776f', l='#bdb9ae'
   if(sea===3) for(let i=0;i<3;i++) P(X+rnd(th(tx,ty,i+40)*26),Y+rnd(th(tx,ty,i+44)*26),5,2,'#ffffff'); }
 function tFloor(X,Y,tx,ty){ P(X,Y,TS,TS,'#c99b62'); for(let j=0;j<4;j++){ P(X,Y+j*8+7,TS,1,'#a67a46'); P(X,Y+j*8,TS,1,'#d8ae76'); const x=X+((tx*5+j*11+ty*3)%4)*8; P(x,Y+j*8,1,8,'#a67a46'); } if(th(tx,ty,1)<.3) P(X+8+rnd(th(tx,ty,2)*14),Y+10+rnd(th(tx,ty,3)*12),2,2,'#a67a46'); }
 function tWall(X,Y,tx,ty,face){ if(!face){ P(X,Y,TS,TS,'#2b2630'); return; } P(X,Y,TS,TS,'#efe6d0'); P(X,Y,TS,6,WOODD); P(X,Y+6,TS,2,WOODC); P(X,Y+TS-5,TS,5,WOODC); P(X,Y+TS-5,TS,1,WOODL); if(tx%2===0){ P(X,Y+8,4,TS-13,WOODC); P(X,Y+8,1,TS-13,WOODL); } P(X,Y+8,TS,3,rgba('#3a2a20',.18)); }
+// 큰 지도의 땅: d 모래, n 눈밭, j 밀림, p 초원
+const BIOMEP={d:{g:'#e8d29a',g2:'#d4ba7c',g3:'#f4e4b8',fl:[]},n:{g:'#eef3f6',g2:'#d6e2ea',g3:'#ffffff',fl:[]},j:{g:'#58a54e',g2:'#3f8a44',g3:'#74bd62',fl:[]},p:{g:'#bccb7c',g2:'#a4b566',g3:'#d0dc94',fl:[]}};
 const PATHISH={'=':1,'s':1,'B':1}, WATERISH={'~':1,'B':1};
 function drawGround(M,sea){ const key=M.id+'/'+sea; if(M._gc&&M._gk===key) return M._gc; const S=MP[sea], c=M._gc||document.createElement('canvas'); c.width=M.w*TS; c.height=M.h*TS; const keep=cx; cx=c.getContext('2d');
   const at=(x,y)=>x<0||y<0||x>=M.w||y>=M.h?null:M.g[y][x];
   try{ for(let y=0;y<M.h;y++) for(let x=0;x<M.w;x++){ const k=M.g[y][x], X=x*TS, Y=y*TS, nbf=(f)=>[f(at(x,y-1),0),f(at(x+1,y),1),f(at(x,y+1),2),f(at(x-1,y),3)];
       if(k==='.'||k===':') tGrass(X,Y,S,x,y,k===':');
+      else if(BIOMEP[k]) tGrass(X,Y,sea===3&&k!=='d'?S:BIOMEP[k],x,y,0);
       else if(k==='='||k==='s') tPath(X,Y,S,x,y,nbf(n=>n==null||!!PATHISH[n]||n==='D'),k==='s');
       else if(k==='~') tWater(X,Y,S,x,y,nbf(n=>n==null||!!WATERISH[n]||n==='^'));
       else if(k==='B'){ tWater(X,Y,S,x,y,[1,1,1,1]); tBridge(X,Y,S,x,y,nbf(n=>n==='B')); }

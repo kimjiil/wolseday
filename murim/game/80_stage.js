@@ -27,7 +27,7 @@ function fixStage(s,key){ s=Object.assign({},s); if(key) s.key=key;
 function evStage(ev){ if(m.evSt) return m.evSt; const s=ev.st?ev.st():Sg('village'); if(ev.gi) giTint(s); return m.evSt=fixStage(s,'ev:'+ev.id+':'+m.age); }
 function giTint(s){ if(!s.wx) s.wx='gold'; const t=s.time||(BG[s.bg]&&BG[s.bg].time)||'day'; if(!s.tint&&t!=='night') s.tint='gold'; }
 let LASTSPEC=null;
-function applyStage(spec){ if(spec&&spec.map){ const was=MAPON; MAPON=true; SC=null; LASTSPEC=spec; mapEnter(); if(!was){ mapTags(); FX.length=0; DICE=null; } const c0=$m('mhCapR'); if(c0) c0.textContent=MAPV.M.name; return null; } MAPON=false; const prev=SC; LASTSPEC=spec; const st=setStage(spec); if(st!==prev&&spec.show){ try{ spec.show(); }catch(e){} } const cr=$m('mhCapR'); if(cr) cr.textContent=st.name||''; return st; }
+function applyStage(spec){ if(spec&&spec.cathay){ MAPON=false; SC=null; LASTSPEC=spec; FX.length=0; DICE=null; cathayShow(); const c0=$m('mhCapR'); if(c0) c0.textContent='천하'; return null; } cathayHide(); if(spec&&spec.map){ const was=MAPON; MAPON=true; SC=null; LASTSPEC=spec; mapEnter(); if(!was){ mapTags(); FX.length=0; DICE=null; } const c0=$m('mhCapR'); if(c0) c0.textContent=MAPV.M.name; return null; } MAPON=false; const prev=SC; LASTSPEC=spec; const st=setStage(spec); if(st!==prev&&spec.show){ try{ spec.show(); }catch(e){} } const cr=$m('mhCapR'); if(cr) cr.textContent=st.name||''; return st; }
 
 /* ---- 아무 일 없는 해의 풍경 ---- */
 const HOMEBG={tenant:'home',farmer:'home',beggar:'village',artisan:'forge',merchant:'market',hunter:'hermit',inn:'inn',bandit:'fort',escort:'home',doctor:'home',official:'manor',clan:'manor',tangc:'manor',blood:'home'};
@@ -119,7 +119,7 @@ function stageFor(){
   if(m.train){ if(m.tev) return tevStage(); if(m.lastRes&&m.lastRes.train&&m.lastRes.stage&&!m.lastRes.seen) return m.lastRes.stage; if(mapMode()) return MAPSPEC; return fixStage(trainStage()); }
   if(m.pending) return evStage(m.pending);
   if(m.lastRes&&m.lastRes.age===m.age&&m.lastRes.stage&&!(m.age>=MAPAGE&&m.lastRes.seen)) return m.lastRes.stage;
-  if(mapMode()) return MAPSPEC;
+  if(mapMode()) return inCathay()?CATHSPEC:MAPSPEC;
   if(m.yst){ const s=yearStage(); if(s) return s; }
   return lifeStage(); }
 function postStage(){ if(!m||!SC) return; const h=A('hero');

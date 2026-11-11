@@ -1,6 +1,6 @@
 /* ==== murim:map — 맵 위에서 사는 법: 걷기, 장소, 철마다 하는 일 ==== */
 const MAPAGE=5, SEAN=['봄','여름','가을','겨울'];
-let MAPON=false, VIL=null, HOMEM=null, SECTM=null, WORLDM=null, CUTQ=[], KEYS={}, MSPOT=null, MTALK=null, MSHOP=null;
+let MAPON=false, VIL=null, HOMEM=null, SECTM=null, CUTQ=[], KEYS={}, MSPOT=null, MTALK=null, MSHOP=null;
 const cutNow=()=>CUTQ[0]||null;
 const resWait=()=>!!(m&&m.lastRes&&m.lastRes.age===m.age&&!m.lastRes.seen&&!m.tev&&!m.pending&&!m.dead);
 const mapMode=()=>!!(m&&m.phase==='play'&&!m.dead&&m.age>=MAPAGE&&!(m.train&&m.tev)&&!DUEL&&!m.pending&&!m.milestone&&!CUTQ.length&&!resWait());
@@ -8,7 +8,7 @@ const mapMode=()=>!!(m&&m.phase==='play'&&!m.dead&&m.age>=MAPAGE&&!(m.train&&m.t
 const evMs=()=>2400/(1+(SPD[spd]-1)*.25);
 const mpos=()=>m.train?(m.smap||(m.smap={x:14,y:13,dir:'d'})):m.map;
 const MAPSPEC={map:1,key:'map'};
-function curMap(){ if(m.train){ const id='sect:'+(m.sect||'none'); if(!SECTM||SECTM.id!==id||SECTM.name!==m.train.place) SECTM=buildSect(m.sect||'none',m.train.place,m.sect&&SECTS[m.sect]?dk(vivid(SECTS[m.sect].robe,.2),.3):null,!m.sect&&m.f.master); return SECTM; } if(m.map.id==='world'){ const k=worldSect(), id='world:'+m.b.reg+':'+k; if(!WORLDM||WORLDM.id!==id) WORLDM=buildWorld(id,regOf(m.b.reg).n,SECTS[k].n,dk(vivid(SECTS[k].robe,.2),.3)); return WORLDM; } const t=FAMTIER[m.b.o]||0; if(m.map.id==='home'){ if(!HOMEM||HOMEM.id!=='home:'+t) HOMEM=buildHome(t); return HOMEM; } const id='vil:'+m.b.o+t; if(!VIL||VIL.id!==id) VIL=buildVillage(m.b.o,t); return VIL; }
+function curMap(){ if(m.train){ const id='sect:'+(m.sect||'none'); if(!SECTM||SECTM.id!==id||SECTM.name!==m.train.place) SECTM=buildSect(m.sect||'none',m.train.place,m.sect&&SECTS[m.sect]?dk(vivid(SECTS[m.sect].robe,.2),.3):null,!m.sect&&m.f.master); return SECTM; } const t=FAMTIER[m.b.o]||0; if(m.map.id==='home'){ if(!HOMEM||HOMEM.id!=='home:'+t) HOMEM=buildHome(t); return HOMEM; } const id='vil:'+m.b.o+t; if(!VIL||VIL.id!==id) VIL=buildVillage(m.b.o,t); return VIL; }
 function mkMA(id,L,x,y,o){ return Object.assign({id,L,tx:x,ty:y,fx:x,fy:y,px:x*TL+8,py:y*TL+13,dir:'d',ph:rnd(hsh(seedOf(id))*60),wf:0,moving:false,mv:0,path:null},o||{}); }
 const spotAt=(M,x,y)=>M.spots.find(s=>(s.x===x&&s.y===y)||(s.zone&&x>=s.zone[0]&&y>=s.zone[1]&&x<s.zone[0]+s.zone[2]&&y<s.zone[1]+s.zone[3]))||null;
 /* ---- 맵에 사는 사람들 ---- */
@@ -18,7 +18,6 @@ function mapNpcs(M){ const out=[], a=m.age, add=(id,L,x,y,o)=>{ out.push(mkMA(id
     [0,1,2].forEach(i=>{ if(!alive(i)) return; const x=mt(i); add('mate'+i,mateLook(i),[12,17,18][i],[10,10,13][i],{wander:[11,9,8,5],n:x.name,tag:x.role,mate:i,say:()=>pick(x.rival?['비켜. 수련에 방해된다.','다음 비무 때 보자.','…뭘 봐.']:x.v>=65?['오늘 저녁에 뒷산 갈래?','네가 있어서 버틴다.','같이 수련할까?']:['사부님 기분이 안 좋으셔. 조심해.','주방 할멈이 찾으시더라.','요즘 초식이 늘었던데?'])}); });
     if(!M.herm) for(let i=0;i<2;i++) add('d'+i,npcLook({name:'제자'+i+m.sect,age:15+i*3,sect:m.sect,hair:m.sect==='shaolin'?'bald':null}),[7,24][i],[12,13][i],{wander:[[4,11,5,2],[21,11,5,2]][i],n:'동문 제자',say:()=>pick(['장작 패기 당번이 또 나야.','산 아래 장터에 당과 장수가 왔대.','대사형한테 걸리면 죽음이야.'])});
     return out; }
-  if(M.world){ worldNpcs(M,add); return out; }
   if(M.indoor){ const I=M.inner, c=[[I[0]+1,I[1]+2],[I[0]+I[2]-2,I[1]+1],[I[0]+2,I[1]+I[3]-1],[I[0]+I[2]-2,I[1]+I[3]-1],[I[0]+3,I[1]+1]].filter(p=>walkable(M,p[0],p[1])); let i=0;
     const put=(id,L,o)=>{ const p=c[i++]; if(p) add(id,L,p[0],p[1],Object.assign({wander:I,kin:1},o)); };
     const mo=relOf('어머니'), fa=relOf('아버지');
@@ -41,7 +40,7 @@ function mapNpcs(M){ const out=[], a=m.age, add=(id,L,x,y,o)=>{ out.push(mkMA(id
   for(const [role,x,y] of R1){ const r=relOf(role); if(r&&walkable(M,x,y)) add('r_'+role,relLook(r),x,y,{n:r.name,tag:role,kin:1,say:()=>pick(role==='맞수'?['다음엔 내가 이긴다.','게을러진 건 아니겠지.']:role==='정인'?['기다렸어요.','오늘은 달이 밝겠네요.']:role==='은사'?['서두르지 마라. 물은 낮은 데로 흐른다.']:['오랜만이야.','한잔할까?','요즘 어떻게 지내?'])}); }
   return out; }
 function mapEnter(force){ if(!m.map) m.map={id:'vil',x:7,y:22,dir:'d'}; if(m.sea==null) m.sea=0;
-  if(!m.train&&m.smap){ m.smap=null; m.map={id:'world',x:8,y:9,dir:'d'}; } if(m.train&&m.mark){ delete m.used[m.mark.id]; m.mark=null; }
+  if(!m.train&&m.smap) m.smap=null; if(m.train&&m.mark){ delete m.used[m.mark.id]; m.mark=null; }
   const M=curMap(), P0=mpos(), sea=m.train?TSEAS[m.train.turn%6]:m.sea; if(MAPV&&MAPV.M===M&&MAPV.b===m.b&&!force){ MAPV.season=sea; const L=heroLook(); if(L.key!==MAPV.hero.L.key) MAPV.hero.L=L; return; }
   if(!walkable(M,P0.x,P0.y)){ P0.x=M.start[0]; P0.y=M.start[1]; } if(!MAPV||!!MAPV.M.sect!==!!M.sect) m.ai=null;
   const hero=mkMA('hero',heroLook(),P0.x,P0.y,{dir:P0.dir||'d'});
@@ -118,7 +117,7 @@ function doSeason(fid,o){ if(!mapMode()) return; o=o||{}; const b=snap(), sea=m.
   CUTQ.push({spec:actStage(fid,o),ms:fid==='idle'?600:1150,txt,sea,t:0});
   if(m.repOn&&!m.rep&&fid!=='enroll') m.rep={fid,o};
   diffFx(b); m.sea++; if(m.sea>3){ m.sea=0; yearTurn(); }
-  if(MAPV&&MAPV.M.world) m.wldN=(m.wldN||0)+1; if(m.wq){ const id=m.wq; m.wq=null; if(startEv(EV[id])) m.wevN=(m.wevN||0)+1; }
+  if(inCathay()) m.wldN=(m.wldN||0)+1; if(m.wq){ const id=m.wq; m.wq=null; if(startEv(EV[id])) m.wevN=(m.wevN||0)+1; }
   acc=0; render(); save(); }
 const AUTOEV=new Set(['heartDemon','coldAttack','wedding','birth','doom','revenge','poison','demonWar','leader','demonLord','betray','lastDuel','ascend','famine','assassin','sectHead','masterDeath','spouseSick','kidRun','fever','flee','parentCare','friendDeath','avenge','succession','kinRevenge','sparedReturn','rivalReturn','envoy','exam','child6','child6b','disciple','enlight']);
 const markable=ev=>!(AUTOEV.has(ev.id)||ev.epn||(ev.w||0)>=9||ev.min===ev.max);
@@ -136,7 +135,7 @@ function triggerMark(){ const ev=EV[m.mark.id]; m.mark=null; m.ai=null; mapMarks
 /* ---- 맡기기: 알아서 걸어가서 한다 ---- */
 function autoMap(){ const V=MAPV; if(!V) return; const h=V.hero; if(h.moving||(h.path&&h.path.length)) return;
   if(!m.ai){ if(m.mark&&!m.mark.skip){ if(R()<.8) m.ai={mid:m.mark.w?'world':'vil',sid:m.mark.w||m.mark.spot,mark:1,n:0}; else m.mark.skip=1; }
-    if(!m.ai&&(inWorld()||(canLeave()&&R()<(m.f.martial?.3:.08)))) m.ai=autoWorldPick();
+    if(!m.ai&&canLeave()&&R()<(m.f.martial?.25:.03)) m.ai={mid:'world',sid:'gate',n:0};
     if(!m.ai){ let fid=m.age<10?pick(['family','family','rest','train']):autoFocus(), sid='home', o={}; if(fid==='work'&&m.age<10) fid='family';
       if(fid==='train'){ if(!m.f.martial&&m.age>=8&&m.gold>=10&&R()<.1) fid='enroll'; sid='dojo'; if(m.f.martial&&R()<.35){ sid='fall'; o.fall=1; } } else if(fid==='work') sid=WORKSPOT[m.b.o]||'home';
       m.ai={mid:'vil',fid,sid,o,n:0}; } }
@@ -147,7 +146,9 @@ function autoMap(){ const V=MAPV; if(!V) return; const h=V.hero; if(h.moving||(h
   ai.n++; if(V.M.indoor){ leaveHome(); m.ai=ai; } if(goSpot(ai.sid)===false) ai.n=9; }
 function mapLoop(dt){
   if(resWait()) return;
+  if(CT&&!inCathay()) CT=null;
   if(!mapMode()) return;
+  if(inCathay()){ cathayLoop(dt); return; }
   if(m.train){ if(m.auto&&!paused&&MAPV&&MAPON) autoSect(); return; }
   if(MAPV&&MAPON&&markHere(MAPV.M,MSPOT)&&!MAPV.hero.moving){ triggerMark(); return; }
   if(m.rep){ const r=m.rep; doSeason(r.fid,r.o); return; }
@@ -162,21 +163,21 @@ function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home
   if(id==='school'&&a>=6&&a<16&&(m.f.lit||0)<4) add('글을 배운다',`${m.f.lit||0}/4 · 깨치면 벌이가 는다`,S('study'));
   if(id==='shrine') add('절을 올린다','한 해에 한 번, 마음이 가라앉는다',()=>{ if(m.f.pray===m.age){ toast('올해는 이미 절을 올렸다.','',1800); return; } m.f.pray=m.age; m.joy=cl(m.joy+3); sfx('ok'); vfx(()=>heroFloat('행복 +3','good')); render(); save(); },1);
   if(id==='inn'&&a>=15&&m.gold>=3) add('소문을 듣는다','3냥 · 일이 생길 수 있다',S('rumor'));
-  if(id==='gate'&&canLeave()) add('마을을 나선다','강호 지도로 나간다',leaveVillage,1);
+  if(id==='gate'&&canLeave()) add('마을을 나선다','천하 지도로 나간다',leaveVillage,1);
   if(id==='market'||id==='apoth'||id==='smithy') add('물건을 본다','',()=>{ MSHOP=MSHOP?null:id; render(); },1);
   if(id==='apoth'&&m.hp<80&&m.gold>=12) add('진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); vfx(()=>heroFloat('건강 +18','good')); render(); save(); },1);
   return acts; }
 const SHOPS={market:['salve','antidote','sachet','talis','lvest'],apoth:['salve','antidote','pill'],smithy:null};
 function shopList(id){ let ids=SHOPS[id]; if(id==='city'){ const k=myKind(); ids=['salve','antidote','pill','talis',wOf(1,k),wOf(2,k),'chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } if(!ids){ const k=myKind(); ids=[wOf(0,k),wOf(1,k),'lvest','chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
 const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'나무 사이로 볕이 든다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
-function renderMapCard(card,eye){ if(m.train) return renderSectCard(card,eye); const M=MAPV.M, s=MSPOT, Wd=!!M.world, acts=Wd?worldActs():mapActs(), id=M.indoor?'home':(s?s.id:null), busy=m.auto&&!paused;
+function renderMapCard(card,eye){ if(m.train) return renderSectCard(card,eye); const M=MAPV.M, s=MSPOT, acts=mapActs(), id=M.indoor?'home':(s?s.id:null), busy=m.auto&&!paused;
   const seas=`<div class="mh-seas" aria-label="올해의 철">${SEAN.map((n,i)=>`<span class="${i===m.sea?'on':i<m.sea?'done':''}">${n}</span>`).join('')}<label class="mh-rep"><input type="checkbox" id="mhRep" ${m.repOn?'checked':''}> 고른 일을 연말까지 되풀이</label></div>`;
   const talk=MTALK?`<p class="mh-talk"><b>${esc(MTALK.a.n||'')}</b>${esc(MTALK.t)}</p>`:'';
-  const mk=m.mark&&!M.indoor?spotOf(M,markSpotId(M)):null, mkT=mk?(!Wd&&m.mark.w?'마을 밖 어딘가에 무슨 일이 있다':Wd&&!m.mark.w?'고향 마을에 무슨 일이 있다':mk.n+'에 무슨 일이 있다'):'';
-  const place=`<p class="mh-qa">${esc(Wd?M.name:M.indoor?'집 안':'고향 마을')}${mk?` · <span class="mh-mk">${esc(mkT)}</span>`:''}</p><h3 class="mh-pl">${esc(M.indoor?'우리 집':s?s.n:Wd?'관도':'마을 길')}</h3><p class="mh-hint">${esc(Wd&&id?worldHint(id):id==='gate'?(canLeave()?'여기서부터 관도다. 마을을 나서면 강호다.':'여기서부터 관도다. 열다섯은 되어야 혼자 나설 수 있다.'):id?PLACEHINT[id]||'':'방향키·WASD로 걷거나, 가고 싶은 곳을 누른다. 장소에 서면 할 일이 나온다.')}</p>`;
+  const mk=m.mark&&!M.indoor?spotOf(M,markSpotId(M)):null, mkT=mk?(m.mark.w?'마을 밖 '+siteName(m.mark.w)+'에 무슨 일이 있다':mk.n+'에 무슨 일이 있다'):'';
+  const place=`<p class="mh-qa">${esc(M.indoor?'집 안':'고향 마을')}${mk?` · <span class="mh-mk">${esc(mkT)}</span>`:''}</p><h3 class="mh-pl">${esc(M.indoor?'우리 집':s?s.n:'마을 길')}</h3><p class="mh-hint">${esc(id==='gate'?(canLeave()?'여기서부터 관도다. 마을을 나서면 천하가 펼쳐진다.':'여기서부터 관도다. 열다섯은 되어야 혼자 나설 수 있다.'):id?PLACEHINT[id]||'':'방향키·WASD로 걷거나, 가고 싶은 곳을 누른다. 장소에 서면 할 일이 나온다.')}</p>`;
   const ah=acts.length?`<div class="mh-chs">${acts.map((c,i)=>`<button class="mh-ch" type="button" data-ma="${i}" ${busy?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span><span class="odds">${c.free?'':'한 철'}</span></button>`).join('')}</div>`:'';
   const shop=MSHOP?`<div class="mh-shop"><p class="mh-qa">파는 물건 · 가진 돈 ${fmt(m.gold)}냥</p>${shopList(MSHOP).map((x,i)=>`<button class="mh-ch" type="button" data-buy="${i}" ${m.gold<x.pr?'disabled':''}><span><span>${icImg(itIcon(x.id),'sm')} ${esc(ITEMS[x.id].n)}<small>${esc(itDesc(ITEMS[x.id]))}</small></span></span><span class="odds">${x.pr}냥</span></button>`).join('')}</div>`:'';
-  const ids=(Wd?['home','city','sect','deep','pass','tomb']:['home',WORKSPOT[m.b.o],'dojo','fall','market','smithy','apoth','inn',m.age<16?'school':null,'shrine',canLeave()?'gate':null]).filter((x,i,a)=>x&&a.indexOf(x)===i), V=VIL||M, mkId=m.mark?markSpotId(Wd?M:(VIL||M)):null;
+  const ids=(['home',WORKSPOT[m.b.o],'dojo','fall','market','smithy','apoth','inn',m.age<16?'school':null,'shrine',canLeave()?'gate':null]).filter((x,i,a)=>x&&a.indexOf(x)===i), V=VIL||M, mkId=m.mark?markSpotId(VIL||M):null;
   const go=`<div class="mh-places"><span class="mh-lab">바로 가기</span>${ids.map(k=>{ const sp=spotOf(M.indoor?(VIL||buildVillage(m.b.o,FAMTIER[m.b.o]||0)):M,k); if(!sp) return ''; return `<button type="button" class="mh-btn${id===k?' on':''}" data-go="${k}" ${busy?'disabled':''}>${esc(sp.n)}${mkId===k?' <b class="mh-mk">!</b>':''}</button>`; }).join('')}<button type="button" class="mh-btn" data-idle="1" ${busy?'disabled':''}>한 철 그냥 보내기</button></div>`;
   const feed=m.log.slice(-4).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   card.innerHTML=`${eye}${seas}${talk}<div class="mh-dec">${place}${ah}${shop}</div>${go}<ol class="mh-feed">${feed}</ol>`;

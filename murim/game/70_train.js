@@ -98,7 +98,7 @@ function finishTrain(ok,front){
   else { m.joy-=8; log(`${T.place}의 비무 시험에서 떨어졌다`,true); }
   if(T.craft>=4){ if(m.sect==='tang') m.f.poisonwise=1; else if(m.sect==='shaolin'||m.f.med) m.f.med=1; else m.f.smith=1; log('평생 쓸 손재주가 붙었다',true); }
   m.mates.forEach(x=>{ if(x.dead) return; rel(x.rival?(x.v<=25?'원수':'맞수'):x.role,x.name,x.v,{sx:x.sx}); if(x.love&&x.v>=70&&!m.spouse){ m.f.loveName=x.name; m.q.push({age:m.age+ri(1,4),id:'mateLove'}); } });
-  m.train=null; m.mates=null;
+  m.train=null; m.mates=null; placeAfterTrain();
   return {t:(top?'시험관들이 일어서서 박수를 쳤다. 수석이다.':ok?'통과했다. 내문 제자로 올라갔다.':'졌다. 한동안 외문에 남게 되었다.')+extra,tone:ok?'good':'bad'};
 }
 function tevChoices(e){ const c=typeof e.ch==='function'?(m.evCh||(m.evCh=e.ch())):e.ch; return c.filter(x=>!x.when||x.when()); }

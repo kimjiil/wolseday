@@ -37,13 +37,27 @@ const REGIONS=[
   {id:'shaanxi',n:'섬서',w:7,d:'화산 연화봉 아래 메마른 고원',sect:'huashan',biome:'dry'},
   {id:'sichuan',n:'사천',w:11,d:'안개 낀 분지. 아미산과 당가타가 있다',sect:'emei'},
   {id:'anhui',n:'안휘',w:8,d:'남궁세가의 깃발이 걸린 고을',sect:'namgung'},
-  {id:'jiangnan',n:'강남',w:17,d:'운하와 비단 장터가 끝없이 이어진 물의 고장',biome:'water'},
+  {id:'jiangnan',n:'강소',w:10,d:'운하와 비단 장터가 끝없이 이어진 물의 고장',biome:'water'},
+  {id:'zhejiang',n:'절강',w:8,d:'서호의 버들과 바닷바람이 만나는 항구',biome:'water'},
   {id:'shandong',n:'산동',w:11,d:'태산 아래 넓은 밀밭'},
   {id:'hebei',n:'하북',w:9,d:'북방 오랑캐와 맞닿은 거친 들판',biome:'dry'},
   {id:'guangdong',n:'광동',w:6,d:'남쪽 바다의 습한 항구',biome:'jungle'},
   {id:'yunnan',n:'운남',w:3,d:'독충과 산족의 땅, 남만',biome:'jungle'},
   {id:'xinjiang',n:'천산',w:1.5,d:'눈 덮인 천산 아래 새외의 오아시스',biome:'snow'},
-  {id:'beihai',n:'북해',w:.5,d:'일 년 내내 얼음이 녹지 않는 북쪽 끝',biome:'snow'}
+  {id:'beihai',n:'북해',w:.5,d:'일 년 내내 얼음이 녹지 않는 북쪽 끝',biome:'snow'},
+  {id:'shanxi',n:'산서',w:6,d:'태행산 그늘 아래 상인과 산적이 함께 사는 땅',biome:'dry'},
+  {id:'hunan',n:'호남',w:8,d:'동정호 물안개와 형산 자락의 고을',biome:'water'},
+  {id:'jiangxi',n:'강서',w:7,d:'파양호 뱃노래가 들리는 도자기의 고장',biome:'water'},
+  {id:'gansu',n:'감숙',w:2.5,d:'서역으로 가는 낙타가 지나는 황톳길',biome:'dry'},
+  {id:'qinghai',n:'청해',w:.6,d:'곤륜산 눈이 녹아 흐르는 푸른 호숫가',biome:'snow'},
+  {id:'fujian',n:'복건',w:5,d:'산이 바다로 떨어지는 해적과 차의 땅',biome:'jungle'},
+  {id:'hainan',n:'해남',w:.6,d:'뱃길 끝의 더운 섬',biome:'jungle'},
+  {id:'guangxi',n:'광서',w:3,d:'십만대산의 그림자가 드리운 남쪽 변방',biome:'jungle'},
+  {id:'guizhou',n:'귀주',w:2,d:'독충과 안개의 묘강',biome:'jungle'},
+  {id:'xizang',n:'서장',w:.5,d:'하늘과 맞닿은 설산의 고원',biome:'snow'},
+  {id:'nanman',n:'남만',w:.8,d:'맹수와 밀림의 땅',biome:'jungle'},
+  {id:'mongol',n:'몽골',w:1,d:'끝없는 초원과 말발굽 소리',biome:'dry'},
+  {id:'liaodong',n:'요동',w:1.5,d:'장백산 아래 눈보라 치는 변경',biome:'snow'}
 ];
 // w: [이 해에 태어나는 아이 기준, 지금 사는 사람 기준] · pct: 재산 백분위 · inc: 한 해 벌이(냥) · it: 집안에서 물려받는 물건
 const FAM=[

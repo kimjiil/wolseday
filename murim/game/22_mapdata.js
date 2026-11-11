@@ -71,23 +71,3 @@ function buildSect(sk,place,rc,herm){ const M=mkMap('sect:'+sk,30,24,'.',place);
   const sp=(id,n,x,y,o)=>M.spots.push(Object.assign({id,n,x,y},o||{}));
   sp('yard','연무장',14,12,{zone:[11,10,8,3],lab:[15,14.7]}); sp('rock','운기 바위',21,5,{zone:[21,4,2,2],lab:[22,3.2]}); sp('craft','공방',3,11,{lab:[4,7.2]}); sp('chore','주방',24,11,{lab:[25,7.2]}); sp('rest','숙소',4,18,{lab:[4.5,14.2]}); sp('gate','산문',14,21,{zone:[14,20,2,3],lab:[15,19.6]}); sp('hall',herm?'사부의 초옥':'대전',14,8,{lab:[15,herm?4.2:3.2]});
   M.start=[14,13]; M.sect=1; M.herm=herm?1:0; return mfin(M); }
-/* 강호: 마을 밖 세상. 읍성, 산문, 깊은 산, 고갯길 산채, 옛 무덤 */
-function buildWorld(id,rn,sn,rc){ const M=mkMap(id,44,30,'.',rn+' 강호');
-  mrect(M,0,0,44,3,'^'); mrect(M,31,3,2,27,'~'); mrect(M,25,3,6,2,'~'); M.falls.push({x:27,y:0,w:2,h:3});
-  mrect(M,4,16,38,1,'='); mrect(M,31,16,2,1,'B'); mrect(M,8,8,1,8,'='); mrect(M,6,17,1,9,'='); mrect(M,28,6,1,10,'='); mrect(M,38,13,1,13,'='); mrect(M,14,17,14,2,'s'); mrect(M,9,24,5,3,'F');
-  const H=(x,y,w,h,o)=>mobj(M,'house',x,y,Object.assign({w,h},o));
-  H(5,5,6,3,{roof:'t',rc,door:3,pillar:1,lamp:1,sign:'sword',sc:'#7a2a22',mid:'sect'}); mobj(M,'gate',7,11);
-  H(18,12,6,4,{roof:'t',rc:'#3f5266',door:3,dw:28,pillar:1,lamp:1,flag:'#b8321f',sign:'seal',mid:'city'}); H(14,13,3,3,{roof:'t',rc:'#6a5a4a',door:1,sign:'inn',mid:'city'}); H(25,13,3,3,{roof:'t',rc:'#5a6a5a',door:1,sign:'med',mid:'city'});
-  mobj(M,'stall',16,18,{c:'#d8452c'}); mobj(M,'stall',23,18,{c:'#3f6f9a'}); mobj(M,'lantern',13,15); mobj(M,'lantern',28,18);
-  H(2,21,3,2,{roof:'h',door:1,mid:'home'}); H(8,21,3,2,{roof:'h',door:1,chim:1,mid:'home'}); mobj(M,'sign',7,26); mobj(M,'scare',11,25);
-  mobj(M,'flat',28,5); mobj(M,'rock',26,6); mobj(M,'rock',30,7);
-  mobj(M,'tent',36,11,{}); mobj(M,'tent',40,11,{c:'#7a6a5a',fc:'#2a2a2a'}); mobj(M,'fire',39,14); for(const x of [35,36,37,40,41]) mobj(M,'fence',x,14); mobj(M,'sign',36,17);
-  mobj(M,'mound',35,26); mobj(M,'mound',40,26); mobj(M,'mound',41,23); mobj(M,'stele',36,25); mobj(M,'stele',40,25); mobj(M,'rock',42,27); mobj(M,'tree',35,23,{v:'plum'});
-  for(const p of [[1,4],[12,3],[16,5],[21,3],[34,3],[39,4],[41,7],[2,8],[12,7]]) mobj(M,'mount',p[0],p[1]);
-  const used=new Set(M.objs.flatMap(o=>{ const a=[]; for(let j=-1;j<=o.h;j++) for(let i=-1;i<=o.w;i++) a.push((o.x+i)+','+(o.y+j)); return a; }));
-  for(let y=3;y<30;y++) for(let x=0;x<44;x++){ if(M.g[y][x]!=='.'||used.has(x+','+y)) continue; const h=hsh(x*4.7+y*8.3+1.9), edge=x<=0||x>=43||y>=29, p=edge?.6:(x>32&&y<13)?.34:(x>33&&y>19)?.14:y<10?.2:(y>19&&x>13&&x<30)?.22:.05;
-    if(h<p){ mobj(M,y<12||x>32?'pine':hsh(x*2.3+y*5.9)<.5?'pine':'tree',x,y); used.add(x+','+y); used.add((x+1)+','+y); used.add((x-1)+','+y); } else if(hsh(x*3.1+y*7.7)<.08) M.g[y][x]=':'; }
-  const sp=(k,n,x,y,o)=>M.spots.push(Object.assign({id:k,n,x,y},o||{}));
-  sp('home','고향 마을',6,25,{zone:[5,24,3,2],lab:[6.5,19.4]}); sp('sect',sn,8,9,{zone:[8,8,1,3],lab:[8.5,3.4]}); sp('city','읍성',21,16,{zone:[14,16,14,2],lab:[21.5,10.2]});
-  sp('deep','깊은 산',28,6,{zone:[27,5,3,2],lab:[28.5,4.4]}); sp('pass','고갯길 산채',38,15,{zone:[36,15,5,2],lab:[39,9.4]}); sp('tomb','옛 무덤',38,25,{zone:[37,24,3,2],lab:[38.5,22.2]});
-  M.start=[6,23]; M.world=1; return mfin(M); }

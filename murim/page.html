@@ -1,0 +1,28 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Gowun+Batang:wght@400;700&display=swap">
+
+<div id="murimApp" hidden>
+  <header class="mh-top">
+    <div class="mh-brand"><span class="mh-seal" aria-hidden="true">武林</span><div><b>무림초출</b><small>강호의 어느 해, 누군가로 태어난다</small></div></div>
+    <button class="mh-btn" type="button" id="mhHub">‹ 게임 목록</button>
+  </header>
+  <div class="mh-grid" id="mhGrid">
+    <section class="mh-col">
+      <div class="mh-scene">
+        <canvas id="mhScene" width="384" height="216" role="img" aria-label="도트로 그린 지금의 장면"></canvas>
+        <div id="mhTags" aria-hidden="true"></div><div id="mhFl" aria-hidden="true"></div>
+        <div id="mhHud" hidden></div>
+        <div id="mhCall" class="mh-call" hidden aria-hidden="true"></div>
+        <div id="mhToast" aria-live="polite"></div>
+        <div class="mh-cap"><span id="mhCapL"></span><span id="mhCapR"></span></div>
+        <span class="mh-prog" aria-hidden="true"><i id="mhProg"></i></span>
+      </div>
+      <div class="mh-ctl" id="mhCtl" hidden></div>
+      <div class="mh-card" id="mhCard" aria-live="polite"></div>
+    </section>
+    <aside class="mh-col" id="mhSide" hidden>
+      <div class="mh-rec" id="mhRec"></div>
+      <div class="mh-bagp" id="mhBag" hidden></div>
+      <div class="mh-chron"><h4>연보<small>최근 순</small></h4><ol id="mhChron"></ol></div>
+    </aside>
+  </div>
+</div>

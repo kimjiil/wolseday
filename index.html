@@ -3203,9 +3203,9 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-cw{position:relative;width:max(100%,820px);aspect-ratio:96/72;user-select:none}
 .mh-cw canvas.bg{position:absolute;inset:0;width:100%;height:100%;image-rendering:auto}
 #mhCreg span{position:absolute;transform:translate(-50%,-50%);font:700 15px/1 'Song Myung',serif;color:rgba(110,24,16,.78);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 6px #fff;pointer-events:none;white-space:nowrap}
-.mh-cs{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 3px;margin:0;border:0;background:none;color:#fff;font:600 10.5px/1.1 inherit;cursor:pointer;white-space:nowrap;z-index:1}
+.mh-cs{position:absolute;transform:translate(-50%,-10px);display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 3px;margin:0;border:0;background:none;color:#fff;font:600 10.5px/1.1 inherit;cursor:pointer;white-space:nowrap;z-index:1}
 .mh-cs i{width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid #22202a;box-sizing:border-box}
-.mh-cs span{text-shadow:-1px 0 #22202a,1px 0 #22202a,0 -1px #22202a,0 1px #22202a,0 0 3px #22202a}
+.mh-cs span{pointer-events:none;text-shadow:-1px 0 #22202a,1px 0 #22202a,0 -1px #22202a,0 1px #22202a,0 0 3px #22202a}
 .mh-cs.t-capital i{width:12px;height:12px;background:#ffd84a}
 .mh-cs.t-sect i{background:#8fd0ff}.mh-cs.t-clan i{background:#b9a0ff}.mh-cs.t-den i{background:#c9a46a;border-radius:1px}.mh-cs.t-demon i{background:#e0503c;border-radius:1px}.mh-cs.t-camp i{background:#d8e08a}.mh-cs.t-home i{background:#7be07b;width:11px;height:11px}
 .mh-cs.on i{outline:2px solid #ffd84a;outline-offset:2px}
@@ -3215,6 +3215,8 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-cgo{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:12px 0;padding:10px 12px;border:1px solid var(--m-line);background:var(--m-panel2)}
 .mh-cgo p{margin:0;display:flex;flex-direction:column;gap:2px}.mh-cgo small{color:var(--m-muted);font-size:12.5px}
 .mh-cgo .mh-go{margin:0;width:auto;flex:none}
+/* 한글은 낱말 가운데서 줄이 끊기지 않게 */
+#murimApp{word-break:keep-all;overflow-wrap:anywhere}
 </style>
 
 <div id="murimApp" hidden>
@@ -3259,7 +3261,8 @@ function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(
 const LV=['범인','삼류','이류','일류','절정','초절정','화경','현경','생사경'];
 const LVX=[0,6,22,60,135,240,400,640,1000];
 const LVP=[0,10,20,32,46,62,80,100,125];
-const SURN=['남궁','제갈','독고','모용','사마','황보','당','진','이','왕','장','유','백','한','연','설','위','소','공손','하후'];
+// 흔한 성이 대부분이고 복성은 드물다. 세가의 성(남궁·제갈·모용·당·팽)은 그 집안에서 태어날 때만 붙는다
+const SURN=['이','왕','장','유','진','양','조','황','주','오','서','손','마','호','곽','임','하','고','나','정','한','백','연','설','위','소','허','심','여','노','방','석','육','강','독고','사마','황보','공손','하후'];
 const GIV=['무','진','천','운','호','명','성','백','청','소','혁','윤','결','도','준','하','린','설','연','화','영','월','현','강','휘','령','건','서'];
 const gname=()=>{let a=pick(GIV),b=pick(GIV);while(b===a)b=pick(GIV);return a+b;};
 const SECTS={
@@ -5620,7 +5623,7 @@ E('dog',{min:4,max:9,once:1,st:()=>Sg('village',{props:[['puppies',108,{dy:8}]],
   text:()=>'이웃집 개가 새끼를 낳았다. 한 마리만 키우게 해 달라고 조르고 싶다.',ch:[
   {t:'조른다',p:()=>pctNow()>40?.7:.35,go:ok=>{ if(ok){ m.joy+=12; m.f.dog=m.age; return {t:'어머니가 한숨을 쉬더니 허락했다. 누렁이라고 이름을 붙였다.',tone:'good',cut:()=>{ setPose('hero','cheer'); emo('hero','heart'); }}; } m.joy-=5; return {t:'"우리 먹을 것도 없다." 그날 밤 이불 속에서 울었다.',tone:'bad',cut:()=>{ setPose('hero','cry'); }}; }},
   {t:'말도 꺼내지 않는다',go:()=>{ m.bond+=3; return '강아지가 다른 집으로 가는 걸 담 너머로 보았다.'; }}]});
-E('seodang',{min:7,max:10,once:1,when:()=>!m.f.school,st:()=>Sg('school',{cast:[N('tc',LOOK.official({robe:'#5a6a5a',item:'book'}),118,{pose:'carry',tag:'훈장'}),N('s1',LOOK.child(),96,{pose:'sit',dy:-2}),N('s2',LOOK.girl(),134,{pose:'sit',dy:-2})],hero:{x:56}}),
+E('seodang',{min:7,max:10,once:1,when:()=>!m.f.school&&!m.f.lit,st:()=>Sg('school',{cast:[N('tc',LOOK.official({robe:'#5a6a5a',item:'book'}),118,{pose:'carry',tag:'훈장'}),N('s1',LOOK.child(),96,{pose:'sit',dy:-2}),N('s2',LOOK.girl(),134,{pose:'sit',dy:-2})],hero:{x:56}}),
   text:()=>'서당 훈장이 글을 배우러 오라고 한다. 수업료는 한 해 쌀 닷 말, 은자로 8냥이다.',ch:[
   {t:'서당에 다닌다',when:()=>m.gold>=8||pctNow()>30,go:()=>{ gold(-8); m.f.school=1; bump('wit'); m.joy+=3; log('서당에서 글을 배우기 시작했다',true); return {t:'천자문 첫 줄을 외웠다. 하늘은 검고 땅은 누렇다.',tone:'good',cut:()=>{ const h=A('hero'); if(h){ h.goto=84; h.pose0='sit'; } }}; }},
   {t:'집안일을 돕는다',go:()=>{ m.bond+=4; return '서당 앞을 지날 때마다 아이들 글 읽는 소리가 들렸다.'; }}]});
@@ -6211,7 +6214,7 @@ function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; m.wq
   tick(true); if(m.dead){ CUTQ.length=0; return; }
   const fromQ=m.q.length<qn; checkTrain();
   if(m.pending&&!m.train&&!fromQ&&markable(m.pending)){ const ev=m.pending; m.pending=null; m.mark=markFor(ev); }
-  mapMarks(); const d=Math.round(m.gold-g0), age=m.age; vfx(()=>toast(`<b>${age}세</b> 새해가 밝았다 · 한 해 살림 ${d>=0?'+':'−'}${fmt(Math.abs(d))}냥`,'t1',2600));
+  mapMarks(); const d=Math.round(m.gold-g0), age=m.age; vfx(()=>toast(`<b>${age}세</b> 새해가 밝았다${d?` · 한 해 살림 ${d>0?'+':'−'}${fmt(Math.abs(d))}냥`:''}`,'t1',2600));
   if(m.yst){ const s=yearStage(), last=m.log[m.log.length-1]; if(s) CUTQ.push({spec:s,ms:1700,txt:last?last.t:'',sea:0,t:0}); } }
 function triggerMark(){ const ev=EV[m.mark.id]; m.mark=null; m.ai=null; mapMarks();
   if(ev&&m.age>=ev.min&&m.age<=ev.max&&(!ev.when||ev.when())){ m.used[ev.id]=m.age; m.lastRes=null; m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi) vfx(()=>{ callout('奇緣','gi',1500); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; }); }
@@ -6360,7 +6363,7 @@ E('wExam',{min:WAGE,max:29,wld:1,when:()=>WGO&&!m.sect&&sectOpen(),st:()=>{ cons
   {t:'머리로 보인다',p:()=>.12+ST('wit')*.06-(m.age>=20?.15:0),go:ok=>wJoin(ok,'장로가 한 번 보여 준 초식을 그 자리에서 따라 했다.')},
   {t:'사흘을 꿇어앉아 버틴다',p:()=>.2+ST('luck')*.03,go:ok=>{ hurt(8,'산문 앞의 추위'); return wJoin(ok,'사흘째 새벽, 무릎이 돌바닥에 얼어붙었다.'); }}]});
 /* ==== murim:cathay-screen — 천하 지도 화면: 눌러서 고르고, 길을 따라 움직이고, 가는 동안 철이 간다 ==== */
-let CATH=null, CT=null, CSEL=null, CBG=null, CHOME=null, CFR=0;
+let CMOVED=false, CATH=null, CT=null, CSEL=null, CBG=null, CHOME=null, CFR=0;
 const CATHSPEC={cathay:1,key:'cathay'};
 const TYPEN={capital:'도성',city:'성',sect:'문파',clan:'세가',den:'소굴',demon:'마도',camp:'천막',home:'고향'};
 const cath=()=>CATH||(CATH=buildCathay());
@@ -6369,8 +6372,9 @@ const regId=()=>m.b.reg==='jiangnan'?'jiangsu':m.b.reg;
 const roadish=(x,y)=>{ const g=cath().g[y]&&cath().g[y][x]; return g==='='||g==='B'; };
 /* 고향 마을: 태어난 지역의 성에서 길을 따라 조금 떨어진 곳 */
 function homeTile(){ if(CHOME&&CHOME.b===m.b) return CHOME; const M=cath(), rid=regId(), o=OR(m.b.o)||{}, own=o.site&&M.spots.find(s=>s.id===o.site), ss=M.spots.filter(s=>s.reg===rid), base=own||ss.find(s=>s.type==='city'||s.type==='capital')||ss[0]||M.spots[0]; let best=null;
-  for(let want=own?3:5+seedOf(m.name||'x')%3; want>=2&&!best; want--){ const q=[[base.x,base.y,0]], seen=new Set([base.x+','+base.y]);
-    while(q.length&&!best){ const [x,y,d]=q.shift(); if(d===want){ if(!M.spots.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)<3)) best=[x,y]; continue; } for(const v of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+v[0], ny=y+v[1], k=nx+','+ny; if(!seen.has(k)&&roadish(nx,ny)){ seen.add(k); q.push([nx,ny,d+1]); } } } }
+  const wants=own?[3,4,2,5,1]:[5+seedOf(m.name||'x')%3,5,4,3,2,1], gap=own?2:3;
+  for(const want of wants){ if(best) break; const q=[[base.x,base.y,0]], seen=new Set([base.x+','+base.y]);
+    while(q.length&&!best){ const [x,y,d]=q.shift(); if(d===want){ if(!M.spots.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)<Math.min(gap,want))) best=[x,y]; continue; } for(const v of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+v[0], ny=y+v[1], k=nx+','+ny; if(!seen.has(k)&&roadish(nx,ny)){ seen.add(k); q.push([nx,ny,d+1]); } } } }
   if(!best) best=[base.x,base.y]; CHOME={b:m.b,id:'home',n:homeName(),x:best[0],y:best[1],type:'home',reg:rid}; return CHOME; }
 const cSites=()=>cath().spots.concat([homeTile()]);
 const site=id=>id==='home'?homeTile():cath().spots.find(s=>s.id===id);
@@ -6430,8 +6434,11 @@ let SKINVER=0;
 function cathayShow(){ const box=cv.parentNode; let el=$m('mhCathay');
   if(!el){ el=document.createElement('div'); el.id='mhCathay'; el.className='mh-cathay'; el.innerHTML='<div class="mh-cw" id="mhCw"><canvas class="bg" id="mhCbg" width="1536" height="1152"></canvas><div id="mhCreg" aria-hidden="true"></div><div id="mhCmk"></div><canvas id="mhChero" class="mh-chero" width="120" height="80" aria-hidden="true"></canvas></div>'; box.insertBefore(el,cv.nextSibling);
     $m('mhCreg').innerHTML=CREG.map(r=>`<span style="left:${r[2]/KW*100}%;top:${r[3]/KH*100}%">${r[1]}</span>`).join('');
-    $m('mhCmk').addEventListener('click',e=>{ const b=e.target.closest('[data-s]'); if(!b||CT||(m.auto&&!paused)) return; const cur=curSite(); CSEL=cur&&cur.id===b.dataset.s?null:b.dataset.s; sfx('tick'); render(); });
-    let drag=null; el.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') drag={x:e.clientX,y:e.clientY,l:el.scrollLeft,t:el.scrollTop}; }); window.addEventListener('pointermove',e=>{ if(drag){ el.scrollLeft=drag.l-(e.clientX-drag.x); el.scrollTop=drag.t-(e.clientY-drag.y); } }); window.addEventListener('pointerup',()=>{ drag=null; }); }
+    $m('mhCw').addEventListener('click',e=>{ if(CMOVED){ CMOVED=false; return; } if(CT||(m.auto&&!paused)) return; let id=null; const b=e.target.closest('[data-s]');
+      if(e.detail===0){ if(b) id=b.dataset.s; }   // 키보드로 누른 단추
+      else { const w=$m('mhCw').getBoundingClientRect(), px=e.clientX-w.left, py=e.clientY-w.top; let best=30*30; for(const s of cSites()){ const dx=(s.x+.5)/KW*w.width-px, dy=(s.y+.5)/KH*w.height-py, d=dx*dx+dy*dy; if(d<best){ best=d; id=s.id; } } if(!id&&b) id=b.dataset.s; }
+      if(!id) return; const cur=curSite(); CSEL=cur&&cur.id===id?null:id; sfx('tick'); render(); });
+    let drag=null; el.addEventListener('pointerdown',e=>{ CMOVED=false; if(e.pointerType==='mouse') drag={x:e.clientX,y:e.clientY,l:el.scrollLeft,t:el.scrollTop}; }); window.addEventListener('pointermove',e=>{ if(drag){ if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>6) CMOVED=true; el.scrollLeft=drag.l-(e.clientX-drag.x); el.scrollTop=drag.t-(e.clientY-drag.y); } }); window.addEventListener('pointerup',()=>{ drag=null; }); }
   const was=el.hidden; el.hidden=false; cv.style.display='none'; const tg=$m('mhTags'); if(tg) tg.textContent='';
   cathBg(m.sea); cathMarkers(); cathHero(); if(was!==false||!cathayShow.seen){ cathayShow.seen=1; cathCenter(); } }
 function cathayHide(){ const el=$m('mhCathay'); if(el&&!el.hidden){ el.hidden=true; cv.style.display=''; } }
@@ -6766,7 +6773,13 @@ function shareText(){
   const o=OR(m.b.o), w=m.inv&&m.inv.w?ITEMS[m.inv.w]:null;
   return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${ERAS[m.era].n} ${regOf(m.b.reg).n}, ${famAs(o)} · ${oneIn(m.b.P)}명 중 1명\n향년 ${m.age}세 · ${m.deathCause}${m.f.martial?` · ${LV[m.lv]}`:''}${m.wins||m.losses?` · ${m.wins||0}승 ${m.losses||0}패`:''}${w&&w.t>=2?` · ${w.n}`:''}\n"${epitaph()}"\n같은 순간 태어난 넷: ${m.others.map(x=>`${x.name} ${x.age}세`).join(', ')}\nwolseday.com/#murim`;
 }
-function render(){
+let RKEY='';
+// 좁은 화면에서는 장면이 위에 붙어 있어서, 사건이나 결과가 새로 뜨면 카드 머리가 가려지지 않게 끌어온다
+function render(){ render0(); try{ const card=$m('mhCard'), on=m&&m.phase==='play'; if(!card) return;
+    const rk=!on?'':m.pending?'e:'+m.pending.id:m.tev?'t:'+String(m.tevText||'').slice(0,12):resWait()?'r:'+String(m.lastRes.t||'').slice(0,12):m.milestone?'m:'+m.milestone:'';
+    if(rk&&rk!==RKEY&&matchMedia('(max-width:880px) and (orientation:portrait)').matches){ const a=cv.parentNode.getBoundingClientRect(), b=card.getBoundingClientRect(); if(a.top<=2&&b.top<a.bottom-2) window.scrollBy({top:b.top-a.bottom-6,behavior:'smooth'}); }
+    RKEY=rk; }catch(e){} }
+function render0(){
   const card=$m('mhCard'); if(!card) return;
   const playing=!!(m&&['play','farewell','end'].includes(m.phase));
   $m('mhSide').hidden=!playing; $m('mhGrid').classList.toggle('solo',!playing);

@@ -303,9 +303,9 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-cw{position:relative;width:max(100%,820px);aspect-ratio:96/72;user-select:none}
 .mh-cw canvas.bg{position:absolute;inset:0;width:100%;height:100%;image-rendering:auto}
 #mhCreg span{position:absolute;transform:translate(-50%,-50%);font:700 15px/1 'Song Myung',serif;color:rgba(110,24,16,.78);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 6px #fff;pointer-events:none;white-space:nowrap}
-.mh-cs{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 3px;margin:0;border:0;background:none;color:#fff;font:600 10.5px/1.1 inherit;cursor:pointer;white-space:nowrap;z-index:1}
+.mh-cs{position:absolute;transform:translate(-50%,-10px);display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 3px;margin:0;border:0;background:none;color:#fff;font:600 10.5px/1.1 inherit;cursor:pointer;white-space:nowrap;z-index:1}
 .mh-cs i{width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid #22202a;box-sizing:border-box}
-.mh-cs span{text-shadow:-1px 0 #22202a,1px 0 #22202a,0 -1px #22202a,0 1px #22202a,0 0 3px #22202a}
+.mh-cs span{pointer-events:none;text-shadow:-1px 0 #22202a,1px 0 #22202a,0 -1px #22202a,0 1px #22202a,0 0 3px #22202a}
 .mh-cs.t-capital i{width:12px;height:12px;background:#ffd84a}
 .mh-cs.t-sect i{background:#8fd0ff}.mh-cs.t-clan i{background:#b9a0ff}.mh-cs.t-den i{background:#c9a46a;border-radius:1px}.mh-cs.t-demon i{background:#e0503c;border-radius:1px}.mh-cs.t-camp i{background:#d8e08a}.mh-cs.t-home i{background:#7be07b;width:11px;height:11px}
 .mh-cs.on i{outline:2px solid #ffd84a;outline-offset:2px}
@@ -315,3 +315,5 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-cgo{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:12px 0;padding:10px 12px;border:1px solid var(--m-line);background:var(--m-panel2)}
 .mh-cgo p{margin:0;display:flex;flex-direction:column;gap:2px}.mh-cgo small{color:var(--m-muted);font-size:12.5px}
 .mh-cgo .mh-go{margin:0;width:auto;flex:none}
+/* 한글은 낱말 가운데서 줄이 끊기지 않게 */
+#murimApp{word-break:keep-all;overflow-wrap:anywhere}

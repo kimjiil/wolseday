@@ -27,6 +27,10 @@ game/ 은 design/ 의 함수를 이름으로 부르기만 한다(예: `charSprit
 
 `game/23_cathay.js` 에 지역(CREG), 장소(CSITE), 길(CROAD), 강(CRIVER), 호수, 산이 표로 들어 있다. 장소를 옮기거나 더하려면 이 표만 고치면 된다. 천하 지도 화면은 배경 한 장(1536×1152) 위에 장소 단추와 이름표를 올리는 구조라, 배경을 그림 한 장으로 바꾸기 쉽다.
 
+## 출신·지역·문파 자료
+
+`game/10_core.js` 에 지역(REGIONS), 출신(FAM), 문파 안에서 태어나는 출신(SECTBORN), 문파(SECTS)가 표로 들어 있다. 출신 한 줄에 비중(`w`), 재산 범위(`pct`), 태어나는 지역(`region`/`regions`), 천하 지도에서 고향이 붙는 장소(`site`), 집 크기(`tier`), 일터(`ws`)와 일 이름(`wn`)을 적는다.
+
 ## 시험
 
 `python3 murim/build.py --test 경로/test.html` 은 `index.html` 을 건드리지 않고 시험용 페이지를 만든다(`window.__ev` 로 안쪽 값을 볼 수 있다).

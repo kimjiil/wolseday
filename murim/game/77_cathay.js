@@ -7,10 +7,10 @@ const inCathay=()=>{ if(!m||!m.map) return false; if(m.map.id==='world'){ const 
 const regId=()=>m.b.reg==='jiangnan'?'jiangsu':m.b.reg;
 const roadish=(x,y)=>{ const g=cath().g[y]&&cath().g[y][x]; return g==='='||g==='B'; };
 /* 고향 마을: 태어난 지역의 성에서 길을 따라 조금 떨어진 곳 */
-function homeTile(){ if(CHOME&&CHOME.b===m.b) return CHOME; const M=cath(), rid=regId(), ss=M.spots.filter(s=>s.reg===rid), base=ss.find(s=>s.type==='city'||s.type==='capital')||ss[0]||M.spots[0]; let best=null;
-  for(let want=5+seedOf(m.name||'x')%3; want>=2&&!best; want--){ const q=[[base.x,base.y,0]], seen=new Set([base.x+','+base.y]);
+function homeTile(){ if(CHOME&&CHOME.b===m.b) return CHOME; const M=cath(), rid=regId(), o=OR(m.b.o)||{}, own=o.site&&M.spots.find(s=>s.id===o.site), ss=M.spots.filter(s=>s.reg===rid), base=own||ss.find(s=>s.type==='city'||s.type==='capital')||ss[0]||M.spots[0]; let best=null;
+  for(let want=own?3:5+seedOf(m.name||'x')%3; want>=2&&!best; want--){ const q=[[base.x,base.y,0]], seen=new Set([base.x+','+base.y]);
     while(q.length&&!best){ const [x,y,d]=q.shift(); if(d===want){ if(!M.spots.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)<3)) best=[x,y]; continue; } for(const v of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+v[0], ny=y+v[1], k=nx+','+ny; if(!seen.has(k)&&roadish(nx,ny)){ seen.add(k); q.push([nx,ny,d+1]); } } } }
-  if(!best) best=[base.x,base.y]; CHOME={b:m.b,id:'home',n:'고향 마을',x:best[0],y:best[1],type:'home',reg:rid}; return CHOME; }
+  if(!best) best=[base.x,base.y]; CHOME={b:m.b,id:'home',n:homeName(),x:best[0],y:best[1],type:'home',reg:rid}; return CHOME; }
 const cSites=()=>cath().spots.concat([homeTile()]);
 const site=id=>id==='home'?homeTile():cath().spots.find(s=>s.id===id);
 const siteName=id=>{ const s=site(id); return s?s.n:'어딘가'; };
@@ -42,15 +42,15 @@ function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const a
   if(t==='city'||t==='capital'){ add(mar&&m.lv>=2?'표국 일을 맡는다':'짐꾼 일을 한다','은자를 번다',S('wwork'),0,2); if(mar) add('비무대에 오른다','비무 · 이기면 판돈과 이름을 얻는다',S('wev',{ev:'wSpar'}),0,1.2); if(m.gold>=3) add('객잔에서 소문을 듣는다','3냥 · 일이 생길 수 있다',S('rumor'),0,.6); add('저잣거리를 돌아본다','무슨 일이 생길지 모른다',S('explore',{pl:'city'}),0,.8);
     add('물건을 본다','',()=>{ MSHOP=MSHOP?null:'city'; render(); },1); if(m.hp<80&&m.gold>=12) add('의원에게 진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); render(); save(); },1); return acts; }
   const own=!!(s.sect&&m.sect===s.sect);
-  if(own){ add(t==='clan'?'가문에 문안을 드린다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2); }
-  else if(t==='sect'&&JOINABLE[s.sect]&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
+  if(own){ add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2); }
+  else if(t==='sect'&&joinable(s)&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
   if(t==='den'&&!own) add('소굴로 쳐들어간다','생사결이 될 수 있다 · 이기면 전리품',S('wev',{ev:'wBandit'}),0,mar&&m.lv>=3&&m.hp>70?.4:0);
   if(mar) add('근처 산에서 수련한다','내공이 더 붙는다',S('train',{fall:1}),0,2);
   add('약초를 캔다','은자를 번다 · 다칠 수 있다',S('herb'),0,mar?.3:1);
   add('주변을 살핀다','무슨 일이 생길지 모른다',S('explore',{pl:t==='den'?'pass':t==='demon'?'tomb':'deep'}),0,.6);
   add('옛 자취를 찾는다','무슨 일이 생길지 모른다',S('explore',{pl:'tomb'}),0,.3);
   return acts; }
-function cathHint(s){ if(s.type==='sect'&&!(s.sect&&m.sect===s.sect)){ if(!JOINABLE[s.sect]) return '산문은 닫혀 있다. 아직 바깥사람을 들이지 않는다.'; if(m.sect) return '다른 문파의 산문이다.'; if(!sectOpen()) return `${s.n}는 ${SECTS[s.sect].male?'사내':'여인'}만 받는다.`; if(m.age>=30) return '제자로 들어가기엔 늦었다.'; } return CHINT[s.type]||''; }
+function cathHint(s){ if(s.sect&&m.sect===s.sect) return '내가 속한 곳이다. 문 안에서 익숙한 소리가 들린다.'; if(s.type==='sect'&&!(s.sect&&m.sect===s.sect)){ if(!joinable(s)) return '산문은 닫혀 있다. 아직 바깥사람을 들이지 않는다.'; if(m.sect) return '다른 문파의 산문이다.'; if(!sectOpen()) return `${s.n}는 ${SECTS[s.sect].male?'사내':'여인'}만 받는다.`; if(m.age>=30) return '제자로 들어가기엔 늦었다.'; } return CHINT[s.type]||''; }
 function cathayAuto(){ const s=curSite();
   if(m.mark&&!m.mark.skip){ if(R()<.8){ if(m.mark.w){ if(cathGo(m.mark.w)) return; } else { if(s&&s.id==='home'){ enterVillage(); return; } if(cathGo('home')) return; } } m.mark.skip=1; }
   if(!s){ if(!cathGo('home')){ const h=homeTile(); m.map.x=h.x; m.map.y=h.y; render(); } return; }

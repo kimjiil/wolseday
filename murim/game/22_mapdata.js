@@ -14,12 +14,32 @@ const FAMTIER={beggar:0,tenant:0,farmer:1,hunter:1,artisan:1,bandit:1,blood:1,me
 for(const f of FAM) if(f.tier!=null&&FAMTIER[f.id]==null) FAMTIER[f.id]=f.tier;
 const WORKSPOT={tenant:'field',farmer:'field',blood:'field',beggar:'market',artisan:'smithy',merchant:'market',hunter:'forest',inn:'inn',bandit:'forest',escort:'office',doctor:'apoth',official:'office',clan:'home',tangc:'home'};
 for(const f of FAM) if(f.ws&&!WORKSPOT[f.id]) WORKSPOT[f.id]=f.ws;
-function buildVillage(fam,tier){ const M=mkMap('vil:'+fam+tier,46,32,'.','고향 마을');
+/* 출신별 마을의 생김새. 자리와 장소 이름표(id)는 같고, 땅·집·담장·이름이 달라진다 */
+const VTHOF={merchant:'town',inn:'town',artisan:'town',doctor:'town',official:'town',escort:'town',gaebang:'town',thief:'town',gisaeng:'town',slave:'town',jinyi:'town',royal:'palace',clan:'manor',tangc:'manor',zhugec:'manor',paengc:'manor',moyongc:'manor',retainer:'manor',fisher:'fish',suchae:'fishden',nomad:'steppe',hill:'jungle',bandit:'den',soldier:'camp',demonc:'cult',demonhi:'cult',demonheir:'cult',hyeolc:'cultsnow'};
+function themeOf(fam){ if(VTHOF[fam]) return VTHOF[fam]; if(fam.indexOf('s_')===0){ const k=fam.slice(2); return ['kunlun','tianshan','jangbaek','binggung','potala'].includes(k)?'sectsnow':['yasu','odok','hainan'].includes(k)?'sectjungle':'sect'; } return 'farm'; }
+const VTH={
+  farm:{},
+  town:{hs:{roof:'t'},h:{school:{rc:'#4a5a7a'},smithy:{rc:'#6a5a4a'}},road:'s',x:'town',tp:.5,n:{field:'뒷골목',forest:'성 밖 수풀',gate:'성문',well:'골목 우물',fall:'성 뒤 폭포',market:'저잣거리'}},
+  palace:{hs:{roof:'t',rc:'#c9962e',wall:'#e8d8c0'},road:'s',ring:{k:'wall',c:'#a8402e',cap:'#c9962e'},ban:'#d9a441',lamps:1,x:'garden',tp:.4,n:{dojo:'연무전',office:'내전',school:'서연',inn:'수라간',market:'어도',shrine:'종묘',field:'어원',forest:'후원 수풀',gate:'궁문',apoth:'내의원',smithy:'공방',well:'어정',fall:'후원 폭포'}},
+  manor:{hs:{roof:'t'},h:{school:{rc:'#4a5a7a'},smithy:{rc:'#6a5a4a'}},ring:{k:'wall',c:'#d8d2c0',cap:'#3a3a44'},lamps:1,x:'pond',n:{dojo:'연무장',office:'가주전',school:'서고',inn:'객청',market:'안마당',shrine:'사당',field:'소작지',forest:'뒷산 수풀',gate:'대문'}},
+  fish:{x:'fish',n:{field:'나루',forest:'갈대 수풀',market:'어물전'}},
+  fishden:{x:'fish',hs:{roof:'h'},tent:['school','apoth'],tents:1,fires:1,ban:'#2a2a2a',n:{field:'나루',forest:'갈대 수풀',office:'취의청',dojo:'싸움터',market:'곳간 마당',gate:'채문',inn:'주막'}},
+  steppe:{g:'p',tp:.06,tg:.1,tent:['school','apoth','smithy','shrine'],tc:'#e8e0c8',fc:'#3f6f9a',tents:1,fires:1,x:'pasture',hs:{roof:'h',rc:'#e0d6b8'},n:{field:'목초지',school:'이야기 천막',market:'모닥불 마당',office:'족장의 집',dojo:'활터',inn:'손님 천막',shrine:'돌무지',forest:'바람 언덕 수풀',gate:'초원길',apoth:'약초 천막',smithy:'편자 천막'}},
+  jungle:{g:'j',tp:1.7,tk:'tree',tg:.08,hs:{roof:'h'},n:{field:'화전',forest:'밀림',gate:'산길'}},
+  den:{hs:{roof:'h'},tent:['school','apoth'],tents:1,fires:1,ring:{k:'fence'},ban:'#2a2a2a',tk:'pine',tp:1.2,n:{office:'취의청',dojo:'싸움터',market:'곳간 마당',inn:'주막',field:'텃밭',forest:'망루 수풀',gate:'채문',school:'졸개 막사',apoth:'약 막사'}},
+  camp:{tent:['school','apoth'],tc:'#b8b09a',fc:'#a8402e',tents:1,ring:{k:'fence'},ban:'#a8402e',x:'drill',n:{office:'군영',dojo:'조련장',field:'둔전',gate:'영문',school:'막사',apoth:'군의 막사',market:'점호 마당'}},
+  cult:{hs:{roof:'t',rc:'#5a1414',sc:'#2a0a0a'},ban:'#1a1a1e',fires:2,steles:1,tk:'pine',tp:1.2,n:{dojo:'연마장',office:'분단',shrine:'천마상',school:'교리당',inn:'객방',market:'교도 마당',forest:'금지 수풀',gate:'산문',field:'교의 밭'}},
+  cultsnow:{g:'n',hs:{roof:'t',rc:'#5a1414',sc:'#2a0a0a'},ban:'#5a0f1e',fires:2,steles:1,tk:'pine',tp:.8,n:{dojo:'연마장',office:'분단',shrine:'혈불상',school:'교리당',inn:'객방',market:'사원 마당',forest:'금지 수풀',gate:'설산길',field:'보리밭'}},
+  sect:{sect:1,mounts:1,lamps:1,tk:'pine',tp:1.25,n:{dojo:'외문 연무장',office:'접객당',school:'강경당',field:'문파 둔전',forest:'뒷산 수풀',gate:'하산길',shrine:'조사전'}},
+  sectsnow:{g:'n',sect:1,mounts:1,lamps:1,tk:'pine',tp:.8,n:{dojo:'외문 연무장',office:'접객당',school:'강경당',field:'보리밭',forest:'눈밭 수풀',gate:'하산길',shrine:'조사전'}},
+  sectjungle:{g:'j',sect:1,lamps:1,tk:'tree',tp:1.6,tg:.07,hs:{roof:'h'},n:{dojo:'외문 연무장',office:'접객당',school:'강경당',field:'화전',forest:'밀림',gate:'하산길',shrine:'조사전'}}
+};
+function buildVillage(fam,tier){ const M=mkMap('vil:'+fam+tier,46,32,'.','고향 마을'), T=VTH[themeOf(fam)]||{}, FO=FAM.find(f=>f.id===fam)||{}, SCOL=T.sect&&FO.sect&&SECTS[FO.sect]?dk(vivid(SECTS[FO.sect].robe,.2),.3):null;
   mrect(M,0,0,46,3,'^'); mrect(M,33,3,6,2,'~'); mrect(M,35,5,2,27,'~'); M.falls.push({x:35,y:0,w:2,h:3});
   mrect(M,0,15,46,2,'='); mrect(M,21,9,2,23,'='); mrect(M,2,22,31,1,'='); mrect(M,35,15,2,2,'B');
   mrect(M,17,12,10,7,'s'); mrect(M,17,9,10,2,'s'); mrect(M,27,9,5,1,'='); mrect(M,31,5,1,5,'='); mrect(M,28,7,1,2,'=');
   mrect(M,2,24,17,6,'F'); mrect(M,25,24,8,6,'F');
-  const H=(x,y,w,h,o)=>mobj(M,'house',x,y,Object.assign({w,h},o));
+  const H=(x,y,w,h,o)=>{ const k=o.mid; if(T.tent&&T.tent.includes(k)) return mobj(M,'tent',x+((w-2)>>1),y+h-2,{c:T.tc,fc:T.fc,mid:k}); return mobj(M,'house',x,y,Object.assign({w,h},o,T.hs||{},(T.h&&T.h[k])||{},SCOL&&(k==='dojo'||k==='shrine'||k==='office')?{rc:SCOL}:{})); };
   H(18,5,8,4,{roof:'t',door:3,dw:28,pillar:1,sign:'sword',sc:'#7a2a22',lamp:1,mid:'dojo'});
   H(27,5,3,2,{roof:'t',rc:'#7a3a32',door:1,wall:'#ecdcc4',pillar:1,nowin:[0,2],mid:'shrine'});
   H(2,12,4,3,{roof:'h',door:1,sign:'book',sc:'#3a4a6a',open:1,mid:'school'});
@@ -32,17 +52,37 @@ function buildVillage(fam,tier){ const M=mkMap('vil:'+fam+tier,46,32,'.','고향
   mobj(M,'stall',17,12,{c:'#d8452c'}); mobj(M,'stall',19,12,{c:'#3f8f6a',goods:['#f4efe0','#c9a0ff','#6fb0e0','#f0c040']}); mobj(M,'stall',24,12,{c:'#3f6fae',goods:['#b8804a','#e9e2c8','#8a6a4a']});
   mobj(M,'well',25,17); mobj(M,'dummy',18,10); mobj(M,'dummy',25,10); mobj(M,'anvil',16,14); mobj(M,'flat',30,4); mobj(M,'gate',20,30); mobj(M,'sign',24,29); mobj(M,'scare',8,26); mobj(M,'scare',29,26); mobj(M,'fire',41,13);
   mobj(M,'lantern',26,8); mobj(M,'lantern',30,8); mobj(M,'rock',33,6); mobj(M,'rock',38,5); mobj(M,'bush',23,20); mobj(M,'bush',16,20); mobj(M,'tree',24,24,{v:'plum'}); mobj(M,'tree',19,23);
+  // 출신별로 달라지는 것들
+  const occ=()=>new Set(M.objs.flatMap(o=>{ const a=[]; for(let j=0;j<o.h;j++) for(let i=0;i<o.w;i++) a.push((o.x+i)+','+(o.y+j)); return a; })), put=(k,x,y,o)=>{ if(M.g[y]&&M.g[y][x]!=='~'&&!occ().has(x+','+y)) mobj(M,k,x,y,o); };
+  if(T.x==='town'){ M.objs=M.objs.filter(o=>!(o.k==='scare'&&o.x===8)); mrect(M,2,24,17,6,'.'); mrect(M,2,23,1,7,'='); mrect(M,2,26,17,1,'='); mrect(M,2,29,17,1,'='); for(const y of [24,27]) for(const x of [4,8,12,16]) mobj(M,'house',x,y,{w:3,h:2,roof:'t',rc:['#6a5a4a','#4a5a7a','#7a4a3e','#4f7060'][(x+y)%4],door:1}); mobj(M,'vat',3,25); mobj(M,'vat',3,28); }
+  if(T.x==='garden'){ M.objs=M.objs.filter(o=>o.k!=='scare'); mrect(M,2,24,17,6,'.'); mrect(M,25,24,8,6,'.'); mrect(M,7,26,6,2,'~'); for(const p of [[3,25],[5,28],[15,25],[17,28],[26,25],[31,25],[26,28],[31,28]]) mobj(M,'tree',p[0],p[1],{v:'plum'}); mobj(M,'rock',14,27); mobj(M,'lantern',6,25); mobj(M,'lantern',13,25); }
+  if(T.x==='pond'){ mrect(M,14,18,3,2,'~'); mobj(M,'rock',13,19); }
+  if(T.x==='fish'){ mrect(M,2,24,17,1,'d'); mrect(M,2,25,17,5,'~'); mrect(M,6,25,1,3,'B'); mrect(M,13,25,1,3,'B'); mobj(M,'boat',8,26); mobj(M,'boat',15,27); mobj(M,'boat',3,28); M.objs=M.objs.filter(o=>!(o.k==='scare'&&o.x===8)); }
+  if(T.x==='pasture'){ mrect(M,2,24,17,6,'.'); mrect(M,25,24,8,6,'.'); M.objs=M.objs.filter(o=>o.k!=='scare'); for(let x=2;x<=18;x++) if(x<9||x>11) mobj(M,'fence',x,24); for(let x=2;x<=18;x++) mobj(M,'fence',x,30); mobj(M,'rock',5,27); mobj(M,'rock',15,26); }
+  if(T.x==='drill'){ mrect(M,25,24,8,6,'s'); M.objs=M.objs.filter(o=>!(o.k==='scare'&&o.x===29)); for(const p of [[26,25],[31,25],[26,28],[31,28]]) mobj(M,'dummy',p[0],p[1]); }
+  if(T.road) for(let y=0;y<32;y++) for(let x=0;x<46;x++) if(M.g[y][x]==='=') M.g[y][x]=T.road;
+  if(T.ring){ const R0=T.ring, x0=1, y0=4, x1=33, y1=23, o=occ(); for(let x=x0;x<=x1;x++) for(const y of [y0,y1]) if(M.g[y][x]==='.'&&!o.has(x+','+y)&&!(y===y1&&x>=9&&x<=11)) mobj(M,R0.k,x,y,{c:R0.c,cap:R0.cap}); for(let y=y0+1;y<y1;y++) for(const x of [x0,x1]) if(M.g[y][x]==='.'&&!o.has(x+','+y)) mobj(M,R0.k,x,y,{c:R0.c,cap:R0.cap}); }
+  if(T.ban||SCOL){ const c=SCOL?SECTS[FO.sect].robe:T.ban; put('banner',17,11,{c}); put('banner',26,11,{c}); put('banner',19,19,{c}); put('banner',24,19,{c}); }
+  if(T.lamps) for(const p of [[20,19],[23,19],[16,16],[27,16]]) put('lantern',p[0],p[1]);
+  if(T.fires) for(const p of (T.fires>1?[[19,11],[24,11],[20,20],[23,20]]:[[19,11],[24,20]])) put('fire',p[0],p[1]);
+  if(T.steles) for(const p of [[18,20],[25,20],[16,11],[27,10]]) put('stele',p[0],p[1]);
+  if(T.tents) for(const p of [[4,6],[8,7],[12,5],[14,8]]) if(!occ().has(p[0]+','+p[1])) mobj(M,'tent',p[0],p[1],{c:T.tc,fc:T.fc});
+  if(T.mounts) for(const p of [[1,3],[5,4],[10,3],[40,4],[42,8]]) if(M.g[p[1]][p[0]]==='.') mobj(M,'mount',p[0],p[1]);
   const used=new Set(M.objs.flatMap(o=>{ const a=[]; for(let j=-1;j<=o.h;j++) for(let i=-1;i<=o.w;i++) a.push((o.x+i)+','+(o.y+j)); return a; }));
-  const free=(x,y)=>M.g[y][x]==='.'&&!used.has(x+','+y);
-  for(let y=3;y<32;y++) for(let x=0;x<46;x++){ if(!free(x,y)) continue; const h=hsh(x*5.3+y*9.1+1.7); let p=0, pine=0;
+  const free=(x,y)=>M.g[y][x]==='.'&&!used.has(x+','+y), tp=T.tp==null?1:T.tp, tg=T.tg==null?.035:T.tg;
+  for(let y=3;y<32;y++) for(let x=0;x<46;x++){ if(!free(x,y)) continue; const h=hsh(x*5.3+y*9.1+1.7)/tp; let p=0, pine=0;
     if(x>=38){ p=(x>=38&&x<=44&&y>=11&&y<=20)?0:.6; pine=h*7%1<.4; } else if(y<=4&&x<30){ p=.45; pine=1; } else if(y<=10&&x<17){ p=.28; pine=h*7%1<.6; } else if(x<=1&&y>=17){ p=.55; } else if(y===31&&(x<20||x>23)){ p=.45; } else if(x>=23&&x<=33&&y>=3&&y<=4){ p=.2; pine=1; } else if(x>=37){ p=.5; }
-    if(h<p){ mobj(M,pine?'pine':'tree',x,y,{v:h*13%1<.2?'plum':''}); used.add(x+','+y); for(const d of [[1,0],[-1,0]]) used.add((x+d[0])+','+y); }
+    if(h<p){ mobj(M,T.tk||(pine?'pine':'tree'),x,y,{v:h*13%1<.2?'plum':''}); used.add(x+','+y); for(const d of [[1,0],[-1,0]]) used.add((x+d[0])+','+y); }
+    else if((x>=39&&x<=43&&y>=12&&y<=19&&hsh(x*2.9+y*6.1)<.8)||(!(x>=2&&x<=33&&y>=11&&y<=23)&&hsh(x*1.9+y*4.3+.7)<tg*3)||hsh(x*1.9+y*4.3+.7)<tg*.4) M.g[y][x]='g';   // 수풀
     else if(hsh(x*3.1+y*7.7)<.12) M.g[y][x]=':'; }
   const sp=(id,n,x,y,o)=>M.spots.push(Object.assign({id,n,x,y},o||{}));
   sp('home','우리 집',7,22,{door:[7,21],lab:[7.5,hy-.7]}); sp('dojo','무관',21,9,{lab:[22,4.2]}); sp('shrine','사당',28,7,{lab:[28.5,4.2]}); sp('school','서당',3,15,{lab:[4,11.2]}); sp('apoth','약방',8,15,{lab:[9,11.2]}); sp('smithy','대장간',13,15,{lab:[14,11.2]});
   sp('inn','객잔',30,15,{lab:[30.5,9.2]}); sp('office',fam==='escort'?'표국':'관아',29,22,{lab:[29.5,17.2]}); sp('market','장터',20,13,{zone:[17,13,10,1],lab:[22,11.6]}); sp('well','우물',24,17,{lab:[25.5,16]});
   sp('fall','뒷산 폭포',31,5,{zone:[30,4,3,2],lab:[36,2.6]}); sp('field','밭',10,23,{zone:[2,23,17,7],lab:[10,24.6]}); sp('forest',fam==='bandit'?'산채':'숲',41,15,{zone:[39,12,5,8],lab:[41.5,11.2]});
   sp('gate','마을 어귀',21,29,{zone:[21,28,2,4],lab:[22,27.4]}); sp('bridge','다리',34,15,{zone:[34,15,4,2]});
+  if(T.n) for(const s of M.spots) if(T.n[s.id]) s.n=T.n[s.id];
+  if(T.g){ M.bio=T.g; for(let y=0;y<32;y++) for(let x=0;x<46;x++) if(M.g[y][x]==='.'||M.g[y][x]===':') M.g[y][x]=T.g; }
+  M.name=FO.hn||'고향 마을'; M.theme=themeOf(fam);
   M.start=[7,22]; M.wander=[[17,13,10,6],[2,15,30,2],[21,9,2,13],[2,22,30,1]];
   return mfin(M); }
 function buildHome(tier){ const iw=[4,6,8,11][tier], ih=[3,4,5,6][tier], w=iw+2, h=ih+3, M=mkMap('home:'+tier,w,h,'#','우리 집');

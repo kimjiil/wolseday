@@ -66,6 +66,7 @@ function heroStep(dx,dy){ const V=MAPV, M=V.M, h=V.hero, nx=h.tx+dx, ny=h.ty+dy;
 function enterHome(){ m.map={id:'home',x:-1,y:-1,dir:'u'}; mapEnter(true); sfx('ok'); render(); save(); }
 function leaveHome(){ m.map={id:'vil',x:7,y:22,dir:'d'}; mapEnter(true); render(); save(); }
 function heroArrive(){ const V=MAPV, M=V.M, h=V.hero, P0=mpos(); P0.x=h.tx; P0.y=h.ty; P0.dir=h.dir;
+  if(M.g[h.ty]&&M.g[h.ty][h.tx]==='g'&&grassStep()){ h.path=null; h.then=null; return; }
   if(M.g[h.ty][h.tx]==='D'){ leaveHome(); return; }
   const s=spotAt(M,h.tx,h.ty);
   if(markHere(M,s)&&!m.train){ h.path=null; h.then=null; MSPOT=s; triggerMark(); return; }
@@ -170,7 +171,7 @@ function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home
   return acts; }
 const SHOPS={market:['salve','antidote','sachet','talis','lvest'],apoth:['salve','antidote','pill'],smithy:null};
 function shopList(id){ let ids=SHOPS[id]; if(id==='city'){ const k=myKind(); ids=['salve','antidote','pill','talis',wOf(1,k),wOf(2,k),'chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } if(!ids){ const k=myKind(); ids=[wOf(0,k),wOf(1,k),'lvest','chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
-const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'나무 사이로 볕이 든다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
+const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'키 큰 수풀이 우거졌다. 헤치고 걷다 보면 뭔가 튀어나올 때가 있다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
 function renderMapCard(card,eye){ if(m.train) return renderSectCard(card,eye); const M=MAPV.M, s=MSPOT, acts=mapActs(), id=M.indoor?'home':(s?s.id:null), busy=m.auto&&!paused;
   const seas=`<div class="mh-seas" aria-label="올해의 철">${SEAN.map((n,i)=>`<span class="${i===m.sea?'on':i<m.sea?'done':''}">${n}</span>`).join('')}<label class="mh-rep"><input type="checkbox" id="mhRep" ${m.repOn?'checked':''}> 고른 일을 연말까지 되풀이</label></div>`;
   const talk=MTALK?`<p class="mh-talk"><b>${esc(MTALK.a.n||'')}</b>${esc(MTALK.t)}</p>`:'';
@@ -188,6 +189,26 @@ function renderMapCard(card,eye){ if(m.train) return renderSectCard(card,eye); c
   const idle=card.querySelector('[data-idle]'); if(idle) idle.onclick=()=>doSeason('idle');
   const rp=$m('mhRep'); if(rp) rp.onchange=()=>{ m.repOn=rp.checked; if(!m.repOn) m.rep=null; save(); }; }
 function renderCut(card,eye){ const c=cutNow(); card.innerHTML=`${eye}<div class="mh-dec"><p class="mh-qa">${c.tr?'두 달이 간다':(SEAN[c.sea]||'')+'이 간다'}</p><p class="mh-text">${esc(c.txt||'')}</p></div>`; }
+/* ---- 수풀: 걷다가 우연히 만나는 것 ---- */
+const GRASSBG=['forest','mountain','cave','cliff','pond','hermit','field','road','tomb'];
+const GFIND=[
+  {w:3,t:'산딸기를 한 줌 땄다',c:'good',fn:()=>{ m.hp=cl(m.hp+2); m.joy=cl(m.joy+1); }},
+  {w:3,t:'약초를 찾았다',c:'gold',fn:()=>gold(ri(1,3))},
+  {w:2,t:'옛 동전을 주웠다',c:'gold',fn:()=>gold(ri(2,5))},
+  {w:2,t:'새 둥지를 발견했다',c:'good',fn:()=>{ m.joy=cl(m.joy+2); }},
+  {w:2,t:'뱀이 튀어나왔다!',c:'bad',fn:()=>{ m.hp=Math.max(5,m.hp-4); }},
+  {w:1.5,t:'벌집을 건드렸다!',c:'bad',fn:()=>{ m.hp=Math.max(5,m.hp-3); }},
+  {w:1,t:'토끼를 쫓다 놓쳤다',c:'',fn:()=>{ m.joy=cl(m.joy+1); if(m.b.o==='hunter') gold(2); }},
+  {w:1.2,t:'풀벌레 소리에 숨을 맞췄다',c:'jade',when:()=>m.f.martial,fn:()=>addExp(gain()*.03)}
+];
+// 한 철에 마흔 걸음까지만 굴린다. 작은 발견은 철마다 두 번까지, 사건은 한 해 한 번까지.
+// 철마다 수풀을 꽉 채워 걸어도 사건은 한 해 열에 한 번 남짓, 기연은 쉰 해에 한 번꼴이다
+function grassStep(){ if(!mapMode()||m.train) return false; const k=m.age+':'+m.sea; if(!m.enc||m.enc.k!==k) m.enc={k,n:0,f:0,ya:m.enc?m.enc.ya:-1}; const E0=m.enc; if(E0.n++>=40) return false;
+  const r=R(), ok=e=>!e.wld&&e.min!==e.max&&evOK(e)&&evFresh(e)&&markable(e)&&!(m.mark&&m.mark.id===e.id)&&GRASSBG.includes(evBg(e));
+  if(r<.0001*(1+ST('luck')*.1)){ const pool=Object.values(EV).filter(e=>e.gi&&ok(e)); if(pool.length&&startEv(pick(pool))){ m.encN=(m.encN||0)+1; sfx('ok'); render(); save(); return true; } }
+  if(r<.0009&&E0.ya!==m.age){ const pool=Object.values(EV).filter(e=>!e.gi&&ok(e)); if(pool.length&&startEv(wpick(pool,x=>x.w||1))){ E0.ya=m.age; m.encN=(m.encN||0)+1; heroFloat('!','bad'); sfx('ok'); render(); save(); return true; } }
+  if(r<.07&&E0.f<2){ const f=wpick(GFIND.filter(x=>!x.when||x.when()),x=>x.w); E0.f++; f.fn(); m.findN=(m.findN||0)+1; if(!m.headless){ heroFloat(f.t,f.c); sfx(f.c==='bad'?'tick':'ok'); } save(); }
+  return false; }
 /* ---- 사문: 수련기 ---- */
 function sectAct(id,mi){ if(!mapMode()||!m.train) return; const T=m.train, sea=TSEAS[T.turn%6]; MTALK=null; if(MAPV){ MAPV.hero.path=null; MAPV.hero.then=null; }
   trainAct(id,mi); if(!m.dead&&m.lastRes&&m.lastRes.train&&m.train){ m.lastRes.seen=1; let s=null; try{ s=Object.assign({},trainStage(),{key:'tact:'+T.turn+id}); }catch(e){} if(s) CUTQ.push({spec:s,ms:1150,txt:m.lastRes.t,sea,t:0,tr:1}); }

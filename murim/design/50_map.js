@@ -13,7 +13,8 @@ const th=(tx,ty,i)=>hsh(tx*7.13+ty*13.37+i*3.71);
 function tGrass(X,Y,S,tx,ty,fl){ P(X,Y,TS,TS,S.g);
   for(let i=0;i<6;i++){ const x=X+2+rnd(th(tx,ty,i)*26), y=Y+3+rnd(th(tx,ty,i+9)*24); if(i<3){ P(x,y+1,1,2,S.g2); P(x+1,y,1,3,S.g2); P(x+2,y+1,1,2,S.g2); } else if(i<5) P(x,y,2,1,S.g3); else P(x,y,3,1,S.g2); }
   if(fl) for(let i=0;i<3;i++){ const h=th(tx,ty,i+20), x=X+3+rnd(h*24), y=Y+4+rnd(th(tx,ty,i+30)*22), c=S.fl[rnd(h*97)%Math.max(1,S.fl.length)]; if(!c) continue; P(x,y+1,3,1,c); P(x+1,y,1,3,c); P(x+1,y+1,1,1,'#f0a030'); } }
-function tPath(X,Y,S,tx,ty,nb,stone){ tGrass(X,Y,S,tx,ty,0);
+let GBIO=null;   // 지금 그리는 맵의 바탕 땅(초원·눈밭·밀림이면 길 가장자리도 그 빛깔)
+function tPath(X,Y,S,tx,ty,nb,stone){ tGrass(X,Y,GBIO||S,tx,ty,0);
   const m=stone?2:4, x0=X+(nb[3]?0:m), x1=X+TS-(nb[1]?0:m), y0=Y+(nb[0]?0:m), y1=Y+TS-(nb[2]?0:m), c=stone?'#d8d0be':S.dirt, cD=stone?'#b9b09c':S.dirtD, cL=stone?'#ebe5d6':S.dirtL;
   P(x0,y0,x1-x0,y1-y0,c);
   if(!nb[2]) P(x0,y1-2,x1-x0,2,cD); if(!nb[1]) P(x1-2,y0,2,y1-y0,cD); if(!nb[0]) P(x0,y0,x1-x0,1,cL); if(!nb[3]) P(x0,y0,1,y1-y0,cL);
@@ -41,11 +42,18 @@ function tFloor(X,Y,tx,ty){ P(X,Y,TS,TS,'#c99b62'); for(let j=0;j<4;j++){ P(X,Y+
 function tWall(X,Y,tx,ty,face){ if(!face){ P(X,Y,TS,TS,'#2b2630'); return; } P(X,Y,TS,TS,'#efe6d0'); P(X,Y,TS,6,WOODD); P(X,Y+6,TS,2,WOODC); P(X,Y+TS-5,TS,5,WOODC); P(X,Y+TS-5,TS,1,WOODL); if(tx%2===0){ P(X,Y+8,4,TS-13,WOODC); P(X,Y+8,1,TS-13,WOODL); } P(X,Y+8,TS,3,rgba('#3a2a20',.18)); }
 // 큰 지도의 땅: d 모래, n 눈밭, j 밀림, p 초원
 const BIOMEP={d:{g:'#e8d29a',g2:'#d4ba7c',g3:'#f4e4b8',fl:[]},n:{g:'#eef3f6',g2:'#d6e2ea',g3:'#ffffff',fl:[]},j:{g:'#58a54e',g2:'#3f8a44',g3:'#74bd62',fl:[]},p:{g:'#bccb7c',g2:'#a4b566',g3:'#d0dc94',fl:[]}};
+// 수풀: 걸으면 무언가 튀어나올 수 있는 키 큰 풀
+function tTall(X,Y,S,sea,x,y){ const d=sea===3?'#8a7a52':dk(S.g2,.22), l=sea===3?'#b8a878':S.g3, m=sea===3?'#a08e62':S.g2;
+  P(X+1,Y+2,30,29,sea===3?'#d8dcd2':dk(S.g,.1)); P(X+3,Y+1,26,1,sea===3?'#d8dcd2':dk(S.g,.1));
+  for(let i=0;i<6;i++){ const bx=X+2+i*5+((hsh(x*3.3+y*5.1+i)*3)|0), by=Y+4+((i*7+((hsh(x+y*2.7+i*1.3)*6)|0))%16), hh=8+((hsh(x*1.7+y+i*2.2)*5)|0);
+    P(bx,by,2,hh,d); P(bx+2,by+2,2,hh-2,m); P(bx-1,by+3,1,hh-4,m); P(bx,by,1,3,l); P(bx+3,by+2,1,2,l); } }
 const PATHISH={'=':1,'s':1,'B':1}, WATERISH={'~':1,'B':1};
 function drawGround(M,sea){ const key=M.id+'/'+sea; if(M._gc&&M._gk===key) return M._gc; const S=MP[sea], c=M._gc||document.createElement('canvas'); c.width=M.w*TS; c.height=M.h*TS; const keep=cx; cx=c.getContext('2d');
   const at=(x,y)=>x<0||y<0||x>=M.w||y>=M.h?null:M.g[y][x];
-  try{ for(let y=0;y<M.h;y++) for(let x=0;x<M.w;x++){ const k=M.g[y][x], X=x*TS, Y=y*TS, nbf=(f)=>[f(at(x,y-1),0),f(at(x+1,y),1),f(at(x,y+1),2),f(at(x-1,y),3)];
+  try{ GBIO=M.bio&&BIOMEP[M.bio]&&!(sea===3&&M.bio!=='d')?BIOMEP[M.bio]:null;
+    for(let y=0;y<M.h;y++) for(let x=0;x<M.w;x++){ const k=M.g[y][x], X=x*TS, Y=y*TS, nbf=(f)=>[f(at(x,y-1),0),f(at(x+1,y),1),f(at(x,y+1),2),f(at(x-1,y),3)];
       if(k==='.'||k===':') tGrass(X,Y,S,x,y,k===':');
+      else if(k==='g'){ const Sb=M.bio&&BIOMEP[M.bio]&&!(sea===3&&M.bio!=='d')?BIOMEP[M.bio]:S; tGrass(X,Y,Sb,x,y,0); tTall(X,Y,Sb,sea,x,y); }
       else if(BIOMEP[k]) tGrass(X,Y,sea===3&&k!=='d'?S:BIOMEP[k],x,y,0);
       else if(k==='='||k==='s') tPath(X,Y,S,x,y,nbf(n=>n==null||!!PATHISH[n]||n==='D'),k==='s');
       else if(k==='~') tWater(X,Y,S,x,y,nbf(n=>n==null||!!WATERISH[n]||n==='^'));
@@ -88,6 +96,9 @@ const OBJ={
     const gs=o.goods||['#e0503a','#f0c040','#6fbf5a','#e08a3a']; for(let i=0;i<6;i++){ const x=7+i*9; P(x,24,7,6,gs[i%gs.length]); P(x,24,7,2,lt(gs[i%gs.length],.3)); P(x+1,22,5,2,gs[i%gs.length]); } }) },
   fire:{w:1,h:1,ax:16,ay:28,anim:1,spr:(S,o,sea,f)=>mkSpr(32,32,()=>{ P(6,24,20,4,WOODD); P(8,22,6,3,WOODC); P(18,22,6,3,WOODC); const k=f%2; P(11,12+k,10,12-k,'#ff8a2a'); P(13,8+k*2,6,10,'#ff8a2a'); P(13,15,6,8,'#ffd84a'); P(15,11+k,2,6,'#ffd84a'); P(15,18,2,4,'#ffffff'); },0) },
   scare:{w:1,h:1,ax:16,ay:42,spr:()=>mkSpr(32,44,()=>{ P(15,8,3,34,WOODC); P(4,16,24,3,WOODC); P(8,14,16,12,'#c9a25a'); P(8,24,16,2,'#a8823e'); P(11,3,10,10,'#e8d2a0'); P(8,1,16,3,'#d2b878'); P(13,7,2,2,MINK); P(18,7,2,2,MINK); P(4,19,3,6,'#d8c070'); P(25,19,3,6,'#d8c070'); }) },
+  wall:{w:1,h:1,ax:16,ay:38,spr:(S,o,sea)=>mkSpr(32,42,()=>{ const c=o.c||'#b8b2a4', d=dk(c,.22), cap=o.cap||'#4a4a52'; P(0,12,32,28,c); P(0,36,32,4,d); for(let r=0;r<3;r++) for(let i=0;i<3;i++) P(((r%2)*8+i*16)%32,16+r*7,1,6,d); P(0,6,32,7,cap); P(0,5,32,2,lt(cap,.25)); P(0,12,32,1,dk(cap,.3)); if(sea===3) P(0,3,32,3,'#ffffff'); }) },
+  banner:{w:1,h:1,ax:16,ay:60,spr:(S,o,sea)=>mkSpr(32,64,()=>{ const c=o.c||'#b8321f'; P(14,4,3,58,WOODD); P(13,2,5,3,'#d9a441'); P(17,7,13,26,c); P(17,7,13,2,lt(c,.3)); P(17,31,13,2,dk(c,.3)); P(27,7,3,26,dk(c,.18)); P(21,14,5,2,lt(c,.45)); P(22,18,3,8,lt(c,.45)); P(17,33,4,3,c); P(26,33,4,3,c); }) },
+  boat:{w:2,h:1,ax:32,ay:22,solid:0,spr:(S,o,sea)=>mkSpr(64,26,()=>{ const c='#8a6238', d='#5e4226', l='#b08552'; P(8,10,48,8,c); P(4,8,56,3,l); P(12,18,40,4,d); P(2,9,4,2,l); P(58,9,4,2,l); P(16,11,32,2,d); P(30,2,2,8,d); P(24,13,10,3,'#d8cfae'); }) },
   mount:{w:3,h:2,ax:48,ay:92,spr:(S,o,sea)=>mkSpr(96,96,()=>{ const c='#8b9486', d='#687266', l='#a8b0a2', sn='#f4f6f2', mx=44+((o.x*7)%5);
     for(let r=0;r<86;r++){ const y=8+r, hw=rnd(4+r*.5); P(mx-hw,y,hw*2,1,c); P(mx+rnd(hw*.15),y,hw-rnd(hw*.15),1,d); P(mx-hw,y,Math.max(1,rnd(hw*.3)),1,l); }
     const cap=sea===3?44:24; for(let r=0;r<cap;r++){ const y=8+r, hw=rnd(4+r*.5), k=r>cap-8?((r+o.x)%2?.45:.8):1; P(mx-rnd(hw*k),y,rnd(hw*k)*2,1,sn); P(mx+rnd(hw*.3),y,rnd(hw*k*.6),1,'#d5dbe2'); }

@@ -4,7 +4,7 @@ E('dog',{min:4,max:9,once:1,st:()=>Sg('village',{props:[['puppies',108,{dy:8}]],
   text:()=>'이웃집 개가 새끼를 낳았다. 한 마리만 키우게 해 달라고 조르고 싶다.',ch:[
   {t:'조른다',p:()=>pctNow()>40?.7:.35,go:ok=>{ if(ok){ m.joy+=12; m.f.dog=m.age; return {t:'어머니가 한숨을 쉬더니 허락했다. 누렁이라고 이름을 붙였다.',tone:'good',cut:()=>{ setPose('hero','cheer'); emo('hero','heart'); }}; } m.joy-=5; return {t:'"우리 먹을 것도 없다." 그날 밤 이불 속에서 울었다.',tone:'bad',cut:()=>{ setPose('hero','cry'); }}; }},
   {t:'말도 꺼내지 않는다',go:()=>{ m.bond+=3; return '강아지가 다른 집으로 가는 걸 담 너머로 보았다.'; }}]});
-E('seodang',{min:7,max:10,once:1,when:()=>!m.f.school,st:()=>Sg('school',{cast:[N('tc',LOOK.official({robe:'#5a6a5a',item:'book'}),118,{pose:'carry',tag:'훈장'}),N('s1',LOOK.child(),96,{pose:'sit',dy:-2}),N('s2',LOOK.girl(),134,{pose:'sit',dy:-2})],hero:{x:56}}),
+E('seodang',{min:7,max:10,once:1,when:()=>!m.f.school&&!m.f.lit,st:()=>Sg('school',{cast:[N('tc',LOOK.official({robe:'#5a6a5a',item:'book'}),118,{pose:'carry',tag:'훈장'}),N('s1',LOOK.child(),96,{pose:'sit',dy:-2}),N('s2',LOOK.girl(),134,{pose:'sit',dy:-2})],hero:{x:56}}),
   text:()=>'서당 훈장이 글을 배우러 오라고 한다. 수업료는 한 해 쌀 닷 말, 은자로 8냥이다.',ch:[
   {t:'서당에 다닌다',when:()=>m.gold>=8||pctNow()>30,go:()=>{ gold(-8); m.f.school=1; bump('wit'); m.joy+=3; log('서당에서 글을 배우기 시작했다',true); return {t:'천자문 첫 줄을 외웠다. 하늘은 검고 땅은 누렇다.',tone:'good',cut:()=>{ const h=A('hero'); if(h){ h.goto=84; h.pose0='sit'; } }}; }},
   {t:'집안일을 돕는다',go:()=>{ m.bond+=4; return '서당 앞을 지날 때마다 아이들 글 읽는 소리가 들렸다.'; }}]});

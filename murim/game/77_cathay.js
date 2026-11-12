@@ -1,5 +1,5 @@
 /* ==== murim:cathay-screen — 천하 지도 화면: 눌러서 고르고, 길을 따라 움직이고, 가는 동안 철이 간다 ==== */
-let CATH=null, CT=null, CSEL=null, CBG=null, CHOME=null, CFR=0;
+let CMOVED=false, CATH=null, CT=null, CSEL=null, CBG=null, CHOME=null, CFR=0;
 const CATHSPEC={cathay:1,key:'cathay'};
 const TYPEN={capital:'도성',city:'성',sect:'문파',clan:'세가',den:'소굴',demon:'마도',camp:'천막',home:'고향'};
 const cath=()=>CATH||(CATH=buildCathay());
@@ -8,8 +8,9 @@ const regId=()=>m.b.reg==='jiangnan'?'jiangsu':m.b.reg;
 const roadish=(x,y)=>{ const g=cath().g[y]&&cath().g[y][x]; return g==='='||g==='B'; };
 /* 고향 마을: 태어난 지역의 성에서 길을 따라 조금 떨어진 곳 */
 function homeTile(){ if(CHOME&&CHOME.b===m.b) return CHOME; const M=cath(), rid=regId(), o=OR(m.b.o)||{}, own=o.site&&M.spots.find(s=>s.id===o.site), ss=M.spots.filter(s=>s.reg===rid), base=own||ss.find(s=>s.type==='city'||s.type==='capital')||ss[0]||M.spots[0]; let best=null;
-  for(let want=own?3:5+seedOf(m.name||'x')%3; want>=2&&!best; want--){ const q=[[base.x,base.y,0]], seen=new Set([base.x+','+base.y]);
-    while(q.length&&!best){ const [x,y,d]=q.shift(); if(d===want){ if(!M.spots.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)<3)) best=[x,y]; continue; } for(const v of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+v[0], ny=y+v[1], k=nx+','+ny; if(!seen.has(k)&&roadish(nx,ny)){ seen.add(k); q.push([nx,ny,d+1]); } } } }
+  const wants=own?[3,4,2,5,1]:[5+seedOf(m.name||'x')%3,5,4,3,2,1], gap=own?2:3;
+  for(const want of wants){ if(best) break; const q=[[base.x,base.y,0]], seen=new Set([base.x+','+base.y]);
+    while(q.length&&!best){ const [x,y,d]=q.shift(); if(d===want){ if(!M.spots.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)<Math.min(gap,want))) best=[x,y]; continue; } for(const v of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+v[0], ny=y+v[1], k=nx+','+ny; if(!seen.has(k)&&roadish(nx,ny)){ seen.add(k); q.push([nx,ny,d+1]); } } } }
   if(!best) best=[base.x,base.y]; CHOME={b:m.b,id:'home',n:homeName(),x:best[0],y:best[1],type:'home',reg:rid}; return CHOME; }
 const cSites=()=>cath().spots.concat([homeTile()]);
 const site=id=>id==='home'?homeTile():cath().spots.find(s=>s.id===id);
@@ -69,8 +70,11 @@ let SKINVER=0;
 function cathayShow(){ const box=cv.parentNode; let el=$m('mhCathay');
   if(!el){ el=document.createElement('div'); el.id='mhCathay'; el.className='mh-cathay'; el.innerHTML='<div class="mh-cw" id="mhCw"><canvas class="bg" id="mhCbg" width="1536" height="1152"></canvas><div id="mhCreg" aria-hidden="true"></div><div id="mhCmk"></div><canvas id="mhChero" class="mh-chero" width="120" height="80" aria-hidden="true"></canvas></div>'; box.insertBefore(el,cv.nextSibling);
     $m('mhCreg').innerHTML=CREG.map(r=>`<span style="left:${r[2]/KW*100}%;top:${r[3]/KH*100}%">${r[1]}</span>`).join('');
-    $m('mhCmk').addEventListener('click',e=>{ const b=e.target.closest('[data-s]'); if(!b||CT||(m.auto&&!paused)) return; const cur=curSite(); CSEL=cur&&cur.id===b.dataset.s?null:b.dataset.s; sfx('tick'); render(); });
-    let drag=null; el.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') drag={x:e.clientX,y:e.clientY,l:el.scrollLeft,t:el.scrollTop}; }); window.addEventListener('pointermove',e=>{ if(drag){ el.scrollLeft=drag.l-(e.clientX-drag.x); el.scrollTop=drag.t-(e.clientY-drag.y); } }); window.addEventListener('pointerup',()=>{ drag=null; }); }
+    $m('mhCw').addEventListener('click',e=>{ if(CMOVED){ CMOVED=false; return; } if(CT||(m.auto&&!paused)) return; let id=null; const b=e.target.closest('[data-s]');
+      if(e.detail===0){ if(b) id=b.dataset.s; }   // 키보드로 누른 단추
+      else { const w=$m('mhCw').getBoundingClientRect(), px=e.clientX-w.left, py=e.clientY-w.top; let best=30*30; for(const s of cSites()){ const dx=(s.x+.5)/KW*w.width-px, dy=(s.y+.5)/KH*w.height-py, d=dx*dx+dy*dy; if(d<best){ best=d; id=s.id; } } if(!id&&b) id=b.dataset.s; }
+      if(!id) return; const cur=curSite(); CSEL=cur&&cur.id===id?null:id; sfx('tick'); render(); });
+    let drag=null; el.addEventListener('pointerdown',e=>{ CMOVED=false; if(e.pointerType==='mouse') drag={x:e.clientX,y:e.clientY,l:el.scrollLeft,t:el.scrollTop}; }); window.addEventListener('pointermove',e=>{ if(drag){ if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>6) CMOVED=true; el.scrollLeft=drag.l-(e.clientX-drag.x); el.scrollTop=drag.t-(e.clientY-drag.y); } }); window.addEventListener('pointerup',()=>{ drag=null; }); }
   const was=el.hidden; el.hidden=false; cv.style.display='none'; const tg=$m('mhTags'); if(tg) tg.textContent='';
   cathBg(m.sea); cathMarkers(); cathHero(); if(was!==false||!cathayShow.seen){ cathayShow.seen=1; cathCenter(); } }
 function cathayHide(){ const el=$m('mhCathay'); if(el&&!el.hidden){ el.hidden=true; cv.style.display=''; } }

@@ -113,9 +113,9 @@ const FAM=[
   {id:'jinyi',n:'금의위',d:'아버지는 황제의 눈과 귀다. 집에 오는 손님은 모두 목소리를 낮춘다.',w:[.15,.2],pct:[80,97],gold:150,inc:38,art:['금의도법',8,'도'],it:['isword'],region:'hebei',site:'beijing',tier:3,ws:'office',wn:'관아의 심부름을 한다',hn:'북경 성 안'},
   {id:'hyeolc',n:'혈교 교도',d:'설산 아래 혈교의 사원에서 태어났다. 피 냄새가 향 냄새보다 익숙하다.',w:[.15,.15],pct:[15,60],gold:10,inc:10,sect:'hyeol',sart:['혈조공',9,'장'],ak:6,region:'xizang',site:'hyeol',tier:1,ws:'dojo',wn:'교의 잔일을 거든다',hn:'혈교 사원촌'},
   {id:'assassin',n:'살수문',d:'아버지의 직업을 물으면 안 된다는 것부터 배웠다.',w:[.1,.1],pct:[30,70],gold:40,inc:20,art:['무영살',10,'암기'],ak:10,it:['ldart'],tier:2,ws:'forest',wn:'아버지의 일을 돕는다'},
-  {id:'demonhi',as:'천마신교 호법 집안',n:'천마신교 호법의 자식',d:'아버지는 교의 호법이다. 또래들은 눈을 마주치지 못한다.',w:[.05,.06],pct:[85,99],gold:200,inc:40,sect:'demon',ak:8,region:'guangxi',site:'cheonma',it:['lvest'],tier:3,ws:'dojo',wn:'교의 일을 거든다',hn:'천마신교 본산'},
-  {id:'royal',as:'황실',n:'황족',d:'황실의 먼 종친으로 태어났다. 담장 밖을 본 적이 없다.',w:[.02,.03],pct:[99.6,99.99],gold:2000,inc:200,st:{wit:1},it:['jadep'],region:'hebei',site:'beijing',tier:3,ws:'office',wn:'궁의 예법을 익힌다',hn:'북경 성 안'},
-  {id:'demonheir',as:'천마신교 교주의 집안',n:'천마신교 소교주',d:'천마신교 교주의 핏줄로 태어났다. 요람 옆에 호법이 선다.',w:[.004,.005],pct:[99.9,99.99],gold:3000,inc:300,sect:'demon',ak:10,region:'guangxi',site:'cheonma',it:['lvest'],tier:3,ws:'dojo',wn:'교의 일을 거든다',hn:'천마신교 본산'},
+  {id:'demonhi',as:'천마신교 호법 집안',n:'천마신교 호법의 자식',d:'아버지는 교의 호법이다. 또래들은 눈을 마주치지 못한다.',w:[.06,.06],pct:[85,99],gold:200,inc:40,sect:'demon',ak:8,region:'guangxi',site:'cheonma',it:['lvest'],tier:3,ws:'dojo',wn:'교의 일을 거든다',hn:'천마신교 본산'},
+  {id:'royal',as:'황실',n:'황족',d:'황실의 먼 종친으로 태어났다. 담장 밖을 본 적이 없다.',w:[.04,.04],pct:[99.6,99.99],gold:2000,inc:200,st:{wit:1},it:['jadep'],region:'hebei',site:'beijing',tier:3,ws:'office',wn:'궁의 예법을 익힌다',hn:'북경 성 안'},
+  {id:'demonheir',as:'천마신교 교주의 집안',n:'천마신교 소교주',d:'천마신교 교주의 핏줄로 태어났다. 요람 옆에 호법이 선다.',w:[.04,.04],pct:[99.9,99.99],gold:3000,inc:300,sect:'demon',ak:10,region:'guangxi',site:'cheonma',it:['lvest'],tier:3,ws:'dojo',wn:'교의 일을 거든다',hn:'천마신교 본산'},
   {id:'blood',n:'자작농',d:'작지만 제 땅이 있다. 어머니는 가끔 서쪽 하늘을 오래 본다.',w:[.15,.15],pct:[25,55],gold:10,inc:10,f:{blood:1},hidden:'사실은 천마신교 교주의 핏줄'}
 ];
 // 문파·새외 세력 안에서 태어나는 출신: [문파, 지역, 천하 지도의 장소, 비중, 이름, 설명, 더할 것]

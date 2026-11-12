@@ -24,6 +24,28 @@ const SECTS={
   tang:{n:'사천당가',side:'중',art:['만천화우',17,'암기'],inner:['독공',6],robe:'#3d5a3a',w0:'ldart'},
   haomun:{n:'하오문',side:'중',art:['은형보',9,'보법'],robe:'#5d5d64',w0:'ldart'},
   nokrim:{n:'녹림채',side:'사',art:['녹림도법',13,'도'],robe:'#6b5430',w0:'bsaber'},
+  zhongnan:{n:'종남파',side:'정',art:['천하삼십육검',15,'검'],inner:['종남현공',7],robe:'#5a6f8a',w0:'wsword'},
+  kunlun:{n:'곤륜파',side:'정',art:['운룡대팔식',15,'검'],inner:['태청강기',7],robe:'#8fa3b8',w0:'wsword'},
+  jeomchang:{n:'점창파',side:'정',art:['사일검법',16,'검'],inner:['분광심법',6],robe:'#3f7a7a',w0:'wsword'},
+  gongdong:{n:'공동파',side:'정',art:['복마검법',14,'검'],inner:['현공심법',6],robe:'#7a6a4a',w0:'wsword'},
+  qingcheng:{n:'청성파',side:'정',art:['송풍검법',14,'검'],inner:['청성심법',6],robe:'#4a7a5a',w0:'wsword'},
+  taishan:{n:'태산파',side:'정',art:['태산십팔반',14,'검'],inner:['동악심법',6],robe:'#6a5a7a',w0:'wsword'},
+  hengshan_s:{n:'형산파',side:'정',art:['회풍낙안검',14,'검'],inner:['축융심법',6],robe:'#8a5a4a',w0:'wsword'},
+  hengshan_n:{n:'항산파',side:'정',art:['만화검법',13,'검'],inner:['북악심법',6],robe:'#6a7a8a',w0:'wsword'},
+  botao:{n:'보타문',side:'정',art:['자죽검법',13,'검'],inner:['관음심법',7],robe:'#7a9aa0',w0:'wsword'},
+  yongho:{n:'용호산',side:'정',art:['오뢰장',15,'장'],inner:['정일심법',8],robe:'#3a4a6a',w0:'lglove'},
+  hainan:{n:'해남파',side:'중',art:['남해삼십육검',15,'검'],inner:['조음공',6],robe:'#2f7a8a',w0:'wsword'},
+  jangbaek:{n:'장백파',side:'중',art:['설령검법',14,'검'],inner:['한빙결',6],robe:'#aab4c0',w0:'wsword'},
+  tianshan:{n:'천산파',side:'중',art:['천산검법',15,'검'],inner:['빙심결',7],robe:'#9ab0c8',w0:'wsword'},
+  potala:{n:'포달랍궁',side:'중',art:['대수인',16,'장'],inner:['밀종심법',8],robe:'#a0402a',w0:'lglove'},
+  yasu:{n:'남만야수궁',side:'중',art:['맹수권',15,'권'],inner:['야수공',5],robe:'#7a5a2a',w0:'lglove'},
+  binggung:{n:'북해빙궁',side:'중',art:['빙백신장',17,'장'],inner:['빙백신공',8],robe:'#b8d0e0',w0:'lglove'},
+  odok:{n:'오독교',side:'사',art:['오독장',15,'장'],inner:['만독공',6],robe:'#4a3a5a',w0:'lglove'},
+  zhuge:{n:'제갈세가',side:'정',art:['팔진검',14,'검'],inner:['와룡심법',7],robe:'#4a5a8a',w0:'isword'},
+  paeng:{n:'하북팽가',side:'정',art:['오호단문도',17,'도'],inner:['혼원공',5],robe:'#7a3a2a',w0:'bsaber'},
+  moyong:{n:'모용세가',side:'중',art:['고소검법',16,'검'],inner:['연가심법',6],robe:'#5a4a8a',w0:'isword'},
+  suchae:{n:'장강수로채',side:'사',art:['분수도법',13,'도'],robe:'#3a5a6a',w0:'bsaber'},
+  hyeol:{n:'혈교',side:'마',art:['혈영신공',22,'마공'],robe:'#5a0f1e',w0:'lglove'},
   demon:{n:'천마신교',side:'마',art:['천마신공',24,'마공'],robe:'#7a1e1e',w0:'lglove'}
 };
 const ERAS={
@@ -38,26 +60,26 @@ const REGIONS=[
   {id:'sichuan',n:'사천',w:11,d:'안개 낀 분지. 아미산과 당가타가 있다',sect:'emei'},
   {id:'anhui',n:'안휘',w:8,d:'남궁세가의 깃발이 걸린 고을',sect:'namgung'},
   {id:'jiangnan',n:'강소',w:10,d:'운하와 비단 장터가 끝없이 이어진 물의 고장',biome:'water'},
-  {id:'zhejiang',n:'절강',w:8,d:'서호의 버들과 바닷바람이 만나는 항구',biome:'water'},
-  {id:'shandong',n:'산동',w:11,d:'태산 아래 넓은 밀밭'},
+  {id:'zhejiang',n:'절강',w:8,d:'서호의 버들과 바닷바람이 만나는 항구',biome:'water',sect:'botao'},
+  {id:'shandong',n:'산동',w:11,d:'태산 아래 넓은 밀밭',sect:'taishan'},
   {id:'hebei',n:'하북',w:9,d:'북방 오랑캐와 맞닿은 거친 들판',biome:'dry'},
   {id:'guangdong',n:'광동',w:6,d:'남쪽 바다의 습한 항구',biome:'jungle'},
-  {id:'yunnan',n:'운남',w:3,d:'독충과 산족의 땅, 남만',biome:'jungle'},
-  {id:'xinjiang',n:'천산',w:1.5,d:'눈 덮인 천산 아래 새외의 오아시스',biome:'snow'},
-  {id:'beihai',n:'북해',w:.5,d:'일 년 내내 얼음이 녹지 않는 북쪽 끝',biome:'snow'},
-  {id:'shanxi',n:'산서',w:6,d:'태행산 그늘 아래 상인과 산적이 함께 사는 땅',biome:'dry'},
-  {id:'hunan',n:'호남',w:8,d:'동정호 물안개와 형산 자락의 고을',biome:'water'},
-  {id:'jiangxi',n:'강서',w:7,d:'파양호 뱃노래가 들리는 도자기의 고장',biome:'water'},
-  {id:'gansu',n:'감숙',w:2.5,d:'서역으로 가는 낙타가 지나는 황톳길',biome:'dry'},
-  {id:'qinghai',n:'청해',w:.6,d:'곤륜산 눈이 녹아 흐르는 푸른 호숫가',biome:'snow'},
-  {id:'fujian',n:'복건',w:5,d:'산이 바다로 떨어지는 해적과 차의 땅',biome:'jungle'},
-  {id:'hainan',n:'해남',w:.6,d:'뱃길 끝의 더운 섬',biome:'jungle'},
+  {id:'yunnan',n:'운남',w:3,d:'독충과 산족의 땅, 남만',biome:'jungle',sect:'jeomchang'},
+  {id:'xinjiang',n:'천산',w:1.5,d:'눈 덮인 천산 아래 새외의 오아시스',biome:'snow',sect:'tianshan'},
+  {id:'beihai',n:'북해',w:.5,d:'일 년 내내 얼음이 녹지 않는 북쪽 끝',biome:'snow',sect:'binggung'},
+  {id:'shanxi',n:'산서',w:6,d:'태행산 그늘 아래 상인과 산적이 함께 사는 땅',biome:'dry',sect:'hengshan_n'},
+  {id:'hunan',n:'호남',w:8,d:'동정호 물안개와 형산 자락의 고을',biome:'water',sect:'hengshan_s'},
+  {id:'jiangxi',n:'강서',w:7,d:'파양호 뱃노래가 들리는 도자기의 고장',biome:'water',sect:'yongho'},
+  {id:'gansu',n:'감숙',w:2.5,d:'서역으로 가는 낙타가 지나는 황톳길',biome:'dry',sect:'gongdong'},
+  {id:'qinghai',n:'청해',w:.6,d:'곤륜산 눈이 녹아 흐르는 푸른 호숫가',biome:'snow',sect:'kunlun'},
+  {id:'fujian',n:'복건',w:5,d:'산이 바다로 떨어지는 해적과 차의 땅',biome:'jungle',sect:'shaolin'},
+  {id:'hainan',n:'해남',w:.6,d:'뱃길 끝의 더운 섬',biome:'jungle',sect:'hainan'},
   {id:'guangxi',n:'광서',w:3,d:'십만대산의 그림자가 드리운 남쪽 변방',biome:'jungle'},
-  {id:'guizhou',n:'귀주',w:2,d:'독충과 안개의 묘강',biome:'jungle'},
-  {id:'xizang',n:'서장',w:.5,d:'하늘과 맞닿은 설산의 고원',biome:'snow'},
-  {id:'nanman',n:'남만',w:.8,d:'맹수와 밀림의 땅',biome:'jungle'},
+  {id:'guizhou',n:'귀주',w:2,d:'독충과 안개의 묘강',biome:'jungle',sect:'odok'},
+  {id:'xizang',n:'서장',w:.5,d:'하늘과 맞닿은 설산의 고원',biome:'snow',sect:'potala'},
+  {id:'nanman',n:'남만',w:.8,d:'맹수와 밀림의 땅',biome:'jungle',sect:'yasu'},
   {id:'mongol',n:'몽골',w:1,d:'끝없는 초원과 말발굽 소리',biome:'dry'},
-  {id:'liaodong',n:'요동',w:1.5,d:'장백산 아래 눈보라 치는 변경',biome:'snow'}
+  {id:'liaodong',n:'요동',w:1.5,d:'장백산 아래 눈보라 치는 변경',biome:'snow',sect:'jangbaek'}
 ];
 // w: [이 해에 태어나는 아이 기준, 지금 사는 사람 기준] · pct: 재산 백분위 · inc: 한 해 벌이(냥) · it: 집안에서 물려받는 물건
 const FAM=[
@@ -74,8 +96,56 @@ const FAM=[
   {id:'official',n:'지방 관리',d:'아버지는 현의 관리다. 글을 먼저 배운다.',w:[1,1.8],pct:[85,98],gold:180,inc:40,st:{wit:1},it:['jadep']},
   {id:'clan',n:'무림세가',d:'태어날 때부터 가문의 검을 쥐었다.',w:[.5,.7],pct:[92,99.6],gold:300,inc:45,sect:'namgung',sur:'남궁',region:'anhui',it:['gsword','lvest']},
   {id:'tangc',n:'사천당가',d:'독 냄새를 맡으며 자란다. 당가 사람은 쉽게 믿지 않는다.',w:[.25,.35],pct:[85,99],gold:150,inc:35,sect:'tang',sur:'당',f:{poisonwise:1},region:'sichuan',it:['gdart'],bag:{antidote:2}},
+  {id:'fisher',n:'어부',d:'그물과 배가 전 재산이다. 물때를 먼저 배운다.',w:[5,5],pct:[6,38],gold:4,inc:8,regions:['jiangnan','zhejiang','hunan','hubei','jiangxi','fujian','guangdong','hainan','shandong'],tier:0,ws:'bridge',wn:'그물을 던진다'},
+  {id:'slave',n:'노비',d:'남의 집 종으로 태어났다. 이름도 주인이 지었다.',w:[4,3.5],pct:[0,5],gold:0,inc:2,tier:0,ws:'field',wn:'주인집 일을 한다'},
+  {id:'soldier',n:'군졸 집안',d:'아버지는 변방을 지키는 군졸이다. 창 자루를 장난감 삼아 자랐다.',w:[2.5,2.5],pct:[18,50],gold:8,inc:10,st:{body:1},it:['bsaber'],tier:1,ws:'office',wn:'병영 일을 거든다'},
+  {id:'hill',n:'산족',d:'화전을 일구고 독초를 가려 먹으며 자란다.',w:[2,2],pct:[3,30],gold:2,inc:6,regions:['guizhou','nanman','yunnan','guangxi'],tier:0,ws:'forest',wn:'화전을 일군다',hn:'산족 마을'},
+  {id:'gaebang',n:'개방 거지',d:'개방 분타의 거적 위에서 태어났다. 동냥 그릇이 첫 장난감이다.',w:[1.5,1.2],pct:[0,6],gold:0,inc:4,hint:'beggar',tier:0,ws:'market',wn:'동냥을 한다',hn:'개방 분타 골목'},
+  {id:'nomad',n:'유목민',d:'천막에서 태어나 말 위에서 자란다.',w:[1.2,1.2],pct:[10,45],gold:6,inc:8,st:{body:1},regions:['mongol','xinjiang'],tier:1,ws:'field',wn:'양 떼를 몬다',hn:'초원 천막촌'},
+  {id:'gisaeng',n:'기루',d:'기루 뒷방에서 태어났다. 아버지가 누구인지는 아무도 모른다.',w:[1,1],pct:[5,35],gold:3,inc:8,st:{charm:1},nofather:1,as:'기루',tier:1,ws:'inn',wn:'기루의 잔심부름을 한다'},
+  {id:'retainer',n:'세가의 가솔',d:'세가의 담장 안에서 태어났지만 성은 다르다. 주인집 아이들의 목검을 닦으며 자랐다.',w:[1,1.2],pct:[20,50],gold:8,inc:10,regions:['anhui','sichuan','hubei','hebei','jiangnan'],tier:1,ws:'office',wn:'장원의 일을 거든다'},
+  {id:'suchae',n:'수로채',d:'동정호 갈대밭의 수적 소굴에서 태어났다. 걸음마보다 헤엄을 먼저 배웠다.',w:[.8,.7],pct:[10,40],gold:10,inc:10,hint:'suchae',as:'수로채',ak:8,it:['bsaber'],region:'hunan',site:'suchae',tier:1,ws:'bridge',wn:'뱃길을 지킨다',hn:'수채 아랫마을'},
+  {id:'thief',n:'하오문',d:'소매치기와 야바위꾼의 골목에서 자랐다. 눈치가 밥이다.',w:[.8,.8],pct:[5,30],gold:4,inc:9,hint:'haomun',ak:3,tier:0,ws:'market',wn:'골목 일을 돕는다'},
+  {id:'demonc',n:'천마신교 교도',d:'십만대산 깊은 곳, 교의 마을에서 태어났다. 바깥세상은 모두 적이라고 배운다.',w:[.5,.5],pct:[15,55],gold:10,inc:10,sect:'demon',sart:['혈수공',9,'장'],ak:5,region:'guangxi',site:'cheonma',tier:1,ws:'dojo',wn:'교의 잔일을 거든다',hn:'천마신교 교도촌'},
+  {id:'zhugec',n:'제갈세가',d:'병서와 진법 그림이 그림책이었다. 가문은 머리로 강호를 건넌다.',w:[.3,.4],pct:[90,99.5],gold:260,inc:42,sect:'zhuge',sur:'제갈',st:{wit:1},region:'hubei',site:'zhuge',it:['isword'],tier:3,ws:'home',wn:'가문의 일을 거든다',hn:'제갈세가 장원'},
+  {id:'paengc',n:'하북팽가',d:'돌잡이로 도를 잡았다. 팽가의 아이는 우는 소리도 크다.',w:[.3,.4],pct:[90,99.5],gold:260,inc:42,sect:'paeng',sur:'팽',st:{body:1},region:'hebei',site:'paeng',it:['bsaber','lvest'],tier:3,ws:'home',wn:'가문의 일을 거든다',hn:'하북팽가 장원'},
+  {id:'moyongc',n:'모용세가',d:'호숫가 장원에서 태어났다. 가문은 옛 영화를 잊지 않는다.',w:[.3,.4],pct:[90,99.5],gold:280,inc:44,sect:'moyong',sur:'모용',region:'jiangnan',site:'moyong',it:['isword','lvest'],tier:3,ws:'home',wn:'가문의 일을 거든다',hn:'모용세가 장원'},
+  {id:'jinyi',n:'금의위',d:'아버지는 황제의 눈과 귀다. 집에 오는 손님은 모두 목소리를 낮춘다.',w:[.15,.2],pct:[80,97],gold:150,inc:38,art:['금의도법',8,'도'],it:['isword'],region:'hebei',site:'beijing',tier:3,ws:'office',wn:'관아의 심부름을 한다',hn:'북경 성 안'},
+  {id:'hyeolc',n:'혈교 교도',d:'설산 아래 혈교의 사원에서 태어났다. 피 냄새가 향 냄새보다 익숙하다.',w:[.15,.15],pct:[15,60],gold:10,inc:10,sect:'hyeol',sart:['혈조공',9,'장'],ak:6,region:'xizang',site:'hyeol',tier:1,ws:'dojo',wn:'교의 잔일을 거든다',hn:'혈교 사원촌'},
+  {id:'assassin',n:'살수문',d:'아버지의 직업을 물으면 안 된다는 것부터 배웠다.',w:[.1,.1],pct:[30,70],gold:40,inc:20,art:['무영살',10,'암기'],ak:10,it:['ldart'],tier:2,ws:'forest',wn:'아버지의 일을 돕는다'},
+  {id:'demonhi',as:'천마신교 호법 집안',n:'천마신교 호법의 자식',d:'아버지는 교의 호법이다. 또래들은 눈을 마주치지 못한다.',w:[.05,.06],pct:[85,99],gold:200,inc:40,sect:'demon',ak:8,region:'guangxi',site:'cheonma',it:['lvest'],tier:3,ws:'dojo',wn:'교의 일을 거든다',hn:'천마신교 본산'},
+  {id:'royal',as:'황실',n:'황족',d:'황실의 먼 종친으로 태어났다. 담장 밖을 본 적이 없다.',w:[.02,.03],pct:[99.6,99.99],gold:2000,inc:200,st:{wit:1},it:['jadep'],region:'hebei',site:'beijing',tier:3,ws:'office',wn:'궁의 예법을 익힌다',hn:'북경 성 안'},
+  {id:'demonheir',as:'천마신교 교주의 집안',n:'천마신교 소교주',d:'천마신교 교주의 핏줄로 태어났다. 요람 옆에 호법이 선다.',w:[.004,.005],pct:[99.9,99.99],gold:3000,inc:300,sect:'demon',ak:10,region:'guangxi',site:'cheonma',it:['lvest'],tier:3,ws:'dojo',wn:'교의 일을 거든다',hn:'천마신교 본산'},
   {id:'blood',n:'자작농',d:'작지만 제 땅이 있다. 어머니는 가끔 서쪽 하늘을 오래 본다.',w:[.15,.15],pct:[25,55],gold:10,inc:10,f:{blood:1},hidden:'사실은 천마신교 교주의 핏줄'}
 ];
+// 문파·새외 세력 안에서 태어나는 출신: [문파, 지역, 천하 지도의 장소, 비중, 이름, 설명, 더할 것]
+const SECTBORN=[
+  ['huashan','shaanxi','huashan',.12,'화산파 문도의 자식','화산 연화봉 아래, 매화 향 속에서 걸음마를 뗐다.'],
+  ['wudang','hubei','wudang',.12,'무당파 속가의 자식','무당산 아래 속가 제자의 집에서 태어났다. 새벽마다 도관의 종소리를 들었다.'],
+  ['zhongnan','shaanxi','zhongnan',.1,'종남파 문도의 자식','종남산 자락에서 태어났다. 어른들은 화산파 이야기만 나오면 입을 다문다.'],
+  ['kunlun','qinghai','kunlun',.08,'곤륜파 문도의 자식','구름 위 곤륜산에서 태어났다. 중원은 이야기로만 들었다.'],
+  ['jeomchang','yunnan','jeomchang',.08,'점창파 문도의 자식','점창산 아래 대리의 바람 속에서 자랐다.'],
+  ['gongdong','gansu','gongdong',.08,'공동파 문도의 자식','공동산 아래, 서역 가는 낙타 방울 소리를 들으며 자랐다.'],
+  ['qingcheng','sichuan','qingcheng',.1,'청성파 문도의 자식','청성산 솔바람 속에서 태어났다.'],
+  ['taishan','shandong','taishan',.1,'태산파 문도의 자식','태산 돌계단을 놀이터 삼아 자랐다.'],
+  ['hengshan_s','hunan','hengshan_s',.08,'형산파 문도의 자식','형산 자락에서 태어났다. 기러기 떼가 돌아오는 것을 보며 자랐다.'],
+  ['hengshan_n','shanxi','hengshan_n',.08,'항산파 문도의 자식','북악 항산의 절벽 아래에서 태어났다.'],
+  ['botao','zhejiang','botao',.06,'보타문 문도의 자식','바닷바람 부는 보타산에서 태어났다.'],
+  ['yongho','jiangxi','yongho',.08,'용호산 도사의 자식','용호산 도관에서 부적 그리는 것을 보며 자랐다.'],
+  ['hainan','hainan','hainanpa',.05,'해남파 문도의 자식','뱃길 끝 더운 섬에서 태어났다. 중원 사람은 본 적이 없다.'],
+  ['jangbaek','liaodong','jangbaek',.06,'장백파 문도의 자식','장백산 눈보라 속에서 태어났다.'],
+  ['tianshan','xinjiang','tianshan',.06,'천산파 문도의 자식','눈 덮인 천산에서 태어났다.'],
+  ['odok','guizhou','odok',.08,'오독교 교도의 자식','독충 항아리 옆에서 자랐다. 물리지 않는 법을 먼저 배웠다.',{f:{poisonwise:1},ak:4,bag:{antidote:2}}],
+  ['potala','xizang','potala',.06,'포달랍궁에 맡겨진 아이','설산의 사원에 맡겨졌다. 경전 읽는 소리가 자장가였다.',{orphan:1,pct:[5,40],gold:0,inc:4,as:'포달랍궁 사원'}],
+  ['yasu','nanman','yasu',.08,'남만야수궁의 아이','밀림의 궁에서 태어났다. 첫 친구는 호랑이 새끼였다.',{st:{body:1},as:'남만야수궁'}],
+  ['binggung','beihai','binggung',.06,'북해빙궁의 아이','얼음 궁전에서 태어났다. 봄이 무엇인지 모른다.',{pct:[70,97],gold:120,inc:30,as:'북해빙궁'}],
+  ['shaolin','henan','shaolin',.12,'소림사에 버려진 아이','소림사 산문 앞에 강보에 싸여 버려졌다. 스님들이 번갈아 업어 키웠다.',{sex:'m',orphan:1,pct:[2,20],gold:0,inc:3,as:'소림사 산문 앞'}],
+  ['emei','sichuan','emei',.1,'아미파 속가의 딸','아미산 아래 속가 제자의 집에서 태어났다. 어머니의 검이 벽에 걸려 있다.',{sex:'f'}]
+];
+for(const x of SECTBORN) FAM.push(Object.assign({id:'s_'+x[0],n:x[4],d:x[5],w:[x[3],x[3]*1.2],pct:[40,82],gold:30,inc:14,sect:x[0],region:x[1],site:x[2],tier:2,ws:'dojo',wn:'문파의 잔일을 거든다',hn:SECTS[x[0]].n+' 아랫마을',as:x[4].replace(/의 (자식|딸)$/,'')+' 집안'},x[6]||{}));
+Object.assign(FAM.find(f=>f.id==='clan'),{site:'namgung',hn:'남궁세가 장원'}); Object.assign(FAM.find(f=>f.id==='tangc'),{site:'tang',hn:'사천당가 장원'}); Object.assign(FAM.find(f=>f.id==='bandit'),{hn:'산채 아랫마을'});
+const famAs=o=>o.as||o.n+' 집안';
+const homeName=()=>{ const o=m&&m.b&&FAM.find(f=>f.id===m.b.o); return (o&&o.hn)||'고향 마을'; };
 const TRAITS=[
   {id:'cold',n:'천음절맥',d:'타고난 오성이 뛰어나지만, 스무 살을 넘기기 어려운 체질',st:{wit:3}},
   {id:'might',n:'천생신력',d:'어려서부터 장정 셋의 힘',st:{body:3}},
@@ -93,19 +163,19 @@ const PACE={fast:1500,normal:3000,slow:6000}, SPD=[1,2,4];
 function stat3(){return cl(ri(1,4)+ri(1,4)+ri(0,2),1,10);}
 function wpick(arr,wf){ const t=arr.reduce((a,x)=>a+wf(x),0); let r=R()*t; for(const x of arr){ r-=wf(x); if(r<=0) return x; } return arr[arr.length-1]; }
 const regOf=id=>REGIONS.find(r=>r.id===id);
-function makeBirth(era,basis){
+function makeBirth(era,basis,fid){
   const bi=basis==='births'?0:1;
-  const fam=wpick(FAM,f=>f.w[bi]);
-  const reg=fam.region?regOf(fam.region):wpick(REGIONS,r=>r.w);
-  const sumF=FAM.reduce((a,f)=>a+f.w[bi],0), sumR=REGIONS.reduce((a,r)=>a+r.w,0);
-  const P0=(fam.w[bi]/sumF)*(fam.region?1:reg.w/sumR);
-  const sex=R()<.5?'m':'f', st={body:stat3(),wit:stat3(),luck:stat3(),charm:stat3()};
+  const fam=(fid&&FAM.find(f=>f.id===fid))||wpick(FAM,f=>f.w[bi]);
+  const pool=fam.region?[regOf(fam.region)]:fam.regions?fam.regions.map(regOf):REGIONS, reg=wpick(pool,r=>r.w);
+  const sumF=FAM.reduce((a,f)=>a+f.w[bi],0), sumR=pool.reduce((a,r)=>a+r.w,0);
+  const P0=(fam.w[bi]/sumF)*(reg.w/sumR), S0=fam.sect&&SECTS[fam.sect];
+  const sex=fam.sex||(S0&&S0.male?'m':S0&&S0.female?'f':R()<.5?'m':'f'), st={body:stat3(),wit:stat3(),luck:stat3(),charm:stat3()};
   for(const k in (fam.st||{})) st[k]=cl(st[k]+fam.st[k],1,10);
   let trait=null; if(R()<.15){ trait=pick(TRAITS); for(const k in (trait.st||{})) st[k]=cl(st[k]+trait.st[k],1,10); }
   const sur=fam.sur||pick(SURN), sib=ri(0,4);
   return {o:fam.id, reg:reg.id, era, sex, sur, given:gname(), st, trait:trait&&trait.id, P:P0,
     pct:+(fam.pct[0]+R()*(fam.pct[1]-fam.pct[0])).toFixed(1),
-    father:{name:sur+gname(),age:ri(19,42),dead:R()<(era==='chaos'?.1:.04)}, mother:{name:pick(SURN)+gname(),age:ri(16,36),dead:R()<.02}, sib, order:ri(1,sib+1)};
+    father:{name:sur+gname(),age:ri(19,42),dead:!!(fam.orphan||fam.nofather)||R()<(era==='chaos'?.1:.04)}, mother:{name:pick(SURN)+gname(),age:ri(16,36),dead:!!fam.orphan||R()<.02}, sib, order:ri(1,sib+1)};
 }
 const OR=id=>FAM.find(x=>x.id===id), TR=id=>TRAITS.find(x=>x.id===id);
 function fresh(b){
@@ -115,7 +185,7 @@ function fresh(b){
   s.per={협:ri(-15,15)+(o.id==='bandit'?-12:0),담:ri(-15,15),정:ri(-15,15)};
   if(b.trait==='blood') s.f.bloodBody=1;
   if(o.art){ s.arts.push({n:o.art[0],p:o.art[1],k:o.art[2]}); s.f.martial=1; s.exp=3; }
-  if(o.sect){ s.sect=o.sect; const S=SECTS[o.sect]; s.arts.push({n:S.art[0],p:S.art[1],k:S.art[2]}); if(S.inner) s.arts.push({n:S.inner[0],p:0,k:'내공',ng:S.inner[1]}); s.f.martial=1; s.exp=4; }
+  if(o.sect){ s.sect=o.sect; const S=SECTS[o.sect], A=o.sart||S.art; s.arts.push({n:A[0],p:A[1],k:A[2]}); if(S.inner) s.arts.push({n:S.inner[0],p:0,k:'내공',ng:S.inner[1]}); s.f.martial=1; s.exp=4; }
   (o.it||[]).forEach(id=>{ const it=ITEMS[id]; if(!s.inv[it.s]) s.inv[it.s]=id; else s.inv.stash.push(id); });
   s.rels.push({role:'아버지',name:b.father.name,v:70,dead:b.father.dead?1:0,age0:b.father.age,sx:'m'},{role:'어머니',name:b.mother.name,v:75,dead:b.mother.dead?1:0,age0:b.mother.age,sx:'f'});
   return s;

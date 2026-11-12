@@ -114,7 +114,7 @@ function renderBirth(card){
     <div class="mh-birth">
       <b>${esc(b.sur+b.given)}</b>
       <span>${b.sex==='m'?'사내아이':'계집아이'} · ${esc(r.n)} · ${esc(o.n)}</span>
-      <p class="mh-odds">이 해 강호에서 태어난 아이 약 ${E0.births} 명. 그중 ${o.region?'':esc(r.n)+'의 '}${esc(o.n)} 집안에 태어날 확률은 <b>${pctStr(b.P)}%</b>, 대략 <b>${oneIn(b.P)}명 중 1명</b>이다.</p>
+      <p class="mh-odds">이 해 강호에서 태어난 아이 약 ${E0.births} 명. 그중 ${o.region?'':esc(r.n)+'의 '}${esc(famAs(o))}에 태어날 확률은 <b>${pctStr(b.P)}%</b>, 대략 <b>${oneIn(b.P)}명 중 1명</b>이다.</p>
       <dl class="mh-kv">
         <dt>고향</dt><dd>${esc(r.n)} · ${esc(r.d)}</dd>
         <dt>집안</dt><dd>${esc(o.d)}</dd>
@@ -132,7 +132,7 @@ function renderBirth(card){
   $m('mhLive').onclick=()=>{
     const others=[0,1,2,3].map(()=>simulate(makeBirth(b.era,setup.basis)));
     m=fresh(roll); m.others=others; m.pace=setup.pace; m.basis=setup.basis;
-    log(`${r.n}의 ${o.n} 집안에서 태어났다`,true);
+    log(`${r.n}의 ${famAs(o)}에서 태어났다`,true);
     if(b.father.dead) log('아버지 얼굴을 모른다',true);
     if(b.mother.dead) log('어머니가 낳다가 세상을 떠났다',true);
     paused=false; acc=0; render(); save();
@@ -177,7 +177,7 @@ function renderEnd(card){
 }
 function shareText(){
   const o=OR(m.b.o), w=m.inv&&m.inv.w?ITEMS[m.inv.w]:null;
-  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${ERAS[m.era].n} ${regOf(m.b.reg).n}, ${o.n} 집안 · ${oneIn(m.b.P)}명 중 1명\n향년 ${m.age}세 · ${m.deathCause}${m.f.martial?` · ${LV[m.lv]}`:''}${m.wins||m.losses?` · ${m.wins||0}승 ${m.losses||0}패`:''}${w&&w.t>=2?` · ${w.n}`:''}\n"${epitaph()}"\n같은 순간 태어난 넷: ${m.others.map(x=>`${x.name} ${x.age}세`).join(', ')}\nwolseday.com/#murim`;
+  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${ERAS[m.era].n} ${regOf(m.b.reg).n}, ${famAs(o)} · ${oneIn(m.b.P)}명 중 1명\n향년 ${m.age}세 · ${m.deathCause}${m.f.martial?` · ${LV[m.lv]}`:''}${m.wins||m.losses?` · ${m.wins||0}승 ${m.losses||0}패`:''}${w&&w.t>=2?` · ${w.n}`:''}\n"${epitaph()}"\n같은 순간 태어난 넷: ${m.others.map(x=>`${x.name} ${x.age}세`).join(', ')}\nwolseday.com/#murim`;
 }
 function render(){
   const card=$m('mhCard'); if(!card) return;

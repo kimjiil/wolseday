@@ -1,7 +1,7 @@
 /* ==== murim:world — 마을 밖에서 하는 일과 강호에서만 일어나는 사건 ==== */
 const WAGE=15;
 let WGO=false;
-const JOINABLE={shaolin:1,wudang:1,huashan:1,emei:1};
+const joinable=s=>!!(s&&s.type==='sect'&&s.sect&&SECTS[s.sect]&&SECTS[s.sect].side!=='마');
 const worldSect=()=>{ const s=inCathay()?curSite():null; return (s&&s.sect&&SECTS[s.sect]&&s.sect)||m.sect||regOf(m.b.reg).sect||'huashan'; };
 const sectOpen=()=>{ const S=SECTS[worldSect()]; return !(S.male&&m.b.sex!=='m')&&!(S.female&&m.b.sex!=='f'); };
 const canLeave=()=>m.age>=WAGE||!!(m.f.martial&&m.f.trainDone);

@@ -317,3 +317,8 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-cgo .mh-go{margin:0;width:auto;flex:none}
 /* 한글은 낱말 가운데서 줄이 끊기지 않게 */
 #murimApp{word-break:keep-all;overflow-wrap:anywhere}
+/* ---- 문파 생활 ---- */
+.mh-qm{color:#f0c96a;font-weight:700}
+.mh-rank{margin:6px 0 0;font-size:13.5px;color:var(--m-muted)}.mh-rank b{color:var(--m-ink,inherit);margin-right:6px}
+.mh-quest{margin:8px 0 2px;padding:8px 10px;border:1px solid var(--m-line);background:var(--m-panel2);font-size:14px;line-height:1.5}
+.mh-quest small{color:var(--m-muted);margin-left:6px}

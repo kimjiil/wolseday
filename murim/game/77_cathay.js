@@ -26,7 +26,7 @@ function markSite(group){ const x=m.map&&m.map.id==='cathay'?m.map.x:homeTile().
   const c=cath().spots.filter(s=>(group==='city')===(s.type==='city'||s.type==='capital')).map(s=>({s,d:Math.abs(s.x-x)+Math.abs(s.y-y)})).filter(o=>o.d>0&&o.d<34).sort((a,b)=>a.d-b.d).slice(0,3); return c.length?pick(c).s.id:null; }
 /* ---- 길 떠나기 ---- */
 function cathGo(id){ const s=site(id); if(!s||!mapMode()) return false; const p=roadPath([m.map.x,m.map.y],[s.x,s.y]); if(!p||!p.length) return false; CT={to:id,path:p,i:0,f:0,n:0,ticks:0}; CSEL=null; MSHOP=null; sfx('ok'); render(); return true; }
-function travelTick(t){ t.ticks++; const was=m.sea; m.hp=cl(m.hp-(m.age>=60?1.5:.5)); if(m.gold>=1) gold(-1); m.wldN=(m.wldN||0)+1; m.sea++; if(m.sea>3){ m.sea=0; yearTurn(); }
+function travelTick(t){ t.ticks++; questTick(); const was=m.sea; m.hp=cl(m.hp-(m.age>=60?1.5:.5)); if(m.gold>=1) gold(-1); m.wldN=(m.wldN||0)+1; m.sea++; if(m.sea>3){ m.sea=0; yearTurn(); }
   if(!m.headless) toast(`길 위에서 ${SEAN[was]}이 갔다`,'',1500);
   if(!m.dead&&!m.pending&&!m.train&&R()<.12){ const bgs=WPOOL.pass, pool=Object.values(EV).filter(e=>!e.wld&&e.min!==e.max&&evOK(e)&&evFresh(e)&&markable(e)&&!(m.mark&&m.mark.id===e.id)&&bgs.includes(evBg(e))); if(pool.length&&startEv(wpick(pool,x=>x.w||1))) m.wevN=(m.wevN||0)+1; }
   render(); save(); }
@@ -39,11 +39,13 @@ function cathayLoop(dt){ CFR+=dt; if(CT&&!paused){ CT.f+=dt*(m.auto?SPD[spd]:1)*
 /* ---- 닿은 곳에서 하는 일 ---- */
 const CHINT={home:'나고 자란 마을이다.',capital:'황궁이 있는 도성이다. 사람도, 눈도 많다.',city:'장터와 객잔, 표국이 모여 있는 큰 고을이다.',sect:'산문 너머로 기합 소리가 들린다.',clan:'높은 담장 안에 한 가문이 대를 이어 산다.',den:'관의 손이 닿지 않는 소굴이다. 조심해야 한다.',demon:'검붉은 깃발이 걸려 있다. 오래 머물 곳이 아니다.',camp:'천막과 말 떼가 보인다.'};
 function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const add=(t,sub,fn,free,w)=>acts.push({t,s:sub,fn,free,w:w==null?1:w}), S=(fid,opt)=>()=>doSeason(fid,opt), mar=m.f.martial, t=s.type;
+  if(m.quest&&!m.quest.step&&s.id===m.quest.to) add('임무: '+QT[m.quest.k].act,QT[m.quest.k].n(m.quest),S('quest'),0,9);
   if(t==='home'){ add('마을로 들어간다','',enterVillage,1); return acts; }
   if(t==='city'||t==='capital'){ add(mar&&m.lv>=2?'표국 일을 맡는다':'짐꾼 일을 한다','은자를 번다',S('wwork'),0,2); if(mar) add('비무대에 오른다','비무 · 이기면 판돈과 이름을 얻는다',S('wev',{ev:'wSpar'}),0,1.2); if(m.gold>=3) add('객잔에서 소문을 듣는다','3냥 · 일이 생길 수 있다',S('rumor'),0,.6); add('저잣거리를 돌아본다','무슨 일이 생길지 모른다',S('explore',{pl:'city'}),0,.8);
     add('물건을 본다','',()=>{ MSHOP=MSHOP?null:'city'; render(); },1); if(m.hp<80&&m.gold>=12) add('의원에게 진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); render(); save(); },1); return acts; }
   const own=!!(s.sect&&m.sect===s.sect);
-  if(own){ add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2); }
+  if(own){ if(m.quest&&m.quest.step) add('임무를 보고한다',m.quest.fail?'실패를 고한다':'공헌과 상을 받는다',questReport,1); else if(!m.quest) add('임무를 받는다','사문의 일을 맡아 공헌을 쌓는다',questTake,1);
+    add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2); }
   else if(t==='sect'&&joinable(s)&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
   if(t==='den'&&!own) add('소굴로 쳐들어간다','생사결이 될 수 있다 · 이기면 전리품',S('wev',{ev:'wBandit'}),0,mar&&m.lv>=3&&m.hp>70?.4:0);
   if(mar) add('근처 산에서 수련한다','내공이 더 붙는다',S('train',{fall:1}),0,2);
@@ -53,12 +55,15 @@ function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const a
   return acts; }
 function cathHint(s){ if(s.sect&&m.sect===s.sect) return '내가 속한 곳이다. 문 안에서 익숙한 소리가 들린다.'; if(s.type==='sect'&&!(s.sect&&m.sect===s.sect)){ if(!joinable(s)) return '산문은 닫혀 있다. 아직 바깥사람을 들이지 않는다.'; if(m.sect) return '다른 문파의 산문이다.'; if(!sectOpen()) return `${s.n}는 ${SECTS[s.sect].male?'사내':'여인'}만 받는다.`; if(m.age>=30) return '제자로 들어가기엔 늦었다.'; } return CHINT[s.type]||''; }
 function cathayAuto(){ const s=curSite();
+  if(m.quest){ const me=mySite(), tgt=m.quest.step?(me&&me.id):m.quest.to; if(tgt){ if(s&&s.id===tgt){ if(m.quest.step) questReport(); else doSeason('quest'); return; } if(R()<.85&&cathGo(tgt)) return; } }
+  else if(s&&s.sect&&m.sect===s.sect&&R()<.5){ questTake(); if(m.quest) return; }
   if(m.mark&&!m.mark.skip){ if(R()<.8){ if(m.mark.w){ if(cathGo(m.mark.w)) return; } else { if(s&&s.id==='home'){ enterVillage(); return; } if(cathGo('home')) return; } } m.mark.skip=1; }
   if(!s){ if(!cathGo('home')){ const h=homeTile(); m.map.x=h.x; m.map.y=h.y; render(); } return; }
   if(s.id==='home'){ if(R()<(m.f.martial?.5:.8)){ enterVillage(); return; } }
   else if(m.hp<45||R()<(m.f.martial?.1:.45)){ if(cathGo('home')) return; }
   const acts=cathActs().filter(a=>!a.free&&a.w>0);
   if(acts.length&&R()<.75){ wpick(acts,a=>a.w).fn(); return; }
+  if(m.sect&&!m.quest&&mySite()&&s.id!==mySite().id&&R()<.4&&cathGo(mySite().id)) return;
   const near=nearSites(4).filter(x=>x.id!=='home'); if(near.length&&cathGo(pick(near).id)) return; if(acts.length) wpick(acts,a=>a.w).fn(); else doSeason('idle'); }
 /* ---- 화면 ---- */
 function cathBg(sea){ if(CBG&&CBG.sea===sea&&CBG.ver===SKINVER) return; const M=cath(), el=$m('mhCbg'), o=el.getContext('2d'), sc=el.width/(M.w*TS); o.imageSmoothingEnabled=true;
@@ -78,8 +83,8 @@ function cathayShow(){ const box=cv.parentNode; let el=$m('mhCathay');
   const was=el.hidden; el.hidden=false; cv.style.display='none'; const tg=$m('mhTags'); if(tg) tg.textContent='';
   cathBg(m.sea); cathMarkers(); cathHero(); if(was!==false||!cathayShow.seen){ cathayShow.seen=1; cathCenter(); } }
 function cathayHide(){ const el=$m('mhCathay'); if(el&&!el.hidden){ el.hidden=true; cv.style.display=''; } }
-function cathMarkers(){ const el=$m('mhCmk'); if(!el) return; const cur=curSite();
-  el.innerHTML=cSites().map(s=>`<button type="button" class="mh-cs t-${s.type}${cur&&cur.id===s.id?' on':''}${CSEL===s.id?' sel':''}" data-s="${s.id}" style="left:${(s.x+.5)/KW*100}%;top:${(s.y+.5)/KH*100}%"><i></i><span>${esc(s.n)}${m.mark&&(m.mark.w===s.id||(!m.mark.w&&s.id==='home'))?' <b class="mh-mk">!</b>':''}</span></button>`).join(''); }
+function cathMarkers(){ const el=$m('mhCmk'); if(!el) return; const cur=curSite(), qid=m.quest?(m.quest.step?(mySite()||{}).id:m.quest.to):null;
+  el.innerHTML=cSites().map(s=>`<button type="button" class="mh-cs t-${s.type}${cur&&cur.id===s.id?' on':''}${CSEL===s.id?' sel':''}" data-s="${s.id}" style="left:${(s.x+.5)/KW*100}%;top:${(s.y+.5)/KH*100}%"><i></i><span>${esc(s.n)}${m.mark&&(m.mark.w===s.id||(!m.mark.w&&s.id==='home'))?' <b class="mh-mk">!</b>':''}${qid===s.id?' <b class="mh-qm">◆</b>':''}</span></button>`).join(''); }
 function cathHero(){ const el=$m('mhChero'); if(!el||$m('mhCathay').hidden) return; const walking=!!CT&&!paused, d=m.map.dir||'d', spr=charSprite(heroLook(),walking?'walk':'idle',walking?Math.floor(CFR/130)%4:Math.floor(CFR/500)%2,d==='u'||d==='d'?d:''), g=el.getContext('2d');
   g.clearRect(0,0,el.width,el.height); g.save(); if(d==='l'){ g.translate(el.width,0); g.scale(-1,1); } g.drawImage(spr,0,0,el.width,el.height); g.restore();
   const fx=CT?(m.map.x+.5):m.map.x+.5, fy=m.map.y+.5; el.style.left=fx/KW*100+'%'; el.style.top=fy/KH*100+'%'; if(CT) cathCenter(1); }
@@ -96,7 +101,7 @@ function renderCathayCard(card,eye){ const s=curSite(), busy=m.auto&&!paused, ac
   const ah=acts.length?`<div class="mh-chs">${acts.map((c,i)=>`<button class="mh-ch" type="button" data-ma="${i}" ${busy?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span><span class="odds">${c.free?'':'한 철'}</span></button>`).join('')}</div>`:'';
   const shop=MSHOP?`<div class="mh-shop"><p class="mh-qa">파는 물건 · 가진 돈 ${fmt(m.gold)}냥</p>${shopList(MSHOP).map((x,i)=>`<button class="mh-ch" type="button" data-buy="${i}" ${m.gold<x.pr?'disabled':''}><span><span>${icImg(itIcon(x.id),'sm')} ${esc(ITEMS[x.id].n)}<small>${esc(itDesc(ITEMS[x.id]))}</small></span></span><span class="odds">${x.pr}냥</span></button>`).join('')}</div>`:'';
   const near=`<div class="mh-places"><span class="mh-lab">가까운 곳</span>${nearSites(6).map(x=>`<button type="button" class="mh-btn${CSEL===x.id?' on':''}" data-cs="${x.id}" ${busy?'disabled':''}>${esc(x.n)}</button>`).join('')}</div>`;
-  card.innerHTML=`${eye}${seas}<div class="mh-dec"><p class="mh-qa">천하${s?' · '+esc(regName(s)):''}${mkT?` · <span class="mh-mk">${esc(mkT)}</span>`:''}</p><h3 class="mh-pl">${esc(s?s.n:'길 위')}</h3><p class="mh-hint">${esc(s?cathHint(s):'길 한가운데다. 지도에서 갈 곳을 고른다.')}</p>${ah}${shop}</div>${selH}${near}<p class="mh-hint">지도에서 갈 곳을 누르면 걸리는 철 수가 나온다. 길을 떠나면 가는 동안 철이 간다.</p>${feed}`;
+  card.innerHTML=`${eye}${seas}<div class="mh-dec"><p class="mh-qa">천하${s?' · '+esc(regName(s)):''}${mkT?` · <span class="mh-mk">${esc(mkT)}</span>`:''}</p><h3 class="mh-pl">${esc(s?s.n:'길 위')}</h3><p class="mh-hint">${esc(s?cathHint(s):'길 한가운데다. 지도에서 갈 곳을 고른다.')}</p>${s&&s.sect&&m.sect===s.sect?`<p class="mh-rank"><b>${srank()}</b> 공헌 ${Math.round(m.sc||0)}${(m.qn||0)?` · 마친 임무 ${m.qn}`:''}</p>`:''}${m.quest?`<p class="mh-quest"><b class="mh-qm">◆</b> 임무 · ${esc(QT[m.quest.k].n(m.quest))}${m.quest.step?(m.quest.fail?' — 실패했다. 사문에 돌아가 고한다':' — 끝냈다. 사문에 돌아가 보고한다'):''} <small>${m.quest.due}세까지</small></p>`:''}${ah}${shop}</div>${selH}${near}<p class="mh-hint">지도에서 갈 곳을 누르면 걸리는 철 수가 나온다. 길을 떠나면 가는 동안 철이 간다.</p>${feed}`;
   card.querySelectorAll('[data-ma]').forEach(b=>b.onclick=()=>{ const c=acts[+b.dataset.ma]; if(c) c.fn(); });
   card.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{ CSEL=CSEL===b.dataset.cs?null:b.dataset.cs; cathMarkers(); render(); });
   card.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{ const x=shopList(MSHOP)[+b.dataset.buy]; if(!x||m.gold<x.pr) return; gold(-x.pr); give(x.id,{}); sfx('get'); render(); save(); });

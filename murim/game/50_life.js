@@ -6,7 +6,7 @@ const FOCUS=[
   {id:'rest',n:'양생',h:'몸을 돌본다. 건강이 오른다.'}
 ];
 function ageMul(){ return m.age<25?1.1:m.age<40?.9:m.age<55?.65:.4; }
-function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1); }
+function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1)*(1+eq('xp')); }
 function autoFocus(){ return m.f.martial?pick(['train','train','work','family','rest']):pick(['work','work','work','family','train','rest']); }
 const WORK={tenant:['지주의 논에서 허리를 펴지 못했다.','추수의 절반을 지주에게 바쳤다.'],farmer:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.'],beggar:['동냥 그릇을 들고 장터를 돌았다.','부잣집 잔치 뒤에 남은 음식을 얻었다.'],artisan:['대장간에서 쇠를 두드렸다.','솥 수십 개를 고쳐 팔았다.'],merchant:['장부를 맞추느라 밤을 새웠다.','비단 값이 올라 재미를 봤다.'],hunter:['산에서 노루를 잡았다.','호랑이 발자국을 보고 사흘을 숨어 있었다.'],inn:['객잔에서 술상을 날랐다.','취객들의 무림 이야기를 들으며 그릇을 닦았다.'],bandit:['산채에서 길목을 지켰다.','지나가는 상단에게 통행세를 걷었다.'],escort:['표행을 따라 먼 길을 다녀왔다.','표국 마당에서 짐을 꾸렸다.'],doctor:['약방에서 환자를 돌봤다.','산에서 약초를 캤다.'],official:['관아에서 문서를 썼다.','세금 장부를 맞췄다.'],clan:['가문의 장원 일을 거들었다.','가문의 상단을 따라 다녀왔다.'],tangc:['독초밭을 돌봤다.','당가의 암기를 손질했다.'],blood:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.']};
 function doFocus(){
@@ -128,6 +128,7 @@ function tick(mp){
   m.joy=cl(m.joy+(55-m.joy)*.08); m.bond=cl(m.bond+(40-m.bond)*.04);
   m.hp=cl(m.age<45?m.hp+3:m.hp-(m.age-45)*.12,0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
+  else if(m.hp<30&&m.hp>0) autoHeal();
   if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=5; log('아껴 둔 소환단을 삼켰다.'); }
   if(m.f.magong) m.sim+=hasFx('calm')?2:4;
   if(m.sect&&m.ak>m.hy+25&&SECTS[m.sect].side==='정'){ log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
@@ -171,7 +172,7 @@ function simulate(b){
   while(!m.dead&&g++<140){ tick(); if(m.dead) break; if(m.pending) autoResolve(); if(m.dead) break; checkTrain(); let k=0; while(m.train&&!m.dead&&k++<90) autoTrainStep(); }
   const big=m.log.filter(x=>x.big&&!/태어났다|세상을 떠났다|눈을 감았다|구름을 타고/.test(x.t));
   const w=m.inv.w?ITEMS[m.inv.w]:null;
-  const out={name:m.name,sex:m.sex,reg:b.reg,o:b.o,P:b.P,age:m.age,cause:m.deathCause,lv:m.lv,martial:!!m.f.martial,alias:m.alias,sect:m.sect,kids:m.kids,spouse:!!m.spouse,wins:m.wins||0,kills:m.kills||0,wn:w&&w.t>=1?w.n:null,hi:big.length?big[big.length-1].t:null,log:m.log.map(x=>({a:x.a,t:x.t,big:x.big}))};
+  const out={name:m.name,sex:m.sex,reg:b.reg,o:b.o,P:b.P,age:m.age,cause:m.deathCause,lv:m.lv,martial:!!m.f.martial,alias:m.alias,sect:m.sect,kids:m.kids,spouse:!!m.spouse,wins:m.wins||0,kills:m.kills||0,wn:w&&w.t>=2?w.n:null,hi:big.length?big[big.length-1].t:null,log:m.log.map(x=>({a:x.a,t:x.t,big:x.big}))};
   m=keep; return out;
 }
 function finalize(){
@@ -200,7 +201,8 @@ function save(){ if(!m||!m.b||m.phase==='end'||m.headless) return;
 function load(){ const r=lsGet('murim_run'); return r&&r.b&&r.others&&(r.phase==='play'||r.phase==='farewell')?r:null; }
 function rehydrate(r){ m=r;
   // 예전 판에서 이어 온 삶에는 행낭이 없다
-  if(!m.inv) m.inv={w:null,a:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0},mat:0};
+  if(!m.inv) m.inv={w:null,a:null,h:null,f:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0},mat:0};
+  SLOTS.forEach(s=>{ if(m.inv[s]&&!ITEMS[m.inv[s]]) m.inv[s]=null; if(m.inv[s]===undefined) m.inv[s]=null; }); if(m.inv.stash) m.inv.stash=m.inv.stash.filter(id=>ITEMS[id]); if(m.inv.bag) for(const k in m.inv.bag) if(!ITEMS[k]) delete m.inv.bag[k];
   m.inv.bag=Object.assign({salve:0,pill:0,antidote:0},m.inv.bag||{}); m.inv.stash=m.inv.stash||[]; m.ep=m.ep||{}; m.spared=m.spared||[]; m.per=m.per||{협:0,담:0,정:0};
   m.rels.forEach(x=>{ if(!x.sx) x.sx=SEXROLE[x.role]||(x.role==='배우자'||x.role==='정인'?(m.sex==='m'?'f':'m'):(seedOf(x.name)%2?'m':'f')); if(x.a0==null&&x.age0==null) x.a0=Math.max(0,m.age-5); });
   if(m.mates) m.mates.forEach((x,i)=>{ if(!x.sx) x.sx=SEXROLE[x.role]||(i===2?m.sex:'m'); });

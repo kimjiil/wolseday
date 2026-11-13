@@ -58,8 +58,8 @@ const TELLEMO={A:'anger',G:'...',F:'?',U:'!'};
 function mkFoe(s){ const pow=Math.max(3,Math.round(s.pow)), hp=Math.round(34+pow*1.1);
   return {name:s.name||'상대',look:s.look||LOOK.bandit(),pow,hpMax:hp,hp,qi:Math.round(Math.min(50,10+pow*.3)),def:100/(100+pow/14*6),style:s.style||'even',lv:cl(Math.round(pow/14),0,8),art:s.art||'',mercy:s.mercy==null?.5:s.mercy,beast:!!(s.look&&s.look.animal),title:s.title||'',crit:.06,last:[]}; }
 // 내 기력도 상대와 같은 식으로 잰다. 지금 건강이 그 몇 할을 채우고 들어가는지를 정한다.
-function mkMe(){ const c=combat(), ar=m.inv.a?ITEMS[m.inv.a].def:0, pw=power(), mx=Math.round(34+pw*1.1);
-  return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:m.arts.some(a=>a.k==='보법')?.12:0,art:c.art?c.art.n:'',crit:.05+ST('luck')*.01,last:[]}; }
+function mkMe(){ const c=combat(), ar=eq('def'), pw=power(), mx=Math.round(34+pw*1.1)+eq('hp');
+  return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:Math.min(.4,(m.arts.some(a=>a.k==='보법')?.12:0)+eq('ev')),art:c.art?c.art.n:'',crit:Math.min(.5,.05+ST('luck')*.01+eq('cr')),last:[]}; }
 function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
   if(spec.qi) D.me.qi=Math.min(100,D.me.qi+spec.qi); D.qi0=D.me.qi; mkTell(D); return D; }
 function foePick(D){ const f=D.foe, l=D.me.last; if(f.qi>=60&&R()<.55) return 'U';
@@ -87,7 +87,7 @@ function applyRound(D,my){
   f.hp=Math.max(0,f.hp-ev.dm-ev.ally); me.hp=Math.max(0,me.hp-ev.df); D.taken+=ev.df;
   if(my==='U') me.qi-=60; if(fs==='U') f.qi-=60;
   const gg=my==='G'&&fs==='G'?8:0;
-  me.qi=Math.min(100,me.qi+12+(hasFx('qi')?6:0)+(my==='G'&&(fs==='A'||fs==='U')?15:0)+gg);
+  me.qi=Math.min(100,me.qi+12+eq('qi')+(my==='G'&&(fs==='A'||fs==='U')?15:0)+gg);
   f.qi=Math.min(100,f.qi+12+(fs==='G'&&(my==='A'||my==='U')?15:0)+gg);
   ev.txt=roundText(D,ev); D.lines.push(ev.txt); if(D.lines.length>3) D.lines.shift(); D.ev=ev; return ev; }
 function duelState(D){ const me=D.me, f=D.foe; D.mirrorNow=false;
@@ -112,13 +112,15 @@ function mercyApply(D,res,k){ const f=D.foe;
   else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&m.spared.length<3) m.spared.push({n:f.name,a:m.age,pow:f.pow,lk:f.look}); } }
 function lootOf(D,res){ const L=D.spec.loot; if(!L) return; if(L.g){ const g=Math.round(ri(L.g[0],L.g[1])*(res.killed?1.5:1)); gold(g); res.gold=g; }
   (L.it||[]).forEach(x=>{ if(R()<x[1]){ give(x[0]); (res.items=res.items||[]).push(x[0]); } }); }
+// 이긴 싸움에서 덤으로 떨어지는 물건. 상대가 셀수록 등급이 높다
+function dropOf(D,res){ if(D.spec.noDrop||R()>(D.lethal?.3:.08)) return; const p=Math.max.apply(null,D.foes.map(f=>f.pow)), r=R(), t=p<18?(r<.6?0:1):p<30?(r<.6?1:2):p<45?(r<.7?2:3):p<60?(r<.75?3:2):(r<.8?3:4); const id=dropItem(t); if(id) (res.items=res.items||[]).push(id); }
 const mercyAuto=()=>((m.per&&m.per.협)||0)>=-10?'spare':'kill';
 const needMercy=(D,res)=>res.win&&D.lethal&&!D.foe.beast&&!D.spec.noMercy;
 function quickDuel(spec){ const D=mkDuel(spec); let st='go';
   for(let g=0;g<90;g++){ applyRound(D,autoPick(D)); st=duelState(D);
     if(st==='win'){ D.won++; if(D.idx<D.foes.length-1){ nextFoe(D); st='go'; continue; } break; }
     if(st!=='go') break; mkTell(D); }
-  const res=settle(D,st); res.won=D.won; if(needMercy(D,res)) mercyApply(D,res,mercyAuto()); if(res.win) lootOf(D,res); return res; }
+  const res=settle(D,st); res.won=D.won; if(needMercy(D,res)) mercyApply(D,res,mercyAuto()); if(res.win){ lootOf(D,res); dropOf(D,res); } return res; }
 
 /* ---- 화면에서 치르는 결투 ---- */
 const autoOn=D=>!!(m.auto||D.autoRest);
@@ -156,7 +158,7 @@ function duelMercy(k){ const D=DUEL; if(!D||D.phase!=='mercy') return; D.phase='
       at(12,()=>{ e.pose='dead'; e.pose0='dead'; e.emote=null; fxDust(e.x,e.y); }); during(14,24,p=>{ h.ax=44*(1-p); }); at(24,()=>{ h.ax=0; h.pose='idle'; h.emote=null; }); at(44,()=>{}); }
     else { at(0,()=>{ h.pose='idle'; h.emote='...'; e.pose='bow'; e.emote='tear'; }); at(30,()=>{ e.emote=null; e.lock=false; e.pose0='walk'; e.goto=W+20; }); at(56,()=>{ h.emote=null; }); }
   },()=>{ if(DUEL===D) duelFinish(D); }); }
-function duelFinish(D){ const res=D.res; if(res.win) lootOf(D,res);
+function duelFinish(D){ const res=D.res; if(res.win){ lootOf(D,res); dropOf(D,res); }
   if(res.dead){ D.phase='anim'; const h=A('hero'), e=A('foe');
     seq((at,during)=>{ if(h&&e){ during(0,6,p=>{ e.ax=-44*p; e.pose=atkPose(e); }); at(7,()=>{ strikeFx(e,h,-1,{ult:1,red:1}); blood(h.x,h.y-10,-1); h.flash=12; shake=8; flashA=.7; flashC='#b8321f'; sfx('death'); }); at(12,()=>{ h.pose='dead'; h.pose0='dead'; h.emote=null; }); during(14,26,p=>{ e.ax=-44*(1-p); }); at(26,()=>{ e.ax=0; e.pose='idle'; }); } at(60,()=>{ barsT=12; }); },
       ()=>{ if(DUEL!==D) return; D.phase='end'; render(); autoKick(D); }); return; }

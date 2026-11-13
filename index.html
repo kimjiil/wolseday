@@ -3245,6 +3245,14 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-rare{grid-template-columns:auto minmax(0,1fr) auto;align-items:start;margin:6px 0;padding:8px 8px 8px 8px;background:var(--m-panel2)}
 .mh-rare em{display:block;font-style:normal;font-size:12px;line-height:1.5;color:var(--m-ink);margin-top:4px;border-top:1px dashed var(--m-line);padding-top:4px}
 .mh-rare b{font-size:14px}
+
+/* 물건 등급 색(행낭·알림) */
+.mh-slot.gr1,.mh-sti.gr1{border-left-color:#6f9a66}.mh-slot.gr2,.mh-sti.gr2{border-left-color:#7f95a3}.mh-slot.gr3,.mh-sti.gr3{border-left-color:#8a5ad0}.mh-slot.gr4,.mh-sti.gr4{border-left-color:var(--m-gold)}.mh-slot.gr5,.mh-sti.gr5{border-left-color:#e0589f}
+.mh-slot.gr3 b{color:#8a5ad0}.mh-slot.gr4 b{color:var(--m-gold)}.mh-slot.gr5 b{color:#c9418a}
+.mh-toastc.gr1{border-color:#86b07e}.mh-toastc.gr2{border-color:#93a9b6}.mh-toastc.gr3{border-color:#a884e0;box-shadow:0 0 0 1px #a884e0}.mh-toastc.gr4{border-color:#d9a441;box-shadow:0 0 0 1px #d9a441,0 0 14px rgba(217,164,65,.6)}.mh-toastc.gr5{border-color:#f08cc8;box-shadow:0 0 0 1px #f2c14e,0 0 18px rgba(240,140,200,.7)}
+.mh-slot small .mh-gr,.mh-sti small .mh-gr,.mh-con .mh-gr,.mh-toastc .mh-gr{font-size:10px;padding:0 4px;margin:0 2px;vertical-align:1px}
+.mh-con small{color:var(--m-muted);font-size:11px}
+.mh-cons{gap:4px 12px}
 </style>
 
 <div id="murimApp" hidden>
@@ -3282,7 +3290,7 @@ const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
 const MVER='1.2';
 const NOTES=[
-  ['1.2','2026-11-13',['등급 사건이 1000개가 됐다(C 450, B 300, A 150, S 70, SS 25, SSR 5)','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
+  ['1.2','2026-11-13',['등급 사건이 1000개가 됐다(C 450, B 300, A 150, S 70, SS 25, SSR 5)','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
 ];
@@ -3468,7 +3476,7 @@ const OR=id=>FAM.find(x=>x.id===id), TR=id=>TRAITS.find(x=>x.id===id);
 function fresh(b){
   const o=OR(b.o);
   const s={b, era:b.era, name:b.sur+b.given, sex:b.sex, age:0, hp:cl(82+ri(-8,8)+(b.trait==='weak'?-20:0)+(b.trait==='might'?8:0)), joy:62, bond:55, exp:0, lv:0, ng:0, gold:o.gold, hy:0, ak:o.ak||0, fame:0, sect:null, arts:[], rels:[], f:{...(o.f||{})}, log:[], q:[], used:{}, phase:'play', sim:0, kids:0, disc:0, sib:b.sib, scene:'village', alias:null, focus:null, answers:{}, auto:false,
-    inv:{w:null,a:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0,...(o.bag||{})},mat:0}, wins:0, losses:0, kills:0, spared:[], ep:{}};
+    inv:{w:null,a:null,h:null,f:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0,...(o.bag||{})},mat:0}, wins:0, losses:0, kills:0, spared:[], ep:{}};
   s.per={협:ri(-15,15)+(o.id==='bandit'?-12:0),담:ri(-15,15),정:ri(-15,15)};
   if(b.trait==='blood') s.f.bloodBody=1;
   if(o.art){ s.arts.push({n:o.art[0],p:o.art[1],k:o.art[2]}); s.f.martial=1; s.exp=3; }
@@ -3477,7 +3485,7 @@ function fresh(b){
   s.rels.push({role:'아버지',name:b.father.name,v:70,dead:b.father.dead?1:0,age0:b.father.age,sx:'m'},{role:'어머니',name:b.mother.name,v:75,dead:b.mother.dead?1:0,age0:b.mother.age,sx:'f'});
   return s;
 }
-const ST=k=>m.b.st[k]+(k==='charm'&&hasFx('charm')?1:0);
+const ST=k=>m.b.st[k]+eqSt(k);
 const bump=(k,n)=>{ m.b.st[k]=cl(m.b.st[k]+(n||1),1,10); };
 const hasT=t=>m.b.trait===t;
 const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법'&&a.k!=='안법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||m.arts.filter(a=>a.k==='안법')[0]||null;
@@ -4540,7 +4548,8 @@ const _os=new Map();
 function objSprite(o,sea,f){ const d=OBJ[o.k], key=o.k==='house'?'h'+o.x+','+o.y+','+o.w+','+o.h+','+(o.roof||'')+(o.rc||'')+(o.sign||'')+sea+(o.mid||''):o.k+'|'+(o.v||'')+(o.c||'')+'|'+(d.seeded?o.x+','+o.y:(o.k==='tree'?(o.x*3+o.y*7)%5:''))+'|'+sea+'|'+(d.anim?f%2:0);
   let s=_os.get(key); if(!s){ s=o.k==='house'?sprHouse(o,sea):d.spr(MP[sea],o,sea,f||0); if(_os.size>700) _os.clear(); _os.set(key,s); } return s; }
 /* ==== murim:gfx-icons — 장비·물건 아이콘 그림 ==== */
-const TIERCOL=[['#aab3b8','#7a8388','#8a6a4a'],['#dfe9ee','#93a9b6','#3f6fae'],['#fff1c0','#d1ab5c','#b8321f'],['#d6fbff','#67cfe8','#8a4fe0']];
+// 등급 색: C · B · A · S · SS · SSR
+const TIERCOL=[['#aab3b8','#7a8388','#8a6a4a'],['#cfe6c8','#86b07e','#4f7a4a'],['#dfe9ee','#93a9b6','#3f6fae'],['#ead9ff','#a884e0','#5a3aa0'],['#fff1c0','#d1ab5c','#b8321f'],['#ffe0f4','#f08cc8','#f2c14e']];
 const ICON={
   sword(c){ P(7,1,1,1,c[0]); for(let y=2;y<9;y++){ P(6,y,1,1,c[0]); P(7,y,1,1,c[1]); } P(4,9,6,1,c[2]); P(6,10,2,2,'#3a3440'); P(6,12,2,1,c[2]); },
   saber(c){ for(let y=1;y<9;y++){ const x=y<3?8:y<6?7:6; P(x,y,2,1,c[0]); P(x+2,y,1,1,c[1]); } P(4,9,7,1,c[2]); P(6,10,2,3,'#5a4636'); },
@@ -4554,6 +4563,10 @@ const ICON={
   talis(){ P(4,1,6,12,'#f0d878'); P(5,3,4,1,'#b8321f'); P(6,4,2,5,'#b8321f'); P(5,9,4,1,'#b8321f'); },
   eye(c){ disc(7,7,5,c[1]); P(3,6,8,3,'#f4f1e6'); P(4,5,6,1,'#f4f1e6'); P(4,9,6,1,'#f4f1e6'); disc(7,7,2,c[0]); P(7,7,1,1,'#14161c'); P(6,6,1,1,'#ffffff'); },
   bottle(){ P(6,0,2,1,'#7d5a3a'); P(6,1,2,3,'#cfe8c0'); P(5,4,4,1,'#9fd08a'); P(4,5,6,8,'#4fae5a'); P(5,6,1,5,'#b8f0a0'); P(4,12,6,1,'#2f7a3c'); P(6,8,3,3,'#f0e8c8'); P(7,9,1,1,'#b8321f'); },
+  hat(c){ P(4,3,6,4,c[1]); P(3,6,8,2,c[0]); P(2,8,10,1,c[1]); P(6,2,2,1,c[2]); P(5,4,4,1,c[0]); },
+  boot(c){ P(4,2,4,7,c[1]); P(4,2,4,1,c[0]); P(4,9,8,3,c[1]); P(4,11,8,1,c[2]); P(9,9,3,1,c[0]); P(5,4,1,4,c[0]); },
+  ring(c){ disc(7,8,4,c[1]); disc(7,8,2,'#22202a'); P(6,2,3,3,c[2]); P(7,3,1,1,'#ffffff'); P(5,6,1,1,c[0]); },
+  gourd(c){ P(6,1,2,2,'#7d5a3a'); disc(7,5,2,c[1]); disc(7,10,4,c[1]); P(5,8,1,3,c[0]); P(6,7,3,1,c[2]); },
   pearl(){ disc(7,7,4,'#6a4fae'); disc(7,7,3,'#8f74d8'); P(5,5,2,2,'#e8dcff'); },
   fan(){ for(let i=0;i<7;i++){ const a=-2.75+i*.39; line(7,11,7+Math.cos(a)*7,11+Math.sin(a)*7,i%2?'#f6f6f0':'#cfd6d9'); } P(6,11,3,2,'#b8321f'); },
   jar(){ P(5,2,4,1,'#7d5a3a'); P(4,3,6,2,'#e9e2c8'); P(3,5,8,7,'#e9e2c8'); P(4,7,6,3,'#b8321f'); P(3,11,8,1,'#cbc0a2'); },
@@ -4567,7 +4580,7 @@ const ICON={
 };
 const _ic=new Map();
 function iconUrl(kind,t){ t=t||0; const key=kind+t; let u=_ic.get(key); if(u) return u; const c=document.createElement('canvas'); c.width=14; c.height=14; const keep=cx; cx=c.getContext('2d');
-  try{ (ICON[kind]||ICON.coin)(TIERCOL[t]); }finally{ cx=keep; } if(kind!=='empty') outline(c,'#22202a'); u=c.toDataURL(); _ic.set(key,u); return u; }
+  try{ (ICON[kind]||ICON.coin)(TIERCOL[Math.min(5,t)]); }finally{ cx=keep; } if(kind!=='empty') outline(c,'#22202a'); u=c.toDataURL(); _ic.set(key,u); return u; }
 /* ==== murim:gfx-stage — 말풍선, 이펙트, 날씨, 무대와 배우 ==== */
 const EMO={
   '!':(x,y)=>{ P(x+2,y,1,4,'#d8452c'); P(x+2,y+5,1,1,'#d8452c'); },
@@ -4976,55 +4989,92 @@ function buildCathay(){ const M=mkMap('cathay',KW,KH,'.','천하'), S=k=>CSITE.f
     if(h<p){ mobj(M,k==='d'?'rock':k==='n'||y<22?'pine':k==='j'?'tree':hsh(x*2.3+y*5.9)<.45?'pine':'tree',x,y); take(x,y,1,1); } else if(k==='.'&&hsh(x*3.1+y*7.7)<.05) M.g[y][x]=':'; }
   M.start=[52,31]; M.cathay=1; M.regs=CREG; return mfin(M); }
 /* ==== murim:items — 장비·행낭·무위 ==== */
-const TIER=['범품','양품','명품','신병'];
-// s: w 무기 · a 갑옷 · c 장신구 · u 소모품 · m 재료 / k: 무기 갈래 / t: 등급 / v: 값(냥)
+// 등급은 사건과 같다. t: 0 C · 1 B · 2 A · 3 S · 4 SS · 5 SSR
+const TIER=['C','B','A','S','SS','SSR'];
+// s: w 무기 · a 갑옷 · h 머리 · f 신발 · c 장신구 · u 소모품 · m 재료 / k: 무기 갈래 / v: 값(냥)
+// 덧붙는 힘: cr 회심 · ev 회피 · rd 낌새 읽기 · qi 기 · hp 기력 · xp 수련 · st:{능력:+n}. 찬 것을 모두 더한다
+// 여기 있는 것은 예전부터 있던 물건이다. 나머지는 31_items_*.js 에 등급별로 적는다
 const ITEMS={
   wsword:{n:'목검',s:'w',k:'검',atk:2,t:0,v:2},
-  isword:{n:'철검',s:'w',k:'검',atk:5,t:0,v:14},
-  gsword:{n:'청강검',s:'w',k:'검',atk:9,t:1,v:70},
-  psword:{n:'송문고검',s:'w',k:'검',atk:14,t:2,v:260},
-  hsword:{n:'한월검',s:'w',k:'검',atk:21,t:3,v:900},
-  bsaber:{n:'박도',s:'w',k:'도',atk:5,t:0,v:12},
-  asaber:{n:'안령도',s:'w',k:'도',atk:9,t:1,v:65},
-  dsaber:{n:'귀두대도',s:'w',k:'도',atk:14,t:2,v:240},
-  rsaber:{n:'용린도',s:'w',k:'도',atk:21,t:3,v:900},
-  lglove:{n:'가죽 수투',s:'w',k:'권',atk:4,t:0,v:8},
-  sglove:{n:'정강 수투',s:'w',k:'권',atk:8,t:1,v:60},
-  cglove:{n:'천잠 수투',s:'w',k:'권',atk:13,t:2,v:230},
-  tglove:{n:'벽력 수투',s:'w',k:'권',atk:20,t:3,v:900},
-  ldart:{n:'비도',s:'w',k:'암기',atk:4,t:0,v:8},
-  gdart:{n:'유엽비도',s:'w',k:'암기',atk:8,t:1,v:60},
-  ndart:{n:'폭우침통',s:'w',k:'암기',atk:13,t:2,v:230},
-  sdart:{n:'만천성우',s:'w',k:'암기',atk:20,t:3,v:900},
-  lvest:{n:'가죽 조끼',s:'a',def:2,t:0,v:10},
-  chain:{n:'쇄자갑',s:'a',def:5,t:1,v:80},
-  gvest:{n:'금사갑',s:'a',def:9,t:2,v:300},
-  silk:{n:'천잠보의',s:'a',def:13,t:3,v:900},
-  mirror:{n:'호심경',s:'c',fx:'guard',t:1,v:90,d:'목숨이 끊길 일격을 한 번 대신 받고 깨진다'},
-  jadep:{n:'평안옥패',s:'c',fx:'dice',t:1,v:80,d:'주사위에 +1'},
-  beads:{n:'백팔염주',s:'c',fx:'calm',t:1,v:70,d:'심마가 절반만 쌓인다'},
-  sachet:{n:'향낭',s:'c',fx:'charm',t:0,v:15,d:'매력 +1'},
+  isword:{n:'철검',s:'w',k:'검',atk:5,t:1,v:14},
+  gsword:{n:'청강검',s:'w',k:'검',atk:9,t:2,v:70},
+  psword:{n:'송문고검',s:'w',k:'검',atk:14,t:3,v:260},
+  hsword:{n:'한월검',s:'w',k:'검',atk:21,t:4,v:900},
+  bsaber:{n:'박도',s:'w',k:'도',atk:5,t:1,v:12},
+  asaber:{n:'안령도',s:'w',k:'도',atk:9,t:2,v:65},
+  dsaber:{n:'귀두대도',s:'w',k:'도',atk:14,t:3,v:240},
+  rsaber:{n:'용린도',s:'w',k:'도',atk:21,t:4,v:900},
+  lglove:{n:'가죽 수투',s:'w',k:'권',atk:4,t:1,v:8},
+  sglove:{n:'정강 수투',s:'w',k:'권',atk:8,t:2,v:60},
+  cglove:{n:'천잠 수투',s:'w',k:'권',atk:13,t:3,v:230},
+  tglove:{n:'벽력 수투',s:'w',k:'권',atk:20,t:4,v:900},
+  ldart:{n:'비도',s:'w',k:'암기',atk:4,t:1,v:8},
+  gdart:{n:'유엽비도',s:'w',k:'암기',atk:8,t:2,v:60},
+  ndart:{n:'폭우침통',s:'w',k:'암기',atk:13,t:3,v:230},
+  sdart:{n:'만천성우',s:'w',k:'암기',atk:20,t:4,v:900},
+  lvest:{n:'가죽 조끼',s:'a',def:2,t:1,v:10},
+  chain:{n:'쇄자갑',s:'a',def:5,t:2,v:80},
+  gvest:{n:'금사갑',s:'a',def:9,t:3,v:300},
+  silk:{n:'천잠보의',s:'a',def:13,t:4,v:900},
+  mirror:{n:'호심경',s:'c',fx:'guard',t:2,v:90,d:'목숨이 끊길 일격을 한 번 대신 받고 깨진다'},
+  jadep:{n:'평안옥패',s:'c',fx:'dice',t:2,v:80,d:'주사위에 +1'},
+  beads:{n:'백팔염주',s:'c',fx:'calm',t:2,v:70,d:'심마가 절반만 쌓인다'},
+  sachet:{n:'향낭',s:'c',fx:'charm',t:0,v:15,st:{charm:1}},
   talis:{n:'벽사부',s:'c',fx:'plague',t:0,v:12,d:'역병이 비켜 간다'},
-  pearl:{n:'피독주',s:'c',fx:'poison',t:2,v:280,d:'독이 통하지 않는다'},
-  fan:{n:'학우선',s:'c',fx:'qi',t:2,v:260,d:'결투에서 기가 빨리 찬다'},
-  eyebead:{n:'명안주',s:'c',fx:'read',rd:.08,t:1,v:110,d:'결투에서 낌새를 읽을 확률 +8%'},
-  hawkeye:{n:'응안석',s:'c',fx:'read',rd:.15,t:2,v:320,d:'결투에서 낌새를 읽을 확률 +15%'},
+  pearl:{n:'피독주',s:'c',fx:'poison',t:3,v:280,d:'독이 통하지 않는다'},
+  fan:{n:'학우선',s:'c',fx:'qi',t:3,v:260,qi:6},
+  eyebead:{n:'명안주',s:'c',fx:'read',rd:.08,t:2,v:110},
+  hawkeye:{n:'응안석',s:'c',fx:'read',rd:.15,t:3,v:320},
   salve:{n:'금창약',s:'u',t:0,v:8,d:'결투 중 체력 +25'},
-  pill:{n:'소환단',s:'u',t:2,v:120,d:'내공 +5년, 건강 +30'},
+  pill:{n:'소환단',s:'u',t:3,v:120,d:'내공 +5년, 건강 +30'},
   antidote:{n:'해독단',s:'u',t:1,v:20,d:'웬만한 독은 푼다'},
-  absinthe:{n:'압생투강주',s:'u',t:3,v:300,d:'마시면 내공 +10년. 열에 셋은 주화입마가 오고, 귀를 잃을 수도 있다',lore:'서역에서 온 초록빛 독주. 이 술을 마시고 칩 설계를 하다가 제 귀를 잘랐다는 도X구의 이야기가 전한다.'},
-  ore:{n:'천외운철',s:'m',t:3,v:400,d:'별에서 떨어진 쇠. 솜씨 좋은 대장장이를 만나면 신병이 된다'}
+  absinthe:{n:'압생투강주',s:'u',t:4,v:300,d:'마시면 내공 +10년. 열에 셋은 주화입마가 오고, 귀를 잃을 수도 있다',lore:'서역에서 온 초록빛 독주. 이 술을 마시고 칩 설계를 하다가 제 귀를 잘랐다는 도X구의 이야기가 전한다.'},
+  ore:{n:'천외운철',s:'m',t:4,v:400,d:'별에서 떨어진 쇠. 솜씨 좋은 대장장이를 만나면 신병이 된다'}
 };
 for(const k in ITEMS) ITEMS[k].id=k;
-// 등급 0(범품)~3(신병) 순서
+/* ---- 물건을 한 줄로 적는 법 ----
+   IT(자리, 갈래, 등급, '이름:주된 힘:덧붙는 힘:설명|이름:…')   자리 w 무기(주된 힘=공격) · a 갑옷 · h 머리 · f 신발(주된 힘=방어) · c 장신구
+   덧붙는 힘  c3 회심 3% · e2 회피 2% · r4 읽기 4% · q2 기 +2 · h6 기력 +6 · x5 수련 5% · B1 근골 W1 오성 L1 기연 M1 매력 · @dice @guard @calm @plague @poison (장신구의 특수한 힘)
+   IU(등급, '이름:쓰면 얻는 것:설명|…')   hp20 건강 · ng3 내공(년) · joy5 행복 · ex20 수련(0.2배) · B1 W1 L1 M1 능력
+   이름이 곧 이름표라, 한 번 낸 이름은 바꾸지 않는다(저장된 판이 그 이름으로 물건을 찾는다) */
+const strHash=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
+const GV=[6,25,90,300,900,3000], GVU=[3,10,35,110,380,1500], OST={B:'body',W:'wit',L:'luck',M:'charm'}, OKEY={c:['cr',.01],e:['ev',.01],r:['rd',.01],q:['qi',1],h:['hp',1],x:['xp',.01]};
+const FXD={guard:'목숨이 끊길 일격을 한 번 대신 받고 깨진다',dice:'주사위에 +1',calm:'심마가 절반만 쌓인다',plague:'역병이 비켜 간다',poison:'독이 통하지 않는다'};
+let ITDUP=[]; const ITNAMES=new Set(Object.values(ITEMS).map(x=>x.n));
+function IT(s,k,g,list){ const t=TIER.indexOf(g); list.split('|').forEach(row=>{ const p=row.trim().split(':'), n=p[0]; if(!n) return; if(ITEMS[n]||ITNAMES.has(n)){ ITDUP.push(n); return; } ITNAMES.add(n);
+  const it={id:n,n,s,t,v:Math.round(GV[t]*(.8+.4*(strHash(n)%100)/100))}, main=+p[1]||0; if(s==='w'){ it.k=k; it.atk=main; } else if(main) it.def=main;
+  (p[2]||'').replace(/@([a-z]+)|([ceqrhxBWLM])(\d+)/g,(_,fx,c,num)=>{ if(fx){ it.fx=fx; if(FXD[fx]&&!p[3]) it.d=FXD[fx]; } else if(OST[c]){ (it.st=it.st||{})[OST[c]]=+num; } else { const o=OKEY[c]; it[o[0]]=Math.round(o[1]*num*100)/100; } return ''; });
+  if(p[3]) it.note=p[3]; if(s!=='w'&&s!=='a'&&!it.def&&!it.fx&&!it.cr&&!it.ev&&!it.rd&&!it.qi&&!it.hp&&!it.xp&&!it.st) it.hp=1; ITEMS[n]=it; }); }
+function IU(g,list){ const t=TIER.indexOf(g); list.split('|').forEach(row=>{ const p=row.trim().split(':'), n=p[0]; if(!n) return; if(ITEMS[n]||ITNAMES.has(n)){ ITDUP.push(n); return; } ITNAMES.add(n);
+  const it={id:n,n,s:'u',t,v:Math.round(GVU[t]*(.8+.4*(strHash(n)%100)/100)),use:{}};
+  (p[1]||'').replace(/(hp|ng|joy|ex)(\d+)|([BWLM])(\d+)/g,(_,k,num,c,n2)=>{ if(k) it.use[k]=+num; else (it.use.st=it.use.st||{})[OST[c]]=+n2; return ''; });
+  if(p[2]) it.d=p[2]; ITEMS[n]=it; }); }
+const SLOTS=['w','a','h','f','c'], SLOTN={w:'무기',a:'갑옷',h:'머리',f:'신발',c:'장신구'}, STATN={body:'근골',wit:'오성',luck:'기연',charm:'매력'}, STASHMAX=12;
+// 찬 것들의 덧붙는 힘을 모두 더한다
+const eq=k=>{ let v=0; if(m&&m.inv) for(const s of SLOTS){ const it=m.inv[s]&&ITEMS[m.inv[s]]; if(it&&it[k]) v+=it[k]; } return v; };
+const eqSt=k=>{ let v=0; if(m&&m.inv) for(const s of SLOTS){ const it=m.inv[s]&&ITEMS[m.inv[s]]; if(it&&it.st&&it.st[k]) v+=it.st[k]; } return v; };
+// 자리·등급·갈래로 물건을 뽑는다. 그 등급에 없으면 한 단계씩 내린다
+const POOL={};
+function pool(s,t,k){ const key=s+'|'+(k||'')+'|'+t; return POOL[key]||(POOL[key]=Object.values(ITEMS).filter(it=>it.s===s&&it.t===t&&(!k||it.k===k)&&!it.lore&&it.id!=='wsword').map(it=>it.id)); }
+function rndItem(s,t,k,rf){ rf=rf||R; for(let g=Math.min(5,t);g>=0;g--){ const p=pool(s,g,k); if(p.length) return p[Math.floor(rf()*p.length)]; } return null; }
+function seeded(seed){ let x=(seed>>>0)||1; return ()=>{ x^=x<<13; x>>>=0; x^=x>>>17; x^=x<<5; x>>>=0; return x/4294967296; }; }
+const TG=[0,2,3,4];   // 사건에서 쓰던 옛 등급(0~3)이 가리키는 새 등급. 0은 C나 B
+const tgOf=(tier,rf)=>tier<=0?((rf||R)()<.6?0:1):TG[Math.min(3,tier)];
+// 싸움에서 이기거나 사건이 잘 풀렸을 때 덤으로 떨어지는 물건
+function dropItem(t,o){ o=o||{}; const s=o.s||(m.age<13?pick(['u','c']):pick(['w','w','a','h','f','c','u'])), id=rndItem(s,t,s==='w'?myKind():null); if(id) give(id,{}); return id; }
+// 예전부터 있던 물건의 등급 순서(옛 0~3)
 const WKIND={검:['isword','gsword','psword','hsword'],도:['bsaber','asaber','dsaber','rsaber'],권:['lglove','sglove','cglove','tglove'],암기:['ldart','gdart','ndart','sdart']};
 const ARMORS=['lvest','chain','gvest','silk'];
 const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[]};
 // 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
 const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법';
 const eyeArt=()=>m.arts.reduce((v,a)=>a.k==='안법'&&a.p>v?a.p:v,0);
-const readBonus=()=>eyeArt()/100+(hasFx('read')?ITEMS[m.inv.c].rd||0:0)-(m.f.deaf?.1:0);
-const itDesc=it=>it.s==='w'?`${it.k} · 공격 +${it.atk}`:it.s==='a'?`방어 +${it.def}`:(it.d||'');
+const readBonus=()=>eyeArt()/100+eq('rd')-(m.f.deaf?.1:0);
+const pc=v=>Math.round(v*100);
+function useText(u){ const p=[]; if(u.hp) p.push(`건강 +${u.hp}`); if(u.ng) p.push(`내공 +${u.ng}년`); if(u.joy) p.push(`행복 +${u.joy}`); if(u.ex) p.push(`수련 +${u.ex}%`); if(u.st) for(const k in u.st) p.push(`${STATN[k]} +${u.st[k]}`); return p.join(' · '); }
+function itDesc(it){ if(it.s==='u') return it.use&&!it.d?useText(it.use):(it.d||''); const p=[]; if(it.s==='w') p.push(`${it.k} · 공격 +${it.atk}`); if(it.def) p.push(`방어 +${it.def}`); if(it.d) p.push(it.d);
+  if(it.cr) p.push(`회심 +${pc(it.cr)}%`); if(it.ev) p.push(`회피 +${pc(it.ev)}%`); if(it.rd) p.push(`읽기 +${pc(it.rd)}%`); if(it.qi) p.push(`기 +${it.qi}`); if(it.hp) p.push(`기력 +${it.hp}`); if(it.xp) p.push(`수련 +${pc(it.xp)}%`); if(it.st) for(const k in it.st) p.push(`${STATN[k]} +${it.st[k]}`); if(it.note) p.push(it.note);
+  return p.join(' · ')||'별다른 힘은 없다'; }
 function hasFx(fx){ return !!(m&&m.inv&&m.inv.c&&ITEMS[m.inv.c]&&ITEMS[m.inv.c].fx===fx); }
 // 지금 든 무기로 가장 센 무공을 고른다. 갈래가 안 맞는 무기는 절반만 힘을 보탠다.
 function artWith(a,w){ const match=w&&(WMATCH[a.k]||[]).includes(w.k); return a.p+(w?(match?w.atk:w.atk*.5):0); }
@@ -5035,19 +5085,22 @@ const power=()=>LVP[m.lv]+combat().pw+m.ng*.35+ST('body')*1.2+(m.f.magong?6:0);
 const fightP=e=>1/(1+Math.exp(-(power()-e)/9));
 // 내 무공 갈래에 맞는 무기 종류
 function myKind(){ const a=combat(null).art; const k=a?(WMATCH[a.k]||[])[0]:null; return k||'검'; }
-const wOf=(tier,kind)=>WKIND[kind||myKind()][cl(tier,0,3)];
-function better(id,cur){ if(!cur) return true; const a=ITEMS[id], b=ITEMS[cur]; if(a.s==='w') return combat(id).pw>combat(cur).pw+.01; if(a.s==='a') return a.def>b.def; return false; }
-function stashPut(id){ const st=m.inv.stash; st.push(id); while(st.length>6){ let ci=0; st.forEach((x,i)=>{ if(ITEMS[x].v<ITEMS[st[ci]].v) ci=i; }); const x=st.splice(ci,1)[0]; gold(ITEMS[x].v*.5); } }
+// 옛 등급(0~3)에 맞는 무기 하나. 같은 해에는 같은 것이 나온다(가게와 선택지가 그릴 때마다 바뀌지 않게)
+const wOf=(tier,kind)=>{ const rf=seeded(strHash((m&&m.name)||'x')+(m?m.age:0)*131+tier*17+7); return rndItem('w',tgOf(tier,rf),kind||myKind(),rf)||WKIND[kind||myKind()][cl(tier,0,3)]; };
+const aOf=tier=>{ const rf=seeded(strHash((m&&m.name)||'x')+(m?m.age:0)*137+tier*19+3); return rndItem('a',tgOf(tier,rf),null,rf)||ARMORS[cl(tier,0,3)]; };
+// 저절로 바꿔 차는 기준: 무기는 지금 무공으로 더 센 것, 갑옷은 방어가 높은 것, 머리·신발은 등급이 높은 것. 장신구는 빈 자리일 때만
+function better(id,cur){ if(!cur) return true; const a=ITEMS[id], b=ITEMS[cur]; if(a.s==='w'){ const d=combat(id).pw-combat(cur).pw; return d>.01||(Math.abs(d)<=.01&&a.t>b.t); } if(a.s==='a') return (a.def||0)>(b.def||0)||((a.def||0)===(b.def||0)&&a.t>b.t); if(a.s==='h'||a.s==='f') return a.t>b.t; return false; }
+function stashPut(id){ const st=m.inv.stash; st.push(id); while(st.length>STASHMAX){ let ci=0; st.forEach((x,i)=>{ if(ITEMS[x].v<ITEMS[st[ci]].v) ci=i; }); const x=st.splice(ci,1)[0]; gold(ITEMS[x].v*.5); } }
 function give(id,o){ o=o||{}; const it=ITEMS[id]; if(!it||!m.inv) return false; const inv=m.inv;
   if(it.s==='u') inv.bag[id]=(inv.bag[id]||0)+(o.n||1);
   else if(it.s==='m') inv.mat=(inv.mat||0)+1;
   else if(better(id,inv[it.s])){ if(inv[it.s]) stashPut(inv[it.s]); inv[it.s]=id; }
   else stashPut(id);
-  if(!o.quiet){ if(!o.nolog) log(`${eul(it.n)} 얻었다`,it.t>=2); vfx(()=>itemToast(id,o.n)); }
+  if(!o.quiet){ if(!o.nolog&&it.t>=1) log(`${eul(it.n)} 얻었다`,it.t>=3); vfx(()=>itemToast(id,o.n)); }
   return true; }
 function equipBest(){ if(!m.inv) return; const st=m.inv.stash; let bi=-1; st.forEach((id,i)=>{ if(ITEMS[id].s==='w'&&better(id,m.inv.w)&&(bi<0||combat(id).pw>combat(st[bi]).pw)) bi=i; }); if(bi>=0) equipAt(bi); }
 function equipAt(i){ const inv=m.inv, id=inv.stash[i]; if(!id) return; const s=ITEMS[id].s; inv.stash.splice(i,1); if(inv[s]) inv.stash.push(inv[s]); inv[s]=id; }
-function unequip(s){ const inv=m.inv; if(!inv[s]||inv.stash.length>=6) return; inv.stash.push(inv[s]); inv[s]=null; }
+function unequip(s){ const inv=m.inv; if(!inv[s]||inv.stash.length>=STASHMAX) return; inv.stash.push(inv[s]); inv[s]=null; }
 function sellAt(i){ const inv=m.inv, id=inv.stash[i]; if(!id) return; inv.stash.splice(i,1); const g=Math.round(ITEMS[id].v*.5); gold(g); vfx(()=>heroFloat(`+${fmt(g)}냥`,'gold')); }
 function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
   if(k==='salve'){ if(m.hp>=100) return false; b.salve--; m.hp=cl(m.hp+25); vfx(()=>{ healFx(); heroFloat('건강 +25','good'); }); return true; }
@@ -5059,17 +5112,91 @@ function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
       vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
     else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
     lvCheck(); return true; }
-  return false; }
+  const it=ITEMS[k], u=it&&it.use; if(!u) return false; if(u.hp&&!u.ng&&!u.joy&&!u.ex&&!u.st&&m.hp>=100) return false;
+  b[k]--; if(u.hp) m.hp=cl(m.hp+u.hp); if(u.ng){ if(!m.f.martial) learn('토납법',0,'내공',u.ng); else m.ng+=u.ng; } if(u.joy) m.joy=cl(m.joy+u.joy); if(u.ex) addExp(gain()*u.ex/100); if(u.st) for(const s in u.st) m.b.st[s]=Math.min(12,(m.b.st[s]||0)+u.st[s]);
+  if(it.t>=3) log(`${eul(it.n)} 썼다`,true); vfx(()=>{ healFx(); heroFloat(useText(u).split(' · ')[0],u.ng?'jade':'good'); }); lvCheck(); return true; }
+// 건강이 바닥일 때 저절로 쓰는 약: 건강만 올리는 것 가운데 등급이 낮은 것부터
+function autoHeal(){ const b=m.inv.bag, ks=Object.keys(b).filter(k=>b[k]>0&&k!=='salve'&&ITEMS[k]&&ITEMS[k].use&&ITEMS[k].use.hp&&!ITEMS[k].use.st).sort((x,y)=>ITEMS[x].t-ITEMS[y].t); if(!ks.length) return false; const it=ITEMS[ks[0]]; b[ks[0]]--; m.hp=cl(m.hp+it.use.hp); if(it.use.ng) m.ng+=it.use.ng; log(`${eul(it.n)} 썼다.`); return true; }
 function healFx(){ const h=actorOf('hero'); if(!h) return; for(let i=0;i<5;i++) FX.push({t:'heal',x:h.x-6+i*3,y:h.y-8-(i%2)*6,life:22+i*3,max:30}); }
-function bagTotal(){ const b=m.inv.bag; return (b.salve||0)+(b.pill||0)+(b.antidote||0)+(b.absinthe||0); }
+function bagTotal(){ const b=m.inv.bag; let n=0; for(const k in b) n+=b[k]||0; return n; }
 
 const ICK={검:'sword',도:'saber',권:'glove',암기:'dart',guard:'mirror',dice:'jade',calm:'beads',charm:'sachet',plague:'talis',poison:'pearl',qi:'fan',read:'eye',salve:'jar',pill:'pill',antidote:'vial',absinthe:'bottle',ore:'ore'};
-function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); const kind=it.s==='w'?ICK[it.k]:it.s==='a'?'armor':it.s==='c'?ICK[it.fx]:ICK[id]; return iconUrl(kind,it.t); }
+// 장신구와 소모품은 이름에서 모양을 짐작한다
+const CIC=[[/반지|가락지|지환|환$/,'ring'],[/염주|구슬|주$|단주/,'beads'],[/향낭|주머니|낭$/,'sachet'],[/부적|부$|符/,'talis'],[/거울|경$/,'mirror'],[/부채|선$/,'fan'],[/눈|안$|안주|안석/,'eye']];
+function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); let kind;
+  if(it.s==='w') kind=ICK[it.k]; else if(it.s==='a') kind='armor'; else if(it.s==='h') kind='hat'; else if(it.s==='f') kind='boot';
+  else if(it.s==='c'){ kind=ICK[it.fx]; if(!kind){ const c=CIC.find(x=>x[0].test(it.n)); kind=c?c[1]:'jade'; } }
+  else if(it.s==='u'){ kind=ICK[id]; if(!kind){ const u=it.use||{}; kind=u.st?'pill':u.ng?'pill':u.ex?'scroll':u.joy&&!u.hp?'gourd':/술|주$|차$|탕$/.test(it.n)?'gourd':/단$|환$/.test(it.n)?'pill':'jar'; } }
+  else kind=ICK[id]; return iconUrl(kind,it.t); }
 const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width="28" height="28">`;
-function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=2?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${TIER[it.t]}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'t'+it.t,it.t>=2?4600:3400);
-  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=2?'#ffe9a0':'#ffffff',it.t>=2?16:8); }
+const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
+function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
+  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
 function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':'#bfe8ff',12); }
+/* ==== murim:items-1 — 검과 도 ==== */
+/* ---------- 검 ---------- */
+IT('w','검','C','녹슨 철검:3|이 빠진 검:2|대나무 검:2:e1|연습용 목검:2:x1|부러진 검 반 토막:2|무쇠 단검:3|쟁기 날로 만든 검:3|낡은 호신검:3|병졸의 환도:4|떠돌이의 검:3|휜 철검:2|장터 싸구려 검:3|청동 검:3|무딘 장검:3|손잡이 헐거운 검:3|대장간 습작검:3|초심자의 검:3:x2|산적의 헌 검:4|빛바랜 예도:3|아이용 목검:2|박달나무 검:3|참나무 목검:3|버드나무 검:2:e1|대추나무 목검:3|금 간 철검:2|그을린 검:3|물에 불은 목검:2|투박한 직검:4|짧은 요검:3|무관 대여검:3|나졸의 헌 검:4|표사 견습검:4|묵은 세검:3:c1|닳은 장검:3|때 묻은 단검:3|헐값의 쌍검:3|주워 온 검:3|장작 패던 검:4|촌무사의 검:4|이름 없는 철검:4|끈으로 감은 검:3|날 없는 연무검:2:x2|헛간에서 나온 검:3');
+IT('w','검','B','강철 장검:6|백련검:6|표국 제식검:6|무관 사범검:6:x2|흑철 단검:5:c2|유엽검:5:e2|쌍수 장검:7|군문 환도:6|세검:5:c2|연검:5:e2|오동 손잡이 검:6|청동 고검:5:q1|낭인의 장검:6|협객의 요검:6|송백검:6|흑칠검:6|은장도:5:c1|죽림검:5:e1|순검의 검:6|문도의 검:6:x1|두 번 벼린 검:7|청룡 무늬 검:6|백학검:6:e1|서생의 검:5:W1|귀족의 호신검:5:M1|단련 철검:7|쇠심줄 감은 검:6:h3|묵직한 중검:7|날렵한 경검:5:e2');
+IT('w','검','A','청홍검:10|백홍검:9:c2|추수검:9:e2|한광검:10:c2|유운검:9:e3|자전검:10:q1|벽수검:9:r2|정무검:10:x3|명월검:9:c3|현철 중검:11|비연검:8:e4|쌍룡검:10:c2|낙화검:9:e2r1|회풍검:9:q2');
+IT('w','검','S','칠성검:14:c3r2|태아검:15:c4|어장검:13:c5e2|담로검:14:q2r3|용천검:15:c3h8|자미연검:13:e5q2');
+IT('w','검','SS','간장검:21:c6q3|막야검:20:c5r5');
+IT('w','검','SSR','헌원검:27:c10q4r6:황제가 치우를 벨 때 썼다는 검. 뽑으면 구름이 갈라진다');
+/* ---------- 도 ---------- */
+IT('w','도','C','녹슨 박도:3|이 빠진 식칼:2|나무꾼의 도끼칼:3|푸줏간 칼:3|낡은 요도:3|무딘 대도:4|휜 환도:3|장터 싸구려 도:3|산적의 헌 박도:4|병졸의 요도:4|작두 날:3|낫 고쳐 만든 도:2|무쇠 단도:3|목도:2:x1|대나무 도:2|금 간 박도:2|투박한 직도:4|그을린 도:3|촌부의 벌목도:3|헛간의 녹슨 도:3|손잡이 깨진 도:3|묵은 수렵도:3|닳은 유엽도:3|때 묻은 단도:3|주워 온 박도:3|무관 대여도:3|연습용 목도:2:x2|이름 없는 철도:4|뱃사람의 헌 칼:3|도축장 칼:4|끈 감은 박도:3|날 없는 연무도:2:x2|떠돌이의 요도:3|촌무사의 도:4|표사 견습도:4|나졸의 헌 도:4|쇠테 두른 목도:3|빌린 박도:3|청동 도:3|초심자의 도:3:x2|짧은 호신도:3');
+IT('w','도','B','강철 박도:6|유엽도:5:e2|귀두도:7|군문 요도:6|표국 제식도:6|참마도:7|흑철 단도:5:c2|쌍도:6:c1|환수도:6|낭인의 박도:6|녹림 대도:7|수렵 대도:6:h3|무관 사범도:6:x2|은장 단도:5:c1|청동 고도:5:q1|단련 철도:7|묵직한 중도:7|날렵한 경도:5:e2|순검의 도:6|문도의 도:6:x1|두 번 벼린 도:7|호두도:6:c1|반월도:6:e1|쇠심줄 감은 도:6:h3|수적의 곡도:6|북방 만도:6:c1');
+IT('w','도','A','청룡도:10|금배 대감도:11|혈랑도:10:c3|파풍도:9:e3|한빙도:9:r2|자금도:10:q1|맹호도:11:h5|비월도:9:e2c2|현철 중도:11|낙뢰도:10:c2|유성도:9:q2|정무도:10:x3');
+IT('w','도','S','칠성보도:14:c3r2|명홍도:13:c5e2|도룡도:16:c3|파산도:15:h10|한월도:14:q2r3');
+IT('w','도','SS','용아도:21:c6h12');
+IT('w','도','SSR','청룡언월도:28:c8h20q3:여든두 근. 한 번 휘두르면 바람이 먼저 벤다');
+/* ==== murim:items-2 — 권(수투)과 암기 ==== */
+/* ---------- 권 ---------- */
+IT('w','권','C','헝겊 손싸개:2|삼베 붕대:2|짚으로 엮은 수투:2|낡은 가죽 장갑:3|소가죽 손싸개:3|일꾼의 목장갑:2|나무 호구:3|쇠고리 한 쌍:3|대장간 집게 장갑:3|헌 권갑:3|무딘 철권:4|닳은 수투:3|때 묻은 권포:2|산적의 쇠주먹:4|누비 손싸개:2:h2|무관 대여 수투:3|연습용 솜 수투:2:x2|초심자의 권포:2:x2|개가죽 수투:3|돼지가죽 수투:3|덧댄 가죽 수투:3|징 박은 손싸개:4|쇠못 박은 장갑:4|촌무사의 권갑:4|표사 견습 수투:4|나졸의 헌 수투:3|이름 없는 권갑:4|끈 풀린 수투:2|금 간 철권:3|떠돌이의 손싸개:3|씨름꾼의 띠:2:h2|뱃사람의 밧줄 장갑:3|도축장 장갑:3|석공의 장갑:3:h2|대나무 호구:2:e1|청동 팔찌:3|묵은 호조:3|장터 싸구려 수투:3|빌린 수투:3|쇠테 두른 손싸개:3|주워 온 권갑:3');
+IT('w','권','B','강철 수투:6|철권:7|호조:6:c2|흑철 권갑:6|표국 제식 수투:6|군문 권갑:6|무관 사범 수투:6:x2|쇠사슬 감은 수투:7|낭인의 권갑:6|금강 지환:5:c1|사자 무늬 권갑:6|단련 철권:7|묵직한 철장갑:7|날렵한 경수투:5:e2|철사 엮은 수투:6:h3|은장 지환:5:M1|백련 수투:6|순검의 수투:6|문도의 수투:6:x1|쌍룡 팔찌:5:q1|응조:6:c2|청동 호완:5:h4|우각 권갑:6|두 번 벼린 철권:7|녹림 쇠주먹:7|수적의 갈고리 장갑:6:c1');
+IT('w','권','A','금강 수투:10|맹호 권갑:11|비응조:9:c3|현철 권갑:11|한옥 지환:8:q2|벽력 권갑:10:c2|철사장 수투:10:h5|유수 수투:9:e3|자전 수투:9:q1c1|정무 권갑:10:x3|백원 수투:9:e2r1|파산 철권:11');
+IT('w','권','S','용조수:14:c4|나한 권갑:15:h10|빙백 수투:13:q2r3|금사 수투:13:e4c2|뇌전 철권:15:c3');
+IT('w','권','SS','항룡 수투:21:c5h14');
+IT('w','권','SSR','금강불괴수:27:h30c6q3:소림 개산 조사의 유물. 끼면 손이 쇠보다 단단해진다');
+/* ---------- 암기 ---------- */
+IT('w','암기','C','조약돌 주머니:2|녹슨 비도:2|못 한 줌:2|대나무 침통:2|새총:2:e1|헌 표창:3|무딘 수리검:2|쇠구슬 주머니:3|낡은 수전:3|깨진 기왓장 조각:2|젓가락 묶음:2|바늘 쌈지:2|닳은 비침:2|장터 싸구려 표창:2|사냥꾼의 돌팔매:3|촌무사의 비도:3|무관 대여 비도:2|연습용 나무 표창:2:x2|초심자의 비도:2:x2|금 간 비도:2|때 묻은 철련자:3|철질려 한 줌:3|동전 꾸러미:2:L1|생선 뼈 침:2|가시나무 침:2|떠돌이의 비수:3|나졸의 포승 추:3|뱃사람의 작살촉:3|이름 없는 표창:3|주워 온 화살촉:3|빌린 비도:2|나무 수리검:2|쇠못 박은 팽이:2|헛간의 낫 조각:2|묵은 독침통:3|끈 달린 돌추:3');
+IT('w','암기','B','강철 비도:5|금전표:5:c1|철련자:6|매화침:4:c2|수전:5|유성추:6|비황석:5|흑철 표창:5:c1|표국 제식 비도:5|군문 수전:6|낭인의 비수:5|은침:4:c2|철질려:5:h2|쌍비도:6|회선표:5:e2|단련 표창:6|무관 사범 비도:5:x2|문도의 비도:5:x1|묵직한 철추:6|날렵한 유엽표:4:e2|독침통:5:c1|수적의 갈고리 표창:5|녹림 투부:6');
+IT('w','암기','A','연환 비도:8:c2|빙백 은침:7:c3|추혼표:9|낙성추:9:h4|비연표:7:e3|자모 은환:8:q1|벽력자:9:c2|무영침:7:r3|혈적자:9:c2|천녀 산화침:8:e2c1|정무 비도:8:x3');
+IT('w','암기','S','암연침:12:c5|구궁 비환:13:q2r2|공작령:14:c4|탈혼표:13:c3e3|뇌화탄:14:h6');
+IT('w','암기','SS','폭우이화침:19:c8r4');
+/* ==== murim:items-3 — 갑옷과 머리에 쓰는 것 ==== */
+/* ---------- 갑옷 ---------- */
+IT('a','','C','삼베옷:1|누더기:1|무명 저고리:1|헌 솜옷:1:h2|짚 도롱이:1|일꾼의 작업복:1|농부의 베옷:1|거지의 누비옷:1:h2|덧댄 무명옷:1|물 빠진 도포:1|낡은 가죽 앞치마:1|개가죽 조끼:1|토끼털 배자:1:h2|양가죽 덧옷:1:h2|뱃사람의 유삼:1|사냥꾼의 털조끼:1:h3|나무꾼의 등거리:1|대장간 가죽 앞치마:1|종이 갑옷:1|등나무 갑옷:1:e1|대나무 흉갑:1:e1|녹슨 쇠 조각 조끼:1|헌 쇄자갑 조각:1|나졸의 헌 군복:1|병졸의 솜갑옷:1:h2|표사 견습복:1|무관 수련복:1:x2|초심자의 도복:1:x2|때 묻은 도복:1|기운 도복:1|빛바랜 장삼:1|떠돌이의 겉옷:1|행상의 조끼:1|짐꾼의 어깨받이:1|헛간의 거적:1|장터 싸구려 조끼:1|두꺼운 삼베 조끼:1|끈으로 엮은 가죽옷:1|송진 먹인 베옷:1|기름 먹인 무명옷:1|쇠가죽 조각옷:1|얇은 가죽 조끼:1|닳은 누비 갑옷:1|금 간 나무 흉갑:1|촌무사의 가죽옷:1|산적의 헌 가죽옷:1|수적의 젖은 조끼:1|광부의 덧옷:1:h2|석공의 가죽 덧옷:1|숯쟁이의 그을린 옷:1|어부의 그물 조끼:1|유목민의 모전옷:1:h2|산족의 풀옷:1:e1|하인의 헌 옷:1|서생의 무명 도포:1:W1|행자의 납의:1|탁발승의 누더기:1|도사의 헌 도포:1|기루의 헌 비단옷:1:M1|이름 없는 조끼:1|빌린 도복:1|주워 온 가죽옷:1|솜 넣은 배자:1:h2|겹 무명옷:1|삼 껍질 갑옷:1|버들고리 흉갑:1:e1|소금에 절은 가죽옷:1|바랜 군복:1');
+IT('a','','B','두꺼운 가죽 갑옷:2|쇠가죽 흉갑:3|누비 갑옷:2:h4|징 박은 가죽옷:3|등갑:2:e2|표국 제식 갑옷:3|군문 솜갑옷:2:h4|무관 사범복:2:x3|낭인의 가죽 갑옷:3|경번갑 조각:3|쇠비늘 조끼:3|사슴가죽 갑옷:2:e2|곰가죽 덧옷:2:h6|늑대가죽 갑옷:2:c1|청동 흉갑:3|철편 박은 조끼:3|두 겹 가죽 갑옷:3|기름 먹인 가죽 갑옷:2:e1|흑칠 가죽 갑옷:3|수련 도복:2:x3|문도의 도복:2:x2|순검의 관복:2:M1|서역 누비옷:2:h4|유목민의 가죽 갑옷:3|수적의 어피 갑옷:2:e2|녹림 쇠가죽옷:3|산족의 뼈 갑옷:2:c1|비단 누비옷:2:M1|솜 넣은 군복:2:h4|가벼운 경장:2:e2|묵직한 중장:3|단련 가죽 갑옷:3|철사 엮은 조끼:3|은실 수놓은 도포:2:L1|서생의 비단 도포:2:W1|도사의 팔괘 도포:2:q1|승려의 가사:2:h3|상인의 겹옷:2:L1|호위의 흉갑:3|마부의 가죽 덧옷:2:h3|두정갑 조각:3|어린갑 조끼:3|송진 먹인 등갑:3|촘촘한 누비 갑옷:3');
+IT('a','','A','경번갑:5|어린갑:6|두정갑:5:h6|흑철 흉갑:6|현철 쇄자갑:6|은사 조끼:4:e3|교룡 가죽 갑옷:5:c2|백련 갑주:6|금실 누비옷:4:L1h4|청강 흉갑:5:h5|호피 갑옷:5:c2|비단 속갑:4:e3|정무 도복:4:x5|팔괘 도포:4:q2|나한 가사:5:h8|유운 경장:4:e4|묵린갑:6|서역 사슬 갑옷:5:h5|산문 갑주:6|귀갑 흉갑:6:h4|표국주의 갑옷:5:M1h4');
+IT('a','','S','명광개:9|현무갑:10:h10|은린 보갑:8:e4|교룡갑:9:c3|자하 도포:7:q3r2|금강 가사:8:h14|유성 경갑:7:e5c2|백호 흉갑:9:c3h6|태극 도포:7:q3e3');
+IT('a','','SS','오잠의:12:e5h12|용린 보갑:14:h18|빙잠 보의:12:q4r4');
+IT('a','','SSR','천의무봉:17:e8h30q4:꿰맨 자국이 없는 옷. 하늘에서 내려왔다고 한다');
+/* ---------- 머리 ---------- */
+IT('h','','C','삿갓:0:e1|헌 삿갓:0|밀짚모자:0|짚 벙거지:0|무명 두건:0|헝겊 머리띠:0|낡은 망건:0|패랭이:0|대나무 삿갓:1|솜 모자:0:h2|개털 모자:0:h2|토끼털 귀마개:0:h2|농부의 수건:0|일꾼의 머릿수건:0|나무꾼의 벙거지:0|뱃사람의 두건:0|사냥꾼의 털모자:1|나졸의 헌 전립:1|병졸의 솜투구:1|금 간 가죽 투구:1|녹슨 철모:1|가죽 머리띠:0:c1|행상의 삿갓:0:L1|떠돌이의 죽립:0:e1|탁발승의 삿갓:0|도사의 헌 건:0|서생의 유건:0:W1|초심자의 머리띠:0:x2|무관 수련 띠:0:x2|때 묻은 두건:0|기운 복면:0:e1|산적의 두건:0|수적의 젖은 두건:0|유목민의 모전 모자:0:h2|산족의 깃털 띠:0:e1|광부의 덧모자:1|석공의 헝겊 투구:1|하인의 벙거지:0|거지의 찢어진 갓:0|아이의 호건:0:M1|장터 싸구려 갓:0|빛바랜 비단 띠:0:M1|나무 투구:1|등나무 투구:1|종이 투구:0');
+IT('h','','B','죽립:1:e1|흑립:1|전립:1|가죽 투구:1:h3|쇠테 두른 삿갓:1|철립:2|표국 제식 투구:1:h3|군문 투구:2|무관 사범 띠:0:x3|낭인의 죽립:1:e2|복면:0:e2|비단 두건:0:M1|유건:0:W1|도관:0:q1|승모:1:h3|은장 머리띠:0:c2|사슴가죽 모자:1:e1|늑대털 모자:1:h4|청동 투구:2|순검의 관모:1:M1|상인의 탕건:0:L1|호위의 투구:2|흑칠 투구:2|서역 두건:1:r1|유목민의 가죽 투구:1:h3|수적의 물개가죽 모자:1:e1|녹림 쇠머리띠:1:c1|징 박은 가죽 투구:2|문도의 머리띠:0:x2|눈가리개 달린 죽립:1:r2');
+IT('h','','A','흑철 투구:2:h5|면사 죽립:1:e3|은사 복면:1:e3|옥관:1:W1|금테 전립:2:M1|정무 머리띠:1:x5|팔괘관:1:q2|나한 승모:2:h7|호피 두건:1:c3|명경 머리띠:1:r4|봉시 투구:3|백련 투구:3|유운 죽립:1:e2r2|교룡 가죽 투구:2:c2|학사의 방건:1:W1x3');
+IT('h','','S','봉황관:2:M2L1|현무 투구:4:h10|천기관:2:W2r4|자하건:2:q3|은린 투구:3:e4|금강 승모:3:h12|통명 머리띠:2:r6');
+IT('h','','SS','용두 투구:4:h16c4|자금관:3:q4r5|칠성관:3:W2r6');
+/* ==== murim:items-4 — 신발과 장신구 ==== */
+/* ---------- 신발 ---------- */
+IT('f','','C','짚신:0|헌 짚신:0|삼신:0|나막신:0|미투리:0:e1|맨발 감싼 헝겊:0|닳은 가죽신:0|무명 버선:0|솜 버선:0:h2|덧댄 짚신:0|두 겹 짚신:0|칡신:0|부들신:0|대나무 나막신:0|진흙 묻은 장화:0|농부의 짚신:0|일꾼의 가죽신:0|나무꾼의 각반:0:e1|뱃사람의 맨발 띠:0:e1|사냥꾼의 털신:0:h2|나졸의 헌 군화:1|병졸의 가죽신:1|표사 견습 신:0:e1|무관 수련 신:0:x2|초심자의 덧신:0:x2|떠돌이의 헌 신:0|행상의 굽 닳은 신:0:L1|탁발승의 짚신:0|도사의 헌 운혜:0|서생의 태사혜:0:W1|산적의 가죽 각반:0|수적의 물신:0:e1|유목민의 모전 장화:0:h2|산족의 풀신:0:e1|광부의 덧신:0|하인의 헌 신:0|거지의 구멍 난 신:0|아이의 꽃신:0:M1|장터 싸구려 신:0|개가죽 장화:0|끈 풀린 미투리:0|바닥 덧댄 가죽신:1|송진 바른 짚신:0|기름 먹인 가죽신:0|눈길용 설피:0:h2');
+IT('f','','B','가죽 장화:1|사슴가죽 신:0:e2|흑피화:1|쾌화:0:e2|군문 군화:1:h2|표국 제식 장화:1|무관 사범 신:0:x3|낭인의 장화:1:e1|징 박은 장화:1|철편 덧댄 신:1|은실 수놓은 신:0:M1|운혜:0:q1|승혜:0:h3|비단신:0:L1|늑대가죽 장화:1:h3|물개가죽 신:0:e2|서역 가죽 장화:1:e1|유목민의 승마화:1:e1|수적의 물갈퀴 신:0:e2|녹림 쇠굽 장화:1:c1|가벼운 경화:0:e2|묵직한 철화:1:h3|순검의 관화:1|상인의 겹신:0:L1|호위의 장화:1:h2|두 겹 가죽 장화:1|문도의 수련화:0:x2|밑창 두꺼운 등산화:1:h2|솜 넣은 설화:1:h3|발목 감싼 각반:0:e1');
+IT('f','','A','답설화:1:e3|유운화:1:e3q1|흑철 장화:1:h5|은사 신:1:e3|비연화:0:e4|정무화:1:x5|팔괘 운혜:1:q2|나한 승혜:1:h7|호피 장화:1:c2|청풍화:1:e3|교룡 가죽 장화:1:e2c1|쾌마화:1:e2h3|표국주의 장화:1:e2L1|백련 철화:2|무영 버선:0:e4');
+IT('f','','S','능파화:2:e5|추풍화:1:e5q2|답운화:2:e4r2|현무 철화:2:h10|금강혜:2:h8e2|신행화:1:e6|자하 운혜:1:q3e3');
+IT('f','','SS','등운화:2:e7q3|일위도강혜:3:e7h10|축지화:2:e8');
+/* ---------- 장신구 ---------- */
+IT('c','','C','나무 염주:0:h2|헝겊 부적:0:@plague|조개껍데기 목걸이:0:M1|짚 팔찌:0|구리 반지:0:h2|쇠 가락지:0:h2|뼈 목걸이:0:c1|멧돼지 이빨 목걸이:0:c1|늑대 발톱 목걸이:0:c1|매 깃털 장식:0:e1|닭 깃털 부채:0:q1|말총 팔찌:0:e1|삼끈 손목띠:0:h2|색실 매듭:0:M1|복 주머니:0:L1|엽전 꾸러미 부적:0:L1|돌 호신부:0:h2|솔방울 노리개:0|대추씨 염주:0:h2|흙 인형:0|나무 호패:0|동전 목걸이:0:L1|헌 노리개:0|비녀 한 짝:0:M1|빗:0:M1|손거울 조각:0:r1|부싯돌 주머니:0|소금 주머니:0:@plague|마늘 목걸이:0:@plague|쑥 주머니:0:@plague|창포 뿌리 노리개:0:h2|버들가지 팔찌:0:e1|대나무 피리:0:M1|풀피리:0|조약돌 부적:0:h2|쇠방울:0|구슬 한 알:0:L1|유리구슬 팔찌:0:M1|헝겊 인형:0|아기 신 한 짝:0:L1|어머니의 실반지:0:h3|아버지의 허리띠:0:h3|스승의 붓:0:x2|헌 서책 한 권:0:x2|바둑돌 주머니:0:r1|주사위 한 쌍:0:L1|골패 한 짝:0:L1|낡은 호루라기:0|새끼줄 허리띠:0|가죽 허리띠:0:h2|쇠 버클 허리띠:0:h2|무명 손수건:0|수놓은 손수건:0:M1|향나무 조각:0:q1|백단 향 조각:0:q1|마른 연꽃씨:0:h2|호두 두 알:0:q1|매미 허물:0:e1|박쥐 날개 부적:0:e1|두꺼비 가죽 주머니:0:h2|뱀 허물 팔찌:0:e1|거북 등껍질 조각:0:h3|물고기 비늘 목걸이:0:e1|소뿔 조각:0:c1|사슴뿔 조각:0:h2|산호 조각:0:M1|호박 조각:0:L1|수정 조각:0:r1|녹슨 열쇠:0:L1|깨진 옥 조각:0:L1|청동 방울:0:q1|무관 입문패:0:x2|표국 견습패:0:x1|떠돌이의 매듭:0:e1');
+IT('c','','B','은반지:0:h4|은 가락지:0:M1|옥 가락지:0:L1|청옥 팔찌:0:q1|백옥 노리개:0:M1|마노 목걸이:0:h4|호박 염주:0:h4|수정 목걸이:0:r2|산호 노리개:0:M1|진주 귀걸이:0:M1|호랑이 발톱 목걸이:0:c2|곰 발톱 목걸이:0:h5|매 발톱 반지:0:c2|상아 팔찌:0:h4|물소뿔 반지:0:c2|은 호루라기:0:r2|청동 거울:0:r2|은 비녀:0:M1|옥 비녀:0:M1|칠보 노리개:0:L1|비단 향낭:0:M1|약초 향낭:0:@plague|웅황 주머니:0:@plague|주사 부적:0:@plague|도사의 부적:0:q1|절 부적:0:h4|팔괘 패:0:q1|태극 패:0:q1|표국 표패:0:x2|무관 사범패:0:x3|문도의 신표:0:x2|순검의 요패:0:M1|상인의 주판 알:0:L1|서생의 옥 문진:0:W1|학사의 벼루:0:W1|바둑 고수의 흑돌:0:r2|노름꾼의 주사위:0:L1|은장도 노리개:0:c1|가죽 완대:0:h4|쇠 완대:0:h5|은실 허리띠:0:h4|옥 허리띠 고리:0:L1|금박 부채:0:q2|대나무 부채:0:q1|새 깃털 부채:0:q2|단향 염주:0:h3q1|보리수 염주:0:h4|서역 유리구슬:0:r2|낙타 방울:0:L1|유목민의 은 목걸이:0:h4|수적의 조개 목걸이:0:e2');
+IT('c','','A','비취 반지:0:L1h4|홍옥 반지:0:c3|청금석 목걸이:0:r3|금 가락지:0:M1L1|백옥 패:0:@dice|행운의 옥토끼:0:@dice|금강저 노리개:0:h8|은사 완대:0:e3|호신 옥부:0:@guard|청동 호심경:0:@guard|백단 염주:0:@calm|정심주:0:@calm|벽사 옥패:0:L1@plague|웅담 주머니:0:@poison|서각 반지:0:@poison|천리경:0:r4|금전 부채:0:q3|학사의 금 문진:0:W1x3|정무패:0:x5|맹호 완대:0:c2h4|유운 허리띠:0:e2q1|상단 행수의 인장:0:L1M1');
+IT('c','','S','피사주:0:h10L1@plague|금강 호심경:0:h10@guard|야명주:0:r5L1|자금 팔찌:0:c4h8|용문 옥패:0:L1@dice|천잠 허리띠:0:e4h8|빙옥 반지:0:q3r3|구전 염주:0:q3@calm|현철 완대:0:c3h10');
+IT('c','','SS','여의주 조각:0:L2r5|벽독주:0:h12c3@poison|칠보 영락:0:M2L2|태극 음양패:0:q5e4');
+IT('c','','SSR','화씨벽:0:L3r8q4:천하에 둘도 없는 옥. 지닌 자에게 운이 모인다');
+/* ==== murim:items-5 — 먹고 마시고 바르는 것 ==== */
+IU('C','주먹밥:hp4|찐 만두:hp5|군고구마:hp4joy2|삶은 달걀:hp4|누룽지:hp3|보리떡:hp4|수수떡:hp4joy1|엿:joy4|곶감:hp3joy3|대추 한 줌:hp4|밤 한 줌:hp4|말린 살구:hp3joy2|산딸기:hp3joy2|머루:hp3joy2|육포:hp6|말린 생선:hp5|건량:hp5|소금 절임 무:hp3|된장 한 종지:hp3|꿀물:hp5joy2|생강차:hp6|보리차:hp3joy1|쑥차:hp5|국화차:hp4joy2|막걸리:joy5|탁주 한 병:joy5hp2|소주 한 병:joy6|약쑥 찜질 주머니:hp7|칡뿌리:hp6|도라지:hp6|더덕:hp7|감초:hp5|민들레 뿌리:hp5|질경이:hp4|인동초:hp6|익모초:hp6|쇠비름:hp4|송진 고약:hp8|된장 고약:hp6|숯가루:hp5|헝겊 붕대:hp6|깨끗한 무명천:hp5|부목:hp7|소금물:hp4|뜨거운 국밥:hp8joy2|국수 한 그릇:hp7joy2|두부 한 모:hp5|탕후루:joy5|호떡:hp4joy3|월병:hp4joy4|닭다리:hp7joy2|약과:joy5hp2|식혜:hp4joy3');
+IU('B','삼계탕:hp16joy3|십전대보탕:hp20|쌍화탕:hp15|우황청심환:hp12joy6|금창산:hp18|속단고:hp20|당귀 달인 물:hp14|황기 달인 물:hp15|구기자주:hp10joy6|오가피주:hp12joy5|매실주:joy10|죽엽청:joy10hp4|소흥주:joy12|분주:joy12|용정차:joy8hp5|철관음:joy8hp5|보이차:hp10joy5|벌꿀 한 단지:hp15joy4|녹용 가루:hp18|웅담 가루:hp20|사향 한 푼:hp12joy5|하수오:hp16ng1|복령:hp14|백출:hp12|천마:hp14|산수유:hp12joy3|오미자:hp12joy4|삼칠근:hp20|수련 주해 낱장:ex12|무관 교본:ex10|검보 한 장:ex12|권보 한 장:ex12|호흡 요결 쪽지:ex8ng1|노승의 법문 필사:joy8ex6|사부의 꾸중 편지:ex10');
+IU('A','인삼:hp30ng1|홍삼:hp28ng2|영지:hp30ng1|동충하초:hp25ng2|소환단 가루:hp20ng2|보기환:hp35|양기단:ng3|취기단:ng2hp15|대력환:hp25ex15|청심단:joy15hp15|백 년 묵은 죽엽청:joy18ng1|원숭이 술:joy15ng2|고수의 수련 일지:ex30|문파 주해서:ex25|선대의 검흔 탁본:ex30|내공 심득 한 권:ex15ng2|설련 꽃잎:hp30ng2|빙잠 고치:ng3');
+IU('S','대환단:ng8hp40|천년 설삼:ng6hp50|구전환혼단:hp60ng4|주과:ng7B1|공청석유:ng5W1|태상 주해:ex60ng3|벽사단:hp30L1');
+IU('SS','만년 화리 내단:ng15B1|천지영액:ng12hp50W1|조사 친필 진해:ex120ng5');
 /* ==== murim:duel — 장면 연출(시퀀스)과 초식 결투 ==== */
 /* ---- 시퀀스: 프레임 단위로 배우를 움직인다. 움직임을 줄인 환경이나 가려진 탭에서는 한 번에 끝낸다. ---- */
 const SEQS=[]; let INSTANT=false;
@@ -5130,8 +5257,8 @@ const TELLEMO={A:'anger',G:'...',F:'?',U:'!'};
 function mkFoe(s){ const pow=Math.max(3,Math.round(s.pow)), hp=Math.round(34+pow*1.1);
   return {name:s.name||'상대',look:s.look||LOOK.bandit(),pow,hpMax:hp,hp,qi:Math.round(Math.min(50,10+pow*.3)),def:100/(100+pow/14*6),style:s.style||'even',lv:cl(Math.round(pow/14),0,8),art:s.art||'',mercy:s.mercy==null?.5:s.mercy,beast:!!(s.look&&s.look.animal),title:s.title||'',crit:.06,last:[]}; }
 // 내 기력도 상대와 같은 식으로 잰다. 지금 건강이 그 몇 할을 채우고 들어가는지를 정한다.
-function mkMe(){ const c=combat(), ar=m.inv.a?ITEMS[m.inv.a].def:0, pw=power(), mx=Math.round(34+pw*1.1);
-  return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:m.arts.some(a=>a.k==='보법')?.12:0,art:c.art?c.art.n:'',crit:.05+ST('luck')*.01,last:[]}; }
+function mkMe(){ const c=combat(), ar=eq('def'), pw=power(), mx=Math.round(34+pw*1.1)+eq('hp');
+  return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:Math.min(.4,(m.arts.some(a=>a.k==='보법')?.12:0)+eq('ev')),art:c.art?c.art.n:'',crit:Math.min(.5,.05+ST('luck')*.01+eq('cr')),last:[]}; }
 function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
   if(spec.qi) D.me.qi=Math.min(100,D.me.qi+spec.qi); D.qi0=D.me.qi; mkTell(D); return D; }
 function foePick(D){ const f=D.foe, l=D.me.last; if(f.qi>=60&&R()<.55) return 'U';
@@ -5159,7 +5286,7 @@ function applyRound(D,my){
   f.hp=Math.max(0,f.hp-ev.dm-ev.ally); me.hp=Math.max(0,me.hp-ev.df); D.taken+=ev.df;
   if(my==='U') me.qi-=60; if(fs==='U') f.qi-=60;
   const gg=my==='G'&&fs==='G'?8:0;
-  me.qi=Math.min(100,me.qi+12+(hasFx('qi')?6:0)+(my==='G'&&(fs==='A'||fs==='U')?15:0)+gg);
+  me.qi=Math.min(100,me.qi+12+eq('qi')+(my==='G'&&(fs==='A'||fs==='U')?15:0)+gg);
   f.qi=Math.min(100,f.qi+12+(fs==='G'&&(my==='A'||my==='U')?15:0)+gg);
   ev.txt=roundText(D,ev); D.lines.push(ev.txt); if(D.lines.length>3) D.lines.shift(); D.ev=ev; return ev; }
 function duelState(D){ const me=D.me, f=D.foe; D.mirrorNow=false;
@@ -5184,13 +5311,15 @@ function mercyApply(D,res,k){ const f=D.foe;
   else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&m.spared.length<3) m.spared.push({n:f.name,a:m.age,pow:f.pow,lk:f.look}); } }
 function lootOf(D,res){ const L=D.spec.loot; if(!L) return; if(L.g){ const g=Math.round(ri(L.g[0],L.g[1])*(res.killed?1.5:1)); gold(g); res.gold=g; }
   (L.it||[]).forEach(x=>{ if(R()<x[1]){ give(x[0]); (res.items=res.items||[]).push(x[0]); } }); }
+// 이긴 싸움에서 덤으로 떨어지는 물건. 상대가 셀수록 등급이 높다
+function dropOf(D,res){ if(D.spec.noDrop||R()>(D.lethal?.3:.08)) return; const p=Math.max.apply(null,D.foes.map(f=>f.pow)), r=R(), t=p<18?(r<.6?0:1):p<30?(r<.6?1:2):p<45?(r<.7?2:3):p<60?(r<.75?3:2):(r<.8?3:4); const id=dropItem(t); if(id) (res.items=res.items||[]).push(id); }
 const mercyAuto=()=>((m.per&&m.per.협)||0)>=-10?'spare':'kill';
 const needMercy=(D,res)=>res.win&&D.lethal&&!D.foe.beast&&!D.spec.noMercy;
 function quickDuel(spec){ const D=mkDuel(spec); let st='go';
   for(let g=0;g<90;g++){ applyRound(D,autoPick(D)); st=duelState(D);
     if(st==='win'){ D.won++; if(D.idx<D.foes.length-1){ nextFoe(D); st='go'; continue; } break; }
     if(st!=='go') break; mkTell(D); }
-  const res=settle(D,st); res.won=D.won; if(needMercy(D,res)) mercyApply(D,res,mercyAuto()); if(res.win) lootOf(D,res); return res; }
+  const res=settle(D,st); res.won=D.won; if(needMercy(D,res)) mercyApply(D,res,mercyAuto()); if(res.win){ lootOf(D,res); dropOf(D,res); } return res; }
 
 /* ---- 화면에서 치르는 결투 ---- */
 const autoOn=D=>!!(m.auto||D.autoRest);
@@ -5228,7 +5357,7 @@ function duelMercy(k){ const D=DUEL; if(!D||D.phase!=='mercy') return; D.phase='
       at(12,()=>{ e.pose='dead'; e.pose0='dead'; e.emote=null; fxDust(e.x,e.y); }); during(14,24,p=>{ h.ax=44*(1-p); }); at(24,()=>{ h.ax=0; h.pose='idle'; h.emote=null; }); at(44,()=>{}); }
     else { at(0,()=>{ h.pose='idle'; h.emote='...'; e.pose='bow'; e.emote='tear'; }); at(30,()=>{ e.emote=null; e.lock=false; e.pose0='walk'; e.goto=W+20; }); at(56,()=>{ h.emote=null; }); }
   },()=>{ if(DUEL===D) duelFinish(D); }); }
-function duelFinish(D){ const res=D.res; if(res.win) lootOf(D,res);
+function duelFinish(D){ const res=D.res; if(res.win){ lootOf(D,res); dropOf(D,res); }
   if(res.dead){ D.phase='anim'; const h=A('hero'), e=A('foe');
     seq((at,during)=>{ if(h&&e){ during(0,6,p=>{ e.ax=-44*p; e.pose=atkPose(e); }); at(7,()=>{ strikeFx(e,h,-1,{ult:1,red:1}); blood(h.x,h.y-10,-1); h.flash=12; shake=8; flashA=.7; flashC='#b8321f'; sfx('death'); }); at(12,()=>{ h.pose='dead'; h.pose0='dead'; h.emote=null; }); during(14,26,p=>{ e.ax=-44*(1-p); }); at(26,()=>{ e.ax=0; e.pose='idle'; }); } at(60,()=>{ barsT=12; }); },
       ()=>{ if(DUEL!==D) return; D.phase='end'; render(); autoKick(D); }); return; }
@@ -5309,7 +5438,7 @@ const FOCUS=[
   {id:'rest',n:'양생',h:'몸을 돌본다. 건강이 오른다.'}
 ];
 function ageMul(){ return m.age<25?1.1:m.age<40?.9:m.age<55?.65:.4; }
-function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1); }
+function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1)*(1+eq('xp')); }
 function autoFocus(){ return m.f.martial?pick(['train','train','work','family','rest']):pick(['work','work','work','family','train','rest']); }
 const WORK={tenant:['지주의 논에서 허리를 펴지 못했다.','추수의 절반을 지주에게 바쳤다.'],farmer:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.'],beggar:['동냥 그릇을 들고 장터를 돌았다.','부잣집 잔치 뒤에 남은 음식을 얻었다.'],artisan:['대장간에서 쇠를 두드렸다.','솥 수십 개를 고쳐 팔았다.'],merchant:['장부를 맞추느라 밤을 새웠다.','비단 값이 올라 재미를 봤다.'],hunter:['산에서 노루를 잡았다.','호랑이 발자국을 보고 사흘을 숨어 있었다.'],inn:['객잔에서 술상을 날랐다.','취객들의 무림 이야기를 들으며 그릇을 닦았다.'],bandit:['산채에서 길목을 지켰다.','지나가는 상단에게 통행세를 걷었다.'],escort:['표행을 따라 먼 길을 다녀왔다.','표국 마당에서 짐을 꾸렸다.'],doctor:['약방에서 환자를 돌봤다.','산에서 약초를 캤다.'],official:['관아에서 문서를 썼다.','세금 장부를 맞췄다.'],clan:['가문의 장원 일을 거들었다.','가문의 상단을 따라 다녀왔다.'],tangc:['독초밭을 돌봤다.','당가의 암기를 손질했다.'],blood:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.']};
 function doFocus(){
@@ -5431,6 +5560,7 @@ function tick(mp){
   m.joy=cl(m.joy+(55-m.joy)*.08); m.bond=cl(m.bond+(40-m.bond)*.04);
   m.hp=cl(m.age<45?m.hp+3:m.hp-(m.age-45)*.12,0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
+  else if(m.hp<30&&m.hp>0) autoHeal();
   if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=5; log('아껴 둔 소환단을 삼켰다.'); }
   if(m.f.magong) m.sim+=hasFx('calm')?2:4;
   if(m.sect&&m.ak>m.hy+25&&SECTS[m.sect].side==='정'){ log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
@@ -5474,7 +5604,7 @@ function simulate(b){
   while(!m.dead&&g++<140){ tick(); if(m.dead) break; if(m.pending) autoResolve(); if(m.dead) break; checkTrain(); let k=0; while(m.train&&!m.dead&&k++<90) autoTrainStep(); }
   const big=m.log.filter(x=>x.big&&!/태어났다|세상을 떠났다|눈을 감았다|구름을 타고/.test(x.t));
   const w=m.inv.w?ITEMS[m.inv.w]:null;
-  const out={name:m.name,sex:m.sex,reg:b.reg,o:b.o,P:b.P,age:m.age,cause:m.deathCause,lv:m.lv,martial:!!m.f.martial,alias:m.alias,sect:m.sect,kids:m.kids,spouse:!!m.spouse,wins:m.wins||0,kills:m.kills||0,wn:w&&w.t>=1?w.n:null,hi:big.length?big[big.length-1].t:null,log:m.log.map(x=>({a:x.a,t:x.t,big:x.big}))};
+  const out={name:m.name,sex:m.sex,reg:b.reg,o:b.o,P:b.P,age:m.age,cause:m.deathCause,lv:m.lv,martial:!!m.f.martial,alias:m.alias,sect:m.sect,kids:m.kids,spouse:!!m.spouse,wins:m.wins||0,kills:m.kills||0,wn:w&&w.t>=2?w.n:null,hi:big.length?big[big.length-1].t:null,log:m.log.map(x=>({a:x.a,t:x.t,big:x.big}))};
   m=keep; return out;
 }
 function finalize(){
@@ -5503,7 +5633,8 @@ function save(){ if(!m||!m.b||m.phase==='end'||m.headless) return;
 function load(){ const r=lsGet('murim_run'); return r&&r.b&&r.others&&(r.phase==='play'||r.phase==='farewell')?r:null; }
 function rehydrate(r){ m=r;
   // 예전 판에서 이어 온 삶에는 행낭이 없다
-  if(!m.inv) m.inv={w:null,a:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0},mat:0};
+  if(!m.inv) m.inv={w:null,a:null,h:null,f:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0},mat:0};
+  SLOTS.forEach(s=>{ if(m.inv[s]&&!ITEMS[m.inv[s]]) m.inv[s]=null; if(m.inv[s]===undefined) m.inv[s]=null; }); if(m.inv.stash) m.inv.stash=m.inv.stash.filter(id=>ITEMS[id]); if(m.inv.bag) for(const k in m.inv.bag) if(!ITEMS[k]) delete m.inv.bag[k];
   m.inv.bag=Object.assign({salve:0,pill:0,antidote:0},m.inv.bag||{}); m.inv.stash=m.inv.stash||[]; m.ep=m.ep||{}; m.spared=m.spared||[]; m.per=m.per||{협:0,담:0,정:0};
   m.rels.forEach(x=>{ if(!x.sx) x.sx=SEXROLE[x.role]||(x.role==='배우자'||x.role==='정인'?(m.sex==='m'?'f':'m'):(seedOf(x.name)%2?'m':'f')); if(x.a0==null&&x.age0==null) x.a0=Math.max(0,m.age-5); });
   if(m.mates) m.mates.forEach((x,i)=>{ if(!x.sx) x.sx=SEXROLE[x.role]||(i===2?m.sex:'m'); });
@@ -5822,7 +5953,7 @@ E('meteor',{min:10,max:60,once:1,w:.3,gi:1,st:()=>Sg('field',{time:'night',props
   {t:'불길하다, 흙으로 덮는다',go:()=>{ bump('luck'); return '덮고 나니 그 자리에서만 풀이 유난히 푸르게 자랐다.'; }}]});
 E('forgeGod',{gi:1,when:()=>m.inv.mat>0,st:()=>Sg('forge',{time:'night',props:[['anvil',84,{dy:8}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:m.f.smith?'':'늙은 대장장이'})],hero:{x:56}}),
   text:()=>m.f.smith?'천외운철을 화로에 넣었다. 수련기에 배운 망치질이 손에 남아 있다. 이 쇠로 무엇을 벼릴까.':'천외운철 소문을 들은 늙은 대장장이가 찾아왔다. "평생 한 번 두드려 보고 싶던 쇠요. 삯은 받지 않겠소. 무엇으로 벼리겠소?"',ch:()=>
-  [['검','hsword'],['도','rsaber'],['권','tglove'],['암기','sdart']].map(([k,id])=>({t:`${ITEMS[id].n}${jo(ITEMS[id].n,'으로','로')} 벼린다`,s:`${k} · 신병 · 공격 +${ITEMS[id].atk}`,go:()=>{ m.inv.mat--; give(id,{nolog:1}); log(`천외운철로 ${eul(ITEMS[id].n)} 벼렸다`,true); return {t:'이레 밤낮 망치 소리가 그치지 않았다. 마지막 담금질에 물이 한꺼번에 끓어올랐다.',tone:'good',cut:()=>{ flashA=.7; flashC='#bff4ff'; spark('hero','#bff4ff',20); }}; }}))
+  [['검','hsword'],['도','rsaber'],['권','tglove'],['암기','sdart']].map(([k,id])=>({t:`${ITEMS[id].n}${jo(ITEMS[id].n,'으로','로')} 벼린다`,s:`${k} · SS · 공격 +${ITEMS[id].atk}`,go:()=>{ m.inv.mat--; give(id,{nolog:1}); log(`천외운철로 ${eul(ITEMS[id].n)} 벼렸다`,true); return {t:'이레 밤낮 망치 소리가 그치지 않았다. 마지막 담금질에 물이 한꺼번에 끓어올랐다.',tone:'good',cut:()=>{ flashA=.7; flashC='#bff4ff'; spark('hero','#bff4ff',20); }}; }}))
   .concat([{t:'쇳덩이째 판다',go:()=>{ m.inv.mat--; gold(400); return '상단 행수가 400냥을 내놓았다. 뒤도 안 돌아보고 가져갔다.'; }},{t:'아직은 묻어 둔다',go:()=>{ m.q.push({age:m.age+ri(5,8),id:'forgeGod'}); return '쇠는 기다릴 줄 안다.'; }}])});
 E('oldTomb',{min:14,max:65,once:1,w:.8,gi:1,st:()=>Sg('tomb',{wx:'rain',hero:{x:70}}),
   text:()=>'폭우에 산비탈이 무너져 옛 무덤의 돌문이 드러났다. 문 위에 글이 새겨져 있다. "들어오는 자, 세 번 절하라."',ch:[
@@ -5847,7 +5978,7 @@ E('drunkBeggar',{min:15,max:60,once:1,w:.8,gi:1,st:()=>Sg('inn',{cast:[N('bg',LO
 
 /* ---------- 장터: 장비를 산다 ---------- */
 const buy=(id,price,n)=>({t:`${eul(ITEMS[id].n)}${n>1?` ${n}개`:''} 산다`,s:`${price}냥 · ${itDesc(ITEMS[id])}`,when:()=>m.gold>=price,go:()=>{ gold(-price); give(id,{n:n||1}); return {t:`${fmt(price)}냥을 치렀다.`,tone:'good'}; }});
-E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==='hunter'||m.b.o==='escort')&&(!m.inv.w||ITEMS[m.inv.w].t<2||!m.inv.a),st:()=>Sg('forge',{props:[['anvil',84,{dy:8}],['rack',150,{dy:6}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:'대장장이'})],hero:{x:54}}),
+E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==='hunter'||m.b.o==='escort')&&(!m.inv.w||ITEMS[m.inv.w].t<3||!m.inv.a),st:()=>Sg('forge',{props:[['anvil',84,{dy:8}],['rack',150,{dy:6}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:'대장장이'})],hero:{x:54}}),
   text:()=>'장터 대장간에 새로 벼린 물건이 걸렸다. 쇠 냄새가 좋다.',ch:()=>{ const d=m.f.smith?.8:1, k=myKind(), out=[];
     [wOf(0,k),wOf(1,k)].concat(m.gold>=200?[wOf(2,k)]:[]).forEach(id=>{ if(better(id,m.inv.w)) out.push(buy(id,Math.round(ITEMS[id].v*d))); });
     const ar=ARMORS[m.gold>=120?1:0]; if(better(ar,m.inv.a)) out.push(buy(ar,Math.round(ITEMS[ar].v*d)));
@@ -5937,21 +6068,23 @@ const gradeBadge=ev=>{ const g=ev&&gradeOf(ev); return g?`<span class="mh-gr g-$
          par:'m' 어머니/'f' 아버지가 살아 있을 때, 1 고아가 아닐 때 · tier:[집안 형편 낮게, 높게] · org:[출신] · reg:[고향] · wed:1 혼인한 사람/0 안 한 사람 · sex:'m'/'f' · kid:1 자식이 있을 때 · gold·fame·lv:그 이상일 때
          sc:[문파] 그 문파 사람만 · side:'정사마중' 가운데 그쪽 문파 사람만 · free:1 문파가 없는 사람만 · need:함수
    선택지 [글, 결과, 얻는 것]  또는  [글, {p:[기본 확률, 능력, 능력 1당], ok:[결과, 얻는 것], no:[결과, 얻는 것]}]  또는  [글, {duel:{n,pow,look,lethal}, ok:[..], no:[..]}]
-   얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기 등급 · ar:방어구 등급 · art:[이름,위력,종류,내공] · wed:1 혼인한다 · kid:n 자식이 태어난다 */
-const ARMS=['lvest','chain','gvest','silk'];
+   얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기(0 C·B, 1 A, 2 S, 3 SS) · ar:갑옷(같은 식) · eq:[자리,'등급'] 그 자리·등급의 물건 하나 · art:[이름,위력,종류,내공] · wed:1 혼인한다 · kid:n 자식이 태어난다 */
 function applyFx(f){ if(!f) return; if(f.g!=null) gold(Array.isArray(f.g)?ri(f.g[0],f.g[1]):f.g); if(f.hp) m.hp=f.hp<0?Math.max(1,m.hp+f.hp):cl(m.hp+f.hp); if(f.joy) m.joy=cl(m.joy+f.joy); if(f.bond) m.bond+=f.bond; if(f.fame) m.fame=Math.max(0,m.fame+f.fame); if(f.hy) m.hy+=f.hy; if(f.ak) m.ak+=f.ak;
-  if(f.exp) addExp(gain()*f.exp); if(f.ng&&m.f.martial) m.ng+=f.ng; if(f.st) for(const k in f.st) m.b.st[k]=Math.min(12,(m.b.st[k]||0)+f.st[k]); if(f.it) for(const id of f.it) give(id,{}); if(f.wt!=null) give(wOf(f.wt,myKind()),{}); if(f.ar!=null) give(ARMS[f.ar],{}); if(f.wed&&!(m.spouse&&!m.spouse.dead)){ const r=relOf('정인')||rel('배우자'); r.role='배우자'; m.spouse=r; log(`${wa(r.name)} 혼인했다`,true); if(!m.q.some(q=>q.id==='birth')) m.q.push({age:m.age+ri(1,3),id:'birth'}); }
+  if(f.exp) addExp(gain()*f.exp); if(f.ng&&m.f.martial) m.ng+=f.ng; if(f.st) for(const k in f.st) m.b.st[k]=Math.min(12,(m.b.st[k]||0)+f.st[k]); if(f.it) for(const id of f.it) give(id,{}); if(f.wt!=null){ const id=rndItem('w',tgOf(f.wt),myKind()); if(id) give(id,{}); } if(f.ar!=null){ const id=rndItem('a',tgOf(f.ar)); if(id) give(id,{}); } if(f.eq){ const id=rndItem(f.eq[0],TIER.indexOf(f.eq[1])); if(id) give(id,{}); } if(f.wed&&!(m.spouse&&!m.spouse.dead)){ const r=relOf('정인')||rel('배우자'); r.role='배우자'; m.spouse=r; log(`${wa(r.name)} 혼인했다`,true); if(!m.q.some(q=>q.id==='birth')) m.q.push({age:m.age+ri(1,3),id:'birth'}); }
   if(f.kid) for(let i=0;i<f.kid;i++){ m.kids++; const n=m.b.sur+gname(); rel('자식',n,80,{sx:R()<.5?'m':'f'}); log(`자식 ${iga(n)} 태어났다`,true); }
   if(f.art) learn(f.art[0],f.art[1],f.art[2],f.art[3]); }
 const fxTone=f=>{ if(!f) return ''; const neg=(f.hp<0)||(typeof f.g==='number'&&f.g<0)||(f.joy<0)||(f.fame<0), pos=Object.keys(f).some(k=>k!=='ak'&&(Array.isArray(f[k])||typeof f[k]==='object'||f[k]>0)); return pos&&!neg?'good':neg&&!pos?'bad':''; };
-function mkCh(x){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ applyFx(x[2]); return {t:x[1],tone:fxTone(x[2])}; }};
+// 등급 사건이 잘 풀리면 그 등급(가끔 한 단계 아래)의 물건이 덤으로 떨어진다. 이미 물건을 주는 결과에는 붙지 않는다
+const QDROP=[.05,.08,.12,.2,.3,.5];
+function qDrop(g,f){ const t=GRADES.indexOf(g); if(t<0||(f&&(f.it||f.wt!=null||f.ar!=null||f.eq))) return; if(R()<QDROP[t]) dropItem(Math.max(0,R()<.7?t:t-1)); }
+function mkCh(x,g){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ const tn=fxTone(x[2]); applyFx(x[2]); if(tn==='good') qDrop(g,x[2]); return {t:x[1],tone:tn}; }};
   const o=x[1]; if(o.duel) return {t,duel:()=>Object.assign({foe:{name:o.duel.n,look:(LOOK[o.duel.look]||LOOK.bandit)(),pow:o.duel.pow+m.lv*(o.duel.lv==null?5:o.duel.lv)+ri(0,6),style:o.duel.style||'sword',mercy:o.duel.lethal?.4:1,art:o.duel.art||'삼재검법'}},o.duel.lethal?{lethal:1,cause:o.duel.cause||o.duel.n+'의 칼'}:{}),
-    go:(ok,res)=>{ if(ok){ applyFx(o.ok[1]); return {t:o.ok[0],tone:'good'}; } if(res&&res.dead) return {t:'거기까지였다.',tone:'bad'}; applyFx(o.no[1]); return {t:o.no[0],tone:'bad'}; }};
-  return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); return {t:r[0],tone:ok?'good':'bad'}; }}; }
+    go:(ok,res)=>{ if(ok){ applyFx(o.ok[1]); qDrop(g,o.ok[1]); return {t:o.ok[0],tone:'good'}; } if(res&&res.dead) return {t:'거기까지였다.',tone:'bad'}; applyFx(o.no[1]); return {t:o.no[0],tone:'bad'}; }};
+  return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); if(ok) qDrop(g,r[1]); return {t:r[0],tone:ok?'good':'bad'}; }}; }
 let QN=0;
 function Q(g,id,c,bg,text,chs){ c=c||{}; QN++; const rep=c.rep!=null?c.rep:GREP[g];
   E(id,Object.assign({min:c.a?c.a[0]:13,max:c.a?c.a[1]:70,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!(m.spouse&&!m.spouse.dead)===!!c.wed)&&(!c.sex||m.sex===c.sex)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
-    st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(mkCh)},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }
+    st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(x=>mkCh(x,g))},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }
 /* ==== murim:minor-1 — 등급 사건 첫 묶음 (어린 시절 · 마을 · 길과 저자 · 무림 · 집안) ==== */
 /* ---------- C: 일상 ---------- */
 // 어린 시절
@@ -7564,8 +7697,14 @@ function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home
   if(id==='market'||id==='apoth'||id==='smithy') add('물건을 본다','',()=>{ MSHOP=MSHOP?null:id; render(); },1);
   if(id==='apoth'&&m.hp<80&&m.gold>=12) add('진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); vfx(()=>heroFloat('건강 +18','good')); render(); save(); },1);
   return acts; }
-const SHOPS={market:['salve','antidote','sachet','talis','lvest'],apoth:['salve','antidote','pill'],smithy:null};
-function shopList(id){ let ids=SHOPS[id]; if(id==='city'){ const k=myKind(); ids=['salve','antidote','pill','talis','eyebead',wOf(1,k),wOf(2,k),'chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } if(!ids){ const k=myKind(); ids=[wOf(0,k),wOf(1,k),'lvest','chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
+// 가게 물건은 철마다 바뀐다. 같은 철에는 같은 것이 놓인다
+function shopList(id){ const rf=seeded(strHash((m.name||'')+id)+m.age*977+(m.sea||0)*31), k=myKind(), ids=[];
+  const add=(s,t,kk)=>{ const x=rndItem(s,t,kk,rf); if(x&&!ids.includes(x)) ids.push(x); }, g=a=>{ const r=rf(); let c=0; for(let i=0;i<a.length;i++){ c+=a[i]; if(r<c) return i; } return 0; };
+  if(id==='market'){ ids.push('salve','antidote'); add('u',g([.7,.3])); add('u',g([.7,.3])); add('c',g([.7,.3])); add('h',g([.7,.3])); add('f',g([.7,.3])); add('a',g([.6,.4])); }
+  else if(id==='apoth'){ ids.push('salve','antidote','pill'); for(let i=0;i<3;i++) add('u',g([.4,.35,.2,.05])); }
+  else if(id==='city'){ ids.push('salve','antidote','pill'); add('u',g([.2,.4,.3,.1])); add('w',g([0,.4,.4,.2]),k); add('w',g([0,.3,.5,.2]),k); add('a',g([0,.4,.45,.15])); add('h',g([0,.5,.4,.1])); add('f',g([0,.5,.4,.1])); add('c',g([.2,.4,.3,.1])); add('c',g([.2,.4,.3,.1])); }
+  else { add('w',g([.6,.4]),k); add('w',g([.2,.5,.3]),k); add('w',g([0,.5,.5]),k); add('a',g([.5,.5])); add('a',g([.1,.5,.4])); add('h',g([.5,.4,.1])); add('f',g([.5,.4,.1])); }
+  return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
 const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'키 큰 수풀이 우거졌다. 헤치고 걷다 보면 뭔가 튀어나올 때가 있다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
 function renderMapCard(card,eye){ if(m.train) return renderSectCard(card,eye); const M=MAPV.M, s=MSPOT, acts=mapActs(), id=M.indoor?'home':(s?s.id:null), busy=m.auto&&!paused;
   const seas=`<div class="mh-seas" aria-label="올해의 철">${SEAN.map((n,i)=>`<span class="${i===m.sea?'on':i<m.sea?'done':''}">${n}</span>`).join('')}<label class="mh-rep"><input type="checkbox" id="mhRep" ${m.repOn?'checked':''}> 고른 일을 연말까지 되풀이</label></div>`;
@@ -7591,6 +7730,7 @@ const GFIND=[
   {w:3,t:'약초를 찾았다',c:'gold',fn:()=>gold(ri(1,3))},
   {w:2,t:'옛 동전을 주웠다',c:'gold',fn:()=>gold(ri(2,5))},
   {w:2,t:'새 둥지를 발견했다',c:'good',fn:()=>{ m.joy=cl(m.joy+2); }},
+  {w:.8,t:'누가 흘린 물건을 주웠다',c:'gold',when:()=>m.age>=8,fn:()=>{ dropItem(R()<.75?0:1); }},
   {w:2,t:'뱀이 튀어나왔다!',c:'bad',fn:()=>{ m.hp=Math.max(5,m.hp-4); }},
   {w:1.5,t:'벌집을 건드렸다!',c:'bad',fn:()=>{ m.hp=Math.max(5,m.hp-3); }},
   {w:1,t:'토끼를 쫓다 놓쳤다',c:'',fn:()=>{ m.joy=cl(m.joy+1); if(m.b.o==='hunter') gold(2); }},
@@ -7859,8 +7999,8 @@ function heroLook(o){ const a=m.age, s=seedOf(m.name), kid=a<13, old=a>=58, S=m.
   const hair=kid?(m.sex==='f'?'buns':'tuft'):m.sect==='shaolin'?'bald':m.sex==='f'?(a>=30?'bun':'long'):(m.f.leader||m.f.head?'crown':a>=40?'top':'pony');
   const L={sex:m.sex,size:kid?'kid':(hasT('might')?'big':'adult'),hair,hairC:old?'#e2dfd6':a>=46?'#6e686c':HAIRC[s%5],skin:SKIN[s%4],robe,weapon:w,beard:m.sex==='m'&&a>=60?'long':m.sex==='m'&&a>=38?'short':null};
   if(m.f.magong){ L.trim='#7a1e1e'; L.ol='#5a1414'; }
-  if(wi&&wi.t>=3) L.wc='#bff4ff'; else if(wi&&wi.t===2) L.wc='#fff1c0';
-  if(m.inv&&m.inv.a&&ITEMS[m.inv.a].t>=2) L.sash='#d9a441';
+  if(wi&&wi.t>=5) L.wc='#ffd0f0'; else if(wi&&wi.t===4) L.wc='#fff1c0'; else if(wi&&wi.t===3) L.wc='#e0ccff';
+  if(m.inv&&m.inv.a&&ITEMS[m.inv.a].t>=3) L.sash='#d9a441';
   return mkLook(Object.assign(L,o||{})); }
 function relAge(r){ if(r.age0!=null) return r.age0+m.age; const d=m.age-(r.a0||0);
   switch(r.role){ case '자식': return d; case '제자': return 12+d; case '사부': case '은사': return 48+d; case '사형': case '사저': return m.age+3; case '사매': case '사제': return m.age-2; default: return Math.max(8,m.age+(seedOf(r.name)%7)-3); } }
@@ -8007,12 +8147,12 @@ function renderRec(){
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
-  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' t'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` · ${TIER[it.t]}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
-  const b=inv.bag, cons=[['salve','쓰기'],['pill','쓰기'],['antidote',null]].filter(x=>b[x[0]]>0&&!ITEMS[x[0]].lore).map(([k,u])=>`<span class="mh-con">${icImg(itIcon(k),'sm')}${esc(ITEMS[k].n)} ×${b[k]}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${k}">${u}</button>`:''}</span>`).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
-  const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare t${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${TIER[it.t]} · ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
+  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
+  const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">쓰기</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare gr${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${grTag(it.t)} ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
-    <div class="mh-eq">${slot('w','무기')}${slot('a','갑옷')}${slot('c','장신구')}</div>
-    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti t${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
+    <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
+    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
     ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}`;
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
@@ -8075,7 +8215,7 @@ function renderTitle(card){
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>마을</b> 집, 일터, 무관, 뒷산 폭포, 장터를 오간다. 어딘가에 느낌표가 뜨면 거기 일이 생긴 것이다. 짙은 수풀을 밟고 지나가면 가끔 무언가를 만난다.</span></li>
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>천하</b> 열다섯이 넘으면 마을 어귀에서 천하 지도로 나간다. 갈 곳을 누르고 길을 떠나면, 가는 동안 철이 간다. 문파에 들었다면 사문에서 임무를 받아 공헌을 쌓을 수 있고, 가끔은 산문이 습격당한다.</span></li>
       <li>${icImg(iconUrl('sword',1),'sm')}<span><b>결투</b> 강공·수비·변초·절초. 상대의 낌새를 읽고 수를 낸다. 생사결에서 지면 죽을 수 있다.</span></li>
-      <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 범품에서 신병까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
+      <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 무기·갑옷·머리·신발·장신구. 등급은 C에서 SSR까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
       <li>${icImg(iconUrl('scroll',2),'sm')}<span><b>기연</b> 절벽 아래 동굴, 별똥 쇳덩이, 죽어 가는 노승. 드물게 온다.</span></li>
       <li>${icImg(iconUrl('jade',1),'sm')}<span><b>수련기</b> 무공을 배우면 사문 경내를 걸으며 삼 년을 보낸다. 동문과 정을 쌓고, 때로는 잃는다.</span></li>
     </ul>
@@ -8145,7 +8285,7 @@ function renderEnd(card){
       <p class="mh-bye">"${esc(epitaph())}"</p>
     </div>
     <div class="mh-sum"><div>무공<b>${m.f.martial?LV[m.lv]:'모름'}</b></div><div>재산<b>${topStr(pctNow())}</b></div><div>싸움<b>${m.wins||0}승 ${m.losses||0}패</b></div><div>벤 사람<b>${m.kills||0}명</b></div><div>기연<b>${m.giN||0}번</b></div><div>자식<b>${m.rels.filter(r=>r.role==='자식').length}명</b></div><div>행복<b>${Math.round(m.joy)}</b></div></div>
-    ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot t${it.t}">${icImg(itIcon(id))}<span><small>${TIER[it.t]}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
+    ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot gr${it.t}">${icImg(itIcon(id))}<span><small>${SLOTN[it.s]||''} ${grTag(it.t)}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
     ${Object.keys(m.answers).length?`<h3>대답들</h3><div class="mh-past">${Object.entries(MILES).filter(([a])=>m.answers[a]!=null).map(([a,q])=>`<div><span>${esc(q)}<br><b>${m.answers[a]?esc(m.answers[a]):'(대답하지 않았다)'}</b></span><span>${a}세</span></div>`).join('')}</div>`:''}
     <h3>같은 순간 태어난 네 사람</h3>
     <div class="mh-others">${m.others.map(otherCard).join('')}</div>

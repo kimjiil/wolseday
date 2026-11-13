@@ -169,8 +169,14 @@ function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home
   if(id==='market'||id==='apoth'||id==='smithy') add('물건을 본다','',()=>{ MSHOP=MSHOP?null:id; render(); },1);
   if(id==='apoth'&&m.hp<80&&m.gold>=12) add('진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); vfx(()=>heroFloat('건강 +18','good')); render(); save(); },1);
   return acts; }
-const SHOPS={market:['salve','antidote','sachet','talis','lvest'],apoth:['salve','antidote','pill'],smithy:null};
-function shopList(id){ let ids=SHOPS[id]; if(id==='city'){ const k=myKind(); ids=['salve','antidote','pill','talis','eyebead',wOf(1,k),wOf(2,k),'chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } if(!ids){ const k=myKind(); ids=[wOf(0,k),wOf(1,k),'lvest','chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
+// 가게 물건은 철마다 바뀐다. 같은 철에는 같은 것이 놓인다
+function shopList(id){ const rf=seeded(strHash((m.name||'')+id)+m.age*977+(m.sea||0)*31), k=myKind(), ids=[];
+  const add=(s,t,kk)=>{ const x=rndItem(s,t,kk,rf); if(x&&!ids.includes(x)) ids.push(x); }, g=a=>{ const r=rf(); let c=0; for(let i=0;i<a.length;i++){ c+=a[i]; if(r<c) return i; } return 0; };
+  if(id==='market'){ ids.push('salve','antidote'); add('u',g([.7,.3])); add('u',g([.7,.3])); add('c',g([.7,.3])); add('h',g([.7,.3])); add('f',g([.7,.3])); add('a',g([.6,.4])); }
+  else if(id==='apoth'){ ids.push('salve','antidote','pill'); for(let i=0;i<3;i++) add('u',g([.4,.35,.2,.05])); }
+  else if(id==='city'){ ids.push('salve','antidote','pill'); add('u',g([.2,.4,.3,.1])); add('w',g([0,.4,.4,.2]),k); add('w',g([0,.3,.5,.2]),k); add('a',g([0,.4,.45,.15])); add('h',g([0,.5,.4,.1])); add('f',g([0,.5,.4,.1])); add('c',g([.2,.4,.3,.1])); add('c',g([.2,.4,.3,.1])); }
+  else { add('w',g([.6,.4]),k); add('w',g([.2,.5,.3]),k); add('w',g([0,.5,.5]),k); add('a',g([.5,.5])); add('a',g([.1,.5,.4])); add('h',g([.5,.4,.1])); add('f',g([.5,.4,.1])); }
+  return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
 const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'키 큰 수풀이 우거졌다. 헤치고 걷다 보면 뭔가 튀어나올 때가 있다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
 function renderMapCard(card,eye){ if(m.train) return renderSectCard(card,eye); const M=MAPV.M, s=MSPOT, acts=mapActs(), id=M.indoor?'home':(s?s.id:null), busy=m.auto&&!paused;
   const seas=`<div class="mh-seas" aria-label="올해의 철">${SEAN.map((n,i)=>`<span class="${i===m.sea?'on':i<m.sea?'done':''}">${n}</span>`).join('')}<label class="mh-rep"><input type="checkbox" id="mhRep" ${m.repOn?'checked':''}> 고른 일을 연말까지 되풀이</label></div>`;
@@ -196,6 +202,7 @@ const GFIND=[
   {w:3,t:'약초를 찾았다',c:'gold',fn:()=>gold(ri(1,3))},
   {w:2,t:'옛 동전을 주웠다',c:'gold',fn:()=>gold(ri(2,5))},
   {w:2,t:'새 둥지를 발견했다',c:'good',fn:()=>{ m.joy=cl(m.joy+2); }},
+  {w:.8,t:'누가 흘린 물건을 주웠다',c:'gold',when:()=>m.age>=8,fn:()=>{ dropItem(R()<.75?0:1); }},
   {w:2,t:'뱀이 튀어나왔다!',c:'bad',fn:()=>{ m.hp=Math.max(5,m.hp-4); }},
   {w:1.5,t:'벌집을 건드렸다!',c:'bad',fn:()=>{ m.hp=Math.max(5,m.hp-3); }},
   {w:1,t:'토끼를 쫓다 놓쳤다',c:'',fn:()=>{ m.joy=cl(m.joy+1); if(m.b.o==='hunter') gold(2); }},

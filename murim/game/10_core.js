@@ -3,7 +3,7 @@ const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
 const MVER='1.2';
 const NOTES=[
-  ['1.2','2026-11-13',['등급 사건이 1000개가 됐다(C 450, B 300, A 150, S 70, SS 25, SSR 5)','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
+  ['1.2','2026-11-13',['등급 사건이 1000개가 됐다(C 450, B 300, A 150, S 70, SS 25, SSR 5)','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
 ];
@@ -189,7 +189,7 @@ const OR=id=>FAM.find(x=>x.id===id), TR=id=>TRAITS.find(x=>x.id===id);
 function fresh(b){
   const o=OR(b.o);
   const s={b, era:b.era, name:b.sur+b.given, sex:b.sex, age:0, hp:cl(82+ri(-8,8)+(b.trait==='weak'?-20:0)+(b.trait==='might'?8:0)), joy:62, bond:55, exp:0, lv:0, ng:0, gold:o.gold, hy:0, ak:o.ak||0, fame:0, sect:null, arts:[], rels:[], f:{...(o.f||{})}, log:[], q:[], used:{}, phase:'play', sim:0, kids:0, disc:0, sib:b.sib, scene:'village', alias:null, focus:null, answers:{}, auto:false,
-    inv:{w:null,a:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0,...(o.bag||{})},mat:0}, wins:0, losses:0, kills:0, spared:[], ep:{}};
+    inv:{w:null,a:null,h:null,f:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0,...(o.bag||{})},mat:0}, wins:0, losses:0, kills:0, spared:[], ep:{}};
   s.per={협:ri(-15,15)+(o.id==='bandit'?-12:0),담:ri(-15,15),정:ri(-15,15)};
   if(b.trait==='blood') s.f.bloodBody=1;
   if(o.art){ s.arts.push({n:o.art[0],p:o.art[1],k:o.art[2]}); s.f.martial=1; s.exp=3; }
@@ -198,7 +198,7 @@ function fresh(b){
   s.rels.push({role:'아버지',name:b.father.name,v:70,dead:b.father.dead?1:0,age0:b.father.age,sx:'m'},{role:'어머니',name:b.mother.name,v:75,dead:b.mother.dead?1:0,age0:b.mother.age,sx:'f'});
   return s;
 }
-const ST=k=>m.b.st[k]+(k==='charm'&&hasFx('charm')?1:0);
+const ST=k=>m.b.st[k]+eqSt(k);
 const bump=(k,n)=>{ m.b.st[k]=cl(m.b.st[k]+(n||1),1,10); };
 const hasT=t=>m.b.trait===t;
 const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법'&&a.k!=='안법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||m.arts.filter(a=>a.k==='안법')[0]||null;

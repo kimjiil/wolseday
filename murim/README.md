@@ -47,6 +47,23 @@ Q('B','v_boar',{a:[15,60],sea:[2,3]},'field','멧돼지가 밭을 헤집는다.'
 - S 이상은 사건이 열릴 때 화면이 번쩍이고 글씨가 뜬다(`evIntro`). 모양은 `design/murim.css` 의 `.mh-gr`, `.mh-call.gss`, `.mh-call.gssr`.
 - 새 묶음 파일을 만들면 `build.py` 의 GAME 목록에 이름을 넣는다.
 
+## 물건 (C · B · A · S · SS · SSR)
+
+`game/30_items.js` 가 틀이고(예전 물건 35가지 포함), 나머지는 `game/31_items_w1.js`(검·도), `32_items_w2.js`(권·암기), `33_items_arm.js`(갑옷·머리), `34_items_acc.js`(신발·장신구), `35_items_use.js`(소모품)에 한 줄로 적는다.
+
+```js
+IT('w','검','S','칠성검:14:c3r2|태아검:15:c4');      // 이름:공격:덧붙는 힘
+IT('a','','A','경번갑:5|은사 조끼:4:e3');             // 이름:방어:덧붙는 힘
+IT('c','','A','백옥 패:0:@dice|홍옥 반지:0:c3');      // 장신구는 주된 힘이 없다
+IU('A','인삼:hp30ng1|고수의 수련 일지:ex30');         // 이름:쓰면 얻는 것
+```
+
+- 덧붙는 힘 글자: `c` 회심% · `e` 회피% · `r` 읽기% · `q` 기 · `h` 기력 · `x` 수련% · `B W L M` 근골·오성·기연·매력 · `@dice @guard @calm @plague @poison` 장신구의 특수한 힘(글자 힘보다 뒤에 적는다)
+- **이름이 곧 이름표다.** 저장된 판이 이름으로 물건을 찾으니, 한 번 낸 이름은 바꾸지 않는다. 같은 이름은 등록되지 않고 `ITDUP` 에 쌓인다
+- 값은 등급에서 저절로 정해진다(`GV`, `GVU`). 가게 값은 그 1.25배, 되파는 값은 절반
+- 물건을 뽑는 곳: `rndItem(자리, 등급, 갈래)`, `dropItem(등급)`, `wOf(옛 등급)`, `shopList(가게)`. 사건의 `wt`·`ar`·`eq` 도 이걸 쓴다
+- 아이콘은 자리와 등급으로 정해진다(`design/60_icons.js` 의 `TIERCOL`, `hat`·`boot`·`ring`·`gourd`). 등급 색은 `design/murim.css` 의 `.gr0`~`.gr5`
+
 ## 시험
 
 `python3 murim/build.py --test 경로/test.html` 은 `index.html` 을 건드리지 않고 시험용 페이지를 만든다(`window.__ev` 로 안쪽 값을 볼 수 있다).

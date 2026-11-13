@@ -5,8 +5,8 @@ function heroLook(o){ const a=m.age, s=seedOf(m.name), kid=a<13, old=a>=58, S=m.
   const hair=kid?(m.sex==='f'?'buns':'tuft'):m.sect==='shaolin'?'bald':m.sex==='f'?(a>=30?'bun':'long'):(m.f.leader||m.f.head?'crown':a>=40?'top':'pony');
   const L={sex:m.sex,size:kid?'kid':(hasT('might')?'big':'adult'),hair,hairC:old?'#e2dfd6':a>=46?'#6e686c':HAIRC[s%5],skin:SKIN[s%4],robe,weapon:w,beard:m.sex==='m'&&a>=60?'long':m.sex==='m'&&a>=38?'short':null};
   if(m.f.magong){ L.trim='#7a1e1e'; L.ol='#5a1414'; }
-  if(wi&&wi.t>=3) L.wc='#bff4ff'; else if(wi&&wi.t===2) L.wc='#fff1c0';
-  if(m.inv&&m.inv.a&&ITEMS[m.inv.a].t>=2) L.sash='#d9a441';
+  if(wi&&wi.t>=5) L.wc='#ffd0f0'; else if(wi&&wi.t===4) L.wc='#fff1c0'; else if(wi&&wi.t===3) L.wc='#e0ccff';
+  if(m.inv&&m.inv.a&&ITEMS[m.inv.a].t>=3) L.sash='#d9a441';
   return mkLook(Object.assign(L,o||{})); }
 function relAge(r){ if(r.age0!=null) return r.age0+m.age; const d=m.age-(r.a0||0);
   switch(r.role){ case '자식': return d; case '제자': return 12+d; case '사부': case '은사': return 48+d; case '사형': case '사저': return m.age+3; case '사매': case '사제': return m.age-2; default: return Math.max(8,m.age+(seedOf(r.name)%7)-3); } }

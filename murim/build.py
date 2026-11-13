@@ -11,7 +11,7 @@ import os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 INDEX = os.path.join(HERE, '..', 'index.html')
 DESIGN = ['10_base', '20_props', '30_chars', '40_chib', '50_map', '60_icons']
-GAME = ['20_stage_engine', '21_map_engine', '22_mapdata', '23_cathay', '30_items', '40_duel', '50_life', '60_events_a', '61_events_b', '62_grade', '63_minor_1', '63_minor_2', '63_minor_3', '63_minor_4', '63_minor_5', '63_minor_6', '63_minor_7', '63_minor_8', '63_minor_9', '63_minor_10',
+GAME = ['20_stage_engine', '21_map_engine', '22_mapdata', '23_cathay', '30_items', '31_items_w1', '32_items_w2', '33_items_arm', '34_items_acc', '35_items_use', '40_duel', '50_life', '60_events_a', '61_events_b', '62_grade', '63_minor_1', '63_minor_2', '63_minor_3', '63_minor_4', '63_minor_5', '63_minor_6', '63_minor_7', '63_minor_8', '63_minor_9', '63_minor_10',
         '70_train', '71_episodes', '75_map', '76_world', '77_cathay', '78_sectlife', '80_stage', '81_ui', '90_boot']
 ORDER = ['game/10_core'] + ['design/' + n for n in DESIGN] + ['game/' + n for n in GAME]
 START = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung'

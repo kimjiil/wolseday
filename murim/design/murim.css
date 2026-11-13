@@ -344,3 +344,11 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-rare{grid-template-columns:auto minmax(0,1fr) auto;align-items:start;margin:6px 0;padding:8px 8px 8px 8px;background:var(--m-panel2)}
 .mh-rare em{display:block;font-style:normal;font-size:12px;line-height:1.5;color:var(--m-ink);margin-top:4px;border-top:1px dashed var(--m-line);padding-top:4px}
 .mh-rare b{font-size:14px}
+
+/* 물건 등급 색(행낭·알림) */
+.mh-slot.gr1,.mh-sti.gr1{border-left-color:#6f9a66}.mh-slot.gr2,.mh-sti.gr2{border-left-color:#7f95a3}.mh-slot.gr3,.mh-sti.gr3{border-left-color:#8a5ad0}.mh-slot.gr4,.mh-sti.gr4{border-left-color:var(--m-gold)}.mh-slot.gr5,.mh-sti.gr5{border-left-color:#e0589f}
+.mh-slot.gr3 b{color:#8a5ad0}.mh-slot.gr4 b{color:var(--m-gold)}.mh-slot.gr5 b{color:#c9418a}
+.mh-toastc.gr1{border-color:#86b07e}.mh-toastc.gr2{border-color:#93a9b6}.mh-toastc.gr3{border-color:#a884e0;box-shadow:0 0 0 1px #a884e0}.mh-toastc.gr4{border-color:#d9a441;box-shadow:0 0 0 1px #d9a441,0 0 14px rgba(217,164,65,.6)}.mh-toastc.gr5{border-color:#f08cc8;box-shadow:0 0 0 1px #f2c14e,0 0 18px rgba(240,140,200,.7)}
+.mh-slot small .mh-gr,.mh-sti small .mh-gr,.mh-con .mh-gr,.mh-toastc .mh-gr{font-size:10px;padding:0 4px;margin:0 2px;vertical-align:1px}
+.mh-con small{color:var(--m-muted);font-size:11px}
+.mh-cons{gap:4px 12px}

@@ -26,12 +26,12 @@ function renderRec(){
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
-  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' t'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` · ${TIER[it.t]}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
-  const b=inv.bag, cons=[['salve','쓰기'],['pill','쓰기'],['antidote',null]].filter(x=>b[x[0]]>0&&!ITEMS[x[0]].lore).map(([k,u])=>`<span class="mh-con">${icImg(itIcon(k),'sm')}${esc(ITEMS[k].n)} ×${b[k]}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${k}">${u}</button>`:''}</span>`).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
-  const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare t${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${TIER[it.t]} · ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
+  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
+  const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">쓰기</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare gr${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${grTag(it.t)} ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
-    <div class="mh-eq">${slot('w','무기')}${slot('a','갑옷')}${slot('c','장신구')}</div>
-    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti t${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
+    <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
+    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
     ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}`;
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
@@ -94,7 +94,7 @@ function renderTitle(card){
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>마을</b> 집, 일터, 무관, 뒷산 폭포, 장터를 오간다. 어딘가에 느낌표가 뜨면 거기 일이 생긴 것이다. 짙은 수풀을 밟고 지나가면 가끔 무언가를 만난다.</span></li>
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>천하</b> 열다섯이 넘으면 마을 어귀에서 천하 지도로 나간다. 갈 곳을 누르고 길을 떠나면, 가는 동안 철이 간다. 문파에 들었다면 사문에서 임무를 받아 공헌을 쌓을 수 있고, 가끔은 산문이 습격당한다.</span></li>
       <li>${icImg(iconUrl('sword',1),'sm')}<span><b>결투</b> 강공·수비·변초·절초. 상대의 낌새를 읽고 수를 낸다. 생사결에서 지면 죽을 수 있다.</span></li>
-      <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 범품에서 신병까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
+      <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 무기·갑옷·머리·신발·장신구. 등급은 C에서 SSR까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
       <li>${icImg(iconUrl('scroll',2),'sm')}<span><b>기연</b> 절벽 아래 동굴, 별똥 쇳덩이, 죽어 가는 노승. 드물게 온다.</span></li>
       <li>${icImg(iconUrl('jade',1),'sm')}<span><b>수련기</b> 무공을 배우면 사문 경내를 걸으며 삼 년을 보낸다. 동문과 정을 쌓고, 때로는 잃는다.</span></li>
     </ul>
@@ -164,7 +164,7 @@ function renderEnd(card){
       <p class="mh-bye">"${esc(epitaph())}"</p>
     </div>
     <div class="mh-sum"><div>무공<b>${m.f.martial?LV[m.lv]:'모름'}</b></div><div>재산<b>${topStr(pctNow())}</b></div><div>싸움<b>${m.wins||0}승 ${m.losses||0}패</b></div><div>벤 사람<b>${m.kills||0}명</b></div><div>기연<b>${m.giN||0}번</b></div><div>자식<b>${m.rels.filter(r=>r.role==='자식').length}명</b></div><div>행복<b>${Math.round(m.joy)}</b></div></div>
-    ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot t${it.t}">${icImg(itIcon(id))}<span><small>${TIER[it.t]}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
+    ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot gr${it.t}">${icImg(itIcon(id))}<span><small>${SLOTN[it.s]||''} ${grTag(it.t)}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
     ${Object.keys(m.answers).length?`<h3>대답들</h3><div class="mh-past">${Object.entries(MILES).filter(([a])=>m.answers[a]!=null).map(([a,q])=>`<div><span>${esc(q)}<br><b>${m.answers[a]?esc(m.answers[a]):'(대답하지 않았다)'}</b></span><span>${a}세</span></div>`).join('')}</div>`:''}
     <h3>같은 순간 태어난 네 사람</h3>
     <div class="mh-others">${m.others.map(otherCard).join('')}</div>

@@ -98,7 +98,7 @@ E('meteor',{min:10,max:60,once:1,w:.3,gi:1,st:()=>Sg('field',{time:'night',props
   {t:'불길하다, 흙으로 덮는다',go:()=>{ bump('luck'); return '덮고 나니 그 자리에서만 풀이 유난히 푸르게 자랐다.'; }}]});
 E('forgeGod',{gi:1,when:()=>m.inv.mat>0,st:()=>Sg('forge',{time:'night',props:[['anvil',84,{dy:8}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:m.f.smith?'':'늙은 대장장이'})],hero:{x:56}}),
   text:()=>m.f.smith?'천외운철을 화로에 넣었다. 수련기에 배운 망치질이 손에 남아 있다. 이 쇠로 무엇을 벼릴까.':'천외운철 소문을 들은 늙은 대장장이가 찾아왔다. "평생 한 번 두드려 보고 싶던 쇠요. 삯은 받지 않겠소. 무엇으로 벼리겠소?"',ch:()=>
-  [['검','hsword'],['도','rsaber'],['권','tglove'],['암기','sdart']].map(([k,id])=>({t:`${ITEMS[id].n}${jo(ITEMS[id].n,'으로','로')} 벼린다`,s:`${k} · 신병 · 공격 +${ITEMS[id].atk}`,go:()=>{ m.inv.mat--; give(id,{nolog:1}); log(`천외운철로 ${eul(ITEMS[id].n)} 벼렸다`,true); return {t:'이레 밤낮 망치 소리가 그치지 않았다. 마지막 담금질에 물이 한꺼번에 끓어올랐다.',tone:'good',cut:()=>{ flashA=.7; flashC='#bff4ff'; spark('hero','#bff4ff',20); }}; }}))
+  [['검','hsword'],['도','rsaber'],['권','tglove'],['암기','sdart']].map(([k,id])=>({t:`${ITEMS[id].n}${jo(ITEMS[id].n,'으로','로')} 벼린다`,s:`${k} · SS · 공격 +${ITEMS[id].atk}`,go:()=>{ m.inv.mat--; give(id,{nolog:1}); log(`천외운철로 ${eul(ITEMS[id].n)} 벼렸다`,true); return {t:'이레 밤낮 망치 소리가 그치지 않았다. 마지막 담금질에 물이 한꺼번에 끓어올랐다.',tone:'good',cut:()=>{ flashA=.7; flashC='#bff4ff'; spark('hero','#bff4ff',20); }}; }}))
   .concat([{t:'쇳덩이째 판다',go:()=>{ m.inv.mat--; gold(400); return '상단 행수가 400냥을 내놓았다. 뒤도 안 돌아보고 가져갔다.'; }},{t:'아직은 묻어 둔다',go:()=>{ m.q.push({age:m.age+ri(5,8),id:'forgeGod'}); return '쇠는 기다릴 줄 안다.'; }}])});
 E('oldTomb',{min:14,max:65,once:1,w:.8,gi:1,st:()=>Sg('tomb',{wx:'rain',hero:{x:70}}),
   text:()=>'폭우에 산비탈이 무너져 옛 무덤의 돌문이 드러났다. 문 위에 글이 새겨져 있다. "들어오는 자, 세 번 절하라."',ch:[
@@ -123,7 +123,7 @@ E('drunkBeggar',{min:15,max:60,once:1,w:.8,gi:1,st:()=>Sg('inn',{cast:[N('bg',LO
 
 /* ---------- 장터: 장비를 산다 ---------- */
 const buy=(id,price,n)=>({t:`${eul(ITEMS[id].n)}${n>1?` ${n}개`:''} 산다`,s:`${price}냥 · ${itDesc(ITEMS[id])}`,when:()=>m.gold>=price,go:()=>{ gold(-price); give(id,{n:n||1}); return {t:`${fmt(price)}냥을 치렀다.`,tone:'good'}; }});
-E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==='hunter'||m.b.o==='escort')&&(!m.inv.w||ITEMS[m.inv.w].t<2||!m.inv.a),st:()=>Sg('forge',{props:[['anvil',84,{dy:8}],['rack',150,{dy:6}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:'대장장이'})],hero:{x:54}}),
+E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==='hunter'||m.b.o==='escort')&&(!m.inv.w||ITEMS[m.inv.w].t<3||!m.inv.a),st:()=>Sg('forge',{props:[['anvil',84,{dy:8}],['rack',150,{dy:6}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:'대장장이'})],hero:{x:54}}),
   text:()=>'장터 대장간에 새로 벼린 물건이 걸렸다. 쇠 냄새가 좋다.',ch:()=>{ const d=m.f.smith?.8:1, k=myKind(), out=[];
     [wOf(0,k),wOf(1,k)].concat(m.gold>=200?[wOf(2,k)]:[]).forEach(id=>{ if(better(id,m.inv.w)) out.push(buy(id,Math.round(ITEMS[id].v*d))); });
     const ar=ARMORS[m.gold>=120?1:0]; if(better(ar,m.inv.a)) out.push(buy(ar,Math.round(ITEMS[ar].v*d)));

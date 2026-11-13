@@ -24,12 +24,12 @@ const WNONE={city:['저잣거리를 한 바퀴 돌았다. 별일은 없었다.',
 const WSEAS={
   wwork:()=>{ if(m.f.martial&&m.lv>=2){ gold(5+m.lv*2.2+ri(0,4)); addExp(gain()*.08); m.fame+=.3; m.joy-=.25; return pick(['표국 깃발 아래서 이웃 고을까지 짐수레를 지켰다.','표행을 따라 관도를 오갔다. 별일은 없었다.','밤길 표행에서 그림자 몇을 쫓아 보냈다.']); } gold(3+ST('body')*.3); m.joy-=.25; return pick(['읍성 나루에서 쌀섬을 날랐다.','장터에서 짐꾼 노릇을 했다.','객잔 마구간을 치우고 품삯을 받았다.']); },
   herb:()=>{ gold(3+ST('luck')*.5+ri(0,5)); if(R()<.18){ hurt(7,'벼랑에서 구름'); return '약초를 캐다 벼랑에서 미끄러졌다. 망태기는 건졌다.'; } if(m.f.med) m.hp+=2; return pick(['이슬 젖은 산비탈에서 약초를 캤다.','심마니 뒤를 밟아 좋은 자리를 알아냈다.','더덕과 하수오를 한 망태기 캤다.']); },
-  wvisit:()=>{ m.bond+=2.5; m.joy+=1.5; addExp(gain()*.12); return pick(['사문에 들러 사부께 절을 올렸다.','후배들의 초식을 봐 주었다.','사문 장경각에서 한 철을 보냈다.']); },
+  wvisit:()=>{ m.bond+=2.5; m.joy+=1.5; addExp(gain()*.12); return pick(['사문에 들러 사부께 절을 올렸다.','후배들의 초식을 봐 주었다.','사문 장경각에서 한 계절을 보냈다.']); },
   explore:o=>{ const bgs=WPOOL[o.pl]||[]; WGO=false; const pool=Object.values(EV).filter(e=>!e.wld&&e.min!==e.max&&evOK(e)&&evFresh(e)&&markable(e)&&!(m.mark&&m.mark.id===e.id)&&bgs.includes(evBg(e)));
     const e=pool.length&&R()<.6?pickGraded(pool):null; if(e){ m.wq=e.id; return WFOUND[o.pl]||'낯선 곳에 닿았다.'; }
     if(o.pl==='deep'){ m.hp+=1.5; if(m.f.martial) m.ng+=.05; } else if(o.pl==='city') m.joy+=1; else if(o.pl==='pass'){ if(R()<.3) gold(ri(1,4)); } else if(R()<.2) gold(ri(1,6));
-    return pick(WNONE[o.pl]||['하릴없이 한 철이 갔다.']); },
-  sectart:()=>{ const A=sectArtNext(); if(!A) return '장경각을 뒤졌지만 지금 익힐 만한 것이 없었다.'; learnArt(A.n); addExp(gain()*.15); log(`${SECTS[m.sect].n} 장경각에서 ${eul(A.n)} 익혔다`,A.g>=3); return pick([`장경각에서 한 철을 보내며 ${eul(A.n)} 익혔다.`,`사부가 장경각 열쇠를 내주었다. ${eul(A.n)} 손에 익을 때까지 나오지 않았다.`]); },
+    return pick(WNONE[o.pl]||['하릴없이 한 계절이 갔다.']); },
+  sectart:()=>{ const A=sectArtNext(); if(!A) return '장경각을 뒤졌지만 지금 익힐 만한 것이 없었다.'; learnArt(A.n); addExp(gain()*.15); log(`${SECTS[m.sect].n} 장경각에서 ${eul(A.n)} 익혔다`,A.g>=3); return pick([`장경각에서 한 계절을 보내며 ${eul(A.n)} 익혔다.`,`사부가 장경각 열쇠를 내주었다. ${eul(A.n)} 손에 익을 때까지 나오지 않았다.`]); },
   wev:o=>{ m.wq=o.ev; return {wBandit:'칼을 고쳐 메고 소굴로 올라갔다.',wSpar:'읍성 비무대 앞에 섰다.',wExam:'산문 앞 돌계단을 올랐다.'}[o.ev]||'길을 나섰다.'; }
 };
 const WSTAGE={
@@ -45,7 +45,7 @@ function wJoin(ok,pre){ const k=worldSect(), S=SECTS[k]; if(!ok) return {t:pre+'
 E('wBandit',{min:WAGE,max:95,wld:1,when:()=>WGO,st:()=>Sg('road',{cast:[N('chief',LOOK.chief(),122,{tag:'두목',emote:'anger',pose:'guard'})].concat(mob('bd',()=>LOOK.bandit(),[142,156],{pose:'guard'}))}),
   text:()=>'소굴 어귀에서 망을 보던 자가 휘파람을 불었다. 두목이 칼을 메고 나왔다. "제 발로 찾아온 놈은 오랜만이군."',ch:[
   {t:'칼을 뽑는다',when:()=>m.f.martial||!!m.inv.w,duel:()=>({foe:{name:'산채 두목',look:LOOK.chief(),pow:34+m.lv*5+ri(0,8),style:'bandit',mercy:.5,art:'녹림도법'},lethal:1,rob:.5,cause:'녹림도의 칼',loot:{g:[12,45],it:[['bsaber',.25],['salve',.5],['lvest',.2],['chain',.08]]},extras:mob('bd',()=>LOOK.bandit(),[170,184],{act:'cheer'})}),
-    go:(ok,res)=>{ if(ok){ m.hy+=3; m.fame+=2; return {t:res.killed?'두목이 쓰러졌다. 소굴은 하룻밤 사이에 비었다. 다음 철이면 또 누군가 들어앉을 것이다.':'두목이 칼을 버리고 무릎을 꿇었다. 산채 곳간을 털어 내려왔다.',tone:'good'}; } if(res.dead) return {t:'산채의 칼은 생각보다 많았다.',tone:'bad'}; return {t:res.fled?'숲으로 뛰어들어 겨우 따돌렸다.':'흠씬 두들겨 맞고 길 아래로 굴러 내려왔다.',tone:'bad'}; }},
+    go:(ok,res)=>{ if(ok){ m.hy+=3; m.fame+=2; return {t:res.killed?'두목이 쓰러졌다. 소굴은 하룻밤 사이에 비었다. 다음 계절이면 또 누군가 들어앉을 것이다.':'두목이 칼을 버리고 무릎을 꿇었다. 산채 곳간을 털어 내려왔다.',tone:'good'}; } if(res.dead) return {t:'산채의 칼은 생각보다 많았다.',tone:'bad'}; return {t:res.fled?'숲으로 뛰어들어 겨우 따돌렸다.':'흠씬 두들겨 맞고 길 아래로 굴러 내려왔다.',tone:'bad'}; }},
   {t:'통행세를 내고 물러난다',go:()=>{ gold(-Math.min(m.gold,8+m.gold*.2)); return {t:'두목은 은자를 세어 보더니 턱짓으로 길을 가리켰다.'}; }},
   {t:'말로 구슬려 본다',p:()=>.25+ST('charm')*.05,go:ok=>{ if(ok){ m.fame+=1; gold(6); return {t:'어느새 두목과 술잔을 나누고 있었다. 내려올 때는 노잣돈까지 받았다.',tone:'good'}; } hurt(10,'녹림도의 몽둥이'); return {t:'말이 끝나기도 전에 몽둥이가 날아왔다.',tone:'bad'}; }}]});
 E('wSpar',{min:WAGE,max:95,wld:1,when:()=>WGO,st:()=>Sg('arena',{cast:[N('c1',LOOK.swordsman(),124,{pose:'guard',tag:'도전자'}),N('c2',LOOK.merchant(),160,{tag:'물주'})]}),

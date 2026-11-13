@@ -25,7 +25,7 @@ function questReport(){ const q=m.quest; if(!q||!q.step||!mapMode()) return; con
   else { const g=ri(T.g[0],T.g[1]); gold(g); addExp(gain()*.25); m.bond+=1.5; log(`임무를 마치고 돌아왔다: ${T.n(q)}`); if(!m.headless) toast(`<b>임무 완수</b> 공헌 +${T.sc} · 은자 +${g}냥`,'t1',3000); addSc(T.sc); }
   sfx('ok'); render(); save(); }
 function questTick(){ const q=m.quest; if(!q) return; if(!m.sect){ m.quest=null; return; } if(m.age>q.due){ m.quest=null; addSc(-3); log('임무 기한을 넘겼다. 사문의 눈초리가 차갑다.'); } }
-WSEAS.quest=()=>{ const q=m.quest; if(!q) return '하릴없이 한 철이 갔다.'; const T=QT[q.k]; if(T.duel){ m.wq='wQuest'; return T.go; } q.step=1; if(R()<T.risk) m.wq='wAmbush'; return T.done(q); };
+WSEAS.quest=()=>{ const q=m.quest; if(!q) return '하릴없이 한 계절이 갔다.'; const T=QT[q.k]; if(T.duel){ m.wq='wQuest'; return T.go; } q.step=1; if(R()<T.risk) m.wq='wAmbush'; return T.done(q); };
 WSTAGE.quest=()=>Sg((m.quest&&QT[m.quest.k].bg)||'road',{hero:{x:70,act:'wander',xmin:40,xmax:120}});
 E('wQuest',{min:8,max:95,wld:1,when:()=>WGO&&!!m.quest,
   st:()=>{ const k=(m.quest||{}).k; return k==='spar'?Sg('arena',{cast:[N('c1',LOOK.swordsman(),124,{pose:'guard',tag:'상대'})]}):k==='spy'?Sg('inn',{time:'night',cast:[N('sp',LOOK.blackclad(),124,{pose:'guard',tag:'첩자'})]}):Sg('road',{cast:[N('chief',LOOK.chief(),122,{tag:'두목',pose:'guard'})].concat(mob('bd',()=>LOOK.bandit(),[142,156],{pose:'guard'}))}); },

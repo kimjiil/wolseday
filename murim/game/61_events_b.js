@@ -13,7 +13,7 @@ E('fever',{min:2,max:85,rep:7,w:1.1,st:()=>{ const mo=relOf('어머니'); return
   {t:'의원에게 간다',when:()=>m.gold>=20||m.age<12&&pctNow()>45,go:()=>{ gold(-20); m.hp=cl(m.hp+5); return {t:'의원이 침을 놓고 탕약을 지어 주었다. 열이 내렸다.',tone:'good'}; }},
   {t:'민간요법으로 버틴다',p:()=>.55+ST('body')*.03,go:ok=>{ if(ok){ hurt(8); return '찬 수건과 생강물로 버텼다. 겨우 열이 내렸다.'; } hurt(m.age<12?45:40,'열병'); return {t:'열이 쉽게 떨어지지 않았다.',tone:'bad'}; }},
   {t:'무당을 부른다',when:()=>m.gold>=5,go:()=>{ gold(-5); hurt(15,'열병'); return '굿을 했다. 열은 저 혼자 내렸다.'; }}]});
-E('matchmaker',{min:16,max:30,rep:4,w:1.6,when:()=>!m.spouse,st:()=>Sg('home',{cast:[N('mm',LOOK.matchmaker(),96,{tag:'중매쟁이',emote:'heart',pose:'point'})].concat(parents([150,166]))}),
+E('matchmaker',{min:16,max:30,rep:4,w:1.6,when:()=>!m.spouse&&!isMonk(),st:()=>Sg('home',{cast:[N('mm',LOOK.matchmaker(),96,{tag:'중매쟁이',emote:'heart',pose:'point'})].concat(parents([150,166]))}),
   text:()=>{ const f=pick(['자작농','상인','장인','소작농','객잔 주인']); m.f.mmName=rname(); m.f.mmFam=f; return `중매쟁이가 혼담을 들고 왔다. 상대는 이웃 고을 ${f} 집안의 ${m.f.mmName}.`; },ch:[
   {t:'혼담을 받아들인다',go:()=>{ const r=rel('배우자',m.f.mmName,60); m.spouse=r; m.joy+=6; m.bond+=10; gold(-Math.min(m.gold,15)); log(`${wa(r.name)} 혼인했다`,true); m.q.push({age:m.age+ri(1,3),id:'birth'}); return {t:'얼굴은 혼례날 처음 보았다. 생각보다 웃음이 많은 사람이었다.',tone:'good',st:Sg('wedding',{wx:'petal',cast:[N('sp',relLook(r,{robe:'#b8324a',blush:1}),90,{emote:'heart',tag:r.name})].concat(mob('g',i=>folk(i),[24,40,152,170],i=>({act:'cheer',face:i<2?1:-1}))),hero:{look:heroLook({robe:'#b8324a',weapon:null}),x:72}})}; }},
   {t:'아직 이르다며 거절한다',go:()=>{ m.joy+=1; return {t:'중매쟁이가 혀를 차며 돌아갔다.',cut:()=>{ emo('mm','anger'); leave('mm',1); }}; }}]});
@@ -29,7 +29,7 @@ E('parentCare',{min:20,max:60,once:1,w:1.2,when:()=>!!(relOf('아버지')||relOf
   text:()=>{ const p=relOf('어머니')||relOf('아버지'); return `${p.role}가 자리에 누웠다. 곁에서 돌보려면 한 해 벌이를 포기해야 한다.`; },ch:[
   {t:'곁에서 돌본다',go:()=>{ gold(-m.gold*.3); m.bond+=12; m.joy-=3; return {t:'밤마다 약을 달였다. 고맙다는 말을 처음 들었다.',tone:'good',cut:()=>{ emo('pa','heart'); }}; }},
   {t:'형제에게 맡기고 일한다',go:()=>{ gold(20); m.bond-=8; return {t:'돈은 모였다. 마음 한쪽이 계속 무거웠다.',cut:()=>{ leave('hero',1); }}; }}]});
-E('mateLove',{when:()=>!m.spouse,st:()=>Sg('mountain',{time:'dusk',wx:'petal',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,sect:m.sect,blush:1}),96,{tag:m.f.loveName,emote:'heart'})],hero:{x:70}}),
+E('mateLove',{when:()=>!m.spouse&&!isMonk(),st:()=>Sg('mountain',{time:'dusk',wx:'petal',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,sect:m.sect,blush:1}),96,{tag:m.f.loveName,emote:'heart'})],hero:{x:70}}),
   text:()=>`수련기를 같이 보낸 ${iga(m.f.loveName)} 찾아왔다. "하산하면 같이 강호를 걷자고 했잖아."`,ch:[
   {t:'손을 잡는다',go:()=>{ const r=rel('정인',m.f.loveName,85); m.q.push({age:m.age+ri(1,2),id:'wedding'}); log(`${wa(r.name)} 마음을 나눴다`,true); return {t:'산길을 나란히 내려갔다.',tone:'good',cut:()=>{ emo('hero','heart'); }}; }},
   {t:'갈 길이 다르다',go:()=>({t:'뒷모습이 오래 남았다.',cut:()=>{ emo('lv','tear'); leave('lv',1); }})}]});
@@ -98,7 +98,7 @@ E('meteor',{min:10,max:60,once:1,w:.3,gi:1,st:()=>Sg('field',{time:'night',props
   {t:'불길하다, 흙으로 덮는다',go:()=>{ bump('luck'); return '덮고 나니 그 자리에서만 풀이 유난히 푸르게 자랐다.'; }}]});
 E('forgeGod',{gi:1,when:()=>m.inv.mat>0,st:()=>Sg('forge',{time:'night',props:[['anvil',84,{dy:8}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:m.f.smith?'':'늙은 대장장이'})],hero:{x:56}}),
   text:()=>m.f.smith?'천외운철을 화로에 넣었다. 수련기에 배운 망치질이 손에 남아 있다. 이 쇠로 무엇을 벼릴까.':'천외운철 소문을 들은 늙은 대장장이가 찾아왔다. "평생 한 번 두드려 보고 싶던 쇠요. 삯은 받지 않겠소. 무엇으로 벼리겠소?"',ch:()=>
-  [['검','hsword'],['도','rsaber'],['권','tglove'],['암기','sdart']].map(([k,id])=>({t:`${ITEMS[id].n}${jo(ITEMS[id].n,'으로','로')} 벼린다`,s:`${k} · 신병 · 공격 +${ITEMS[id].atk}`,go:()=>{ m.inv.mat--; give(id,{nolog:1}); log(`천외운철로 ${eul(ITEMS[id].n)} 벼렸다`,true); return {t:'이레 밤낮 망치 소리가 그치지 않았다. 마지막 담금질에 물이 한꺼번에 끓어올랐다.',tone:'good',cut:()=>{ flashA=.7; flashC='#bff4ff'; spark('hero','#bff4ff',20); }}; }}))
+  [['검','hsword'],['도','rsaber'],['권','tglove'],['암기','sdart']].map(([k,id])=>({t:`${ITEMS[id].n}${jo(ITEMS[id].n,'으로','로')} 벼린다`,s:`${k} · SS · 공격 +${ITEMS[id].atk}`,go:()=>{ m.inv.mat--; give(id,{nolog:1}); log(`천외운철로 ${eul(ITEMS[id].n)} 벼렸다`,true); return {t:'이레 밤낮 망치 소리가 그치지 않았다. 마지막 담금질에 물이 한꺼번에 끓어올랐다.',tone:'good',cut:()=>{ flashA=.7; flashC='#bff4ff'; spark('hero','#bff4ff',20); }}; }}))
   .concat([{t:'쇳덩이째 판다',go:()=>{ m.inv.mat--; gold(400); return '상단 행수가 400냥을 내놓았다. 뒤도 안 돌아보고 가져갔다.'; }},{t:'아직은 묻어 둔다',go:()=>{ m.q.push({age:m.age+ri(5,8),id:'forgeGod'}); return '쇠는 기다릴 줄 안다.'; }}])});
 E('oldTomb',{min:14,max:65,once:1,w:.8,gi:1,st:()=>Sg('tomb',{wx:'rain',hero:{x:70}}),
   text:()=>'폭우에 산비탈이 무너져 옛 무덤의 돌문이 드러났다. 문 위에 글이 새겨져 있다. "들어오는 자, 세 번 절하라."',ch:[
@@ -123,14 +123,14 @@ E('drunkBeggar',{min:15,max:60,once:1,w:.8,gi:1,st:()=>Sg('inn',{cast:[N('bg',LO
 
 /* ---------- 장터: 장비를 산다 ---------- */
 const buy=(id,price,n)=>({t:`${eul(ITEMS[id].n)}${n>1?` ${n}개`:''} 산다`,s:`${price}냥 · ${itDesc(ITEMS[id])}`,when:()=>m.gold>=price,go:()=>{ gold(-price); give(id,{n:n||1}); return {t:`${fmt(price)}냥을 치렀다.`,tone:'good'}; }});
-E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==='hunter'||m.b.o==='escort')&&(!m.inv.w||ITEMS[m.inv.w].t<2||!m.inv.a),st:()=>Sg('forge',{props:[['anvil',84,{dy:8}],['rack',150,{dy:6}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:'대장장이'})],hero:{x:54}}),
+E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==='hunter'||m.b.o==='escort')&&(!m.inv.w||ITEMS[m.inv.w].t<3||!m.inv.a),st:()=>Sg('forge',{props:[['anvil',84,{dy:8}],['rack',150,{dy:6}]],cast:[N('sm',LOOK.smith({tool:'hammer'}),98,{act:'tool',tag:'대장장이'})],hero:{x:54}}),
   text:()=>'장터 대장간에 새로 벼린 물건이 걸렸다. 쇠 냄새가 좋다.',ch:()=>{ const d=m.f.smith?.8:1, k=myKind(), out=[];
     [wOf(0,k),wOf(1,k)].concat(m.gold>=200?[wOf(2,k)]:[]).forEach(id=>{ if(better(id,m.inv.w)) out.push(buy(id,Math.round(ITEMS[id].v*d))); });
     const ar=ARMORS[m.gold>=120?1:0]; if(better(ar,m.inv.a)) out.push(buy(ar,Math.round(ITEMS[ar].v*d)));
     if(m.f.smith) out.push({t:'화로를 빌려 내 손으로 벼린다',s:'10냥 · 수련기에 익힌 솜씨',when:()=>m.gold>=10&&better(wOf(1,k),m.inv.w),go:()=>{ gold(-10); give(wOf(1,k)); return {t:'사흘 밤을 두드렸다. 대장장이가 날을 만져 보고 고개를 끄덕였다.',tone:'good'}; }});
     out.push({t:'구경만 한다',go:()=>'날 선 것들을 한참 구경하다 나왔다.'}); return out.slice(-5); }});
 E('peddler',{min:12,max:75,rep:7,w:1,when:()=>m.gold>=12,st:()=>Sg('village',{cast:[N('pd',LOOK.peddler(),112,{tag:'방물장수',pose:'point'})]}),
-  text:()=>'등짐 진 방물장수가 마을에 들어왔다. 보따리에서 별것이 다 나온다.',ch:()=>{ const out=[], cs=['sachet','talis','jadep','beads','mirror'].filter(id=>m.inv.c!==id&&!m.inv.stash.includes(id)).sort(()=>R()-.5).slice(0,2);
+  text:()=>'등짐 진 방물장수가 마을에 들어왔다. 보따리에서 별것이 다 나온다.',ch:()=>{ const out=[], cs=['sachet','talis','jadep','beads','mirror','eyebead'].filter(id=>m.inv.c!==id&&!m.inv.stash.includes(id)).sort(()=>R()-.5).slice(0,2);
     cs.forEach(id=>out.push(buy(id,ITEMS[id].v))); out.push(buy('salve',16,2)); if(R()<.5) out.push(buy('antidote',20)); else if(R()<.4) out.push(buy('pill',120));
     out.push({t:'구경만 한다',go:()=>'방물장수는 다음 고을로 떠났다.'}); return out; }});
 

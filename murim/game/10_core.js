@@ -1,8 +1,9 @@
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
-const MVER='1.1';
+const MVER='1.2';
 const NOTES=[
+  ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','이름값을 못 하던 것을 고쳤다: 천운(주사위 8~20), 만독불침·피독주·해독단(독), 혈마체(마공), 염주(주화입마), 보법(위력만큼 회피)','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다','휴대폰 화면 정리: 장면 밑에 건강·행복·돈·내공 한 줄, 작은 글씨와 단추 키움, 알림은 위쪽에 작게, 천하 지도에서 떠나는 단추가 화면 아래에 붙음, 가로로 눕히면 장면 왼쪽·카드 오른쪽']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
 ];
@@ -11,6 +12,9 @@ const jo=(w,a,b)=>{w=String(w||'');const c=w.charCodeAt(w.length-1)-0xAC00;retur
 const eul=w=>w+jo(w,'을','를'), iga=w=>w+jo(w,'이','가'), eun=w=>w+jo(w,'은','는'), wa=w=>w+jo(w,'과','와'), ro=w=>w+jo(w,'으로','로');
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Math.round(n).toLocaleString('ko-KR');
+// 손가락으로 누르는 화면인가(자판 안내를 빼고, 좁은 화면용 배치를 쓴다)
+const mq=q=>{ try{ return matchMedia(q).matches; }catch(e){ return false; } };
+const isTouch=()=>mq('(pointer:coarse),(max-width:560px)'), isNarrow=()=>mq('(max-width:880px) and (orientation:portrait)');
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
 function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
@@ -22,7 +26,7 @@ const SURN=['이','왕','장','유','진','양','조','황','주','오','서','�
 const GIV=['무','진','천','운','호','명','성','백','청','소','혁','윤','결','도','준','하','린','설','연','화','영','월','현','강','휘','령','건','서'];
 const gname=()=>{let a=pick(GIV),b=pick(GIV);while(b===a)b=pick(GIV);return a+b;};
 const SECTS={
-  shaolin:{n:'소림사',side:'정',art:['나한권',12,'권'],inner:['역근공',10],robe:'#c98a2e',male:1,w0:'lglove'},
+  shaolin:{n:'소림사',side:'정',art:['나한권',12,'권'],inner:['역근공',10],robe:'#c98a2e',male:1,monk:1,w0:'lglove'},
   wudang:{n:'무당파',side:'정',art:['태극검',15,'검'],inner:['순양무극공',8],robe:'#4f7590',w0:'wsword'},
   huashan:{n:'화산파',side:'정',art:['매화검법',16,'검'],inner:['자하신공',7],robe:'#a8496a',w0:'wsword'},
   emei:{n:'아미파',side:'정',art:['아미검법',14,'검'],inner:['정심공',7],robe:'#6f8a62',female:1,w0:'wsword'},
@@ -155,12 +159,12 @@ const famAs=o=>o.as||o.n+' 집안';
 const homeName=()=>{ const o=m&&m.b&&FAM.find(f=>f.id===m.b.o); return (o&&o.hn)||'고향 마을'; };
 const TRAITS=[
   {id:'cold',n:'천음절맥',d:'타고난 오성이 뛰어나지만, 스무 살을 넘기기 어려운 체질',st:{wit:3}},
-  {id:'might',n:'천생신력',d:'어려서부터 장정 셋의 힘',st:{body:3}},
-  {id:'immune',n:'만독불침',d:'어떤 독도 통하지 않는 몸'},
+  {id:'might',n:'천생신력',d:'어려서부터 장정 셋의 힘. 근골 +3, 무위 +6',st:{body:3}},
+  {id:'immune',n:'만독불침',d:'어떤 독도 통하지 않는 몸. 독으로 건강이 깎이지 않는다'},
   {id:'bone',n:'무골',d:'무공이 남보다 빨리 몸에 붙는다'},
-  {id:'blood',n:'혈마체',d:'마공과 이상하리만치 잘 맞는 몸'},
-  {id:'weak',n:'병약',d:'잔병이 잦고 명이 짧다',st:{body:-2}},
-  {id:'star',n:'천운',d:'하늘이 유난히 돌보는 아이',st:{luck:3}}
+  {id:'blood',n:'혈마체',d:'마공과 이상하리만치 잘 맞는 몸. 마공을 익히면 수련이 빠르고 심마가 덜 쌓인다'},
+  {id:'weak',n:'병약',d:'잔병이 잦고 명이 짧다. 근골 −2, 건강이 더디게 돌아온다',st:{body:-2}},
+  {id:'star',n:'천운',d:'하늘이 유난히 돌보는 아이. 주사위가 8~20에서 나온다. 기연 +3, 낌새 읽기 +10%',st:{luck:3}}
 ];
 
 /* ---------- 상태 ---------- */
@@ -188,7 +192,7 @@ const OR=id=>FAM.find(x=>x.id===id), TR=id=>TRAITS.find(x=>x.id===id);
 function fresh(b){
   const o=OR(b.o);
   const s={b, era:b.era, name:b.sur+b.given, sex:b.sex, age:0, hp:cl(82+ri(-8,8)+(b.trait==='weak'?-20:0)+(b.trait==='might'?8:0)), joy:62, bond:55, exp:0, lv:0, ng:0, gold:o.gold, hy:0, ak:o.ak||0, fame:0, sect:null, arts:[], rels:[], f:{...(o.f||{})}, log:[], q:[], used:{}, phase:'play', sim:0, kids:0, disc:0, sib:b.sib, scene:'village', alias:null, focus:null, answers:{}, auto:false,
-    inv:{w:null,a:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0,...(o.bag||{})},mat:0}, wins:0, losses:0, kills:0, spared:[], ep:{}};
+    inv:{w:null,a:null,h:null,f:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0,...(o.bag||{})},mat:0}, wins:0, losses:0, kills:0, spared:[], ep:{}};
   s.per={협:ri(-15,15)+(o.id==='bandit'?-12:0),담:ri(-15,15),정:ri(-15,15)};
   if(b.trait==='blood') s.f.bloodBody=1;
   if(o.art){ s.arts.push({n:o.art[0],p:o.art[1],k:o.art[2]}); s.f.martial=1; s.exp=3; }
@@ -197,10 +201,10 @@ function fresh(b){
   s.rels.push({role:'아버지',name:b.father.name,v:70,dead:b.father.dead?1:0,age0:b.father.age,sx:'m'},{role:'어머니',name:b.mother.name,v:75,dead:b.mother.dead?1:0,age0:b.mother.age,sx:'f'});
   return s;
 }
-const ST=k=>m.b.st[k]+(k==='charm'&&hasFx('charm')?1:0);
+const ST=k=>m.b.st[k]+eqSt(k);
 const bump=(k,n)=>{ m.b.st[k]=cl(m.b.st[k]+(n||1),1,10); };
 const hasT=t=>m.b.trait===t;
-const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||null;
+const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법'&&a.k!=='안법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||m.arts.filter(a=>a.k==='안법')[0]||null;
 const ngStr=n=>{n=Math.round(n); if(n<60) return `${n}년`; const g=Math.floor(n/60), r=n%60; return `${g}갑자${r?` ${r}년`:''}`;};
 function log(t,big){ m.log.push({a:m.age,t,big:!!big}); }
 function addExp(n){ if(!m.f.martial) return; m.exp=Math.max(0,m.exp+n); }
@@ -222,7 +226,7 @@ function makeAlias(){
   const a=bestArt(), k=a?a.k:'권';
   const evil=m.ak>m.hy+10, hi=m.lv>=6;
   const Pf=evil?['혈영','흑풍','귀면','독안','적혈','음풍']:['청풍','일월','백운','태산','신룡','유성','설화','현천'];
-  const S=({검:hi?'검성':'검협',도:hi?'도왕':'도객',권:hi?'권왕':'신권',장:hi?'장왕':'신장',암기:'비영',보법:'신투',마공:hi?'마존':'마두'})[k]||'협객';
+  const S=({검:hi?'검성':'검협',도:hi?'도왕':'도객',권:hi?'권왕':'신권',장:hi?'장왕':'신장',암기:'비영',보법:'신투',안법:'신안',마공:hi?'마존':'마두'})[k]||'협객';
   const pre=m.alias?m.alias.slice(0,2):pick(Pf);
   return pre+(evil&&!/마/.test(S)?'마'+S.slice(-1):S);
 }

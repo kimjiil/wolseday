@@ -2,7 +2,7 @@
 const pips=v=>`<span class="mh-pips">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span>`;
 const meter=(lab,v,cls)=>`<div class="mh-meter"><span>${lab}</span><span class="mh-bar ${cls||''}"><i style="width:${cl(v)}%"></i></span><span class="mh-num">${Math.round(v)}</span></div>`;
 const ptImg=(L,cls)=>`<img class="mh-pt ${cls||''}" src="${portrait(L)}" alt="" width="28" height="28">`;
-const diceHtml=d=>d?`<p class="mh-dice">주사위 <b>${d.roll}</b>${d.b?` + 성격 ${d.b}`:''}${d.j?' + 옥패 1':''} · ${d.need} 이상이면 성공 · <b>${d.ok?'성공':'실패'}</b></p>`:'';
+const diceHtml=d=>d?`<p class="mh-dice">주사위 <b>${d.roll}</b>${d.lo>1?` <small>(천운: ${d.lo}~20에서 나온다)</small>`:''}${d.b?` + 성격 ${d.b}`:''}${d.j?' + 옥패 1':''} · ${d.need} 이상이면 성공 · <b>${d.ok?'성공':'실패'}</b></p>`:'';
 function resHtml(lr){ if(m.wait) return '<p class="mh-rolling">주사위가 구른다…</p>'; const rec=lr.pick?`<div class="mh-rec">${lr.q?`<p class="q">${esc(lr.q)}</p>`:''}<p class="p"><span>${lr.auto?'맡김':'고른 길'}</span>${esc(lr.pick)}</p></div>`:''; return `${rec}${diceHtml(lr.dice)}<p class="mh-res ${lr.tone||''}">${esc(lr.t)}</p>`; }
 function renderRec(){
   const S=m.sect&&SECTS[m.sect], o=OR(m.b.o), fa=m.rels.find(r=>r.role==='아버지'), mo=m.rels.find(r=>r.role==='어머니');
@@ -20,26 +20,32 @@ function renderRec(){
       ${m.wins||m.losses?`<dt>싸움</dt><dd class="mh-num">${m.wins||0}승 ${m.losses||0}패${m.kills?` · 벤 사람 ${m.kills}`:''}</dd>`:''}
       <dt>가족</dt><dd>아버지 ${fa.dead?'<s>':''}${esc(fa.name)}${fa.dead?'</s>':''} · 어머니 ${mo.dead?'<s>':''}${esc(mo.name)}${mo.dead?'</s>':''}${m.sib?` · 형제 ${m.sib}`:''}${m.spouse&&!m.spouse.dead?` · 배우자 ${esc(m.spouse.name)}`:''}${kids?` · 자식 ${kids}`:''}</dd>
     </dl>
-    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
+    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.k==='안법'?` · 낌새 읽기 +${a.p}%`:a.k==='보법'?` · 회피 +${Math.round(stepEv(a.p)*100)}%`:a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
     ${others.length?`<div><h4>인연</h4><div class="mh-rels">${others.map(r=>`<span class="mh-relc${r.role==='원수'?' m':''}">${ptImg(relLook(r))}<span><small>${esc(r.role)}</small>${esc(r.name)}</span></span>`).join('')}</div></div>`:''}
-    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}</dd></dl>`;
+    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd></dl>`;
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
-  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' t'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` · ${TIER[it.t]}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
-  const b=inv.bag, cons=[['salve','쓰기'],['pill','쓰기'],['antidote',null]].filter(x=>b[x[0]]>0).map(([k,u])=>`<span class="mh-con">${icImg(itIcon(k),'sm')}${esc(ITEMS[k].n)} ×${b[k]}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${k}">${u}</button>`:''}</span>`).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
+  const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">쓰기</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare gr${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${grTag(it.t)} ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
-    <div class="mh-eq">${slot('w','무기')}${slot('a','갑옷')}${slot('c','장신구')}</div>
-    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti t${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
-    ${cons?`<div class="mh-cons">${cons}</div>`:''}`;
+    <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
+    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
+    ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}${(m.f.medN||0)>=1?`<p class="mh-tol">내공 약을 여러 번 먹어 약효가 ${Math.round(medTol()*100)}%만 듣는다. 건강 회복은 그대로다.</p>`:''}`;
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
   el.querySelectorAll('[data-use]').forEach(x=>x.onclick=()=>{ useBag(x.dataset.use); render(); save(); });
 }
 function chBtn(c,i){ let odds='';
-  if(c.duel){ const h=duelHint(c); odds=`<span class="odds duel ${h.cls}">${icImg(iconUrl('sword',h.lethal?2:1),'sm')}${h.lethal?'생사결':'비무'} · ${h.lab}</span>`; }
-  else if(c.p){ const need=diceNeed(cl(c.p(),.03,.97)), b=perBonus(c.t).b+(hasFx('dice')?1:0); odds=`<span class="odds">${icImg(iconUrl('dice',0),'sm')}${need}+${b?` · 보정 +${b}`:''}</span>`; }
+  if(c.war) odds=`<span class="odds duel">${icImg(iconUrl('armor',2),'sm')}지휘전</span>`;
+  else if(c.duel){ const h=duelHint(c); odds=`<span class="odds duel ${h.cls}">${icImg(iconUrl('sword',h.lethal?2:1),'sm')}${h.lethal?'생사결':'비무'} · ${h.lab}</span>`; }
+  else if(c.p){ const need=diceNeed(cl(c.p(),.03,.97)), b=perBonus(c.t).b+(hasFx('dice')?1:0); odds=`<span class="odds">${icImg(iconUrl('dice',0),'sm')}${need}+${b?` · 보정 +${b}`:''}${hasT('star')?` · 천운 ${DICELO()}~20`:''}</span>`; }
   return `<button class="mh-ch" type="button" data-i="${i}" ${m.wait||(m.auto&&!paused)?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span>${odds}</button>`; }
+// 좁은 화면에서 장면 밑에 붙어 다니는 한 줄 신상. 누르면 신상 칸으로 내려간다
+function renderMini(playing){ const el=$m('mhMini'); if(!el) return; const show=playing&&m.phase==='play'; el.hidden=!show; if(!show) return;
+  el.innerHTML=`<span class="${m.hp<30?'low':''}"><i>건강</i><b>${Math.round(m.hp)}</b></span><span><i>행복</i><b>${Math.round(m.joy)}</b></span><span><b>${fmt(m.gold)}</b><i>냥</i></span>${m.f.martial?`<span><i>내공</i><b>${esc(ngStr(m.ng))}</b></span>`:''}<span class="go">신상 ▾</span>`;
+  el.setAttribute('aria-label','신상과 행낭으로 내려가기'); el.onclick=()=>{ const r=$m('mhRec'); if(r) r.scrollIntoView({behavior:'smooth',block:'start'}); }; }
 function renderCtl(){
   const el=$m('mhCtl'), show=m&&m.phase==='play'&&!DUEL; el.hidden=!show; if(!show) return;
   el.innerHTML=`<button class="mh-btn" type="button" id="mhPause">${paused?'▶ 계속':'❚❚ 멈춤'}</button>
@@ -73,7 +79,7 @@ function renderPlay(card){
   if(mapMode()) return inCathay()?renderCathayCard(card,eye):renderMapCard(card,eye);
   if(m.train) return renderTrain(card,eye);
   const ev=m.pending, mp=m.age>=MAPAGE;
-  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p><p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}</div></div>`:'';
+  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p>${evArt(ev)}<p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}${lockedOf(ev).map(x=>`<button class="mh-ch lock" type="button" disabled><span><span class="k" aria-hidden="true">×</span><span>${esc(x.t)}<small>은자 ${x.need}냥이 있어야 한다 · 지금 ${fmt(m.gold)}냥</small></span></span></button>`).join('')}</div></div>`:'';
   const last=m.lastRes&&m.lastRes.age===m.age&&!ev?resHtml(m.lastRes):'';
   const feed=m.log.slice(-5).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   const seg=`<div class="mh-focus"><span class="mh-lab">올해의 중심</span><div class="mh-seg" role="radiogroup" aria-label="올해의 중심">${FOCUS.map(f=>`<button type="button" role="radio" aria-checked="${m.focus===f.id&&m.age>=6}" data-focus="${f.id}" ${m.age<6?'disabled':''}>${f.n}</button>`).join('')}</div><span class="mh-hint">${m.age<6?'아직 어리다. 하루하루가 그냥 흘러간다.':esc((FOCUS.find(f=>f.id===m.focus)||FOCUS[1]).h)}</span></div>`;
@@ -84,19 +90,21 @@ function renderPlay(card){
 }
 function optGroup(key,label,opts){ return `<fieldset class="mh-opt"><legend>${label}</legend><div class="mh-seg">${opts.map(([v,t])=>`<button type="button" data-k="${key}" data-v="${v}" aria-pressed="${setup[key]===v}">${t}</button>`).join('')}</div><p class="mh-hint" id="mhHint-${key}"></p></fieldset>`; }
 const HINTS={era:{peace:ERAS.peace.d,chaos:ERAS.chaos.d,demon:ERAS.demon.d,any:'세 시대 중 하나에 무작위로 태어난다.'},basis:{births:'이 해에 아이가 많이 태어나는 집일수록 그 집에 태어나기 쉽다. 가난한 집일수록 아이가 많다.',pop:'지금 강호에 살아 있는 사람 수만큼의 확률. 살아남은 사람 쪽으로 조금 기운다.'},pace:{fast:'걷기 전 어린 시절은 한 해가 1.5초에 지나간다.',normal:'걷기 전 어린 시절은 한 해가 3초에 지나간다.',slow:'걷기 전 어린 시절은 한 해가 6초에 지나간다.'}};
+// 이미지 스킨: 사건 삽화 ev/<사건 이름표>, 등급 공통 삽화 ev/grade_<등급>
+const evArt=ev=>{ const u=skinUrl('ev/'+ev.id,gradeOf(ev)?'ev/grade_'+gradeOf(ev):'-'); return u?`<img class="mh-evimg" src="${esc(u)}" alt="">`:''; };
 function renderTitle(card){
   const saved=load(), past=lsGet('murim_past')||[];
-  card.innerHTML=`<div class="mh-eye"><span>武林初出</span></div>
+  card.innerHTML=`${skinUrl('title')?`<img class="mh-titleimg" src="${esc(skinUrl('title'))}" alt="">`:''}<div class="mh-eye"><span>武林初出</span></div>
     <h2>강호의 어느 해, 누군가로 태어난다.</h2>
     <p>어디서 누구의 아이로 태어날지는 고를 수 없다. 강호 사람 대부분은 무공을 모르는 농사꾼으로 태어나 농사꾼으로 죽는다. 다섯 살부터는 고향 마을을 직접 걸어 다닌다. 걷는 데는 시간이 들지 않고, 무엇을 할 때마다 한 철이 간다. 네 철이면 한 해다.</p>
-    <ul class="mh-how">
+    <details class="mh-howd" ${isNarrow()?'':'open'}><summary>어떻게 하나</summary><ul class="mh-how">
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>마을</b> 집, 일터, 무관, 뒷산 폭포, 장터를 오간다. 어딘가에 느낌표가 뜨면 거기 일이 생긴 것이다. 짙은 수풀을 밟고 지나가면 가끔 무언가를 만난다.</span></li>
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>천하</b> 열다섯이 넘으면 마을 어귀에서 천하 지도로 나간다. 갈 곳을 누르고 길을 떠나면, 가는 동안 철이 간다. 문파에 들었다면 사문에서 임무를 받아 공헌을 쌓을 수 있고, 가끔은 산문이 습격당한다.</span></li>
       <li>${icImg(iconUrl('sword',1),'sm')}<span><b>결투</b> 강공·수비·변초·절초. 상대의 낌새를 읽고 수를 낸다. 생사결에서 지면 죽을 수 있다.</span></li>
-      <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 범품에서 신병까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
+      <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 무기·갑옷·머리·신발·장신구. 등급은 C에서 SSR까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
       <li>${icImg(iconUrl('scroll',2),'sm')}<span><b>기연</b> 절벽 아래 동굴, 별똥 쇳덩이, 죽어 가는 노승. 드물게 온다.</span></li>
       <li>${icImg(iconUrl('jade',1),'sm')}<span><b>수련기</b> 무공을 배우면 사문 경내를 걸으며 삼 년을 보낸다. 동문과 정을 쌓고, 때로는 잃는다.</span></li>
-    </ul>
+    </ul></details>
     ${optGroup('era','태어날 시대',[['peace','태평성대'],['chaos','정사대전기'],['demon','마교 천하'],['any','아무 시대나']])}
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
     ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
@@ -163,7 +171,7 @@ function renderEnd(card){
       <p class="mh-bye">"${esc(epitaph())}"</p>
     </div>
     <div class="mh-sum"><div>무공<b>${m.f.martial?LV[m.lv]:'모름'}</b></div><div>재산<b>${topStr(pctNow())}</b></div><div>싸움<b>${m.wins||0}승 ${m.losses||0}패</b></div><div>벤 사람<b>${m.kills||0}명</b></div><div>기연<b>${m.giN||0}번</b></div><div>자식<b>${m.rels.filter(r=>r.role==='자식').length}명</b></div><div>행복<b>${Math.round(m.joy)}</b></div></div>
-    ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot t${it.t}">${icImg(itIcon(id))}<span><small>${TIER[it.t]}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
+    ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot gr${it.t}">${icImg(itIcon(id))}<span><small>${SLOTN[it.s]||''} ${grTag(it.t)}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
     ${Object.keys(m.answers).length?`<h3>대답들</h3><div class="mh-past">${Object.entries(MILES).filter(([a])=>m.answers[a]!=null).map(([a,q])=>`<div><span>${esc(q)}<br><b>${m.answers[a]?esc(m.answers[a]):'(대답하지 않았다)'}</b></span><span>${a}세</span></div>`).join('')}</div>`:''}
     <h3>같은 순간 태어난 네 사람</h3>
     <div class="mh-others">${m.others.map(otherCard).join('')}</div>
@@ -183,7 +191,10 @@ let RKEY='';
 // 좁은 화면에서는 장면이 위에 붙어 있어서, 사건이나 결과가 새로 뜨면 카드 머리가 가려지지 않게 끌어온다
 function render(){ render0(); try{ const card=$m('mhCard'), on=m&&m.phase==='play'; if(!card) return;
     const rk=!on?'':m.pending?'e:'+m.pending.id:m.tev?'t:'+String(m.tevText||'').slice(0,12):resWait()?'r:'+String(m.lastRes.t||'').slice(0,12):m.milestone?'m:'+m.milestone:'';
-    if(rk&&rk!==RKEY&&matchMedia('(max-width:880px) and (orientation:portrait)').matches){ const a=cv.parentNode.getBoundingClientRect(), b=card.getBoundingClientRect(); if(a.top<=2&&b.top<a.bottom-2) window.scrollBy({top:b.top-a.bottom-6,behavior:'smooth'}); }
+    if(rk&&rk!==RKEY&&isNarrow()){ const a=$m('mhMini').parentNode.getBoundingClientRect(), b=card.getBoundingClientRect();
+      if(a.top<=2){ if(b.top<a.bottom-2) window.scrollBy({top:b.top-a.bottom-6,behavior:'smooth'}); }
+      else { // 아직 맨 위에 있을 때: 고를 것이 화면 밖으로 넘치면 장면을 화면 맨 위에 붙이고 카드를 바로 밑에 댄다
+        const bs=[...card.querySelectorAll('.mh-ch,.mh-go,#mhNext')].filter(x=>x.offsetHeight), l=bs[bs.length-1]; if(l&&l.getBoundingClientRect().bottom>innerHeight-4) window.scrollBy({top:b.top-a.height-6,behavior:'smooth'}); } }
     RKEY=rk; }catch(e){} }
 function render0(){
   const card=$m('mhCard'); if(!card) return;
@@ -191,7 +202,7 @@ function render0(){
   $m('mhSide').hidden=!playing; $m('mhGrid').classList.toggle('solo',!playing);
   applyStage(stageFor()); postStage();
   $m('mhCapL').textContent=playing?`${m.name} · ${m.age}세`:m&&m.phase==='birth'?'응애':'무림초출';
-  renderCtl(); renderHud();
+  renderCtl(); renderHud(); renderMini(playing);
   if(playing){ renderRec(); renderBag(); }
   if(!m||!m.phase||m.phase==='title') renderTitle(card);
   else if(m.phase==='birth') renderBirth(card);

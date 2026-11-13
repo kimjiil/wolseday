@@ -5,8 +5,10 @@ const FOCUS=[
   {id:'family',n:'가족',h:'곁의 사람들과 시간을 보낸다. 행복과 인연이 오른다.'},
   {id:'rest',n:'양생',h:'몸을 돌본다. 건강이 오른다.'}
 ];
-function ageMul(){ return m.age<25?1.1:m.age<40?.9:m.age<55?.65:.4; }
-function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1); }
+// 반로환동을 이루면 몸은 서른 해 젊어진다(수련 효율, 건강, 수명, 겉모습). 사건의 나이 조건은 실제 나이를 쓴다
+const bodyAge=()=>m.age-(m.f&&m.f.rejuv?30:0);
+function ageMul(){ const a=bodyAge(); return a<25?1.1:a<40?.9:a<55?.65:.4; }
+function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.f.bloodBody&&m.f.magong?1.4:1)*(hasFx('calm')?1.05:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1)*(1+eq('xp')); }
 function autoFocus(){ return m.f.martial?pick(['train','train','work','family','rest']):pick(['work','work','work','family','train','rest']); }
 const WORK={tenant:['지주의 논에서 허리를 펴지 못했다.','추수의 절반을 지주에게 바쳤다.'],farmer:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.'],beggar:['동냥 그릇을 들고 장터를 돌았다.','부잣집 잔치 뒤에 남은 음식을 얻었다.'],artisan:['대장간에서 쇠를 두드렸다.','솥 수십 개를 고쳐 팔았다.'],merchant:['장부를 맞추느라 밤을 새웠다.','비단 값이 올라 재미를 봤다.'],hunter:['산에서 노루를 잡았다.','호랑이 발자국을 보고 사흘을 숨어 있었다.'],inn:['객잔에서 술상을 날랐다.','취객들의 무림 이야기를 들으며 그릇을 닦았다.'],bandit:['산채에서 길목을 지켰다.','지나가는 상단에게 통행세를 걷었다.'],escort:['표행을 따라 먼 길을 다녀왔다.','표국 마당에서 짐을 꾸렸다.'],doctor:['약방에서 환자를 돌봤다.','산에서 약초를 캤다.'],official:['관아에서 문서를 썼다.','세금 장부를 맞췄다.'],clan:['가문의 장원 일을 거들었다.','가문의 상단을 따라 다녀왔다.'],tangc:['독초밭을 돌봤다.','당가의 암기를 손질했다.'],blood:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.']};
 function doFocus(){
@@ -36,7 +38,9 @@ const Sg=(bg,o)=>Object.assign({bg},o||{});
 const N=(id,look,x,o)=>Object.assign({id,look,x,face:-1},o||{});
 function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(k==='demon'){ m.f.magong=1; m.ak+=20; } addExp(3); if(!relOf('사부')) rel('사부',null,65);
   if(S.w0&&!m.inv.w) give(S.w0,{quiet:1}); log(`${S.n}에 입문했다`,true); }
-const sectOK=k=>!(SECTS[k].male&&m.sex!=='m')&&!(SECTS[k].female&&m.sex!=='f');
+// 출가 문파(소림사)는 혼인한 사람을 받지 않고, 문도는 혼인하지 못한다. 환속하면 풀린다
+const isMonk=()=>!!(m&&m.sect&&SECTS[m.sect]&&SECTS[m.sect].monk);
+const sectOK=k=>!(SECTS[k].male&&m.sex!=='m')&&!(SECTS[k].female&&m.sex!=='f')&&!(SECTS[k].monk&&m.spouse&&!m.spouse.dead);
 function snap(){ return {gold:m.gold,hp:m.hp,ng:m.ng,fame:m.fame,hy:m.hy,ak:m.ak}; }
 function diffFx(b){ if(m.headless||m.dead) return; const d=[]; const g=Math.round(m.gold-b.gold); if(g) d.push([`${g>0?'+':'−'}${fmt(Math.abs(g))}냥`,g>0?'gold':'bad']);
   const h=Math.round(m.hp-b.hp); if(Math.abs(h)>=3) d.push([`건강 ${h>0?'+':'−'}${Math.abs(h)}`,h>0?'good':'bad']);
@@ -55,8 +59,10 @@ const PER={
 };
 function shiftPer(t){ m.per=m.per||{협:0,담:0,정:0}; for(const k in PER){ if(PER[k].pos.test(t)) m.per[k]=cl(m.per[k]+7,-100,100); if(PER[k].neg.test(t)) m.per[k]=cl(m.per[k]-7,-100,100); } }
 function perBonus(t){ let b=0; const P=m.per||{}; for(const k in PER){ const v=P[k]||0; if(v>=25&&PER[k].pos.test(t)) b+=Math.floor(v/25); if(v<=-25&&PER[k].neg.test(t)) b+=Math.floor(-v/25); } return {b:Math.min(3,b)}; }
+// 주사위는 1~20. 천운을 타고나면 낮은 눈이 나오지 않는다(8~20)
+const DICELO=()=>hasT('star')?8:1;
 const diceNeed=p=>cl(Math.round(21-20*p),2,20);
-function rollDice(c){ const p=cl(c.p(),.03,.97), need=diceNeed(p), b=perBonus(c.t).b, j=hasFx('dice')?1:0, roll=ri(1,20); return {roll,need,b,j,ok:roll===20||(roll!==1&&roll+b+j>=need)}; }
+function rollDice(c){ const p=cl(c.p(),.03,.97), need=diceNeed(p), b=perBonus(c.t).b, j=hasFx('dice')?1:0, lo=DICELO(), roll=ri(lo,20); return {roll,lo,need,b,j,ok:roll===20||(roll!==1&&roll+b+j>=need)}; }
 function perTags(){ const P=m.per||{}; return Object.keys(PER).filter(k=>Math.abs(P[k]||0)>=25).map(k=>P[k]>0?PER[k].hi:PER[k].lo); }
 
 /* ---------- 한 해 ---------- */
@@ -82,6 +88,8 @@ function ambient(){
   ];
   for(const [k,c,f] of AMB.sort(()=>R()-.5)){ if(c()){ log(f()); if(!m.yst) m.yst={k}; break; } }
 }
+// 내공이 수명을 늘려 주는 것은 열 갑자까지다
+const NGLIFE=600;
 function hazard(){
   const E0=ERAS[m.era], a=m.age, p=pctNow(), poor=p<30?1.4:p>80?.6:1;
   if(m.hp<=0) return m.deathCause||'병';
@@ -90,7 +98,7 @@ function hazard(){
   if(p<25&&R()<E0.famine*.15) return '기근';
   let h;
   if(a<10) h=E0.child*(a<=1?.3:a<=5?.06:.02)*poor*(hasT('weak')?1.5:1);
-  else { h=.004+.0025*Math.pow(2,(a-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+m.ng/80); }
+  else { h=.004+.0025*Math.pow(2,(bodyAge()-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); if(hasT('weak')) h*=1.3; }
   if(R()<h) return a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(['폐병','열병','이질','종기','학질','중풍']);
   return null;
 }
@@ -106,13 +114,19 @@ function pickBig(){
   const chance=m.age<10?.14:m.age<15?.25:(m.f.martial?.44:.32);
   if(R()>chance) return pickMinor();
   const pool=Object.values(EV).filter(e=>!e.minor&&e.min!==e.max&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)&&!(!e.once&&!e.rep&&m.used[e.id]!=null));
-  if(!pool.length) return null;
+  // 나이가 들면 큰 사건과 기연이 바닥난다. 모자란 몫은 등급 사건으로 채워서, 한 해에 생기는 일과 기연의 수가 젊을 때와 같게 한다
+  if(m.age>=15&&!pool.some(e=>e.gi)&&R()<GIKEEP){ const e=pickGraded(minorPool(),3); if(e){ m.used[e.id]=m.age; return e; } }
+  if(!pool.length){ const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e||null; }
   const lk=.3+ST('luck')*.07;
   const e=wpick(pool,x=>(x.w||1)*(x.once?1.2:1)*(x.gi?lk:1)); m.used[e.id]=m.age; return e;
 }
 // 등급 사건: 큰 사건이 없는 해에 따로 굴린다. 등급부터 정하고 그 안에서 고른다
-function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const pool=Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)); const e=pickGraded(pool); if(e) m.used[e.id]=m.age; return e; }
+const GIKEEP=.12;   // 큰 사건 가운데 기연이 차지하던 몫
+const minorPool=()=>Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep));
+function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e; }
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
+// 돈이 모자라서 못 고르는 선택지: 숨기지 않고 흐리게 보여 준다(무엇이 있었는지는 알 수 있게)
+function lockedOf(ev){ const all=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch, out=[]; for(const x of all){ if(!x.when||x.when()) continue; const g=/m\.gold>=(\d+)/.exec(String(x.when)); if(g&&m.gold<+g[1]) out.push({t:x.t,need:+g[1]}); } return out; }
 function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
 // 맡겨 두었을 때의 승률을 재서 맞춘 어림식: 힘의 비, 지금 건강, 버티기·조력·연전을 본다
@@ -126,10 +140,11 @@ function tick(mp){
   if(mp) baseEcon(); else { if(m.age===6&&!m.focus) m.focus=m.f.martial?'train':'work'; if(m.auto&&m.age>=6&&m.age%5===0) m.focus=autoFocus(); doFocus(); }
   ambient();
   m.joy=cl(m.joy+(55-m.joy)*.08); m.bond=cl(m.bond+(40-m.bond)*.04);
-  m.hp=cl(m.age<45?m.hp+3:m.hp-(m.age-45)*.12,0,100);
+  m.hp=cl(bodyAge()<45?m.hp+(hasT('weak')?1.5:3):m.hp-(bodyAge()-45)*.12*(hasT('weak')?1.3:1),0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
-  if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=5; log('아껴 둔 소환단을 삼켰다.'); }
-  if(m.f.magong) m.sim+=hasFx('calm')?2:4;
+  else if(m.hp<30&&m.hp>0) autoHeal();
+  if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=ngMed(5); log('아껴 둔 소환단을 삼켰다.'); }
+  if(m.f.magong) m.sim+=(hasFx('calm')?2:4)*(m.f.bloodBody?.5:1);   // 혈마체는 심마가 절반만 쌓인다
   if(m.sect&&m.ak>m.hy+25&&SECTS[m.sect].side==='정'){ log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
   lvCheck();
   if(!m.alias&&m.fame>=30){ m.alias=makeAlias(); log(`강호가 '${m.alias}'라 부르기 시작했다`,true); const al=m.alias; vfx(()=>{ callout(al,'alias',1800); sfx('gong'); }); }
@@ -143,6 +158,7 @@ function tick(mp){
 function resolve(i,auto){
   const ev=m.pending; if(!ev||DUEL||m.wait) return; const c=choicesOf(ev)[i]; if(!c) return;
   shiftPer(c.t);
+  if(c.war){ startWar(c.war(),(res,stage)=>{ finishResolve(ev,c,res.win,null,res,auto,stage); if(!m.headless){ acc=0; render(); save(); } }); return; }
   if(c.duel){ const sp=duelSpecOf(c); startDuel(sp,(res,stage)=>{ finishResolve(ev,c,res.win,null,res,auto,stage); if(!m.headless){ if(!m.dead) checkTrain(); acc=0; render(); save(); } }); return; }
   const d=c.p?rollDice(c):null; finishResolve(ev,c,d?d.ok:null,d,null,auto,null);
 }
@@ -171,7 +187,7 @@ function simulate(b){
   while(!m.dead&&g++<140){ tick(); if(m.dead) break; if(m.pending) autoResolve(); if(m.dead) break; checkTrain(); let k=0; while(m.train&&!m.dead&&k++<90) autoTrainStep(); }
   const big=m.log.filter(x=>x.big&&!/태어났다|세상을 떠났다|눈을 감았다|구름을 타고/.test(x.t));
   const w=m.inv.w?ITEMS[m.inv.w]:null;
-  const out={name:m.name,sex:m.sex,reg:b.reg,o:b.o,P:b.P,age:m.age,cause:m.deathCause,lv:m.lv,martial:!!m.f.martial,alias:m.alias,sect:m.sect,kids:m.kids,spouse:!!m.spouse,wins:m.wins||0,kills:m.kills||0,wn:w&&w.t>=1?w.n:null,hi:big.length?big[big.length-1].t:null,log:m.log.map(x=>({a:x.a,t:x.t,big:x.big}))};
+  const out={name:m.name,sex:m.sex,reg:b.reg,o:b.o,P:b.P,age:m.age,cause:m.deathCause,lv:m.lv,martial:!!m.f.martial,alias:m.alias,sect:m.sect,kids:m.kids,spouse:!!m.spouse,wins:m.wins||0,kills:m.kills||0,wn:w&&w.t>=2?w.n:null,hi:big.length?big[big.length-1].t:null,log:m.log.map(x=>({a:x.a,t:x.t,big:x.big}))};
   m=keep; return out;
 }
 function finalize(){
@@ -200,7 +216,8 @@ function save(){ if(!m||!m.b||m.phase==='end'||m.headless) return;
 function load(){ const r=lsGet('murim_run'); return r&&r.b&&r.others&&(r.phase==='play'||r.phase==='farewell')?r:null; }
 function rehydrate(r){ m=r;
   // 예전 판에서 이어 온 삶에는 행낭이 없다
-  if(!m.inv) m.inv={w:null,a:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0},mat:0};
+  if(!m.inv) m.inv={w:null,a:null,h:null,f:null,c:null,stash:[],bag:{salve:0,pill:0,antidote:0},mat:0};
+  SLOTS.forEach(s=>{ if(m.inv[s]&&!ITEMS[m.inv[s]]) m.inv[s]=null; if(m.inv[s]===undefined) m.inv[s]=null; }); if(m.inv.stash) m.inv.stash=m.inv.stash.filter(id=>ITEMS[id]); if(m.inv.bag) for(const k in m.inv.bag) if(!ITEMS[k]) delete m.inv.bag[k];
   m.inv.bag=Object.assign({salve:0,pill:0,antidote:0},m.inv.bag||{}); m.inv.stash=m.inv.stash||[]; m.ep=m.ep||{}; m.spared=m.spared||[]; m.per=m.per||{협:0,담:0,정:0};
   m.rels.forEach(x=>{ if(!x.sx) x.sx=SEXROLE[x.role]||(x.role==='배우자'||x.role==='정인'?(m.sex==='m'?'f':'m'):(seedOf(x.name)%2?'m':'f')); if(x.a0==null&&x.age0==null) x.a0=Math.max(0,m.age-5); });
   if(m.mates) m.mates.forEach((x,i)=>{ if(!x.sx) x.sx=SEXROLE[x.role]||(i===2?m.sex:'m'); });

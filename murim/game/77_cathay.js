@@ -67,11 +67,11 @@ function cathayAuto(){ const s=curSite();
   const near=nearSites(4).filter(x=>x.id!=='home'); if(near.length&&cathGo(pick(near).id)) return; if(acts.length) wpick(acts,a=>a.w).fn(); else doSeason('idle'); }
 /* ---- 화면 ---- */
 function cathBg(sea){ if(CBG&&CBG.sea===sea&&CBG.ver===SKINVER) return; const M=cath(), el=$m('mhCbg'), o=el.getContext('2d'), sc=el.width/(M.w*TS); o.imageSmoothingEnabled=true;
+  const sk=skinImg('map/cathay_'+SEAK[sea],'map/cathay'); if(sk){ skinDraw(o,sk,0,0,el.width,el.height); M._gc=null; M._gk=null; CBG={sea,ver:SKINVER}; return; }
   const gc=drawGround(M,sea); o.drawImage(gc,0,0,el.width,el.height);
   const list=M.objs.map(ob=>({y:(ob.y+ob.h)*TS,ob})).sort((a,b)=>a.y-b.y);
   for(const it of list){ const ob=it.ob, d=OBJ[ob.k], s=objSprite(ob,sea,0), bx=(ob.x+ob.w/2)*TS, by=(ob.y+ob.h)*TS; if(ob.k==='house') o.drawImage(s,(bx-s.width/2)*sc,(by-s.height)*sc,s.width*sc,s.height*sc); else o.drawImage(s,(bx-d.ax)*sc,(by-d.ay-4)*sc,s.width*sc,s.height*sc); }
   M._gc=null; M._gk=null; CBG={sea,ver:SKINVER}; }
-let SKINVER=0;
 function cathayShow(){ const box=cv.parentNode; let el=$m('mhCathay');
   if(!el){ el=document.createElement('div'); el.id='mhCathay'; el.className='mh-cathay'; el.innerHTML='<div class="mh-cw" id="mhCw"><canvas class="bg" id="mhCbg" width="1536" height="1152"></canvas><div id="mhCreg" aria-hidden="true"></div><div id="mhCmk"></div><canvas id="mhChero" class="mh-chero" width="120" height="80" aria-hidden="true"></canvas></div>'; box.insertBefore(el,cv.nextSibling);
     $m('mhCreg').innerHTML=CREG.map(r=>`<span style="left:${r[2]/KW*100}%;top:${r[3]/KH*100}%">${r[1]}</span>`).join('');

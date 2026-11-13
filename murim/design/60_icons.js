@@ -1,5 +1,6 @@
 /* ==== murim:gfx-icons — 장비·물건 아이콘 그림 ==== */
-const TIERCOL=[['#aab3b8','#7a8388','#8a6a4a'],['#dfe9ee','#93a9b6','#3f6fae'],['#fff1c0','#d1ab5c','#b8321f'],['#d6fbff','#67cfe8','#8a4fe0']];
+// 등급 색: C · B · A · S · SS · SSR
+const TIERCOL=[['#aab3b8','#7a8388','#8a6a4a'],['#cfe6c8','#86b07e','#4f7a4a'],['#dfe9ee','#93a9b6','#3f6fae'],['#ead9ff','#a884e0','#5a3aa0'],['#fff1c0','#d1ab5c','#b8321f'],['#ffe0f4','#f08cc8','#f2c14e']];
 const ICON={
   sword(c){ P(7,1,1,1,c[0]); for(let y=2;y<9;y++){ P(6,y,1,1,c[0]); P(7,y,1,1,c[1]); } P(4,9,6,1,c[2]); P(6,10,2,2,'#3a3440'); P(6,12,2,1,c[2]); },
   saber(c){ for(let y=1;y<9;y++){ const x=y<3?8:y<6?7:6; P(x,y,2,1,c[0]); P(x+2,y,1,1,c[1]); } P(4,9,7,1,c[2]); P(6,10,2,3,'#5a4636'); },
@@ -11,6 +12,12 @@ const ICON={
   beads(){ for(let i=0;i<10;i++){ const a=i/10*6.283; P(6+Math.cos(a)*4.4,6+Math.sin(a)*4.4,2,2,i%3?'#7d5a3a':'#a8805a'); } },
   sachet(){ P(5,2,4,1,'#b8321f'); P(4,3,6,2,'#c0788a'); P(3,5,8,6,'#c0788a'); P(4,11,6,1,'#9a5a6a'); P(6,6,2,2,'#f4d070'); },
   talis(){ P(4,1,6,12,'#f0d878'); P(5,3,4,1,'#b8321f'); P(6,4,2,5,'#b8321f'); P(5,9,4,1,'#b8321f'); },
+  eye(c){ disc(7,7,5,c[1]); P(3,6,8,3,'#f4f1e6'); P(4,5,6,1,'#f4f1e6'); P(4,9,6,1,'#f4f1e6'); disc(7,7,2,c[0]); P(7,7,1,1,'#14161c'); P(6,6,1,1,'#ffffff'); },
+  bottle(){ P(6,0,2,1,'#7d5a3a'); P(6,1,2,3,'#cfe8c0'); P(5,4,4,1,'#9fd08a'); P(4,5,6,8,'#4fae5a'); P(5,6,1,5,'#b8f0a0'); P(4,12,6,1,'#2f7a3c'); P(6,8,3,3,'#f0e8c8'); P(7,9,1,1,'#b8321f'); },
+  hat(c){ P(4,3,6,4,c[1]); P(3,6,8,2,c[0]); P(2,8,10,1,c[1]); P(6,2,2,1,c[2]); P(5,4,4,1,c[0]); },
+  boot(c){ P(4,2,4,7,c[1]); P(4,2,4,1,c[0]); P(4,9,8,3,c[1]); P(4,11,8,1,c[2]); P(9,9,3,1,c[0]); P(5,4,1,4,c[0]); },
+  ring(c){ disc(7,8,4,c[1]); disc(7,8,2,'#22202a'); P(6,2,3,3,c[2]); P(7,3,1,1,'#ffffff'); P(5,6,1,1,c[0]); },
+  gourd(c){ P(6,1,2,2,'#7d5a3a'); disc(7,5,2,c[1]); disc(7,10,4,c[1]); P(5,8,1,3,c[0]); P(6,7,3,1,c[2]); },
   pearl(){ disc(7,7,4,'#6a4fae'); disc(7,7,3,'#8f74d8'); P(5,5,2,2,'#e8dcff'); },
   fan(){ for(let i=0;i<7;i++){ const a=-2.75+i*.39; line(7,11,7+Math.cos(a)*7,11+Math.sin(a)*7,i%2?'#f6f6f0':'#cfd6d9'); } P(6,11,3,2,'#b8321f'); },
   jar(){ P(5,2,4,1,'#7d5a3a'); P(4,3,6,2,'#e9e2c8'); P(3,5,8,7,'#e9e2c8'); P(4,7,6,3,'#b8321f'); P(3,11,8,1,'#cbc0a2'); },
@@ -24,4 +31,4 @@ const ICON={
 };
 const _ic=new Map();
 function iconUrl(kind,t){ t=t||0; const key=kind+t; let u=_ic.get(key); if(u) return u; const c=document.createElement('canvas'); c.width=14; c.height=14; const keep=cx; cx=c.getContext('2d');
-  try{ (ICON[kind]||ICON.coin)(TIERCOL[t]); }finally{ cx=keep; } if(kind!=='empty') outline(c,'#22202a'); u=c.toDataURL(); _ic.set(key,u); return u; }
+  try{ (ICON[kind]||ICON.coin)(TIERCOL[Math.min(5,t)]); }finally{ cx=keep; } if(kind!=='empty') outline(c,'#22202a'); u=c.toDataURL(); _ic.set(key,u); return u; }

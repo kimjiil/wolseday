@@ -27,5 +27,7 @@ $m('mhHub').onclick=()=>{ paused=true; if(m&&m.phase==='play') renderCtl(); loca
 $m('mhVer').textContent='v'+MVER;
 $m('mhNotes').innerHTML=`<b>바뀐 점</b>`+NOTES.map(n=>`<div class="mh-note"><span>v${n[0]} · ${n[1]}</span><ul>${n[2].map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');
 $m('mhVer').onclick=()=>{ const n=$m('mhNotes'); n.hidden=!n.hidden; $m('mhVer').setAttribute('aria-expanded',String(!n.hidden)); };
+// 스킨 이미지가 읽히면 화면을 한 번 다시 그린다
+function skinLoaded(){ if(!$m('murimApp').hidden) render(); }
 window.__murimRender=()=>{ render(); };
 render(); requestAnimationFrame(frame); requestAnimationFrame(loop);

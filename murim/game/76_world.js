@@ -3,7 +3,7 @@ const WAGE=15;
 let WGO=false;
 const joinable=s=>!!(s&&s.type==='sect'&&s.sect&&SECTS[s.sect]&&SECTS[s.sect].side!=='마');
 const worldSect=()=>{ const s=inCathay()?curSite():null; return (s&&s.sect&&SECTS[s.sect]&&s.sect)||m.sect||regOf(m.b.reg).sect||'huashan'; };
-const sectOpen=()=>{ const S=SECTS[worldSect()]; return !(S.male&&m.b.sex!=='m')&&!(S.female&&m.b.sex!=='f'); };
+const sectOpen=()=>{ const S=SECTS[worldSect()]; return !(S.male&&m.b.sex!=='m')&&!(S.female&&m.b.sex!=='f')&&!(S.monk&&m.spouse&&!m.spouse.dead); };
 const canLeave=()=>m.age>=WAGE||!!(m.f.martial&&m.f.trainDone);
 function leaveVillage(){ if(!canLeave()) return; const h=homeTile(); m.map={id:'cathay',x:h.x,y:h.y,dir:'d'}; m.ai=null; CT=null; CSEL=null; sfx('ok'); render(); save(); }
 function enterVillage(){ m.map={id:'vil',x:21,y:28,dir:'u'}; m.ai=null; CT=null; CSEL=null; sfx('ok'); render(); save(); }

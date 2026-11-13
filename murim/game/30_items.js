@@ -28,7 +28,7 @@ const ITEMS={
   silk:{n:'천잠보의',s:'a',def:13,t:4,v:900},
   mirror:{n:'호심경',s:'c',fx:'guard',t:2,v:90,d:'목숨이 끊길 일격을 한 번 대신 받고 깨진다'},
   jadep:{n:'평안옥패',s:'c',fx:'dice',t:2,v:80,d:'주사위에 +1'},
-  beads:{n:'백팔염주',s:'c',fx:'calm',t:2,v:70,d:'심마가 절반만 쌓인다'},
+  beads:{n:'백팔염주',s:'c',fx:'calm',t:2,v:70,d:'심마와 주화입마가 덜 온다. 수련 +5%'},
   sachet:{n:'향낭',s:'c',fx:'charm',t:0,v:15,st:{charm:1}},
   talis:{n:'벽사부',s:'c',fx:'plague',t:0,v:12,d:'역병이 비켜 간다'},
   pearl:{n:'피독주',s:'c',fx:'poison',t:3,v:280,d:'독이 통하지 않는다'},
@@ -49,7 +49,7 @@ for(const k in ITEMS) ITEMS[k].id=k;
    이름이 곧 이름표라, 한 번 낸 이름은 바꾸지 않는다(저장된 판이 그 이름으로 물건을 찾는다) */
 const strHash=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
 const GV=[6,25,90,300,900,3000], GVU=[3,10,35,110,380,1500], OST={B:'body',W:'wit',L:'luck',M:'charm'}, OKEY={c:['cr',.01],e:['ev',.01],r:['rd',.01],q:['qi',1],h:['hp',1],x:['xp',.01]};
-const FXD={guard:'목숨이 끊길 일격을 한 번 대신 받고 깨진다',dice:'주사위에 +1',calm:'심마가 절반만 쌓인다',plague:'역병이 비켜 간다',poison:'독이 통하지 않는다'};
+const FXD={guard:'목숨이 끊길 일격을 한 번 대신 받고 깨진다',dice:'주사위에 +1',calm:'심마와 주화입마가 덜 온다. 수련 +5%',plague:'역병이 비켜 간다',poison:'독이 통하지 않는다'};
 let ITDUP=[]; const ITNAMES=new Set(Object.values(ITEMS).map(x=>x.n));
 function IT(s,k,g,list){ const t=TIER.indexOf(g); list.split('|').forEach(row=>{ const p=row.trim().split(':'), n=p[0]; if(!n) return; if(ITEMS[n]||ITNAMES.has(n)){ ITDUP.push(n); return; } ITNAMES.add(n);
   const it={id:n,n,s,t,v:Math.round(GV[t]*(.8+.4*(strHash(n)%100)/100))}, main=+p[1]||0; if(s==='w'){ it.k=k; it.atk=main; } else if(main) it.def=main;
@@ -79,7 +79,10 @@ const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],
 // 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
 const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법';
 const eyeArt=()=>m.arts.reduce((v,a)=>a.k==='안법'&&a.p>v?a.p:v,0);
-const readBonus=()=>eyeArt()/100+eq('rd')-(m.f.deaf?.1:0);
+const readBonus=()=>eyeArt()/100+eq('rd')-(m.f.deaf?.1:0)+(hasT('star')?.1:0);
+// 보법은 위력이 높을수록 잘 피한다(가장 높은 것 하나)
+const stepEv=p=>.06+p*.005;
+const stepArt=()=>m.arts.reduce((v,a)=>a.k==='보법'&&stepEv(a.p)>v?stepEv(a.p):v,0);
 const pc=v=>Math.round(v*100);
 function useText(u){ const p=[]; if(u.hp) p.push(`건강 +${u.hp}`); if(u.ng) p.push(`내공 +${u.ng}년`); if(u.joy) p.push(`행복 +${u.joy}`); if(u.ex) p.push(`수련 +${u.ex}%`); if(u.st) for(const k in u.st) p.push(`${STATN[k]} +${u.st[k]}`); return p.join(' · '); }
 function itDesc(it){ if(it.s==='u') return it.use&&!it.d?useText(it.use):(it.d||''); const p=[]; if(it.s==='w') p.push(`${it.k} · 공격 +${it.atk}`); if(it.def) p.push(`방어 +${it.def}`); if(it.d) p.push(it.d);
@@ -91,7 +94,7 @@ function artWith(a,w){ const match=w&&(WMATCH[a.k]||[]).includes(w.k); return a.
 function combat(wid){ const id=wid===undefined?(m.inv&&m.inv.w):wid, w=id?ITEMS[id]:null; let art=null, pw=w?w.atk*.5:0;
   for(const a of m.arts){ if(PASSIVE(a.k)) continue; const v=artWith(a,w); if(!art||v>pw){ pw=v; art=a; } }
   return {art,w,pw}; }
-const power=()=>LVP[m.lv]+combat().pw+m.ng*.35+ST('body')*1.2+(m.f.magong?6:0);
+const power=()=>LVP[m.lv]+combat().pw+m.ng*.35+ST('body')*1.2+(m.f.magong?(m.f.bloodBody?12:6):0)+(hasT('might')?6:0);
 const fightP=e=>1/(1+Math.exp(-(power()-e)/9));
 // 내 무공 갈래에 맞는 무기 종류
 function myKind(){ const a=combat(null).art; const k=a?(WMATCH[a.k]||[])[0]:null; return k||'검'; }
@@ -120,7 +123,7 @@ function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
   if(k==='pill'){ b.pill--; const g=ngMed(5); m.ng+=g; m.hp=cl(m.hp+30); vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); }); lvCheck(); return true; }
   // 압생투강주: 내공 +10년. 30%로 주화입마(건강 −25), 그 가운데 절반은 귀를 잃는다(낌새 읽기 −10%)
   if(k==='absinthe'){ b.absinthe--; const g=ngMed(10); if(!m.f.martial) learn('취몽심법',0,'내공',g); else m.ng+=g; m.f.absN=(m.f.absN||0)+1; vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); });
-    if(R()<.3){ m.hp=Math.max(1,m.hp-25); m.joy=cl(m.joy-8); const ear=!m.f.deaf&&R()<.5; if(ear) m.f.deaf=1;
+    if(R()<(hasFx('calm')?.15:.3)){ m.hp=Math.max(1,m.hp-25); m.joy=cl(m.joy-8); const ear=!m.f.deaf&&R()<.5; if(ear) m.f.deaf=1;
       log(ear?'압생투강주를 마시고 주화입마에 들었다. 정신을 차려 보니 한쪽 귀가 없었다':'압생투강주를 마시고 주화입마에 들었다',true);
       vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
     else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
@@ -147,5 +150,5 @@ const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width=
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
-function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
+function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:k==='보법'?`회피 +${Math.round(stepEv(p)*100)}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':'#bfe8ff',12); }

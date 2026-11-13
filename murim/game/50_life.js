@@ -8,7 +8,7 @@ const FOCUS=[
 // 반로환동을 이루면 몸은 서른 해 젊어진다(수련 효율, 건강, 수명, 겉모습). 사건의 나이 조건은 실제 나이를 쓴다
 const bodyAge=()=>m.age-(m.f&&m.f.rejuv?30:0);
 function ageMul(){ const a=bodyAge(); return a<25?1.1:a<40?.9:a<55?.65:.4; }
-function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1)*(1+eq('xp')); }
+function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.f.bloodBody&&m.f.magong?1.4:1)*(hasFx('calm')?1.05:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1)*(1+eq('xp')); }
 function autoFocus(){ return m.f.martial?pick(['train','train','work','family','rest']):pick(['work','work','work','family','train','rest']); }
 const WORK={tenant:['지주의 논에서 허리를 펴지 못했다.','추수의 절반을 지주에게 바쳤다.'],farmer:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.'],beggar:['동냥 그릇을 들고 장터를 돌았다.','부잣집 잔치 뒤에 남은 음식을 얻었다.'],artisan:['대장간에서 쇠를 두드렸다.','솥 수십 개를 고쳐 팔았다.'],merchant:['장부를 맞추느라 밤을 새웠다.','비단 값이 올라 재미를 봤다.'],hunter:['산에서 노루를 잡았다.','호랑이 발자국을 보고 사흘을 숨어 있었다.'],inn:['객잔에서 술상을 날랐다.','취객들의 무림 이야기를 들으며 그릇을 닦았다.'],bandit:['산채에서 길목을 지켰다.','지나가는 상단에게 통행세를 걷었다.'],escort:['표행을 따라 먼 길을 다녀왔다.','표국 마당에서 짐을 꾸렸다.'],doctor:['약방에서 환자를 돌봤다.','산에서 약초를 캤다.'],official:['관아에서 문서를 썼다.','세금 장부를 맞췄다.'],clan:['가문의 장원 일을 거들었다.','가문의 상단을 따라 다녀왔다.'],tangc:['독초밭을 돌봤다.','당가의 암기를 손질했다.'],blood:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.']};
 function doFocus(){
@@ -59,8 +59,10 @@ const PER={
 };
 function shiftPer(t){ m.per=m.per||{협:0,담:0,정:0}; for(const k in PER){ if(PER[k].pos.test(t)) m.per[k]=cl(m.per[k]+7,-100,100); if(PER[k].neg.test(t)) m.per[k]=cl(m.per[k]-7,-100,100); } }
 function perBonus(t){ let b=0; const P=m.per||{}; for(const k in PER){ const v=P[k]||0; if(v>=25&&PER[k].pos.test(t)) b+=Math.floor(v/25); if(v<=-25&&PER[k].neg.test(t)) b+=Math.floor(-v/25); } return {b:Math.min(3,b)}; }
+// 주사위는 1~20. 천운을 타고나면 낮은 눈이 나오지 않는다(8~20)
+const DICELO=()=>hasT('star')?8:1;
 const diceNeed=p=>cl(Math.round(21-20*p),2,20);
-function rollDice(c){ const p=cl(c.p(),.03,.97), need=diceNeed(p), b=perBonus(c.t).b, j=hasFx('dice')?1:0, roll=ri(1,20); return {roll,need,b,j,ok:roll===20||(roll!==1&&roll+b+j>=need)}; }
+function rollDice(c){ const p=cl(c.p(),.03,.97), need=diceNeed(p), b=perBonus(c.t).b, j=hasFx('dice')?1:0, lo=DICELO(), roll=ri(lo,20); return {roll,lo,need,b,j,ok:roll===20||(roll!==1&&roll+b+j>=need)}; }
 function perTags(){ const P=m.per||{}; return Object.keys(PER).filter(k=>Math.abs(P[k]||0)>=25).map(k=>P[k]>0?PER[k].hi:PER[k].lo); }
 
 /* ---------- 한 해 ---------- */
@@ -96,7 +98,7 @@ function hazard(){
   if(p<25&&R()<E0.famine*.15) return '기근';
   let h;
   if(a<10) h=E0.child*(a<=1?.3:a<=5?.06:.02)*poor*(hasT('weak')?1.5:1);
-  else { h=.004+.0025*Math.pow(2,(bodyAge()-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); }
+  else { h=.004+.0025*Math.pow(2,(bodyAge()-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); if(hasT('weak')) h*=1.3; }
   if(R()<h) return a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(['폐병','열병','이질','종기','학질','중풍']);
   return null;
 }
@@ -136,11 +138,11 @@ function tick(mp){
   if(mp) baseEcon(); else { if(m.age===6&&!m.focus) m.focus=m.f.martial?'train':'work'; if(m.auto&&m.age>=6&&m.age%5===0) m.focus=autoFocus(); doFocus(); }
   ambient();
   m.joy=cl(m.joy+(55-m.joy)*.08); m.bond=cl(m.bond+(40-m.bond)*.04);
-  m.hp=cl(bodyAge()<45?m.hp+3:m.hp-(bodyAge()-45)*.12,0,100);
+  m.hp=cl(bodyAge()<45?m.hp+(hasT('weak')?1.5:3):m.hp-(bodyAge()-45)*.12*(hasT('weak')?1.3:1),0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
   else if(m.hp<30&&m.hp>0) autoHeal();
   if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=ngMed(5); log('아껴 둔 소환단을 삼켰다.'); }
-  if(m.f.magong) m.sim+=hasFx('calm')?2:4;
+  if(m.f.magong) m.sim+=(hasFx('calm')?2:4)*(m.f.bloodBody?.5:1);   // 혈마체는 심마가 절반만 쌓인다
   if(m.sect&&m.ak>m.hy+25&&SECTS[m.sect].side==='정'){ log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
   lvCheck();
   if(!m.alias&&m.fame>=30){ m.alias=makeAlias(); log(`강호가 '${m.alias}'라 부르기 시작했다`,true); const al=m.alias; vfx(()=>{ callout(al,'alias',1800); sfx('gong'); }); }

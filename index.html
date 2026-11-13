@@ -3323,7 +3323,7 @@ const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
 const MVER='1.2';
 const NOTES=[
-  ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
+  ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','이름값을 못 하던 것을 고쳤다: 천운(주사위 8~20), 만독불침·피독주·해독단(독), 혈마체(마공), 염주(주화입마), 보법(위력만큼 회피)','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
 ];
@@ -3476,12 +3476,12 @@ const famAs=o=>o.as||o.n+' 집안';
 const homeName=()=>{ const o=m&&m.b&&FAM.find(f=>f.id===m.b.o); return (o&&o.hn)||'고향 마을'; };
 const TRAITS=[
   {id:'cold',n:'천음절맥',d:'타고난 오성이 뛰어나지만, 스무 살을 넘기기 어려운 체질',st:{wit:3}},
-  {id:'might',n:'천생신력',d:'어려서부터 장정 셋의 힘',st:{body:3}},
-  {id:'immune',n:'만독불침',d:'어떤 독도 통하지 않는 몸'},
+  {id:'might',n:'천생신력',d:'어려서부터 장정 셋의 힘. 근골 +3, 무위 +6',st:{body:3}},
+  {id:'immune',n:'만독불침',d:'어떤 독도 통하지 않는 몸. 독으로 건강이 깎이지 않는다'},
   {id:'bone',n:'무골',d:'무공이 남보다 빨리 몸에 붙는다'},
-  {id:'blood',n:'혈마체',d:'마공과 이상하리만치 잘 맞는 몸'},
-  {id:'weak',n:'병약',d:'잔병이 잦고 명이 짧다',st:{body:-2}},
-  {id:'star',n:'천운',d:'하늘이 유난히 돌보는 아이',st:{luck:3}}
+  {id:'blood',n:'혈마체',d:'마공과 이상하리만치 잘 맞는 몸. 마공을 익히면 수련이 빠르고 심마가 덜 쌓인다'},
+  {id:'weak',n:'병약',d:'잔병이 잦고 명이 짧다. 근골 −2, 건강이 더디게 돌아온다',st:{body:-2}},
+  {id:'star',n:'천운',d:'하늘이 유난히 돌보는 아이. 주사위가 8~20에서 나온다. 기연 +3, 낌새 읽기 +10%',st:{luck:3}}
 ];
 
 /* ---------- 상태 ---------- */
@@ -4693,9 +4693,9 @@ function drawWeather(st,layer){ let wx=st.wx; const out=SKYTER[st.ter];
 }
 const SKYTER={plain:1,hills:1,court:1,road:1,peak:1,waste:1};
 let DICE=null;
-function showDice(d,x){ if(!d) return; DICE={val:1,final:d.roll,ok:d.ok,t:0,roll:RED?0:26,x:x||0,need:d.need,b:d.b}; }
+function showDice(d,x){ if(!d) return; DICE={val:1,final:d.roll,lo:d.lo||1,ok:d.ok,t:0,roll:RED?0:26,x:x||0,need:d.need,b:d.b}; }
 function drawDice(){ const D=DICE; if(!D) return; D.t++; const rolling=D.t<D.roll; const h=SC&&SC.actors.find(a=>a.id==='hero'); const bx=rnd((h?h.x:70)+16+D.x), by0=rnd((h?h.y:GY+8)-40);
-  if(rolling&&D.t%2===0) D.val=1+Math.floor(hsh(D.t*7.3)*20); if(!rolling) D.val=D.final;
+  if(rolling&&D.t%2===0) D.val=D.lo+Math.floor(hsh(D.t*7.3)*(21-D.lo)); if(!rolling) D.val=D.final;
   const by=by0-(rolling?rnd(Math.abs(Math.sin(D.t*.45))*7):0), st=rolling?0:D.ok?1:2;
   const c=st===1?'#3f9a7a':st===2?'#c0392b':'#ece5cf', d=dk(c,.35), l=lt(c,.4);
   P(bx+3,by,7,1,d); P(bx+1,by+1,11,1,d); P(bx,by+2,13,9,d); P(bx+1,by+11,11,1,d); P(bx+3,by+12,7,1,d);
@@ -5069,7 +5069,7 @@ const ITEMS={
   silk:{n:'천잠보의',s:'a',def:13,t:4,v:900},
   mirror:{n:'호심경',s:'c',fx:'guard',t:2,v:90,d:'목숨이 끊길 일격을 한 번 대신 받고 깨진다'},
   jadep:{n:'평안옥패',s:'c',fx:'dice',t:2,v:80,d:'주사위에 +1'},
-  beads:{n:'백팔염주',s:'c',fx:'calm',t:2,v:70,d:'심마가 절반만 쌓인다'},
+  beads:{n:'백팔염주',s:'c',fx:'calm',t:2,v:70,d:'심마와 주화입마가 덜 온다. 수련 +5%'},
   sachet:{n:'향낭',s:'c',fx:'charm',t:0,v:15,st:{charm:1}},
   talis:{n:'벽사부',s:'c',fx:'plague',t:0,v:12,d:'역병이 비켜 간다'},
   pearl:{n:'피독주',s:'c',fx:'poison',t:3,v:280,d:'독이 통하지 않는다'},
@@ -5090,7 +5090,7 @@ for(const k in ITEMS) ITEMS[k].id=k;
    이름이 곧 이름표라, 한 번 낸 이름은 바꾸지 않는다(저장된 판이 그 이름으로 물건을 찾는다) */
 const strHash=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
 const GV=[6,25,90,300,900,3000], GVU=[3,10,35,110,380,1500], OST={B:'body',W:'wit',L:'luck',M:'charm'}, OKEY={c:['cr',.01],e:['ev',.01],r:['rd',.01],q:['qi',1],h:['hp',1],x:['xp',.01]};
-const FXD={guard:'목숨이 끊길 일격을 한 번 대신 받고 깨진다',dice:'주사위에 +1',calm:'심마가 절반만 쌓인다',plague:'역병이 비켜 간다',poison:'독이 통하지 않는다'};
+const FXD={guard:'목숨이 끊길 일격을 한 번 대신 받고 깨진다',dice:'주사위에 +1',calm:'심마와 주화입마가 덜 온다. 수련 +5%',plague:'역병이 비켜 간다',poison:'독이 통하지 않는다'};
 let ITDUP=[]; const ITNAMES=new Set(Object.values(ITEMS).map(x=>x.n));
 function IT(s,k,g,list){ const t=TIER.indexOf(g); list.split('|').forEach(row=>{ const p=row.trim().split(':'), n=p[0]; if(!n) return; if(ITEMS[n]||ITNAMES.has(n)){ ITDUP.push(n); return; } ITNAMES.add(n);
   const it={id:n,n,s,t,v:Math.round(GV[t]*(.8+.4*(strHash(n)%100)/100))}, main=+p[1]||0; if(s==='w'){ it.k=k; it.atk=main; } else if(main) it.def=main;
@@ -5120,7 +5120,10 @@ const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],
 // 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
 const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법';
 const eyeArt=()=>m.arts.reduce((v,a)=>a.k==='안법'&&a.p>v?a.p:v,0);
-const readBonus=()=>eyeArt()/100+eq('rd')-(m.f.deaf?.1:0);
+const readBonus=()=>eyeArt()/100+eq('rd')-(m.f.deaf?.1:0)+(hasT('star')?.1:0);
+// 보법은 위력이 높을수록 잘 피한다(가장 높은 것 하나)
+const stepEv=p=>.06+p*.005;
+const stepArt=()=>m.arts.reduce((v,a)=>a.k==='보법'&&stepEv(a.p)>v?stepEv(a.p):v,0);
 const pc=v=>Math.round(v*100);
 function useText(u){ const p=[]; if(u.hp) p.push(`건강 +${u.hp}`); if(u.ng) p.push(`내공 +${u.ng}년`); if(u.joy) p.push(`행복 +${u.joy}`); if(u.ex) p.push(`수련 +${u.ex}%`); if(u.st) for(const k in u.st) p.push(`${STATN[k]} +${u.st[k]}`); return p.join(' · '); }
 function itDesc(it){ if(it.s==='u') return it.use&&!it.d?useText(it.use):(it.d||''); const p=[]; if(it.s==='w') p.push(`${it.k} · 공격 +${it.atk}`); if(it.def) p.push(`방어 +${it.def}`); if(it.d) p.push(it.d);
@@ -5132,7 +5135,7 @@ function artWith(a,w){ const match=w&&(WMATCH[a.k]||[]).includes(w.k); return a.
 function combat(wid){ const id=wid===undefined?(m.inv&&m.inv.w):wid, w=id?ITEMS[id]:null; let art=null, pw=w?w.atk*.5:0;
   for(const a of m.arts){ if(PASSIVE(a.k)) continue; const v=artWith(a,w); if(!art||v>pw){ pw=v; art=a; } }
   return {art,w,pw}; }
-const power=()=>LVP[m.lv]+combat().pw+m.ng*.35+ST('body')*1.2+(m.f.magong?6:0);
+const power=()=>LVP[m.lv]+combat().pw+m.ng*.35+ST('body')*1.2+(m.f.magong?(m.f.bloodBody?12:6):0)+(hasT('might')?6:0);
 const fightP=e=>1/(1+Math.exp(-(power()-e)/9));
 // 내 무공 갈래에 맞는 무기 종류
 function myKind(){ const a=combat(null).art; const k=a?(WMATCH[a.k]||[])[0]:null; return k||'검'; }
@@ -5161,7 +5164,7 @@ function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
   if(k==='pill'){ b.pill--; const g=ngMed(5); m.ng+=g; m.hp=cl(m.hp+30); vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); }); lvCheck(); return true; }
   // 압생투강주: 내공 +10년. 30%로 주화입마(건강 −25), 그 가운데 절반은 귀를 잃는다(낌새 읽기 −10%)
   if(k==='absinthe'){ b.absinthe--; const g=ngMed(10); if(!m.f.martial) learn('취몽심법',0,'내공',g); else m.ng+=g; m.f.absN=(m.f.absN||0)+1; vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); });
-    if(R()<.3){ m.hp=Math.max(1,m.hp-25); m.joy=cl(m.joy-8); const ear=!m.f.deaf&&R()<.5; if(ear) m.f.deaf=1;
+    if(R()<(hasFx('calm')?.15:.3)){ m.hp=Math.max(1,m.hp-25); m.joy=cl(m.joy-8); const ear=!m.f.deaf&&R()<.5; if(ear) m.f.deaf=1;
       log(ear?'압생투강주를 마시고 주화입마에 들었다. 정신을 차려 보니 한쪽 귀가 없었다':'압생투강주를 마시고 주화입마에 들었다',true);
       vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
     else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
@@ -5188,7 +5191,7 @@ const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width=
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
-function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
+function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:k==='보법'?`회피 +${Math.round(stepEv(p)*100)}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':'#bfe8ff',12); }
 /* ==== murim:items-1 — 검과 도 ==== */
 /* ---------- 검 ---------- */
@@ -5314,7 +5317,7 @@ function mkFoe(s){ const pow=Math.max(3,Math.round(s.pow)), hp=Math.round(34+pow
   return {name:s.name||'상대',look:s.look||LOOK.bandit(),pow,hpMax:hp,hp,qi:Math.round(Math.min(50,10+pow*.3)),def:100/(100+pow/14*6),style:s.style||'even',lv:cl(Math.round(pow/14),0,8),art:s.art||'',mercy:s.mercy==null?.5:s.mercy,beast:!!(s.look&&s.look.animal),title:s.title||'',crit:.06,last:[]}; }
 // 내 기력도 상대와 같은 식으로 잰다. 지금 건강이 그 몇 할을 채우고 들어가는지를 정한다.
 function mkMe(){ const c=combat(), ar=eq('def'), pw=power(), mx=Math.round(34+pw*1.1)+eq('hp');
-  return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:Math.min(.4,(m.arts.some(a=>a.k==='보법')?.12:0)+eq('ev')),art:c.art?c.art.n:'',crit:Math.min(.5,.05+ST('luck')*.01+eq('cr')),last:[]}; }
+  return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:Math.min(.4,stepArt()+eq('ev')),art:c.art?c.art.n:'',crit:Math.min(.5,.05+ST('luck')*.01+eq('cr')),last:[]}; }
 function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
   if(spec.qi) D.me.qi=Math.min(100,D.me.qi+spec.qi); D.qi0=D.me.qi; mkTell(D); return D; }
 function foePick(D){ const f=D.foe, l=D.me.last; if(f.qi>=60&&R()<.55) return 'U';
@@ -5605,7 +5608,7 @@ const FOCUS=[
 // 반로환동을 이루면 몸은 서른 해 젊어진다(수련 효율, 건강, 수명, 겉모습). 사건의 나이 조건은 실제 나이를 쓴다
 const bodyAge=()=>m.age-(m.f&&m.f.rejuv?30:0);
 function ageMul(){ const a=bodyAge(); return a<25?1.1:a<40?.9:a<55?.65:.4; }
-function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1)*(1+eq('xp')); }
+function gain(){ return (ST('wit')*.55+ST('body')*.45)*.8*(hasT('bone')?1.35:1)*(m.f.bloodBody&&m.f.magong?1.4:1)*(hasFx('calm')?1.05:1)*(m.sect?1.2:1)*(m.f.master?1.5:1)*ageMul()*(m.hp<40?.6:1)*(1+eq('xp')); }
 function autoFocus(){ return m.f.martial?pick(['train','train','work','family','rest']):pick(['work','work','work','family','train','rest']); }
 const WORK={tenant:['지주의 논에서 허리를 펴지 못했다.','추수의 절반을 지주에게 바쳤다.'],farmer:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.'],beggar:['동냥 그릇을 들고 장터를 돌았다.','부잣집 잔치 뒤에 남은 음식을 얻었다.'],artisan:['대장간에서 쇠를 두드렸다.','솥 수십 개를 고쳐 팔았다.'],merchant:['장부를 맞추느라 밤을 새웠다.','비단 값이 올라 재미를 봤다.'],hunter:['산에서 노루를 잡았다.','호랑이 발자국을 보고 사흘을 숨어 있었다.'],inn:['객잔에서 술상을 날랐다.','취객들의 무림 이야기를 들으며 그릇을 닦았다.'],bandit:['산채에서 길목을 지켰다.','지나가는 상단에게 통행세를 걷었다.'],escort:['표행을 따라 먼 길을 다녀왔다.','표국 마당에서 짐을 꾸렸다.'],doctor:['약방에서 환자를 돌봤다.','산에서 약초를 캤다.'],official:['관아에서 문서를 썼다.','세금 장부를 맞췄다.'],clan:['가문의 장원 일을 거들었다.','가문의 상단을 따라 다녀왔다.'],tangc:['독초밭을 돌봤다.','당가의 암기를 손질했다.'],blood:['밭을 갈고 씨를 뿌렸다.','제 땅에서 거둔 보리가 꽤 됐다.']};
 function doFocus(){
@@ -5656,8 +5659,10 @@ const PER={
 };
 function shiftPer(t){ m.per=m.per||{협:0,담:0,정:0}; for(const k in PER){ if(PER[k].pos.test(t)) m.per[k]=cl(m.per[k]+7,-100,100); if(PER[k].neg.test(t)) m.per[k]=cl(m.per[k]-7,-100,100); } }
 function perBonus(t){ let b=0; const P=m.per||{}; for(const k in PER){ const v=P[k]||0; if(v>=25&&PER[k].pos.test(t)) b+=Math.floor(v/25); if(v<=-25&&PER[k].neg.test(t)) b+=Math.floor(-v/25); } return {b:Math.min(3,b)}; }
+// 주사위는 1~20. 천운을 타고나면 낮은 눈이 나오지 않는다(8~20)
+const DICELO=()=>hasT('star')?8:1;
 const diceNeed=p=>cl(Math.round(21-20*p),2,20);
-function rollDice(c){ const p=cl(c.p(),.03,.97), need=diceNeed(p), b=perBonus(c.t).b, j=hasFx('dice')?1:0, roll=ri(1,20); return {roll,need,b,j,ok:roll===20||(roll!==1&&roll+b+j>=need)}; }
+function rollDice(c){ const p=cl(c.p(),.03,.97), need=diceNeed(p), b=perBonus(c.t).b, j=hasFx('dice')?1:0, lo=DICELO(), roll=ri(lo,20); return {roll,lo,need,b,j,ok:roll===20||(roll!==1&&roll+b+j>=need)}; }
 function perTags(){ const P=m.per||{}; return Object.keys(PER).filter(k=>Math.abs(P[k]||0)>=25).map(k=>P[k]>0?PER[k].hi:PER[k].lo); }
 
 /* ---------- 한 해 ---------- */
@@ -5693,7 +5698,7 @@ function hazard(){
   if(p<25&&R()<E0.famine*.15) return '기근';
   let h;
   if(a<10) h=E0.child*(a<=1?.3:a<=5?.06:.02)*poor*(hasT('weak')?1.5:1);
-  else { h=.004+.0025*Math.pow(2,(bodyAge()-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); }
+  else { h=.004+.0025*Math.pow(2,(bodyAge()-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); if(hasT('weak')) h*=1.3; }
   if(R()<h) return a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(['폐병','열병','이질','종기','학질','중풍']);
   return null;
 }
@@ -5733,11 +5738,11 @@ function tick(mp){
   if(mp) baseEcon(); else { if(m.age===6&&!m.focus) m.focus=m.f.martial?'train':'work'; if(m.auto&&m.age>=6&&m.age%5===0) m.focus=autoFocus(); doFocus(); }
   ambient();
   m.joy=cl(m.joy+(55-m.joy)*.08); m.bond=cl(m.bond+(40-m.bond)*.04);
-  m.hp=cl(bodyAge()<45?m.hp+3:m.hp-(bodyAge()-45)*.12,0,100);
+  m.hp=cl(bodyAge()<45?m.hp+(hasT('weak')?1.5:3):m.hp-(bodyAge()-45)*.12*(hasT('weak')?1.3:1),0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
   else if(m.hp<30&&m.hp>0) autoHeal();
   if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=ngMed(5); log('아껴 둔 소환단을 삼켰다.'); }
-  if(m.f.magong) m.sim+=hasFx('calm')?2:4;
+  if(m.f.magong) m.sim+=(hasFx('calm')?2:4)*(m.f.bloodBody?.5:1);   // 혈마체는 심마가 절반만 쌓인다
   if(m.sect&&m.ak>m.hy+25&&SECTS[m.sect].side==='정'){ log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
   lvCheck();
   if(!m.alias&&m.fame>=30){ m.alias=makeAlias(); log(`강호가 '${m.alias}'라 부르기 시작했다`,true); const al=m.alias; vfx(()=>{ callout(al,'alias',1800); sfx('gong'); }); }
@@ -6246,7 +6251,12 @@ const gradeBadge=ev=>{ const g=ev&&gradeOf(ev); return g?`<span class="mh-gr g-$
          sc:[문파] 그 문파 사람만 · side:'정사마중' 가운데 그쪽 문파 사람만 · free:1 문파가 없는 사람만 · need:함수
    선택지 [글, 결과, 얻는 것]  또는  [글, {p:[기본 확률, 능력, 능력 1당], ok:[결과, 얻는 것], no:[결과, 얻는 것]}]  또는  [글, {duel:{n,pow,look,lethal}, ok:[..], no:[..]}]
    얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기(0 C·B, 1 A, 2 S, 3 SS) · ar:갑옷(같은 식) · eq:[자리,'등급'] 그 자리·등급의 물건 하나 · art:[이름,위력,종류,내공] · wed:1 혼인한다 · kid:n 자식이 태어난다 · unsect:1 문파를 떠난다(환속) */
-function applyFx(f){ if(!f) return; if(f.g!=null) gold(Array.isArray(f.g)?ri(f.g[0],f.g[1]):f.g); if(f.hp) m.hp=f.hp<0?Math.max(1,m.hp+f.hp):cl(m.hp+f.hp); if(f.joy) m.joy=cl(m.joy+f.joy); if(f.bond) m.bond+=f.bond; if(f.fame) m.fame=Math.max(0,m.fame+f.fame); if(f.hy) m.hy+=f.hy; if(f.ak) m.ak+=f.ak;
+// psn:1 독으로 입는 해 — 만독불침·피독주면 안 입고, 해독단이 있으면 한 알 써서 절반. zh:1 주화입마 — 염주류(정심)를 찼으면 절반. 무슨 일이 있었는지는 FXNOTE 로 결과 글에 덧붙는다
+let FXNOTE='', FXFULL=false;
+const fxText=t=>FXNOTE?(FXFULL?FXNOTE:t+' '+FXNOTE):t;
+function applyFx(f){ FXNOTE=''; FXFULL=false; if(!f) return;
+  if(f.psn&&f.hp<0){ if(hasT('immune')){ f=Object.assign({},f,{hp:0}); FXFULL=true; FXNOTE='독이 몸에 들어왔다. 그러나 만독불침의 몸에는 듣지 않았다. 아무 일도 없었다.'; } else if(hasFx('poison')){ f=Object.assign({},f,{hp:0}); FXFULL=true; FXNOTE=`독이 몸에 들어왔다. 그러나 품에 지닌 ${ITEMS[m.inv.c].n}${jo(ITEMS[m.inv.c].n,'이','가')} 독을 빨아들였다. 아무 일도 없었다.`; } else if(m.inv.bag.antidote>0){ m.inv.bag.antidote--; f=Object.assign({},f,{hp:Math.ceil(f.hp/2)}); FXNOTE='그나마 품의 해독단을 씹어 덜 앓았다.'; } }
+  if(f.zh&&f.hp<0&&hasFx('calm')){ f=Object.assign({},f,{hp:Math.ceil(f.hp/2)}); FXNOTE=`그나마 ${ITEMS[m.inv.c].n}${jo(ITEMS[m.inv.c].n,'을','를')} 쥐고 숨을 골라 덜 다쳤다.`; } if(f.g!=null) gold(Array.isArray(f.g)?ri(f.g[0],f.g[1]):f.g); if(f.hp) m.hp=f.hp<0?Math.max(1,m.hp+f.hp):cl(m.hp+f.hp); if(f.joy) m.joy=cl(m.joy+f.joy); if(f.bond) m.bond+=f.bond; if(f.fame) m.fame=Math.max(0,m.fame+f.fame); if(f.hy) m.hy+=f.hy; if(f.ak) m.ak+=f.ak;
   if(f.exp) addExp(gain()*f.exp); if(f.ng&&m.f.martial) m.ng+=f.ng; if(f.st) for(const k in f.st) m.b.st[k]=Math.min(12,(m.b.st[k]||0)+f.st[k]); if(f.it) for(const id of f.it) give(id,{}); if(f.wt!=null){ const id=rndItem('w',tgOf(f.wt),myKind()); if(id) give(id,{}); } if(f.ar!=null){ const id=rndItem('a',tgOf(f.ar)); if(id) give(id,{}); } if(f.eq){ const id=rndItem(f.eq[0],TIER.indexOf(f.eq[1])); if(id) give(id,{}); } if(f.unsect&&m.sect){ log(`${SECTS[m.sect].n}${jo(SECTS[m.sect].n,'을','를')} 떠나 환속했다`,true); m.sect=null; m.f.exmonk=1; }
   if(f.wed&&!isMonk()&&!(m.spouse&&!m.spouse.dead)){ const r=relOf('정인')||rel('배우자'); r.role='배우자'; m.spouse=r; log(`${wa(r.name)} 혼인했다`,true); if(!m.q.some(q=>q.id==='birth')) m.q.push({age:m.age+ri(1,3),id:'birth'}); }
   if(f.kid) for(let i=0;i<f.kid;i++){ m.kids++; const n=m.b.sur+gname(); rel('자식',n,80,{sx:R()<.5?'m':'f'}); log(`자식 ${iga(n)} 태어났다`,true); }
@@ -6255,15 +6265,18 @@ const fxTone=f=>{ if(!f) return ''; const neg=(f.hp<0)||(typeof f.g==='number'&&
 // 등급 사건이 잘 풀리면 그 등급(가끔 한 단계 아래)의 물건이 덤으로 떨어진다. 이미 물건을 주는 결과에는 붙지 않는다
 const QDROP=[.05,.08,.12,.2,.3,.5];
 function qDrop(g,f){ const t=GRADES.indexOf(g); if(t<0||(f&&(f.it||f.wt!=null||f.ar!=null||f.eq))) return; if(R()<QDROP[t]) dropItem(Math.max(0,R()<.7?t:t-1)); }
-function mkCh(x,g){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ const tn=fxTone(x[2]); applyFx(x[2]); if(tn==='good') qDrop(g,x[2]); return {t:x[1],tone:tn}; }};
-  const o=x[1]; if(o.duel) return {t,duel:()=>Object.assign({foe:{name:o.duel.n,look:(LOOK[o.duel.look]||LOOK.bandit)(),pow:o.duel.pow+m.lv*(o.duel.lv==null?5:o.duel.lv)+ri(0,6),style:o.duel.style||'sword',mercy:o.duel.lethal?.4:1,art:o.duel.art||'삼재검법'}},o.duel.lethal?{lethal:1,cause:o.duel.cause||o.duel.n+'의 칼'}:{}),
-    go:(ok,res)=>{ if(ok){ applyFx(o.ok[1]); qDrop(g,o.ok[1]); return {t:o.ok[0],tone:'good'}; } if(res&&res.dead) return {t:'거기까지였다.',tone:'bad'}; applyFx(o.no[1]); return {t:o.no[0],tone:'bad'}; }};
-  return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); if(ok) qDrop(g,r[1]); return {t:r[0],tone:ok?'good':'bad'}; }}; }
+// 결과 글이나 사건 글에 독·주화입마가 나오고 건강이 깎이는 결과면 psn/zh 를 붙인다(사건을 적을 때 따로 표시하지 않아도 되게)
+const RXPSN=/독|뱀|물렸|버섯|벌에|퉁퉁 부었|지네|배를 움켜|배탈|설사|해독약/, RXPSNH=/독이 있는|독물이|독물 우리|해독 시험|독이 있다|독버섯|술에서 이상한 냄새/, RXZH=/주화입마|기가 뒤틀|피를 한 모금 토|피를 쏟/, RXZHH=/주화입마|운기 중에 기가/, RXNOT=/독한 술|감독|독하게|독촉|단독|고독|중독/g;
+function tagFx(f,txt,head){ if(!f||!(f.hp<0)||f.psn||f.zh) return f; if(RXZH.test(txt)||RXZHH.test(head)) return Object.assign({},f,{zh:1}); if(RXPSN.test(String(txt).replace(RXNOT,''))||RXPSNH.test(head)) return Object.assign({},f,{psn:1}); return f; }
+function mkCh(x,g,head){ const t=x[0]; head=head||''; if(typeof x[1]==='string'){ x=[x[0],x[1],tagFx(x[2],x[1],head)]; return {t,go:()=>{ const tn=fxTone(x[2]); applyFx(x[2]); const tx=fxText(x[1]); if(tn==='good') qDrop(g,x[2]); return {t:tx,tone:FXFULL?'':tn}; }}; }
+  const o=x[1]; if(o.ok) o.ok=[o.ok[0],tagFx(o.ok[1],o.ok[0],head)]; if(o.no) o.no=[o.no[0],tagFx(o.no[1],o.no[0],head)]; if(o.duel) return {t,duel:()=>Object.assign({foe:{name:o.duel.n,look:(LOOK[o.duel.look]||LOOK.bandit)(),pow:o.duel.pow+m.lv*(o.duel.lv==null?5:o.duel.lv)+ri(0,6),style:o.duel.style||'sword',mercy:o.duel.lethal?.4:1,art:o.duel.art||'삼재검법'}},o.duel.lethal?{lethal:1,cause:o.duel.cause||o.duel.n+'의 칼'}:{}),
+    go:(ok,res)=>{ if(ok){ applyFx(o.ok[1]); qDrop(g,o.ok[1]); return {t:o.ok[0],tone:'good'}; } if(res&&res.dead) return {t:'거기까지였다.',tone:'bad'}; applyFx(o.no[1]); return {t:fxText(o.no[0]),tone:'bad'}; }};
+  return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); const tx=fxText(r[0]), full=FXFULL; if(ok) qDrop(g,r[1]); return {t:tx,tone:ok?'good':full?'':'bad'}; }}; }
 let QN=0;
 function Q(g,id,c,bg,text,chs){ c=c||{}; QN++; const rep=c.rep!=null?c.rep:GREP[g];
   const hi=c.a?c.a[1]:70, top=g==='S'||g==='SS'||g==='SSR'?50:70;   // 위쪽 나이가 70 이상이면(S 이상은 50 이상이면) 나이 제한이 없는 것으로 친다. 오래 사는 사람에게도 일과 기연이 생기게
   E(id,Object.assign({min:c.a?c.a[0]:13,max:hi>=top?150:hi,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!(m.spouse&&!m.spouse.dead)===!!c.wed)&&(c.wed!==0||!isMonk())&&(!c.sex||m.sex===c.sex)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
-    st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(x=>mkCh(x,g))},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }
+    st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(x=>mkCh(x,g,typeof text==='string'?text:''))},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }
 /* ==== murim:minor-1 — 등급 사건 첫 묶음 (어린 시절 · 마을 · 길과 저자 · 무림 · 집안) ==== */
 /* ---------- C: 일상 ---------- */
 // 어린 시절
@@ -8414,7 +8427,7 @@ function postStage(){ if(!m||!SC) return; const h=A('hero');
 const pips=v=>`<span class="mh-pips">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span>`;
 const meter=(lab,v,cls)=>`<div class="mh-meter"><span>${lab}</span><span class="mh-bar ${cls||''}"><i style="width:${cl(v)}%"></i></span><span class="mh-num">${Math.round(v)}</span></div>`;
 const ptImg=(L,cls)=>`<img class="mh-pt ${cls||''}" src="${portrait(L)}" alt="" width="28" height="28">`;
-const diceHtml=d=>d?`<p class="mh-dice">주사위 <b>${d.roll}</b>${d.b?` + 성격 ${d.b}`:''}${d.j?' + 옥패 1':''} · ${d.need} 이상이면 성공 · <b>${d.ok?'성공':'실패'}</b></p>`:'';
+const diceHtml=d=>d?`<p class="mh-dice">주사위 <b>${d.roll}</b>${d.lo>1?` <small>(천운: ${d.lo}~20에서 나온다)</small>`:''}${d.b?` + 성격 ${d.b}`:''}${d.j?' + 옥패 1':''} · ${d.need} 이상이면 성공 · <b>${d.ok?'성공':'실패'}</b></p>`:'';
 function resHtml(lr){ if(m.wait) return '<p class="mh-rolling">주사위가 구른다…</p>'; const rec=lr.pick?`<div class="mh-rec">${lr.q?`<p class="q">${esc(lr.q)}</p>`:''}<p class="p"><span>${lr.auto?'맡김':'고른 길'}</span>${esc(lr.pick)}</p></div>`:''; return `${rec}${diceHtml(lr.dice)}<p class="mh-res ${lr.tone||''}">${esc(lr.t)}</p>`; }
 function renderRec(){
   const S=m.sect&&SECTS[m.sect], o=OR(m.b.o), fa=m.rels.find(r=>r.role==='아버지'), mo=m.rels.find(r=>r.role==='어머니');
@@ -8432,7 +8445,7 @@ function renderRec(){
       ${m.wins||m.losses?`<dt>싸움</dt><dd class="mh-num">${m.wins||0}승 ${m.losses||0}패${m.kills?` · 벤 사람 ${m.kills}`:''}</dd>`:''}
       <dt>가족</dt><dd>아버지 ${fa.dead?'<s>':''}${esc(fa.name)}${fa.dead?'</s>':''} · 어머니 ${mo.dead?'<s>':''}${esc(mo.name)}${mo.dead?'</s>':''}${m.sib?` · 형제 ${m.sib}`:''}${m.spouse&&!m.spouse.dead?` · 배우자 ${esc(m.spouse.name)}`:''}${kids?` · 자식 ${kids}`:''}</dd>
     </dl>
-    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.k==='안법'?` · 낌새 읽기 +${a.p}%`:a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
+    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.k==='안법'?` · 낌새 읽기 +${a.p}%`:a.k==='보법'?` · 회피 +${Math.round(stepEv(a.p)*100)}%`:a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
     ${others.length?`<div><h4>인연</h4><div class="mh-rels">${others.map(r=>`<span class="mh-relc${r.role==='원수'?' m':''}">${ptImg(relLook(r))}<span><small>${esc(r.role)}</small>${esc(r.name)}</span></span>`).join('')}</div></div>`:''}
     <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd></dl>`;
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
@@ -8452,7 +8465,7 @@ function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.pha
 function chBtn(c,i){ let odds='';
   if(c.war) odds=`<span class="odds duel">${icImg(iconUrl('armor',2),'sm')}지휘전</span>`;
   else if(c.duel){ const h=duelHint(c); odds=`<span class="odds duel ${h.cls}">${icImg(iconUrl('sword',h.lethal?2:1),'sm')}${h.lethal?'생사결':'비무'} · ${h.lab}</span>`; }
-  else if(c.p){ const need=diceNeed(cl(c.p(),.03,.97)), b=perBonus(c.t).b+(hasFx('dice')?1:0); odds=`<span class="odds">${icImg(iconUrl('dice',0),'sm')}${need}+${b?` · 보정 +${b}`:''}</span>`; }
+  else if(c.p){ const need=diceNeed(cl(c.p(),.03,.97)), b=perBonus(c.t).b+(hasFx('dice')?1:0); odds=`<span class="odds">${icImg(iconUrl('dice',0),'sm')}${need}+${b?` · 보정 +${b}`:''}${hasT('star')?` · 천운 ${DICELO()}~20`:''}</span>`; }
   return `<button class="mh-ch" type="button" data-i="${i}" ${m.wait||(m.auto&&!paused)?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span>${odds}</button>`; }
 function renderCtl(){
   const el=$m('mhCtl'), show=m&&m.phase==='play'&&!DUEL; el.hidden=!show; if(!show) return;

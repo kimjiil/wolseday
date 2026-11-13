@@ -62,9 +62,9 @@ function drawWeather(st,layer){ let wx=st.wx; const out=SKYTER[st.ter];
 }
 const SKYTER={plain:1,hills:1,court:1,road:1,peak:1,waste:1};
 let DICE=null;
-function showDice(d,x){ if(!d) return; DICE={val:1,final:d.roll,ok:d.ok,t:0,roll:RED?0:26,x:x||0,need:d.need,b:d.b}; }
+function showDice(d,x){ if(!d) return; DICE={val:1,final:d.roll,lo:d.lo||1,ok:d.ok,t:0,roll:RED?0:26,x:x||0,need:d.need,b:d.b}; }
 function drawDice(){ const D=DICE; if(!D) return; D.t++; const rolling=D.t<D.roll; const h=SC&&SC.actors.find(a=>a.id==='hero'); const bx=rnd((h?h.x:70)+16+D.x), by0=rnd((h?h.y:GY+8)-40);
-  if(rolling&&D.t%2===0) D.val=1+Math.floor(hsh(D.t*7.3)*20); if(!rolling) D.val=D.final;
+  if(rolling&&D.t%2===0) D.val=D.lo+Math.floor(hsh(D.t*7.3)*(21-D.lo)); if(!rolling) D.val=D.final;
   const by=by0-(rolling?rnd(Math.abs(Math.sin(D.t*.45))*7):0), st=rolling?0:D.ok?1:2;
   const c=st===1?'#3f9a7a':st===2?'#c0392b':'#ece5cf', d=dk(c,.35), l=lt(c,.4);
   P(bx+3,by,7,1,d); P(bx+1,by+1,11,1,d); P(bx,by+2,13,9,d); P(bx+1,by+11,11,1,d); P(bx+3,by+12,7,1,d);

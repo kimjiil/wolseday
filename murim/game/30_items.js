@@ -112,21 +112,24 @@ function equipBest(){ if(!m.inv) return; const st=m.inv.stash; let bi=-1; st.for
 function equipAt(i){ const inv=m.inv, id=inv.stash[i]; if(!id) return; const s=ITEMS[id].s; inv.stash.splice(i,1); if(inv[s]) inv.stash.push(inv[s]); inv[s]=id; }
 function unequip(s){ const inv=m.inv; if(!inv[s]||inv.stash.length>=STASHMAX) return; inv.stash.push(inv[s]); inv[s]=null; }
 function sellAt(i){ const inv=m.inv, id=inv.stash[i]; if(!id) return; inv.stash.splice(i,1); const g=Math.round(ITEMS[id].v*.5); gold(g); vfx(()=>heroFloat(`+${fmt(g)}냥`,'gold')); }
+// 내공 약은 먹을수록 덜 듣는다. 소환단 한 알(5년)을 한 번으로 쳐서, n번 먹은 뒤의 약효는 1/(1+n×0.25)배. 기연으로 얻는 내공에는 해당 없다
+const medTol=()=>1/(1+((m.f&&m.f.medN)||0)*.25);
+function ngMed(n){ const g=Math.round(n*medTol()*10)/10; m.f.medN=(m.f.medN||0)+n/5; return g; }
 function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
   if(k==='salve'){ if(m.hp>=100) return false; b.salve--; m.hp=cl(m.hp+25); vfx(()=>{ healFx(); heroFloat('건강 +25','good'); }); return true; }
-  if(k==='pill'){ b.pill--; m.ng+=5; m.hp=cl(m.hp+30); vfx(()=>{ healFx(); heroFloat('내공 +5년','jade'); }); return true; }
+  if(k==='pill'){ b.pill--; const g=ngMed(5); m.ng+=g; m.hp=cl(m.hp+30); vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); }); lvCheck(); return true; }
   // 압생투강주: 내공 +10년. 30%로 주화입마(건강 −25), 그 가운데 절반은 귀를 잃는다(낌새 읽기 −10%)
-  if(k==='absinthe'){ b.absinthe--; if(!m.f.martial) learn('취몽심법',0,'내공',10); else m.ng+=10; m.f.absN=(m.f.absN||0)+1; vfx(()=>{ healFx(); heroFloat('내공 +10년','jade'); });
+  if(k==='absinthe'){ b.absinthe--; const g=ngMed(10); if(!m.f.martial) learn('취몽심법',0,'내공',g); else m.ng+=g; m.f.absN=(m.f.absN||0)+1; vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); });
     if(R()<.3){ m.hp=Math.max(1,m.hp-25); m.joy=cl(m.joy-8); const ear=!m.f.deaf&&R()<.5; if(ear) m.f.deaf=1;
       log(ear?'압생투강주를 마시고 주화입마에 들었다. 정신을 차려 보니 한쪽 귀가 없었다':'압생투강주를 마시고 주화입마에 들었다',true);
       vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
     else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
     lvCheck(); return true; }
   const it=ITEMS[k], u=it&&it.use; if(!u) return false; if(u.hp&&!u.ng&&!u.joy&&!u.ex&&!u.st&&m.hp>=100) return false;
-  b[k]--; if(u.hp) m.hp=cl(m.hp+u.hp); if(u.ng){ if(!m.f.martial) learn('토납법',0,'내공',u.ng); else m.ng+=u.ng; } if(u.joy) m.joy=cl(m.joy+u.joy); if(u.ex) addExp(gain()*u.ex/100); if(u.st) for(const s in u.st) m.b.st[s]=Math.min(12,(m.b.st[s]||0)+u.st[s]);
-  if(it.t>=3) log(`${eul(it.n)} 썼다`,true); vfx(()=>{ healFx(); heroFloat(useText(u).split(' · ')[0],u.ng?'jade':'good'); }); lvCheck(); return true; }
+  b[k]--; let got=0; if(u.hp) m.hp=cl(m.hp+u.hp); if(u.ng){ got=ngMed(u.ng); if(!m.f.martial) learn('토납법',0,'내공',got); else m.ng+=got; } if(u.joy) m.joy=cl(m.joy+u.joy); if(u.ex) addExp(gain()*u.ex/100); if(u.st) for(const s in u.st) m.b.st[s]=Math.min(12,(m.b.st[s]||0)+u.st[s]);
+  if(it.t>=3) log(`${eul(it.n)} 썼다`,true); vfx(()=>{ healFx(); heroFloat(u.ng?`내공 +${got}년`:useText(u).split(' · ')[0],u.ng?'jade':'good'); }); lvCheck(); return true; }
 // 건강이 바닥일 때 저절로 쓰는 약: 건강만 올리는 것 가운데 등급이 낮은 것부터
-function autoHeal(){ const b=m.inv.bag, ks=Object.keys(b).filter(k=>b[k]>0&&k!=='salve'&&ITEMS[k]&&ITEMS[k].use&&ITEMS[k].use.hp&&!ITEMS[k].use.st).sort((x,y)=>ITEMS[x].t-ITEMS[y].t); if(!ks.length) return false; const it=ITEMS[ks[0]]; b[ks[0]]--; m.hp=cl(m.hp+it.use.hp); if(it.use.ng) m.ng+=it.use.ng; log(`${eul(it.n)} 썼다.`); return true; }
+function autoHeal(){ const b=m.inv.bag, ks=Object.keys(b).filter(k=>b[k]>0&&k!=='salve'&&ITEMS[k]&&ITEMS[k].use&&ITEMS[k].use.hp&&!ITEMS[k].use.st).sort((x,y)=>ITEMS[x].t-ITEMS[y].t); if(!ks.length) return false; const it=ITEMS[ks[0]]; b[ks[0]]--; m.hp=cl(m.hp+it.use.hp); if(it.use.ng) m.ng+=ngMed(it.use.ng); log(`${eul(it.n)} 썼다.`); return true; }
 function healFx(){ const h=actorOf('hero'); if(!h) return; for(let i=0;i<5;i++) FX.push({t:'heal',x:h.x-6+i*3,y:h.y-8-(i%2)*6,life:22+i*3,max:30}); }
 function bagTotal(){ const b=m.inv.bag; let n=0; for(const k in b) n+=b[k]||0; return n; }
 

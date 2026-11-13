@@ -36,7 +36,9 @@ const Sg=(bg,o)=>Object.assign({bg},o||{});
 const N=(id,look,x,o)=>Object.assign({id,look,x,face:-1},o||{});
 function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(k==='demon'){ m.f.magong=1; m.ak+=20; } addExp(3); if(!relOf('사부')) rel('사부',null,65);
   if(S.w0&&!m.inv.w) give(S.w0,{quiet:1}); log(`${S.n}에 입문했다`,true); }
-const sectOK=k=>!(SECTS[k].male&&m.sex!=='m')&&!(SECTS[k].female&&m.sex!=='f');
+// 출가 문파(소림사)는 혼인한 사람을 받지 않고, 문도는 혼인하지 못한다. 환속하면 풀린다
+const isMonk=()=>!!(m&&m.sect&&SECTS[m.sect]&&SECTS[m.sect].monk);
+const sectOK=k=>!(SECTS[k].male&&m.sex!=='m')&&!(SECTS[k].female&&m.sex!=='f')&&!(SECTS[k].monk&&m.spouse&&!m.spouse.dead);
 function snap(){ return {gold:m.gold,hp:m.hp,ng:m.ng,fame:m.fame,hy:m.hy,ak:m.ak}; }
 function diffFx(b){ if(m.headless||m.dead) return; const d=[]; const g=Math.round(m.gold-b.gold); if(g) d.push([`${g>0?'+':'−'}${fmt(Math.abs(g))}냥`,g>0?'gold':'bad']);
   const h=Math.round(m.hp-b.hp); if(Math.abs(h)>=3) d.push([`건강 ${h>0?'+':'−'}${Math.abs(h)}`,h>0?'good':'bad']);
@@ -82,6 +84,8 @@ function ambient(){
   ];
   for(const [k,c,f] of AMB.sort(()=>R()-.5)){ if(c()){ log(f()); if(!m.yst) m.yst={k}; break; } }
 }
+// 내공이 수명을 늘려 주는 것은 열 갑자까지다
+const NGLIFE=600;
 function hazard(){
   const E0=ERAS[m.era], a=m.age, p=pctNow(), poor=p<30?1.4:p>80?.6:1;
   if(m.hp<=0) return m.deathCause||'병';
@@ -90,7 +94,7 @@ function hazard(){
   if(p<25&&R()<E0.famine*.15) return '기근';
   let h;
   if(a<10) h=E0.child*(a<=1?.3:a<=5?.06:.02)*poor*(hasT('weak')?1.5:1);
-  else { h=.004+.0025*Math.pow(2,(a-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+m.ng/80); }
+  else { h=.004+.0025*Math.pow(2,(a-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); }
   if(R()<h) return a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(['폐병','열병','이질','종기','학질','중풍']);
   return null;
 }
@@ -129,7 +133,7 @@ function tick(mp){
   m.hp=cl(m.age<45?m.hp+3:m.hp-(m.age-45)*.12,0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
   else if(m.hp<30&&m.hp>0) autoHeal();
-  if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=5; log('아껴 둔 소환단을 삼켰다.'); }
+  if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=ngMed(5); log('아껴 둔 소환단을 삼켰다.'); }
   if(m.f.magong) m.sim+=hasFx('calm')?2:4;
   if(m.sect&&m.ak>m.hy+25&&SECTS[m.sect].side==='정'){ log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
   lvCheck();

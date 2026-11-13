@@ -13,7 +13,7 @@ E('fever',{min:2,max:85,rep:7,w:1.1,st:()=>{ const mo=relOf('어머니'); return
   {t:'의원에게 간다',when:()=>m.gold>=20||m.age<12&&pctNow()>45,go:()=>{ gold(-20); m.hp=cl(m.hp+5); return {t:'의원이 침을 놓고 탕약을 지어 주었다. 열이 내렸다.',tone:'good'}; }},
   {t:'민간요법으로 버틴다',p:()=>.55+ST('body')*.03,go:ok=>{ if(ok){ hurt(8); return '찬 수건과 생강물로 버텼다. 겨우 열이 내렸다.'; } hurt(m.age<12?45:40,'열병'); return {t:'열이 쉽게 떨어지지 않았다.',tone:'bad'}; }},
   {t:'무당을 부른다',when:()=>m.gold>=5,go:()=>{ gold(-5); hurt(15,'열병'); return '굿을 했다. 열은 저 혼자 내렸다.'; }}]});
-E('matchmaker',{min:16,max:30,rep:4,w:1.6,when:()=>!m.spouse,st:()=>Sg('home',{cast:[N('mm',LOOK.matchmaker(),96,{tag:'중매쟁이',emote:'heart',pose:'point'})].concat(parents([150,166]))}),
+E('matchmaker',{min:16,max:30,rep:4,w:1.6,when:()=>!m.spouse&&!isMonk(),st:()=>Sg('home',{cast:[N('mm',LOOK.matchmaker(),96,{tag:'중매쟁이',emote:'heart',pose:'point'})].concat(parents([150,166]))}),
   text:()=>{ const f=pick(['자작농','상인','장인','소작농','객잔 주인']); m.f.mmName=rname(); m.f.mmFam=f; return `중매쟁이가 혼담을 들고 왔다. 상대는 이웃 고을 ${f} 집안의 ${m.f.mmName}.`; },ch:[
   {t:'혼담을 받아들인다',go:()=>{ const r=rel('배우자',m.f.mmName,60); m.spouse=r; m.joy+=6; m.bond+=10; gold(-Math.min(m.gold,15)); log(`${wa(r.name)} 혼인했다`,true); m.q.push({age:m.age+ri(1,3),id:'birth'}); return {t:'얼굴은 혼례날 처음 보았다. 생각보다 웃음이 많은 사람이었다.',tone:'good',st:Sg('wedding',{wx:'petal',cast:[N('sp',relLook(r,{robe:'#b8324a',blush:1}),90,{emote:'heart',tag:r.name})].concat(mob('g',i=>folk(i),[24,40,152,170],i=>({act:'cheer',face:i<2?1:-1}))),hero:{look:heroLook({robe:'#b8324a',weapon:null}),x:72}})}; }},
   {t:'아직 이르다며 거절한다',go:()=>{ m.joy+=1; return {t:'중매쟁이가 혀를 차며 돌아갔다.',cut:()=>{ emo('mm','anger'); leave('mm',1); }}; }}]});
@@ -29,7 +29,7 @@ E('parentCare',{min:20,max:60,once:1,w:1.2,when:()=>!!(relOf('아버지')||relOf
   text:()=>{ const p=relOf('어머니')||relOf('아버지'); return `${p.role}가 자리에 누웠다. 곁에서 돌보려면 한 해 벌이를 포기해야 한다.`; },ch:[
   {t:'곁에서 돌본다',go:()=>{ gold(-m.gold*.3); m.bond+=12; m.joy-=3; return {t:'밤마다 약을 달였다. 고맙다는 말을 처음 들었다.',tone:'good',cut:()=>{ emo('pa','heart'); }}; }},
   {t:'형제에게 맡기고 일한다',go:()=>{ gold(20); m.bond-=8; return {t:'돈은 모였다. 마음 한쪽이 계속 무거웠다.',cut:()=>{ leave('hero',1); }}; }}]});
-E('mateLove',{when:()=>!m.spouse,st:()=>Sg('mountain',{time:'dusk',wx:'petal',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,sect:m.sect,blush:1}),96,{tag:m.f.loveName,emote:'heart'})],hero:{x:70}}),
+E('mateLove',{when:()=>!m.spouse&&!isMonk(),st:()=>Sg('mountain',{time:'dusk',wx:'petal',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,sect:m.sect,blush:1}),96,{tag:m.f.loveName,emote:'heart'})],hero:{x:70}}),
   text:()=>`수련기를 같이 보낸 ${iga(m.f.loveName)} 찾아왔다. "하산하면 같이 강호를 걷자고 했잖아."`,ch:[
   {t:'손을 잡는다',go:()=>{ const r=rel('정인',m.f.loveName,85); m.q.push({age:m.age+ri(1,2),id:'wedding'}); log(`${wa(r.name)} 마음을 나눴다`,true); return {t:'산길을 나란히 내려갔다.',tone:'good',cut:()=>{ emo('hero','heart'); }}; }},
   {t:'갈 길이 다르다',go:()=>({t:'뒷모습이 오래 남았다.',cut:()=>{ emo('lv','tear'); leave('lv',1); }})}]});

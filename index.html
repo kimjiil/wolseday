@@ -3253,6 +3253,8 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-slot small .mh-gr,.mh-sti small .mh-gr,.mh-con .mh-gr,.mh-toastc .mh-gr{font-size:10px;padding:0 4px;margin:0 2px;vertical-align:1px}
 .mh-con small{color:var(--m-muted);font-size:11px}
 .mh-cons{gap:4px 12px}
+
+.mh-tol{margin:6px 0 0;font-size:12px;color:var(--m-muted)}
 </style>
 
 <div id="murimApp" hidden>
@@ -3290,7 +3292,7 @@ const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
 const MVER='1.2';
 const NOTES=[
-  ['1.2','2026-11-13',['등급 사건이 1000개가 됐다(C 450, B 300, A 150, S 70, SS 25, SSR 5)','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
+  ['1.2','2026-11-13',['등급 사건이 1041개가 됐다(C 470, B 312, A 157, S 72, SS 25, SSR 5)','일흔이 넘어도 사건이 이어진다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
 ];
@@ -3310,7 +3312,7 @@ const SURN=['이','왕','장','유','진','양','조','황','주','오','서','�
 const GIV=['무','진','천','운','호','명','성','백','청','소','혁','윤','결','도','준','하','린','설','연','화','영','월','현','강','휘','령','건','서'];
 const gname=()=>{let a=pick(GIV),b=pick(GIV);while(b===a)b=pick(GIV);return a+b;};
 const SECTS={
-  shaolin:{n:'소림사',side:'정',art:['나한권',12,'권'],inner:['역근공',10],robe:'#c98a2e',male:1,w0:'lglove'},
+  shaolin:{n:'소림사',side:'정',art:['나한권',12,'권'],inner:['역근공',10],robe:'#c98a2e',male:1,monk:1,w0:'lglove'},
   wudang:{n:'무당파',side:'정',art:['태극검',15,'검'],inner:['순양무극공',8],robe:'#4f7590',w0:'wsword'},
   huashan:{n:'화산파',side:'정',art:['매화검법',16,'검'],inner:['자하신공',7],robe:'#a8496a',w0:'wsword'},
   emei:{n:'아미파',side:'정',art:['아미검법',14,'검'],inner:['정심공',7],robe:'#6f8a62',female:1,w0:'wsword'},
@@ -5102,21 +5104,24 @@ function equipBest(){ if(!m.inv) return; const st=m.inv.stash; let bi=-1; st.for
 function equipAt(i){ const inv=m.inv, id=inv.stash[i]; if(!id) return; const s=ITEMS[id].s; inv.stash.splice(i,1); if(inv[s]) inv.stash.push(inv[s]); inv[s]=id; }
 function unequip(s){ const inv=m.inv; if(!inv[s]||inv.stash.length>=STASHMAX) return; inv.stash.push(inv[s]); inv[s]=null; }
 function sellAt(i){ const inv=m.inv, id=inv.stash[i]; if(!id) return; inv.stash.splice(i,1); const g=Math.round(ITEMS[id].v*.5); gold(g); vfx(()=>heroFloat(`+${fmt(g)}냥`,'gold')); }
+// 내공 약은 먹을수록 덜 듣는다. 소환단 한 알(5년)을 한 번으로 쳐서, n번 먹은 뒤의 약효는 1/(1+n×0.25)배. 기연으로 얻는 내공에는 해당 없다
+const medTol=()=>1/(1+((m.f&&m.f.medN)||0)*.25);
+function ngMed(n){ const g=Math.round(n*medTol()*10)/10; m.f.medN=(m.f.medN||0)+n/5; return g; }
 function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
   if(k==='salve'){ if(m.hp>=100) return false; b.salve--; m.hp=cl(m.hp+25); vfx(()=>{ healFx(); heroFloat('건강 +25','good'); }); return true; }
-  if(k==='pill'){ b.pill--; m.ng+=5; m.hp=cl(m.hp+30); vfx(()=>{ healFx(); heroFloat('내공 +5년','jade'); }); return true; }
+  if(k==='pill'){ b.pill--; const g=ngMed(5); m.ng+=g; m.hp=cl(m.hp+30); vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); }); lvCheck(); return true; }
   // 압생투강주: 내공 +10년. 30%로 주화입마(건강 −25), 그 가운데 절반은 귀를 잃는다(낌새 읽기 −10%)
-  if(k==='absinthe'){ b.absinthe--; if(!m.f.martial) learn('취몽심법',0,'내공',10); else m.ng+=10; m.f.absN=(m.f.absN||0)+1; vfx(()=>{ healFx(); heroFloat('내공 +10년','jade'); });
+  if(k==='absinthe'){ b.absinthe--; const g=ngMed(10); if(!m.f.martial) learn('취몽심법',0,'내공',g); else m.ng+=g; m.f.absN=(m.f.absN||0)+1; vfx(()=>{ healFx(); heroFloat(`내공 +${g}년`,'jade'); });
     if(R()<.3){ m.hp=Math.max(1,m.hp-25); m.joy=cl(m.joy-8); const ear=!m.f.deaf&&R()<.5; if(ear) m.f.deaf=1;
       log(ear?'압생투강주를 마시고 주화입마에 들었다. 정신을 차려 보니 한쪽 귀가 없었다':'압생투강주를 마시고 주화입마에 들었다',true);
       vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
     else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
     lvCheck(); return true; }
   const it=ITEMS[k], u=it&&it.use; if(!u) return false; if(u.hp&&!u.ng&&!u.joy&&!u.ex&&!u.st&&m.hp>=100) return false;
-  b[k]--; if(u.hp) m.hp=cl(m.hp+u.hp); if(u.ng){ if(!m.f.martial) learn('토납법',0,'내공',u.ng); else m.ng+=u.ng; } if(u.joy) m.joy=cl(m.joy+u.joy); if(u.ex) addExp(gain()*u.ex/100); if(u.st) for(const s in u.st) m.b.st[s]=Math.min(12,(m.b.st[s]||0)+u.st[s]);
-  if(it.t>=3) log(`${eul(it.n)} 썼다`,true); vfx(()=>{ healFx(); heroFloat(useText(u).split(' · ')[0],u.ng?'jade':'good'); }); lvCheck(); return true; }
+  b[k]--; let got=0; if(u.hp) m.hp=cl(m.hp+u.hp); if(u.ng){ got=ngMed(u.ng); if(!m.f.martial) learn('토납법',0,'내공',got); else m.ng+=got; } if(u.joy) m.joy=cl(m.joy+u.joy); if(u.ex) addExp(gain()*u.ex/100); if(u.st) for(const s in u.st) m.b.st[s]=Math.min(12,(m.b.st[s]||0)+u.st[s]);
+  if(it.t>=3) log(`${eul(it.n)} 썼다`,true); vfx(()=>{ healFx(); heroFloat(u.ng?`내공 +${got}년`:useText(u).split(' · ')[0],u.ng?'jade':'good'); }); lvCheck(); return true; }
 // 건강이 바닥일 때 저절로 쓰는 약: 건강만 올리는 것 가운데 등급이 낮은 것부터
-function autoHeal(){ const b=m.inv.bag, ks=Object.keys(b).filter(k=>b[k]>0&&k!=='salve'&&ITEMS[k]&&ITEMS[k].use&&ITEMS[k].use.hp&&!ITEMS[k].use.st).sort((x,y)=>ITEMS[x].t-ITEMS[y].t); if(!ks.length) return false; const it=ITEMS[ks[0]]; b[ks[0]]--; m.hp=cl(m.hp+it.use.hp); if(it.use.ng) m.ng+=it.use.ng; log(`${eul(it.n)} 썼다.`); return true; }
+function autoHeal(){ const b=m.inv.bag, ks=Object.keys(b).filter(k=>b[k]>0&&k!=='salve'&&ITEMS[k]&&ITEMS[k].use&&ITEMS[k].use.hp&&!ITEMS[k].use.st).sort((x,y)=>ITEMS[x].t-ITEMS[y].t); if(!ks.length) return false; const it=ITEMS[ks[0]]; b[ks[0]]--; m.hp=cl(m.hp+it.use.hp); if(it.use.ng) m.ng+=ngMed(it.use.ng); log(`${eul(it.n)} 썼다.`); return true; }
 function healFx(){ const h=actorOf('hero'); if(!h) return; for(let i=0;i<5;i++) FX.push({t:'heal',x:h.x-6+i*3,y:h.y-8-(i%2)*6,life:22+i*3,max:30}); }
 function bagTotal(){ const b=m.inv.bag; let n=0; for(const k in b) n+=b[k]||0; return n; }
 
@@ -5468,7 +5473,9 @@ const Sg=(bg,o)=>Object.assign({bg},o||{});
 const N=(id,look,x,o)=>Object.assign({id,look,x,face:-1},o||{});
 function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(k==='demon'){ m.f.magong=1; m.ak+=20; } addExp(3); if(!relOf('사부')) rel('사부',null,65);
   if(S.w0&&!m.inv.w) give(S.w0,{quiet:1}); log(`${S.n}에 입문했다`,true); }
-const sectOK=k=>!(SECTS[k].male&&m.sex!=='m')&&!(SECTS[k].female&&m.sex!=='f');
+// 출가 문파(소림사)는 혼인한 사람을 받지 않고, 문도는 혼인하지 못한다. 환속하면 풀린다
+const isMonk=()=>!!(m&&m.sect&&SECTS[m.sect]&&SECTS[m.sect].monk);
+const sectOK=k=>!(SECTS[k].male&&m.sex!=='m')&&!(SECTS[k].female&&m.sex!=='f')&&!(SECTS[k].monk&&m.spouse&&!m.spouse.dead);
 function snap(){ return {gold:m.gold,hp:m.hp,ng:m.ng,fame:m.fame,hy:m.hy,ak:m.ak}; }
 function diffFx(b){ if(m.headless||m.dead) return; const d=[]; const g=Math.round(m.gold-b.gold); if(g) d.push([`${g>0?'+':'−'}${fmt(Math.abs(g))}냥`,g>0?'gold':'bad']);
   const h=Math.round(m.hp-b.hp); if(Math.abs(h)>=3) d.push([`건강 ${h>0?'+':'−'}${Math.abs(h)}`,h>0?'good':'bad']);
@@ -5514,6 +5521,8 @@ function ambient(){
   ];
   for(const [k,c,f] of AMB.sort(()=>R()-.5)){ if(c()){ log(f()); if(!m.yst) m.yst={k}; break; } }
 }
+// 내공이 수명을 늘려 주는 것은 열 갑자까지다
+const NGLIFE=600;
 function hazard(){
   const E0=ERAS[m.era], a=m.age, p=pctNow(), poor=p<30?1.4:p>80?.6:1;
   if(m.hp<=0) return m.deathCause||'병';
@@ -5522,7 +5531,7 @@ function hazard(){
   if(p<25&&R()<E0.famine*.15) return '기근';
   let h;
   if(a<10) h=E0.child*(a<=1?.3:a<=5?.06:.02)*poor*(hasT('weak')?1.5:1);
-  else { h=.004+.0025*Math.pow(2,(a-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+m.ng/80); }
+  else { h=.004+.0025*Math.pow(2,(a-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); }
   if(R()<h) return a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(['폐병','열병','이질','종기','학질','중풍']);
   return null;
 }
@@ -5561,7 +5570,7 @@ function tick(mp){
   m.hp=cl(m.age<45?m.hp+3:m.hp-(m.age-45)*.12,0,100);
   if(m.hp<30&&m.hp>0&&m.inv.bag.salve>0){ m.inv.bag.salve--; m.hp=cl(m.hp+25); log('금창약을 발랐다.'); }
   else if(m.hp<30&&m.hp>0) autoHeal();
-  if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=5; log('아껴 둔 소환단을 삼켰다.'); }
+  if(m.hp<22&&m.hp>0&&m.inv.bag.pill>0){ m.inv.bag.pill--; m.hp=cl(m.hp+30); m.ng+=ngMed(5); log('아껴 둔 소환단을 삼켰다.'); }
   if(m.f.magong) m.sim+=hasFx('calm')?2:4;
   if(m.sect&&m.ak>m.hy+25&&SECTS[m.sect].side==='정'){ log(`${SECTS[m.sect].n}에서 파문당했다`,true); m.sect=null; }
   lvCheck();
@@ -5733,7 +5742,7 @@ E('innFight',{min:15,max:60,w:1.2,rep:5,st:()=>Sg('innroom',{cast:[N('dr',LOOK.s
   {t:'말린다',when:()=>m.f.martial,duel:()=>({foe:{name:'취한 무인',look:LOOK.swordsman(),pow:44+m.lv*3,style:'brute'},extras:[N('wt',npcLook({name:'점소이',sex:'m',age:17,extra:'apron'}),176,{pose:'kneel'})]}),go:ok=>{ m.hy+=5; if(ok){ m.fame+=3; return {t:'젓가락 하나로 그의 손목을 눌렀다. 객잔이 조용해졌다.',tone:'good'}; } rel('원수',null,10); return {t:'얻어맞고 쫓겨났다. 그 무인이 내 얼굴을 기억하겠다고 했다.',tone:'bad'}; }},
   {t:'술값을 대신 내주고 달랜다',when:()=>m.gold>=20,go:()=>{ gold(-20); bump('charm'); rel('지기',null,60); return {t:'무인은 머쓱해하더니 형님 아우 하자고 했다.',tone:'good',cut:()=>{ setPose('dr','drink'); emo('dr','note'); emo('wt',null); }}; }},
   {t:'구석에서 국수나 먹는다',go:()=>{ m.ak+=1; return '국수는 맛있었다.'; }}]});
-E('love',{min:16,max:32,once:1,w:1.4,when:()=>!m.spouse,st:()=>Sg('river',{wx:'rain',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,extra:'umbrella',blush:1}),90,{tag:m.f.loveName})],hero:{x:72}}),
+E('love',{min:16,max:32,once:1,w:1.4,when:()=>!m.spouse&&!isMonk(),st:()=>Sg('river',{wx:'rain',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,extra:'umbrella',blush:1}),90,{tag:m.f.loveName})],hero:{x:72}}),
   text:()=>{ const n=rname(); m.f.loveName=n; return `빗속에서 우산을 같이 쓴 ${n}. 눈이 마주친 순간 숨이 멎는 줄 알았다.${R()<.35?' 그런데 그쪽은 원수 집안 사람이라고 한다.':''}`; },ch:[
   {t:'마음을 고백한다',p:()=>.25+ST('charm')*.06,go:ok=>{ if(ok){ const r=rel('정인',m.f.loveName,75); m.q.push({age:m.age+ri(1,3),id:'wedding'}); log(`${wa(r.name)} 마음을 나눴다`,true); return {t:'대답 대신 손을 잡아 주었다.',tone:'good',cut:()=>{ emo('hero','heart'); emo('lv','heart'); }}; } return {t:'정중한 거절이었다. 그래서 더 아팠다.',tone:'bad',cut:()=>{ leave('lv',1); emo('hero','tear'); }}; }},
   {t:'무공이 먼저다',go:()=>{ addExp(3); return {t:'그 얼굴을 떠올리지 않으려고 검을 더 휘둘렀다.',cut:()=>{ leave('lv',1); }}; }}]});
@@ -5868,7 +5877,7 @@ E('fever',{min:2,max:85,rep:7,w:1.1,st:()=>{ const mo=relOf('어머니'); return
   {t:'의원에게 간다',when:()=>m.gold>=20||m.age<12&&pctNow()>45,go:()=>{ gold(-20); m.hp=cl(m.hp+5); return {t:'의원이 침을 놓고 탕약을 지어 주었다. 열이 내렸다.',tone:'good'}; }},
   {t:'민간요법으로 버틴다',p:()=>.55+ST('body')*.03,go:ok=>{ if(ok){ hurt(8); return '찬 수건과 생강물로 버텼다. 겨우 열이 내렸다.'; } hurt(m.age<12?45:40,'열병'); return {t:'열이 쉽게 떨어지지 않았다.',tone:'bad'}; }},
   {t:'무당을 부른다',when:()=>m.gold>=5,go:()=>{ gold(-5); hurt(15,'열병'); return '굿을 했다. 열은 저 혼자 내렸다.'; }}]});
-E('matchmaker',{min:16,max:30,rep:4,w:1.6,when:()=>!m.spouse,st:()=>Sg('home',{cast:[N('mm',LOOK.matchmaker(),96,{tag:'중매쟁이',emote:'heart',pose:'point'})].concat(parents([150,166]))}),
+E('matchmaker',{min:16,max:30,rep:4,w:1.6,when:()=>!m.spouse&&!isMonk(),st:()=>Sg('home',{cast:[N('mm',LOOK.matchmaker(),96,{tag:'중매쟁이',emote:'heart',pose:'point'})].concat(parents([150,166]))}),
   text:()=>{ const f=pick(['자작농','상인','장인','소작농','객잔 주인']); m.f.mmName=rname(); m.f.mmFam=f; return `중매쟁이가 혼담을 들고 왔다. 상대는 이웃 고을 ${f} 집안의 ${m.f.mmName}.`; },ch:[
   {t:'혼담을 받아들인다',go:()=>{ const r=rel('배우자',m.f.mmName,60); m.spouse=r; m.joy+=6; m.bond+=10; gold(-Math.min(m.gold,15)); log(`${wa(r.name)} 혼인했다`,true); m.q.push({age:m.age+ri(1,3),id:'birth'}); return {t:'얼굴은 혼례날 처음 보았다. 생각보다 웃음이 많은 사람이었다.',tone:'good',st:Sg('wedding',{wx:'petal',cast:[N('sp',relLook(r,{robe:'#b8324a',blush:1}),90,{emote:'heart',tag:r.name})].concat(mob('g',i=>folk(i),[24,40,152,170],i=>({act:'cheer',face:i<2?1:-1}))),hero:{look:heroLook({robe:'#b8324a',weapon:null}),x:72}})}; }},
   {t:'아직 이르다며 거절한다',go:()=>{ m.joy+=1; return {t:'중매쟁이가 혀를 차며 돌아갔다.',cut:()=>{ emo('mm','anger'); leave('mm',1); }}; }}]});
@@ -5884,7 +5893,7 @@ E('parentCare',{min:20,max:60,once:1,w:1.2,when:()=>!!(relOf('아버지')||relOf
   text:()=>{ const p=relOf('어머니')||relOf('아버지'); return `${p.role}가 자리에 누웠다. 곁에서 돌보려면 한 해 벌이를 포기해야 한다.`; },ch:[
   {t:'곁에서 돌본다',go:()=>{ gold(-m.gold*.3); m.bond+=12; m.joy-=3; return {t:'밤마다 약을 달였다. 고맙다는 말을 처음 들었다.',tone:'good',cut:()=>{ emo('pa','heart'); }}; }},
   {t:'형제에게 맡기고 일한다',go:()=>{ gold(20); m.bond-=8; return {t:'돈은 모였다. 마음 한쪽이 계속 무거웠다.',cut:()=>{ leave('hero',1); }}; }}]});
-E('mateLove',{when:()=>!m.spouse,st:()=>Sg('mountain',{time:'dusk',wx:'petal',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,sect:m.sect,blush:1}),96,{tag:m.f.loveName,emote:'heart'})],hero:{x:70}}),
+E('mateLove',{when:()=>!m.spouse&&!isMonk(),st:()=>Sg('mountain',{time:'dusk',wx:'petal',cast:[N('lv',npcLook({name:m.f.loveName,sex:m.sex==='m'?'f':'m',age:m.age,sect:m.sect,blush:1}),96,{tag:m.f.loveName,emote:'heart'})],hero:{x:70}}),
   text:()=>`수련기를 같이 보낸 ${iga(m.f.loveName)} 찾아왔다. "하산하면 같이 강호를 걷자고 했잖아."`,ch:[
   {t:'손을 잡는다',go:()=>{ const r=rel('정인',m.f.loveName,85); m.q.push({age:m.age+ri(1,2),id:'wedding'}); log(`${wa(r.name)} 마음을 나눴다`,true); return {t:'산길을 나란히 내려갔다.',tone:'good',cut:()=>{ emo('hero','heart'); }}; }},
   {t:'갈 길이 다르다',go:()=>({t:'뒷모습이 오래 남았다.',cut:()=>{ emo('lv','tear'); leave('lv',1); }})}]});
@@ -6068,9 +6077,10 @@ const gradeBadge=ev=>{ const g=ev&&gradeOf(ev); return g?`<span class="mh-gr g-$
          par:'m' 어머니/'f' 아버지가 살아 있을 때, 1 고아가 아닐 때 · tier:[집안 형편 낮게, 높게] · org:[출신] · reg:[고향] · wed:1 혼인한 사람/0 안 한 사람 · sex:'m'/'f' · kid:1 자식이 있을 때 · gold·fame·lv:그 이상일 때
          sc:[문파] 그 문파 사람만 · side:'정사마중' 가운데 그쪽 문파 사람만 · free:1 문파가 없는 사람만 · need:함수
    선택지 [글, 결과, 얻는 것]  또는  [글, {p:[기본 확률, 능력, 능력 1당], ok:[결과, 얻는 것], no:[결과, 얻는 것]}]  또는  [글, {duel:{n,pow,look,lethal}, ok:[..], no:[..]}]
-   얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기(0 C·B, 1 A, 2 S, 3 SS) · ar:갑옷(같은 식) · eq:[자리,'등급'] 그 자리·등급의 물건 하나 · art:[이름,위력,종류,내공] · wed:1 혼인한다 · kid:n 자식이 태어난다 */
+   얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기(0 C·B, 1 A, 2 S, 3 SS) · ar:갑옷(같은 식) · eq:[자리,'등급'] 그 자리·등급의 물건 하나 · art:[이름,위력,종류,내공] · wed:1 혼인한다 · kid:n 자식이 태어난다 · unsect:1 문파를 떠난다(환속) */
 function applyFx(f){ if(!f) return; if(f.g!=null) gold(Array.isArray(f.g)?ri(f.g[0],f.g[1]):f.g); if(f.hp) m.hp=f.hp<0?Math.max(1,m.hp+f.hp):cl(m.hp+f.hp); if(f.joy) m.joy=cl(m.joy+f.joy); if(f.bond) m.bond+=f.bond; if(f.fame) m.fame=Math.max(0,m.fame+f.fame); if(f.hy) m.hy+=f.hy; if(f.ak) m.ak+=f.ak;
-  if(f.exp) addExp(gain()*f.exp); if(f.ng&&m.f.martial) m.ng+=f.ng; if(f.st) for(const k in f.st) m.b.st[k]=Math.min(12,(m.b.st[k]||0)+f.st[k]); if(f.it) for(const id of f.it) give(id,{}); if(f.wt!=null){ const id=rndItem('w',tgOf(f.wt),myKind()); if(id) give(id,{}); } if(f.ar!=null){ const id=rndItem('a',tgOf(f.ar)); if(id) give(id,{}); } if(f.eq){ const id=rndItem(f.eq[0],TIER.indexOf(f.eq[1])); if(id) give(id,{}); } if(f.wed&&!(m.spouse&&!m.spouse.dead)){ const r=relOf('정인')||rel('배우자'); r.role='배우자'; m.spouse=r; log(`${wa(r.name)} 혼인했다`,true); if(!m.q.some(q=>q.id==='birth')) m.q.push({age:m.age+ri(1,3),id:'birth'}); }
+  if(f.exp) addExp(gain()*f.exp); if(f.ng&&m.f.martial) m.ng+=f.ng; if(f.st) for(const k in f.st) m.b.st[k]=Math.min(12,(m.b.st[k]||0)+f.st[k]); if(f.it) for(const id of f.it) give(id,{}); if(f.wt!=null){ const id=rndItem('w',tgOf(f.wt),myKind()); if(id) give(id,{}); } if(f.ar!=null){ const id=rndItem('a',tgOf(f.ar)); if(id) give(id,{}); } if(f.eq){ const id=rndItem(f.eq[0],TIER.indexOf(f.eq[1])); if(id) give(id,{}); } if(f.unsect&&m.sect){ log(`${SECTS[m.sect].n}${jo(SECTS[m.sect].n,'을','를')} 떠나 환속했다`,true); m.sect=null; m.f.exmonk=1; }
+  if(f.wed&&!isMonk()&&!(m.spouse&&!m.spouse.dead)){ const r=relOf('정인')||rel('배우자'); r.role='배우자'; m.spouse=r; log(`${wa(r.name)} 혼인했다`,true); if(!m.q.some(q=>q.id==='birth')) m.q.push({age:m.age+ri(1,3),id:'birth'}); }
   if(f.kid) for(let i=0;i<f.kid;i++){ m.kids++; const n=m.b.sur+gname(); rel('자식',n,80,{sx:R()<.5?'m':'f'}); log(`자식 ${iga(n)} 태어났다`,true); }
   if(f.art) learn(f.art[0],f.art[1],f.art[2],f.art[3]); }
 const fxTone=f=>{ if(!f) return ''; const neg=(f.hp<0)||(typeof f.g==='number'&&f.g<0)||(f.joy<0)||(f.fame<0), pos=Object.keys(f).some(k=>k!=='ak'&&(Array.isArray(f[k])||typeof f[k]==='object'||f[k]>0)); return pos&&!neg?'good':neg&&!pos?'bad':''; };
@@ -6083,7 +6093,8 @@ function mkCh(x,g){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ 
   return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); if(ok) qDrop(g,r[1]); return {t:r[0],tone:ok?'good':'bad'}; }}; }
 let QN=0;
 function Q(g,id,c,bg,text,chs){ c=c||{}; QN++; const rep=c.rep!=null?c.rep:GREP[g];
-  E(id,Object.assign({min:c.a?c.a[0]:13,max:c.a?c.a[1]:70,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!(m.spouse&&!m.spouse.dead)===!!c.wed)&&(!c.sex||m.sex===c.sex)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
+  const hi=c.a?c.a[1]:70;   // 위쪽 나이가 70 이상이면 나이 제한이 없는 것으로 친다(오래 사는 사람에게도 일이 생기게)
+  E(id,Object.assign({min:c.a?c.a[0]:13,max:hi>=70?150:hi,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!(m.spouse&&!m.spouse.dead)===!!c.wed)&&(c.wed!==0||!isMonk())&&(!c.sex||m.sex===c.sex)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
     st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(x=>mkCh(x,g))},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }
 /* ==== murim:minor-1 — 등급 사건 첫 묶음 (어린 시절 · 마을 · 길과 저자 · 무림 · 집안) ==== */
 /* ---------- C: 일상 ---------- */
@@ -7253,6 +7264,56 @@ Q('S','z10s_absinthe2',{mar:1,a:[20,60]},'cave','서역 수도승의 동굴에 �
 /* ---------- SS ---------- */
 Q('SS','z10ss_armory',{mar:1,a:[20,58]},'tomb','무너진 왕릉의 측실이 병기고다. 천 년 묵은 것들 가운데 단 한 벌, 먼지가 앉지 않은 갑주와 병기가 있다.',[['둘 다 든다','갑주는 몸에 맞게 줄어들었다. 병기는 손에서 울었다. 능을 나서자 뒤에서 돌문이 닫혔다.',{wt:3,ar:3,fame:6}],['절하고 병기만 든다','갑주는 주인 곁에 두었다. 능을 나서는 길에 벽화가 눈에 들어왔다. 옛 왕의 검무였다. 그것이 진짜 부장품이었다.',{wt:3,exp:2.5,hy:5}]]);
 Q('SS','z10ss_merchantking',{a:[20,58],gold:100},'hall','천하 제일 거상이 후계자를 찾는다. 시험은 하나다. 은자 백 냥으로 한 달 안에 무엇을 하는가.',[['장사를 한다',{p:[.45,'wit',.07],ok:['백 냥이 천 냥이 됐다. 거상이 고개를 끄덕였다. 상단의 한 축이 내 것이 됐다.',{g:[650,950],fame:10}],no:['본전이었다. 거상은 "잃지 않는 것도 재주"라며 밑천을 얹어 줬다.',{g:[150,220],fame:3}]}],['굶는 고을에 쌀을 푼다','한 달 뒤 빈손으로 갔다. 거상이 한참 보더니 웃었다. "돈은 내가 벌 줄 아네. 쓸 줄 아는 사람이 필요했지."',{g:[500,750],fame:12,hy:10}]]);
+/* ==== murim:minor-11 — 등급 사건 열한째 묶음 (일흔 넘어서 · 환속) ==== */
+/* ---------- C ---------- */
+Q('C','z11_seventy',{a:[70,150]},'yard','일흔을 넘겼다. 고희라고들 한다.',[['별것 아니라고 한다','어제와 같은 아침이었다. 그게 고마웠다.',{joy:2}],['국수를 삶아 돌린다','이웃들이 덕담을 했다.',{g:-2,joy:3,bond:.5}]]);
+Q('C','z11_younger',{a:[72,150]},'village','마을에서 내가 제일 나이가 많다.',[['상석에 앉는다','다들 내 말을 기다렸다. 할 말은 별로 없었다.',{joy:2,fame:.2}],['아이들 틈에 앉는다','거기가 더 재미있었다.',{joy:3}]]);
+Q('C','z11_funeralmany',{a:[72,150]},'grave','올해만 세 번째 문상이다.',[['향을 올린다','돌아오는 길에 하늘을 한참 봤다.',{joy:-1,hy:.3}],['상주의 손을 잡아 준다','상주가 오래 울었다.',{hy:.5}]]);
+Q('C','z11_hearing',{a:[72,150]},'home','귀가 어두워졌다. 다들 목소리를 높인다.',[['못 들은 척이 늘었다','듣기 싫은 말은 안 들려서 편했다.',{joy:2}],['입 모양을 본다','보는 것으로 절반은 알아들었다.',{joy:1}]]);
+Q('C','z11_sleep',{a:[72,150]},'home','새벽 세 시면 눈이 떠진다.',[['마당을 쓴다','해 뜨기 전 마당은 내 것이다.',{hp:1,joy:1}],['누워서 옛일을 헤아린다','좋은 날이 생각보다 많았다.',{joy:2}]]);
+Q('C','z11_greatgrand',{a:[72,150],kid:1},'home','증손주가 내 수염을 잡아당긴다.',[['같이 웃는다','수염이 몇 가닥 뽑혔다.',{joy:5,bond:1}],['수염을 땋아 보라고 한다','삐뚤빼뚤 땋은 채로 종일 다녔다.',{joy:5}]]);
+Q('C','z11_medicine',{a:[72,150]},'kitchen','약탕기가 하루도 쉬지 않는다.',[['쓴 약을 단숨에 마신다','쓴맛도 이젠 맛이다.',{hp:2}],['꿀을 한 숟갈 탄다','의원이 알면 혼날 일이다.',{hp:1,joy:2}]]);
+Q('C','z11_walkslow',{a:[72,150]},'road','장까지 가는 길이 반나절이 됐다.',[['쉬엄쉬엄 간다','길가의 꽃을 이제야 본다.',{joy:2}],['업어 준다는 걸 사양한다','내 발로 갔다. 그게 중요했다.',{joy:2,hp:-1}]]);
+Q('C','z11_oldthings',{a:[72,150]},'home','궤를 정리하다 젊을 적 물건이 나왔다.',[['하나하나 꺼내 본다','해가 기울었다.',{joy:3}],['손주에게 준다','손주는 무엇인지 몰랐다. 설명해 주는 데 한나절이 걸렸다.',{joy:3,bond:.5}]]);
+Q('C','z11_weather',{a:[72,150]},'yard','내일 날씨를 묻는 이웃이 온다. 내 무릎이 용하다고.',[['무릎에 물어본다','"비." 정말 왔다.',{joy:2,fame:.2}],['하늘을 본다','구름 모양을 일흔 해 넘게 봤다.',{joy:1}]]);
+Q('C','z11_namesake',{a:[72,150]},'village','이웃이 아기 이름을 지어 달라고 한다.',[['사흘을 고민한다','좋은 이름이라고들 했다.',{joy:3,fame:.3}],['내 이름에서 한 자를 준다','아기 아비가 깊이 절했다.',{joy:3,bond:.5}]]);
+Q('C','z11_teethgone',{a:[75,150]},'home','마지막 어금니가 빠졌다.',[['두부를 먹는다','두부가 이렇게 맛있는 줄 몰랐다.',{hp:1,joy:1}],['이를 지붕에 던진다','아이 때 하던 대로. 새 이는 안 나겠지만.',{joy:2}]]);
+Q('C','z11_sunbath',{a:[72,150],sea:[3,0]},'yard','겨울 볕이 마루에 든다.',[['볕을 따라 자리를 옮긴다','하루에 세 번 옮겼다.',{hp:2,joy:1}],['고양이와 나눠 쬔다','고양이가 무릎에 올라왔다.',{joy:3}]]);
+Q('C','z11_swordold',{mar:1,a:[72,150]},'yard','검을 들어 본다. 무겁다.',[['한 초식만 펼친다','느렸다. 그러나 군더더기가 없었다.',{exp:.05,joy:2}],['검집째 지팡이 삼는다','평생의 벗이 지팡이가 됐다.',{joy:2}]]);
+Q('C','z11_breath',{mar:1,a:[72,150]},'hermit','운기하다 그대로 잠이 들었다.',[['깨어 보니 한나절이다','잠인지 선정인지, 몸은 가벼웠다.',{hp:3}],['제자가 깨운다','"사부님, 식사하셔야지요." 밥이 먼저다.',{hp:2,joy:1}]]);
+Q('C','z11_legendtalk',{mar:1,a:[72,150]},'inn','객잔에서 젊은이들이 내 젊을 적 이야기를 한다. 내가 여기 앉은 줄 모른다.',[['듣기만 한다','세 배쯤 부풀어 있었다. 고치지 않았다.',{joy:4}],['"그 사람, 그렇게 대단하진 않았네" 한다','젊은이들이 화를 냈다. 술맛이 좋았다.',{joy:4}]]);
+Q('C','z11_gravevisit',{a:[75,150]},'grave','벗들의 무덤을 차례로 돈다.',[['한 잔씩 붓는다','술병이 비었을 때 해가 졌다.',{joy:1,hy:.3}],['"좀 더 있다 가겠네" 한다','바람이 대답했다.',{joy:2}]]);
+Q('C','z11_ninety',{a:[90,150]},'yard','아흔을 넘겼다. 의원이 맥을 짚고 고개를 갸웃한다.',[['"아직 멀었소?" 묻는다','의원이 웃었다. "저보다 오래 사시겠습니다."',{joy:3}],['의원에게 차를 낸다','의원의 아버지도 내가 봤던 아이다.',{joy:2}]]);
+Q('C','z11_nobodyleft',{a:[88,150]},'village','나를 "아무개야" 하고 부르던 사람이 이제 하나도 없다.',[['혼자 내 이름을 불러 본다','낯설었다.',{joy:-1}],['아이들에게 이름으로 부르라고 한다','아이들이 깔깔거리며 불렀다. 좋았다.',{joy:4}]]);
+Q('C','z11_century',{a:[100,150]},'yard','백 번째 봄이다.',[['매화를 본다','백 번을 봐도 처음 같았다.',{joy:5}],['"또 피었구나" 한다','매화도 같은 말을 하는 듯했다.',{joy:4}]]);
+
+/* ---------- B ---------- */
+Q('B','z11b_feast',{a:[70,150]},'village','고을 수령이 노인들을 불러 기로연을 연다.',[['간다','상석에 앉아 술을 받았다. 비단 한 필이 하사품이었다.',{g:[8,14],fame:.8,joy:4}],['사양한다','수령이 사람을 시켜 음식을 보내왔다.',{hp:4,joy:2}]]);
+Q('B','z11b_arbiter',{a:[70,150]},'hall','마을 다툼이 생기면 다들 나를 찾는다.',[['양쪽 말을 다 듣는다',{p:[.55,'wit',.04],ok:['둘 다 수긍했다. 닭 한 마리가 사례로 왔다.',{fame:1,hp:3,hy:1}],no:['한쪽이 삐쳤다. 사흘 뒤에 풀렸다.',{}]}],['"내가 죽으면 누구한테 물을 텐가" 한다','둘이 머쓱해져서 알아서 풀었다.',{fame:.5,joy:3}]]);
+Q('B','z11b_lastlesson',{mar:1,a:[70,150],lv:2},'yard','젊은 무인이 찾아와 한 수 가르침을 청한다.',[['말로 가르친다','칼을 들지 않고 한 시진을 이야기했다. 젊은이의 눈빛이 달라졌다.',{fame:1,joy:4,exp:.1}],['한 초식을 보여 준다','숨은 찼다. 그래도 그 한 초식은 평생 가장 맑았다.',{exp:.3,hp:-3,joy:5}]]);
+Q('B','z11b_inherit',{a:[72,150],gold:20},'home','물려줄 것을 미리 나눠 주기로 한다.',[['고르게 나눈다','다투는 이가 없었다. 그것이 내가 남긴 제일 큰 것이다.',{g:-20,bond:4,joy:5}],['서당과 절에 내놓는다','이름이 기둥에 새겨졌다. 식구들은 말이 없었다.',{g:-20,fame:3,hy:4}]]);
+Q('B','z11b_oldenemy',{a:[72,150]},'inn','평생의 원수가 손자 손을 잡고 찾아왔다. 둘 다 지팡이를 짚었다.',[['차를 낸다','무엇 때문에 싸웠는지 둘이 기억을 맞춰 봤다. 맞지 않았다. 웃었다.',{joy:8,hy:3}],['손자들끼리 놀게 한다','아이들은 금세 동무가 됐다. 그걸 보며 둘이 술을 마셨다.',{joy:8,bond:1}]]);
+Q('B','z11b_memoirfin',{a:[72,150]},'library','평생을 적은 글이 마침내 끝났다.',[['책으로 묶는다','고을 서원에서 한 부를 청했다.',{fame:2,joy:6}],['불에 태운다','산 것으로 족하다. 재가 높이 올랐다.',{joy:5,hy:1}]]);
+Q('B','z11b_fall',{a:[75,150]},'home','문지방에 걸려 넘어졌다.',[['한 철을 누워 지낸다',{p:[.5,'body',.04],ok:['뼈가 붙었다. 다시 걸었다.',{hp:-5}],no:['일어나긴 했다. 지팡이 없이는 못 걷게 됐다.',{hp:-14}]}],['용한 접골사를 부른다','돈은 들었다. 석 달 만에 걸었다.',{g:-8,hp:-3}]]);
+Q('B','z11b_grandduel',{mar:1,a:[72,150]},'arena','손주뻘 무인이 비무대에서 내 이름을 댄다. "저분의 문하입니다."',[['구경하러 간다','내 초식이 저 젊은 몸에서 살아 있었다.',{joy:8,fame:1}],['끝나고 틀린 데를 짚어 준다','젊은이가 무릎을 꿇었다. 구경꾼들이 숙연했다.',{fame:2,exp:.1,joy:5}]]);
+Q('B','z11b_centuryfeast',{a:[100,150]},'village','상수(上壽)다. 백 살 잔치를 고을에서 열어 준다.',[['받는다','수령이 직접 잔을 올렸다. 온 고을이 사흘을 마셨다.',{fame:3,joy:10,g:[10,20]}],['"아흔아홉이오" 하고 우긴다','다들 웃었다. 잔치는 그대로 했다.',{fame:2,joy:10}]]);
+Q('B','z11b_reaper',{a:[90,150]},'home','꿈에 검은 옷 입은 이가 장부를 뒤적인다. "이상하다, 이름이 없네."',[['차를 권한다','그는 차를 마시고 갔다. 아침에 몸이 가벼웠다.',{hp:6,joy:3}],['"천천히 찾으시오" 한다','그가 머리를 긁으며 사라졌다.',{joy:4,st:{luck:1}}]]);
+Q('B','z11b_disciplesdisciple',{mar:1,a:[75,150],lv:3},'hall','제자의 제자의 제자가 인사를 왔다. 나를 조사(祖師)라 부른다.',[['이름을 묻는다','기억하겠다고 했다. 이틀 뒤에 잊었다. 그 아이는 평생 기억했다.',{joy:5,fame:1}],['구결 한 줄을 고쳐 준다','세 대를 내려가며 틀어진 것을 바로잡았다.',{fame:2,exp:.15,joy:4}]]);
+Q('B','z11b_lasttrip',{a:[72,150],gold:10},'road','죽기 전에 태어난 집터를 한 번 보고 싶다.',[['간다','집은 없고 감나무만 있었다. 감이 달았다.',{g:-10,joy:8,hp:-3}],['손주를 보내 흙을 한 줌 가져오게 한다','화분에 담아 머리맡에 두었다.',{g:-4,joy:5,bond:1}]]);
+
+/* ---------- A ---------- */
+Q('A','z11a_livinglegend',{mar:1,a:[75,150],lv:4},'hall','무림맹이 사람을 보냈다. 강호의 분쟁에 원로의 한마디가 필요하다고 한다.',[['간다','두 문파 사이에 앉아 있기만 했다. 그것으로 칼이 거둬졌다.',{fame:5,hy:4,g:[30,50]}],['편지 한 장을 써 보낸다','"싸우려거든 내 무덤 앞에서 싸워라." 싸움은 없던 일이 됐다.',{fame:4,hy:3,joy:4}]]);
+Q('A','z11a_imperialgift',{a:[90,150]},'hall','조정에서 장수 노인을 찾아 상을 내린다. 고을에서 내 이름이 올라갔다.',[['받는다','비단과 쌀과 지팡이가 내려왔다. 지팡이 머리가 비둘기 모양이었다.',{g:[40,70],fame:5,joy:6}],['쌀은 마을에 푼다','지팡이만 받았다. 마을은 그 겨울을 넉넉히 났다.',{fame:5,hy:5,joy:6}]]);
+Q('A','z11a_lastinsight',{mar:1,a:[80,150],lv:3},'peak','힘이 빠지고 나니 보인다. 평생 힘으로 가리고 있던 것이.',[['앉아서 본다','이제야 알았다. 몸은 못 따라가도 마음은 한 걸음 더 갔다.',{exp:.8,ng:2,joy:6}],['제자를 불러 말로 전한다','제자가 받아 적었다. 내 몸으로는 못 한 것을 제자가 해냈다.',{fame:3,joy:8,exp:.4}]]);
+Q('A','z11a_oldherbsman',{a:[75,150]},'mountain','평생 다닌 산이 마지막 선물을 준다. 발밑에 삼 잎이 보인다.',[['캐서 먹는다','몇 해는 더 살 것 같았다.',{hp:25}],['손주 혼수로 둔다','손주가 울었다.',{bond:4,joy:6,g:[20,40]}]]);
+Q('A','z11a_reunionbeyond',{a:[80,150]},'home','먼저 간 사람이 꿈에 와서 손을 내민다.',[['"조금만 더 있다 가겠소" 한다','그 사람이 웃으며 고개를 끄덕였다. 아침 햇살이 좋았다.',{joy:8,hp:5}],['손을 잡아 본다','따뜻했다. 깨어 보니 손에 온기가 남아 있었다.',{joy:10,bond:2}]]);
+Q('A','z11a_statue',{a:[85,150],fame:20},'village','마을에서 내 공덕비를 세우겠다고 한다. 살아 있는데.',[['세우라고 한다','제막하던 날 내 손으로 줄을 당겼다. 민망하고 좋았다.',{fame:5,joy:6}],['"죽거든 세워라" 한다','다들 웃었다. 돌은 미리 깎아 두었다고 한다.',{fame:3,joy:5,hy:2}]]);
+/* 소림 제자는 혼인하지 못한다. 마음이 흔들리면 환속하거나, 다잡거나 */
+Q('A','s11a_hwansok',{sc:['shaolin'],a:[17,45],rep:0},'village','탁발 길에 마주친 사람이 자꾸 떠오른다. 염불을 외워도 그 얼굴이 가시지 않는다.',[['환속한다','방장은 말없이 가사를 받아 들었다. "산문은 닫히지 않는다." 산을 내려오는 길에 머리가 벌써 가려웠다.',{unsect:1,joy:5}],['마음을 다잡는다','백 일을 묵언했다. 그 얼굴은 흐려졌고 마음은 한 겹 단단해졌다.',{exp:.6,ng:2}]]);
+
+/* ---------- S ---------- */
+Q('S','z11s_returnspring',{mar:1,a:[80,150],lv:5},'pond','반로환동(返老還童). 늙음이 극에 이르면 돌아간다고 했다. 흰 머리 사이로 검은 머리가 난다.',[['흐름에 맡긴다','이가 새로 나고 주름이 펴졌다. 거울 속 얼굴이 낯설었다.',{hp:50,st:{body:2},ng:10}],['"늙은 대로가 좋다" 한다','기운은 돌아왔고 얼굴은 그대로 두었다. 주름은 내가 산 날들이다.',{hp:40,ng:6,joy:10,hy:3}]]);
+Q('S','z11s_centurysage',{a:[100,150]},'peak','백 년을 살고 나니 사람들이 묻는다. 어떻게 사는 것이냐고.',[['"밥 잘 먹고 잘 자라" 한다','그 말이 고을을 넘고 도성까지 갔다. 황제가 편액을 내렸다.',{fame:10,g:[120,180],joy:8}],['아무 말 없이 차를 따른다','묻던 이가 차를 마시고 한참 앉았다가 절하고 갔다. 그 뒤로 찾아오는 이가 끊이지 않았다.',{fame:8,hy:6,joy:10,hp:10}]]);
 /* ==== murim:train — 삼 년 수련기: 두 달마다 할 일, 동문, 일과 에피소드 ==== */
 const SEASONS=['정월','삼월','오월','칠월','구월','동짓달'], TSEAS=[3,0,1,1,2,3];
 const trainPlace=()=>m.sect?SECTS[m.sect].n:m.f.master?'은사의 초막':'마을 무관';
@@ -7779,7 +7840,7 @@ const WAGE=15;
 let WGO=false;
 const joinable=s=>!!(s&&s.type==='sect'&&s.sect&&SECTS[s.sect]&&SECTS[s.sect].side!=='마');
 const worldSect=()=>{ const s=inCathay()?curSite():null; return (s&&s.sect&&SECTS[s.sect]&&s.sect)||m.sect||regOf(m.b.reg).sect||'huashan'; };
-const sectOpen=()=>{ const S=SECTS[worldSect()]; return !(S.male&&m.b.sex!=='m')&&!(S.female&&m.b.sex!=='f'); };
+const sectOpen=()=>{ const S=SECTS[worldSect()]; return !(S.male&&m.b.sex!=='m')&&!(S.female&&m.b.sex!=='f')&&!(S.monk&&m.spouse&&!m.spouse.dead); };
 const canLeave=()=>m.age>=WAGE||!!(m.f.martial&&m.f.trainDone);
 function leaveVillage(){ if(!canLeave()) return; const h=homeTile(); m.map={id:'cathay',x:h.x,y:h.y,dir:'d'}; m.ai=null; CT=null; CSEL=null; sfx('ok'); render(); save(); }
 function enterVillage(){ m.map={id:'vil',x:21,y:28,dir:'u'}; m.ai=null; CT=null; CSEL=null; sfx('ok'); render(); save(); }
@@ -8153,7 +8214,7 @@ function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.pha
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
     <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
     ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
-    ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}`;
+    ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}${(m.f.medN||0)>=1?`<p class="mh-tol">내공 약을 여러 번 먹어 약효가 ${Math.round(medTol()*100)}%만 듣는다. 건강 회복은 그대로다.</p>`:''}`;
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
   el.querySelectorAll('[data-use]').forEach(x=>x.onclick=()=>{ useBag(x.dataset.use); render(); save(); });

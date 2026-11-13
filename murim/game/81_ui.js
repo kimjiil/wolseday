@@ -32,7 +32,7 @@ function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.pha
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
     <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
     ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
-    ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}`;
+    ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}${(m.f.medN||0)>=1?`<p class="mh-tol">내공 약을 여러 번 먹어 약효가 ${Math.round(medTol()*100)}%만 듣는다. 건강 회복은 그대로다.</p>`:''}`;
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
   el.querySelectorAll('[data-use]').forEach(x=>x.onclick=()=>{ useBag(x.dataset.use); render(); save(); });

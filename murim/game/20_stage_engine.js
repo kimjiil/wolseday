@@ -195,16 +195,25 @@ function syncTags(){ if(!SC) return; for(const a of SC.actors){ if(!a._tag) cont
 function floatText(x,y,txt,cls){ const el=$m('mhFl'); if(!el) return; const s=document.createElement('span'); s.className='mh-float '+(cls||''); s.textContent=txt; s.style.left=(x/W*100)+'%'; s.style.top=(y/H*100)+'%'; el.appendChild(s); setTimeout(()=>s.remove(),1500); }
 function heroFloat(txt,cls,dy){ if(MAPON&&MAPV&&MAPV.hero.sx!=null) return floatText(MAPV.hero.sx,MAPV.hero.sy-30-(dy||0),txt,cls); if(!SC) return floatText(96,62-(dy||0),txt,cls); const h=actorOf('hero'); floatText(h?h.x:70,(h?h.y:FY)-30-(dy||0),txt,cls); }
 function toast(html,cls,ms){ const el=$m('mhToast'); if(!el) return; const d=document.createElement('div'); d.className='mh-toastc '+(cls||''); d.innerHTML=html; el.appendChild(d); while(el.children.length>3) el.firstChild.remove(); setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),400); },ms||3200); }
-// 높은 등급(S 이상) 무공을 얻었을 때의 연출: 장면이 어두워지고 빛살이 돌며 이름이 도장처럼 찍힌다. S → SS → SSR 로 갈수록 길고 요란하다
-const AFXT={3:['絶技',2600],4:['神功',3400],5:['絶世神功',4800]};
-let HOLDT=0;   // 이 시각(performance.now 기준)까지는 시간이 흐르지 않는다. 맡기기 중에도 연출이 끝까지 보이게
-function artFx(n,g,sub,dark){ const box=cv.parentNode; if(!box) return 0; const old=box.querySelector('.mh-artfx'); if(old) old.remove();
-  const han=AFXT[g][0], ms=AFXT[g][1], el=document.createElement('div'); el.className='mh-artfx g'+g+(dark?' dark':''); el.style.setProperty('--dur',ms+'ms'); el.setAttribute('aria-hidden','true');
-  const N=g===5?36:g===4?22:12; let pts=''; for(let i=0;i<N;i++) pts+=`<span class="pt" style="left:${(hsh(i*7.3+g)*100).toFixed(1)}%;animation-delay:${Math.round(hsh(i*3.1+1)*ms*.6)}ms;animation-duration:${Math.round(900+hsh(i*5.7+2)*1000)}ms"></span>`;
-  el.innerHTML=`<i class="veil"></i><i class="rays"></i><i class="ring"></i><i class="ring r2"></i>${g>=4?'<i class="ring r3"></i>':''}${g>=5?'<i class="rays r2"></i><i class="bolt"></i>':''}${pts}<div class="tx"><em>${han}</em><b data-n="${esc(n)}">${esc(n)}</b><small>${esc(sub)} · ${TIER[g]}등급</small></div>`;
-  box.appendChild(el); setTimeout(()=>el.remove(),ms+80); HOLDT=Math.max(HOLDT,performance.now()+ms*.92);
-  const burst=(n2,c)=>{ const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-12,c,n2); };
-  shake=g===5?14:g===4?8:4; flashA=g===5?.9:g===4?.6:.35; flashC=dark?'#ff6a50':g===5?'#fff3c0':g===4?'#ffe08a':'#cdb4ff';
-  if(g>=4) setTimeout(()=>{ shake=g===5?10:5; flashA=g===5?.5:.25; burst(g===5?40:24,'#ffe9a0'); },ms*.38);
-  if(g===5) setTimeout(()=>{ shake=8; flashA=.4; burst(40,'#ffc0e0'); },ms*.62); return ms; }
+/* 높은 등급(S 이상)의 연출: 장면이 천천히 어두워지고 빛살이 돌며 이름이 도장처럼 찍힌다. 그러고는 누를 때까지 그대로 멈춰 있는다.
+   떠 있는 동안에는 시간이 흐르지 않는다(맡기기 중에도). 화면을 누르거나 Enter·Space·Esc 를 누르면 닫힌다.
+   무공을 얻었을 때(artFx)와, 맡기기 중에 S 이상 사건이 열렸을 때(evIntro)에 쓴다 */
+const AFXT={3:'絶技',4:'神功',5:'絶世神功'};
+let HOLDT=0, AFXQ=[], AFXEL=null, AFXAT=0;   // HOLDT: 이 시각까지는 시간이 흐르지 않는다
+const afxOpen=()=>!!AFXEL;
+function gradeFx(o){ AFXQ.push(o); if(!AFXEL) afxNext(); }
+function afxNext(){ const o=AFXQ.shift(), box=cv.parentNode; if(!o||!box){ AFXEL=null; HOLDT=0; return; } const g=o.g, el=document.createElement('div'); el.className='mh-artfx g'+g+(o.dark?' dark':''); el.setAttribute('role','button'); el.setAttribute('tabindex','0'); el.setAttribute('aria-label',`${o.title}. 누르면 닫힌다`);
+  const N=g===5?36:g===4?22:12; let pts=''; for(let i=0;i<N;i++) pts+=`<span class="pt" style="left:${(hsh(i*7.3+g)*100).toFixed(1)}%;animation-delay:${Math.round(hsh(i*3.1+1)*2600)}ms;animation-duration:${Math.round(1500+hsh(i*5.7+2)*1500)}ms"></span>`;
+  el.innerHTML=`<i class="veil"></i><i class="rays"></i><i class="ring"></i><i class="ring r2"></i>${g>=4?'<i class="ring r3"></i>':''}${g>=5?'<i class="rays r2"></i><i class="bolt"></i>':''}${pts}<div class="tx"><em>${esc(o.han)}</em><b>${esc(o.title)}</b><small>${esc(o.sub||'')}</small></div><span class="go">눌러서 계속</span>`;
+  box.appendChild(el); AFXEL=el; AFXAT=performance.now(); el._o=o; HOLDT=Infinity; el.onclick=e=>{ e.stopPropagation(); afxClose(); };
+  if(o.sfx) sfx(o.sfx);
+  const burst=(n2,c)=>{ if(AFXEL!==el) return; const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-12,c,n2); };
+  shake=g===5?12:g===4?7:4; flashA=g===5?.9:g===4?.6:.35; flashC=o.dark?'#ff6a50':g===5?'#fff3c0':g===4?'#ffe08a':'#cdb4ff';
+  if(g>=4) setTimeout(()=>{ if(AFXEL!==el) return; shake=g===5?9:5; flashA=g===5?.5:.25; burst(g===5?40:24,'#ffe9a0'); },1500);
+  if(g===5) setTimeout(()=>{ if(AFXEL!==el) return; shake=7; flashA=.4; burst(40,'#ffc0e0'); },2700);
+  if(window.__mhNoHold) setTimeout(()=>{ if(AFXEL===el) afxClose(true); },900); }
+// 뜨자마자 잘못 눌러 닫히지 않게, 0.9초가 지나야 닫힌다
+function afxClose(force){ const el=AFXEL; if(!el||(!force&&performance.now()-AFXAT<900)) return false; AFXEL=null; el.classList.add('out'); setTimeout(()=>el.remove(),320); const o=el._o; if(AFXQ.length) afxNext(); else HOLDT=0; if(o&&o.onClose){ try{ o.onClose(); }catch(e){} } return true; }
+function afxClear(){ AFXQ.length=0; if(AFXEL){ AFXEL.remove(); AFXEL=null; } HOLDT=0; }
+function artFx(n,g,sub,dark,onClose){ gradeFx({g,han:AFXT[g],title:n,sub:`${sub} · ${TIER[g]}등급`,dark,sfx:'art'+g,onClose}); }
 function callout(txt,cls,ms){ const el=$m('mhCall'); if(!el) return; el.className='mh-call '+(cls||''); el.textContent=txt; el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; clearTimeout(callout.t); callout.t=setTimeout(()=>{ el.hidden=true; },ms||1300); }

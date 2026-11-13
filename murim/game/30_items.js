@@ -156,7 +156,7 @@ const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
 // 새 무공 알림. S 이상이면 장면 위에 획득 연출이 뜬다(design 의 artFx)
-function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); sfx(g>=3?'art'+g:'get');
+function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); if(g<3) sfx('get');
   const tip=()=>toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(artSub(a))} ${grTag(g)}</small><b>${esc(n)}</b><em>${artStat(a)}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'gr'+g,g>=3?4600:4200);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':g>=4?'#ffe9a0':'#bfe8ff',g>=3?22:12);
-  if(g>=3){ const ms=artFx(n,g,artSub(a),k==='마공'); setTimeout(tip,ms*.86); } else tip(); }
+  if(g>=3) artFx(n,g,artSub(a),k==='마공',tip); else tip(); }   // 연출이 닫힌 뒤에 알림이 뜬다

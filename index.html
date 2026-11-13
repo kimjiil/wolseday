@@ -3387,7 +3387,9 @@ img.mh-ic{object-fit:contain}
 .mh-artmore[open] summary{margin-bottom:2px}
 #mhToast{z-index:6}
 /* 높은 등급 무공을 얻었을 때의 연출(artFx) */
-.mh-artfx{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;display:grid;place-items:center;line-height:1.15;--c:#b89cf0;--c2:#efe6ff;--cr:rgba(184,156,240,.55);animation:mhAfx var(--dur,2600ms) linear forwards}
+.mh-artfx{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;display:grid;place-items:center;line-height:1.15;--c:#b89cf0;--c2:#efe6ff;--cr:rgba(184,156,240,.55);pointer-events:auto;cursor:pointer;animation:mhAfxIn .9s ease-out both}
+.mh-artfx.out{animation:mhAfxOut .3s ease-in forwards;pointer-events:none}
+.mh-artfx:focus-visible{outline:3px solid #fff;outline-offset:-3px}
 .mh-artfx.g4{--c:#f2c14e;--c2:#fff3c0;--cr:rgba(242,193,78,.62)}.mh-artfx.g5{--c:#ffd76a;--c2:#ffffff;--cr:rgba(255,236,160,.75)}.mh-artfx.dark{--c:#e2503a;--c2:#ffd0c4;--cr:rgba(226,80,58,.6)}
 .mh-artfx i{position:absolute;display:block}
 .mh-artfx .veil{inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(23,22,28,.3) 0%,rgba(10,9,14,.9) 78%)}
@@ -3395,25 +3397,28 @@ img.mh-ic{object-fit:contain}
 .mh-artfx.g4 .rays{animation-duration:7s}
 .mh-artfx.g5 .rays{background:repeating-conic-gradient(from 0deg,transparent 0 6deg,rgba(255,236,160,.8) 6deg 9deg,transparent 9deg 14deg,rgba(240,140,200,.6) 14deg 16deg,transparent 16deg 22deg,rgba(150,190,255,.55) 22deg 24deg,transparent 24deg 30deg);animation-duration:5s}
 .mh-artfx.g5 .rays.r2{width:120%;animation-direction:reverse;animation-duration:8s;opacity:.6}
-.mh-artfx .ring{left:50%;top:50%;width:16%;aspect-ratio:1;border-radius:50%;border:3px solid var(--c2);box-shadow:0 0 16px var(--c),inset 0 0 12px var(--c);transform:translate(-50%,-50%) scale(.2);opacity:0;animation:mhAfxRing 1.2s ease-out .12s forwards}
-.mh-artfx .ring.r2{animation-delay:.55s}.mh-artfx .ring.r3{animation-delay:1.05s}
-.mh-artfx .bolt{inset:0;background:#fff;opacity:0;animation:mhAfxBolt var(--dur) linear forwards}
+.mh-artfx .ring{left:50%;top:50%;width:16%;aspect-ratio:1;border-radius:50%;border:3px solid var(--c2);box-shadow:0 0 16px var(--c),inset 0 0 12px var(--c);transform:translate(-50%,-50%) scale(.2);opacity:0;animation:mhAfxRing 2s ease-out .5s forwards}
+.mh-artfx .ring.r2{animation-delay:1.3s}.mh-artfx .ring.r3{animation-delay:2.1s}
+.mh-artfx .bolt{inset:0;background:#fff;opacity:0;animation:mhAfxBolt 4.2s linear forwards}
 .mh-artfx .pt{position:absolute;bottom:-3%;width:4px;height:4px;background:var(--c2);box-shadow:0 0 6px 1px var(--c);opacity:0;animation:mhAfxPt 1.4s ease-out infinite}
 .mh-artfx.g5 .pt:nth-of-type(3n){background:#ffc0e0;box-shadow:0 0 6px 1px #f08cc8}.mh-artfx.g5 .pt:nth-of-type(3n+1){background:#cfe4ff;box-shadow:0 0 6px 1px #7fb4ff}
-.mh-artfx .tx{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:0 8px;max-width:100%;animation:mhAfxTx var(--dur,2600ms) cubic-bezier(.2,.9,.3,1) forwards}
+.mh-artfx .tx{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:0 8px;max-width:100%;animation:mhAfxTx 2s cubic-bezier(.2,.9,.3,1) .35s both}
 .mh-artfx .tx::before{content:'';position:absolute;left:-18%;right:-18%;top:-30%;bottom:-30%;background:radial-gradient(ellipse at 50% 50%,rgba(10,9,14,.82) 0%,rgba(10,9,14,.55) 45%,transparent 72%);z-index:-1}
 .mh-artfx .tx b{position:relative}
 .mh-artfx .tx em{font-style:normal;font-family:var(--m-f-disp);font-size:clamp(11px,2.3vw,16px);letter-spacing:.34em;padding:2px 6px 2px 11px;color:var(--c2);border:2px solid var(--c);background:rgba(23,22,28,.6)}
 .mh-artfx .tx b{font-family:var(--m-f-disp);font-weight:400;font-size:clamp(25px,7.2vw,58px);white-space:nowrap;color:#fff;text-shadow:0 0 12px var(--c),0 0 30px var(--c),0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c}
 .mh-artfx.g5 .tx b{color:#fffdf2;text-shadow:0 0 10px #ffd76a,0 0 26px #f08cc8,0 0 48px #7fb4ff,0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c,2px 2px 0 #17161c,-2px 2px 0 #17161c;animation:mhAfxHue 1.6s linear infinite}
 .mh-artfx .tx small{font-size:clamp(11px,2.1vw,15px);color:var(--c2);letter-spacing:.08em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c}
-@keyframes mhAfx{0%{opacity:0}5%{opacity:1}86%{opacity:1}100%{opacity:0}}
+@keyframes mhAfxIn{from{opacity:0}to{opacity:1}}
+@keyframes mhAfxOut{from{opacity:1}to{opacity:0}}
+@keyframes mhAfxGo{0%{opacity:0}100%{opacity:.95}}
+@keyframes mhAfxBlink{0%,100%{opacity:.95}50%{opacity:.45}}
 @keyframes mhAfxSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes mhAfxRing{0%{opacity:.95;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(8)}}
 @keyframes mhAfxPt{0%{opacity:0;bottom:-3%}12%{opacity:1}100%{opacity:0;bottom:104%}}
-@keyframes mhAfxTx{0%{opacity:0;transform:scale(2.8)}9%{opacity:1;transform:scale(.93)}14%{transform:scale(1.05)}19%{transform:scale(1)}100%{opacity:1;transform:scale(1.07)}}
+@keyframes mhAfxTx{0%{opacity:0;transform:scale(3)}55%{opacity:1;transform:scale(.94)}75%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
 @keyframes mhAfxHue{0%,100%{filter:none}50%{filter:brightness(1.25) saturate(1.4)}}
-@keyframes mhAfxBolt{0%{opacity:.95}5%{opacity:0}36%{opacity:0}38%{opacity:.75}43%{opacity:0}60%{opacity:0}62%{opacity:.5}66%{opacity:0}100%{opacity:0}}
+@keyframes mhAfxBolt{0%{opacity:.9}7%{opacity:0}35%{opacity:0}37%{opacity:.7}43%{opacity:0}63%{opacity:0}65%{opacity:.45}70%{opacity:0}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.mh-artfx .rays,.mh-artfx .pt,.mh-artfx .ring,.mh-artfx .bolt{display:none}.mh-artfx .tx,.mh-artfx.g5 .tx b{animation:none}}
 
 /* ---- 인생 등급과 인물 카드 ---- */
@@ -3439,7 +3444,9 @@ img.mh-ic{object-fit:contain}
 .mh-kv dd small{color:var(--m-muted);font-size:12px}
 @media (pointer:coarse),(max-width:560px){.mh-hb{padding:5px 0}.mh-meter .mh-hb{padding:7px 0}}
 
-.mh-hold{color:var(--m-gold);font-size:13.5px}
+
+.mh-artfx .go{position:absolute;left:0;right:0;bottom:7%;text-align:center;font-family:var(--m-f-body);font-size:clamp(11px,2.2vw,14px);line-height:1.2;color:#f4f1e4;letter-spacing:.12em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c,0 -1px 0 #17161c;opacity:0;animation:mhAfxGo .6s ease-out 2.6s forwards,mhAfxBlink 1.8s ease-in-out 3.2s infinite}
+@media (prefers-reduced-motion:reduce){.mh-artfx .go{animation:none;opacity:.95}}
 </style>
 
 <div id="murimApp" hidden>
@@ -3481,7 +3488,7 @@ const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
 const MVER='1.3';
 const NOTES=[
-  ['1.3','2026-11-13',['무공 823가지: 무협에 두루 나오는 무공을 모아 C~SSR 등급을 매겼다(검 183 · 장 163 · 권 116 · 내공 115 · 도 82 · 보법 80 · 암기 38 · 외공 21 · 안법 13 · 마공 12)','문파 장경각: 사문에 가면 서열과 경지에 맞는 사문의 무공을 한 계절에 하나씩 익힌다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS)','비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다. 가게에서 팔고, 싸움과 사건에서 떨어진다','외공: 방어를 올려 주는 새 갈래','이름난 무공을 얻는 기연 17가지(독고구검, 능파미보, 구양진경 등)','신상 칸의 무공에 등급과 위력이 보이고, 지금 쓰이는 무공에 테가 둘린다','S 이상 무공을 얻으면 획득 연출이 뜬다(S 絶技, SS 神功, SSR 絶世神功)','걸리는 시간을 "철" 대신 석 달·반년·1년 반처럼 적는다','인생 등급: 한 생이 끝나면 살아온 것을 점수로 매겨 C~SSR 등급을 준다','인물 카드: 끝 화면에서 등급이 찍힌 카드 그림을 카카오톡 등으로 보내거나 저장한다','낱말 설명: 신상 칸에서 건강·행복·인연·무공·내공·사문·타고난 것·무위를 누르면 어디에 쓰이는지 나온다','행복과 인연에 쓰임새가 생겼다(행복은 수련과 병, 인연은 가게 값과 공헌)','마을의 맞수·친구도 나이를 먹는다. 여인 문파의 사부는 여인이다(보타문 사부도)','선택지 밑에 숫자가 보인다: 쉬면 건강이 얼마 오르는지, 일하면 은자를 얼마 버는지, 수련하면 수련과 내공이 얼마 느는지','맡기기를 켜 둬도 S 이상 기연은 천천히 넘기고 결과에서 멈춘다. 무공 획득 연출이 도는 동안에는 시간이 멈춘다']],
+  ['1.3','2026-11-13',['무공 823가지: 무협에 두루 나오는 무공을 모아 C~SSR 등급을 매겼다(검 183 · 장 163 · 권 116 · 내공 115 · 도 82 · 보법 80 · 암기 38 · 외공 21 · 안법 13 · 마공 12)','문파 장경각: 사문에 가면 서열과 경지에 맞는 사문의 무공을 한 계절에 하나씩 익힌다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS)','비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다. 가게에서 팔고, 싸움과 사건에서 떨어진다','외공: 방어를 올려 주는 새 갈래','이름난 무공을 얻는 기연 17가지(독고구검, 능파미보, 구양진경 등)','신상 칸의 무공에 등급과 위력이 보이고, 지금 쓰이는 무공에 테가 둘린다','S 이상 무공을 얻으면 획득 연출이 뜬다(S 絶技, SS 神功, SSR 絶世神功)','걸리는 시간을 "철" 대신 석 달·반년·1년 반처럼 적는다','인생 등급: 한 생이 끝나면 살아온 것을 점수로 매겨 C~SSR 등급을 준다','인물 카드: 끝 화면에서 등급이 찍힌 카드 그림을 카카오톡 등으로 보내거나 저장한다','낱말 설명: 신상 칸에서 건강·행복·인연·무공·내공·사문·타고난 것·무위를 누르면 어디에 쓰이는지 나온다','행복과 인연에 쓰임새가 생겼다(행복은 수련과 병, 인연은 가게 값과 공헌)','마을의 맞수·친구도 나이를 먹는다. 여인 문파의 사부는 여인이다(보타문 사부도)','선택지 밑에 숫자가 보인다: 쉬면 건강이 얼마 오르는지, 일하면 은자를 얼마 버는지, 수련하면 수련과 내공이 얼마 느는지','S 이상 연출은 천천히 나타나서, 화면을 누를 때까지 그대로 멈춰 있는다. 맡기기 중에 S 이상 사건이 열릴 때도 연출이 뜬 채 멈춘다']],
   ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','이름값을 못 하던 것을 고쳤다: 천운(주사위 8~20), 만독불침·피독주·해독단(독), 혈마체(마공), 염주(주화입마), 보법(위력만큼 회피)','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다','휴대폰 화면 정리: 장면 밑에 건강·행복·돈·내공 한 줄, 작은 글씨와 단추 키움, 알림은 위쪽에 작게, 천하 지도에서 떠나는 단추가 화면 아래에 붙음, 가로로 눕히면 장면 왼쪽·카드 오른쪽']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
@@ -4993,18 +5000,27 @@ function syncTags(){ if(!SC) return; for(const a of SC.actors){ if(!a._tag) cont
 function floatText(x,y,txt,cls){ const el=$m('mhFl'); if(!el) return; const s=document.createElement('span'); s.className='mh-float '+(cls||''); s.textContent=txt; s.style.left=(x/W*100)+'%'; s.style.top=(y/H*100)+'%'; el.appendChild(s); setTimeout(()=>s.remove(),1500); }
 function heroFloat(txt,cls,dy){ if(MAPON&&MAPV&&MAPV.hero.sx!=null) return floatText(MAPV.hero.sx,MAPV.hero.sy-30-(dy||0),txt,cls); if(!SC) return floatText(96,62-(dy||0),txt,cls); const h=actorOf('hero'); floatText(h?h.x:70,(h?h.y:FY)-30-(dy||0),txt,cls); }
 function toast(html,cls,ms){ const el=$m('mhToast'); if(!el) return; const d=document.createElement('div'); d.className='mh-toastc '+(cls||''); d.innerHTML=html; el.appendChild(d); while(el.children.length>3) el.firstChild.remove(); setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),400); },ms||3200); }
-// 높은 등급(S 이상) 무공을 얻었을 때의 연출: 장면이 어두워지고 빛살이 돌며 이름이 도장처럼 찍힌다. S → SS → SSR 로 갈수록 길고 요란하다
-const AFXT={3:['絶技',2600],4:['神功',3400],5:['絶世神功',4800]};
-let HOLDT=0;   // 이 시각(performance.now 기준)까지는 시간이 흐르지 않는다. 맡기기 중에도 연출이 끝까지 보이게
-function artFx(n,g,sub,dark){ const box=cv.parentNode; if(!box) return 0; const old=box.querySelector('.mh-artfx'); if(old) old.remove();
-  const han=AFXT[g][0], ms=AFXT[g][1], el=document.createElement('div'); el.className='mh-artfx g'+g+(dark?' dark':''); el.style.setProperty('--dur',ms+'ms'); el.setAttribute('aria-hidden','true');
-  const N=g===5?36:g===4?22:12; let pts=''; for(let i=0;i<N;i++) pts+=`<span class="pt" style="left:${(hsh(i*7.3+g)*100).toFixed(1)}%;animation-delay:${Math.round(hsh(i*3.1+1)*ms*.6)}ms;animation-duration:${Math.round(900+hsh(i*5.7+2)*1000)}ms"></span>`;
-  el.innerHTML=`<i class="veil"></i><i class="rays"></i><i class="ring"></i><i class="ring r2"></i>${g>=4?'<i class="ring r3"></i>':''}${g>=5?'<i class="rays r2"></i><i class="bolt"></i>':''}${pts}<div class="tx"><em>${han}</em><b data-n="${esc(n)}">${esc(n)}</b><small>${esc(sub)} · ${TIER[g]}등급</small></div>`;
-  box.appendChild(el); setTimeout(()=>el.remove(),ms+80); HOLDT=Math.max(HOLDT,performance.now()+ms*.92);
-  const burst=(n2,c)=>{ const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-12,c,n2); };
-  shake=g===5?14:g===4?8:4; flashA=g===5?.9:g===4?.6:.35; flashC=dark?'#ff6a50':g===5?'#fff3c0':g===4?'#ffe08a':'#cdb4ff';
-  if(g>=4) setTimeout(()=>{ shake=g===5?10:5; flashA=g===5?.5:.25; burst(g===5?40:24,'#ffe9a0'); },ms*.38);
-  if(g===5) setTimeout(()=>{ shake=8; flashA=.4; burst(40,'#ffc0e0'); },ms*.62); return ms; }
+/* 높은 등급(S 이상)의 연출: 장면이 천천히 어두워지고 빛살이 돌며 이름이 도장처럼 찍힌다. 그러고는 누를 때까지 그대로 멈춰 있는다.
+   떠 있는 동안에는 시간이 흐르지 않는다(맡기기 중에도). 화면을 누르거나 Enter·Space·Esc 를 누르면 닫힌다.
+   무공을 얻었을 때(artFx)와, 맡기기 중에 S 이상 사건이 열렸을 때(evIntro)에 쓴다 */
+const AFXT={3:'絶技',4:'神功',5:'絶世神功'};
+let HOLDT=0, AFXQ=[], AFXEL=null, AFXAT=0;   // HOLDT: 이 시각까지는 시간이 흐르지 않는다
+const afxOpen=()=>!!AFXEL;
+function gradeFx(o){ AFXQ.push(o); if(!AFXEL) afxNext(); }
+function afxNext(){ const o=AFXQ.shift(), box=cv.parentNode; if(!o||!box){ AFXEL=null; HOLDT=0; return; } const g=o.g, el=document.createElement('div'); el.className='mh-artfx g'+g+(o.dark?' dark':''); el.setAttribute('role','button'); el.setAttribute('tabindex','0'); el.setAttribute('aria-label',`${o.title}. 누르면 닫힌다`);
+  const N=g===5?36:g===4?22:12; let pts=''; for(let i=0;i<N;i++) pts+=`<span class="pt" style="left:${(hsh(i*7.3+g)*100).toFixed(1)}%;animation-delay:${Math.round(hsh(i*3.1+1)*2600)}ms;animation-duration:${Math.round(1500+hsh(i*5.7+2)*1500)}ms"></span>`;
+  el.innerHTML=`<i class="veil"></i><i class="rays"></i><i class="ring"></i><i class="ring r2"></i>${g>=4?'<i class="ring r3"></i>':''}${g>=5?'<i class="rays r2"></i><i class="bolt"></i>':''}${pts}<div class="tx"><em>${esc(o.han)}</em><b>${esc(o.title)}</b><small>${esc(o.sub||'')}</small></div><span class="go">눌러서 계속</span>`;
+  box.appendChild(el); AFXEL=el; AFXAT=performance.now(); el._o=o; HOLDT=Infinity; el.onclick=e=>{ e.stopPropagation(); afxClose(); };
+  if(o.sfx) sfx(o.sfx);
+  const burst=(n2,c)=>{ if(AFXEL!==el) return; const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-12,c,n2); };
+  shake=g===5?12:g===4?7:4; flashA=g===5?.9:g===4?.6:.35; flashC=o.dark?'#ff6a50':g===5?'#fff3c0':g===4?'#ffe08a':'#cdb4ff';
+  if(g>=4) setTimeout(()=>{ if(AFXEL!==el) return; shake=g===5?9:5; flashA=g===5?.5:.25; burst(g===5?40:24,'#ffe9a0'); },1500);
+  if(g===5) setTimeout(()=>{ if(AFXEL!==el) return; shake=7; flashA=.4; burst(40,'#ffc0e0'); },2700);
+  if(window.__mhNoHold) setTimeout(()=>{ if(AFXEL===el) afxClose(true); },900); }
+// 뜨자마자 잘못 눌러 닫히지 않게, 0.9초가 지나야 닫힌다
+function afxClose(force){ const el=AFXEL; if(!el||(!force&&performance.now()-AFXAT<900)) return false; AFXEL=null; el.classList.add('out'); setTimeout(()=>el.remove(),320); const o=el._o; if(AFXQ.length) afxNext(); else HOLDT=0; if(o&&o.onClose){ try{ o.onClose(); }catch(e){} } return true; }
+function afxClear(){ AFXQ.length=0; if(AFXEL){ AFXEL.remove(); AFXEL=null; } HOLDT=0; }
+function artFx(n,g,sub,dark,onClose){ gradeFx({g,han:AFXT[g],title:n,sub:`${sub} · ${TIER[g]}등급`,dark,sfx:'art'+g,onClose}); }
 function callout(txt,cls,ms){ const el=$m('mhCall'); if(!el) return; el.className='mh-call '+(cls||''); el.textContent=txt; el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; clearTimeout(callout.t); callout.t=setTimeout(()=>{ el.hidden=true; },ms||1300); }
 /* ==== murim:map-engine — 맵 화면 그리기(카메라, 순서, 물결) ==== */
 let MAPV=null;      // {M, season, actors:[], hero, cam:{x,y}, marks:[], step()}
@@ -5376,10 +5392,10 @@ const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
 // 새 무공 알림. S 이상이면 장면 위에 획득 연출이 뜬다(design 의 artFx)
-function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); sfx(g>=3?'art'+g:'get');
+function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); if(g<3) sfx('get');
   const tip=()=>toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(artSub(a))} ${grTag(g)}</small><b>${esc(n)}</b><em>${artStat(a)}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'gr'+g,g>=3?4600:4200);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':g>=4?'#ffe9a0':'#bfe8ff',g>=3?22:12);
-  if(g>=3){ const ms=artFx(n,g,artSub(a),k==='마공'); setTimeout(tip,ms*.86); } else tip(); }
+  if(g>=3) artFx(n,g,artSub(a),k==='마공',tip); else tip(); }   // 연출이 닫힌 뒤에 알림이 뜬다
 /* ==== murim:items-1 — 검과 도 ==== */
 /* ---------- 검 ---------- */
 IT('w','검','C','녹슨 철검:3|이 빠진 검:2|대나무 검:2:e1|연습용 목검:2:x1|부러진 검 반 토막:2|무쇠 단검:3|쟁기 날로 만든 검:3|낡은 호신검:3|병졸의 환도:4|떠돌이의 검:3|휜 철검:2|장터 싸구려 검:3|청동 검:3|무딘 장검:3|손잡이 헐거운 검:3|대장간 습작검:3|초심자의 검:3:x2|산적의 헌 검:4|빛바랜 예도:3|아이용 목검:2|박달나무 검:3|참나무 목검:3|버드나무 검:2:e1|대추나무 목검:3|금 간 철검:2|그을린 검:3|물에 불은 목검:2|투박한 직검:4|짧은 요검:3|무관 대여검:3|나졸의 헌 검:4|표사 견습검:4|묵은 세검:3:c1|닳은 장검:3|때 묻은 단검:3|헐값의 쌍검:3|주워 온 검:3|장작 패던 검:4|촌무사의 검:4|이름 없는 철검:4|끈으로 감은 검:3|날 없는 연무검:2:x2|헛간에서 나온 검:3');
@@ -6578,13 +6594,15 @@ const GNAME={C:'일상',B:'작은 일',A:'쓸 만한 일',S:'큰일',SS:'기연'
 // 예전부터 있던 사건의 등급
 const GOLD={treasure:'SS',oldTomb:'SS',meteor:'SS',fairy:'SS',dyingMonk:'SS',coldPond:'S',cliff:'S',master:'S',herb:'S',enlight:'S',drunkBeggar:'S',contest:'A',rival:'A',love:'A',beast:'A',envoy:'A',bandit:'B',innFight:'B',gamble:'B',injustice:'B',hire:'B',matchmaker:'B',smithy:'B',escortJob:'B',peddler:'C'};
 const gradeOf=e=>e.grade||GOLD[e.id]||(e.gi?'S':'');
-// 맡기기를 켜 둬도 S 이상(기연)은 천천히 보여 준다: 글을 읽을 만큼 기다렸다가 맡기기가 고르고, 결과에서 멈춘다. 기다리는 동안 직접 골라도 된다
-const autoHold=ev=>!!ev&&['S','SS','SSR'].includes(gradeOf(ev)), HOLDMS=7000;
+// S 이상인 사건(기연)인가. 맡기기 중에 이런 사건이 열리면 연출을 띄운 채 멈춘다(evIntro)
+const autoHold=ev=>!!ev&&['S','SS','SSR'].includes(gradeOf(ev));
 // 등급을 먼저 굴리고(운이 좋으면 S 이상이 조금 더 나온다) 그 등급 안에서 고른다. 맞는 사건이 없으면 한 단계씩 내린다
 function pickGraded(pool,minG){ if(!pool.length) return null; const lo=minG||0, lk=.7+ST('luck')*.06, od=GODDS.map((v,i)=>i<lo?0:i>=3?v*lk:v); let r=R()*od.reduce((a,b)=>a+b,0), gi=lo; for(let i=0;i<od.length;i++){ r-=od[i]; if(r<=0){ gi=i; break; } }
   for(let i=gi;i>=lo;i--){ const sub=pool.filter(e=>(gradeOf(e)||'B')===GRADES[i]); if(sub.length) return wpick(sub,x=>x.w||1); } return null; }
 // 등급이 높은 사건이 열릴 때의 연출
-function evIntro(ev){ const g=gradeOf(ev); if(g==='SSR'){ callout('SSR · 天運','gi gssr',2800); sfx('giyeon'); flashA=.95; flashC='#fff6c8'; }
+function evIntro(ev){ const g=gradeOf(ev);
+  if(m.auto&&!paused&&autoHold(ev)){ const gi=GRADES.indexOf(g); flashC='#ffe9a0'; gradeFx({g:gi,han:g==='SSR'?'天運':'奇緣',title:g==='SSR'?'천운':g==='SS'||ev.gi?'기연':'큰일',sub:`${g}등급 사건이 찾아왔다`,sfx:'giyeon'}); return; }
+  if(g==='SSR'){ callout('SSR · 天運','gi gssr',2800); sfx('giyeon'); flashA=.95; flashC='#fff6c8'; }
   else if(g==='SS'){ callout('SS · 奇緣','gi gss',2200); sfx('giyeon'); flashA=.7; flashC='#ffe9a0'; }
   else if(g==='S'||ev.gi){ callout(g==='S'?'S · 奇緣':'奇緣','gi',1600); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; } }
 const gradeBadge=ev=>{ const g=ev&&gradeOf(ev); return g?`<span class="mh-gr g-${g}" title="${GNAME[g]}">${g}</span>`:''; };
@@ -8927,7 +8945,7 @@ function chBtn(c,i){ let odds='';
   if(c.war) odds=`<span class="odds duel">${icImg(iconUrl('armor',2),'sm')}지휘전</span>`;
   else if(c.duel){ const h=duelHint(c); odds=`<span class="odds duel ${h.cls}">${icImg(iconUrl('sword',h.lethal?2:1),'sm')}${h.lethal?'생사결':'비무'} · ${h.lab}</span>`; }
   else if(c.p){ const need=diceNeed(cl(c.p(),.03,.97)), b=perBonus(c.t).b+(hasFx('dice')?1:0); odds=`<span class="odds">${icImg(iconUrl('dice',0),'sm')}${need}+${b?` · 보정 +${b}`:''}${hasT('star')?` · 천운 ${DICELO()}~20`:''}</span>`; }
-  return `<button class="mh-ch" type="button" data-i="${i}" ${m.wait||(m.auto&&!paused&&!autoHold(m.pending))?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span>${odds}</button>`; }
+  return `<button class="mh-ch" type="button" data-i="${i}" ${m.wait||(m.auto&&!paused)?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span>${odds}</button>`; }
 // 좁은 화면에서 장면 밑에 붙어 다니는 한 줄 신상. 누르면 신상 칸으로 내려간다
 function renderMini(playing){ const el=$m('mhMini'); if(!el) return; const show=playing&&m.phase==='play'; el.hidden=!show; if(!show) return;
   el.innerHTML=`<span class="${m.hp<30?'low':''}"><i>건강</i><b>${Math.round(m.hp)}</b></span><span><i>행복</i><b>${Math.round(m.joy)}</b></span><span><b>${fmt(m.gold)}</b><i>냥</i></span>${m.f.martial?`<span><i>내공</i><b>${esc(ngStr(m.ng))}</b></span>`:''}<span class="go">신상 ▾</span>`;
@@ -8965,7 +8983,7 @@ function renderPlay(card){
   if(mapMode()) return inCathay()?renderCathayCard(card,eye):renderMapCard(card,eye);
   if(m.train) return renderTrain(card,eye);
   const ev=m.pending, mp=m.age>=MAPAGE;
-  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p>${evArt(ev)}<p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}${lockedOf(ev).map(x=>`<button class="mh-ch lock" type="button" disabled><span><span class="k" aria-hidden="true">×</span><span>${esc(x.t)}<small>은자 ${x.need}냥이 있어야 한다 · 지금 ${fmt(m.gold)}냥</small></span></span></button>`).join('')}</div>${m.auto&&!paused&&autoHold(ev)?'<p class="mh-hint mh-hold">기연이라 천천히 넘긴다. 잠시 뒤 맡기기가 고르고, 결과에서 멈춘다. 그 전에 직접 골라도 된다.</p>':''}</div>`:'';
+  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p>${evArt(ev)}<p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}${lockedOf(ev).map(x=>`<button class="mh-ch lock" type="button" disabled><span><span class="k" aria-hidden="true">×</span><span>${esc(x.t)}<small>은자 ${x.need}냥이 있어야 한다 · 지금 ${fmt(m.gold)}냥</small></span></span></button>`).join('')}</div></div>`:'';
   const last=m.lastRes&&m.lastRes.age===m.age&&!ev?resHtml(m.lastRes):'';
   const feed=m.log.slice(-5).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   const seg=`<div class="mh-focus"><span class="mh-lab">올해의 중심</span><div class="mh-seg" role="radiogroup" aria-label="올해의 중심">${FOCUS.map(f=>`<button type="button" role="radio" aria-checked="${m.focus===f.id&&m.age>=6}" data-focus="${f.id}" ${m.age<6?'disabled':''}>${f.n}</button>`).join('')}</div><span class="mh-hint">${m.age<6?'아직 어리다. 하루하루가 그냥 흘러간다.':esc((FOCUS.find(f=>f.id===m.focus)||FOCUS[1]).h)}</span></div>`;
@@ -9094,6 +9112,7 @@ function render(){ render0(); try{ const card=$m('mhCard'), on=m&&m.phase==='pla
     RKEY=rk; }catch(e){} }
 function render0(){
   const card=$m('mhCard'); if(!card) return;
+  if(afxOpen()&&!(m&&m.phase==='play')) afxClear();
   const playing=!!(m&&['play','farewell','end'].includes(m.phase));
   $m('mhSide').hidden=!playing; $m('mhGrid').classList.toggle('solo',!playing);
   applyStage(stageFor()); postStage();
@@ -9202,10 +9221,10 @@ function loop(t){
       if(t<HOLDT){ /* 무공 획득 연출이 끝날 때까지 장면과 시간을 멈춘다 */ }
       else if(CUTQ.length) cutTick(dt);
       else if(m.train){ if(m.tev){ if(m.auto&&!paused&&!m.milestone&&!m.dead&&!busy){ acc+=dt; if(acc>=evMs()){ acc=0; autoTrainStep(); if(!DUEL) afterTrain(); } } } else if(!busy&&!m.dead) mapLoop(dt); }
-      else if(m.pending){ if(m.auto&&!paused&&!m.milestone&&!busy){ acc+=dt; if(acc>=(autoHold(m.pending)?HOLDMS:evMs())){ acc=0; autoResolve(); if(!DUEL){ checkTrain(); render(); save(); } } } }
+      else if(m.pending){ if(m.auto&&!paused&&!m.milestone&&!busy){ acc+=dt; if(acc>=evMs()){ acc=0; autoResolve(); if(!DUEL){ checkTrain(); render(); save(); } } } }
       else if(m.age>=MAPAGE){ if(!busy&&!m.dead) mapLoop(dt); }
       else if(!paused&&!m.milestone&&!m.dead&&!busy&&!resWait()){ acc+=dt*SPD[spd]; if(acc>=Y){ acc=0; step(); } }
-      const pb=$m('mhProg'); if(pb) pb.style.width=(resWait()?100:m.auto&&!paused&&!busy&&(m.pending||m.tev)?Math.min(100,acc/(autoHold(m.pending)?HOLDMS:evMs())*100):m.train&&!CUTQ.length?m.train.turn/18*100:CUTQ.length?Math.min(100,CUTQ[0].t/CUTQ[0].ms*100):m.age>=MAPAGE&&!m.pending&&!m.milestone&&!busy?m.sea/4*100:m.pending||m.milestone||busy?100:Math.min(100,acc/Y*100))+'%';
+      const pb=$m('mhProg'); if(pb) pb.style.width=(resWait()?100:m.auto&&!paused&&!busy&&(m.pending||m.tev)?Math.min(100,acc/evMs()*100):m.train&&!CUTQ.length?m.train.turn/18*100:CUTQ.length?Math.min(100,CUTQ[0].t/CUTQ[0].ms*100):m.age>=MAPAGE&&!m.pending&&!m.milestone&&!busy?m.sea/4*100:m.pending||m.milestone||busy?100:Math.min(100,acc/Y*100))+'%';
     } else if(!m||!m.phase||m.phase==='title'){ titleT+=dt; if(titleT>9000){ titleT=0; titleIx++; applyStage(stageFor()); } }
   }
   requestAnimationFrame(loop);
@@ -9213,10 +9232,13 @@ function loop(t){
 document.addEventListener('keydown',e=>{
   if($m('murimApp').hidden||e.ctrlKey||e.metaKey||e.altKey) return;
   if(e.target&&e.target.closest&&e.target.closest('textarea,input')) return;
+  if(afxOpen()){ if(e.key==='Enter'||e.key===' '||e.key==='Escape'){ afxClose(); e.preventDefault(); } return; }
   if(/^[1-9]$/.test(e.key)){ const b=$m('mhCard').querySelectorAll('.mh-ch')[+e.key-1]; if(b&&!b.disabled){ b.click(); e.preventDefault(); } }
   else if(e.key==='Enter'&&$m('mhNext')&&!$m('mhNext').disabled&&!(e.target&&e.target.closest&&e.target.closest('button,a,select'))){ $m('mhNext').click(); e.preventDefault(); }
   else if(e.key===' '&&m&&m.phase==='play'&&(!document.activeElement||document.activeElement===document.body)){ paused=!paused; render(); e.preventDefault(); }
 });
+// 연출이 떠 있을 때 화면의 다른 곳을 눌러도 닫힌다(누른 것은 그대로 처리된다)
+$m('murimApp').addEventListener('click',e=>{ if(afxOpen()&&!(e.target.closest&&e.target.closest('.mh-artfx'))) afxClose(); },true);
 $m('mhHub').onclick=()=>{ paused=true; if(m&&m.phase==='play') renderCtl(); location.hash=''; window.__route&&window.__route(); };
 $m('mhVer').textContent='v'+MVER;
 $m('mhNotes').innerHTML=`<b>바뀐 점</b>`+NOTES.map(n=>`<div class="mh-note"><span>v${n[0]} · ${n[1]}</span><ul>${n[2].map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');

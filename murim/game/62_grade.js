@@ -6,13 +6,15 @@ const GNAME={C:'일상',B:'작은 일',A:'쓸 만한 일',S:'큰일',SS:'기연'
 // 예전부터 있던 사건의 등급
 const GOLD={treasure:'SS',oldTomb:'SS',meteor:'SS',fairy:'SS',dyingMonk:'SS',coldPond:'S',cliff:'S',master:'S',herb:'S',enlight:'S',drunkBeggar:'S',contest:'A',rival:'A',love:'A',beast:'A',envoy:'A',bandit:'B',innFight:'B',gamble:'B',injustice:'B',hire:'B',matchmaker:'B',smithy:'B',escortJob:'B',peddler:'C'};
 const gradeOf=e=>e.grade||GOLD[e.id]||(e.gi?'S':'');
-// 맡기기를 켜 둬도 S 이상(기연)은 천천히 보여 준다: 글을 읽을 만큼 기다렸다가 맡기기가 고르고, 결과에서 멈춘다. 기다리는 동안 직접 골라도 된다
-const autoHold=ev=>!!ev&&['S','SS','SSR'].includes(gradeOf(ev)), HOLDMS=7000;
+// S 이상인 사건(기연)인가. 맡기기 중에 이런 사건이 열리면 연출을 띄운 채 멈춘다(evIntro)
+const autoHold=ev=>!!ev&&['S','SS','SSR'].includes(gradeOf(ev));
 // 등급을 먼저 굴리고(운이 좋으면 S 이상이 조금 더 나온다) 그 등급 안에서 고른다. 맞는 사건이 없으면 한 단계씩 내린다
 function pickGraded(pool,minG){ if(!pool.length) return null; const lo=minG||0, lk=.7+ST('luck')*.06, od=GODDS.map((v,i)=>i<lo?0:i>=3?v*lk:v); let r=R()*od.reduce((a,b)=>a+b,0), gi=lo; for(let i=0;i<od.length;i++){ r-=od[i]; if(r<=0){ gi=i; break; } }
   for(let i=gi;i>=lo;i--){ const sub=pool.filter(e=>(gradeOf(e)||'B')===GRADES[i]); if(sub.length) return wpick(sub,x=>x.w||1); } return null; }
 // 등급이 높은 사건이 열릴 때의 연출
-function evIntro(ev){ const g=gradeOf(ev); if(g==='SSR'){ callout('SSR · 天運','gi gssr',2800); sfx('giyeon'); flashA=.95; flashC='#fff6c8'; }
+function evIntro(ev){ const g=gradeOf(ev);
+  if(m.auto&&!paused&&autoHold(ev)){ const gi=GRADES.indexOf(g); flashC='#ffe9a0'; gradeFx({g:gi,han:g==='SSR'?'天運':'奇緣',title:g==='SSR'?'천운':g==='SS'||ev.gi?'기연':'큰일',sub:`${g}등급 사건이 찾아왔다`,sfx:'giyeon'}); return; }
+  if(g==='SSR'){ callout('SSR · 天運','gi gssr',2800); sfx('giyeon'); flashA=.95; flashC='#fff6c8'; }
   else if(g==='SS'){ callout('SS · 奇緣','gi gss',2200); sfx('giyeon'); flashA=.7; flashC='#ffe9a0'; }
   else if(g==='S'||ev.gi){ callout(g==='S'?'S · 奇緣':'奇緣','gi',1600); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; } }
 const gradeBadge=ev=>{ const g=ev&&gradeOf(ev); return g?`<span class="mh-gr g-${g}" title="${GNAME[g]}">${g}</span>`:''; };

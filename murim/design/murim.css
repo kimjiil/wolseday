@@ -486,7 +486,9 @@ img.mh-ic{object-fit:contain}
 .mh-artmore[open] summary{margin-bottom:2px}
 #mhToast{z-index:6}
 /* 높은 등급 무공을 얻었을 때의 연출(artFx) */
-.mh-artfx{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;display:grid;place-items:center;line-height:1.15;--c:#b89cf0;--c2:#efe6ff;--cr:rgba(184,156,240,.55);animation:mhAfx var(--dur,2600ms) linear forwards}
+.mh-artfx{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;display:grid;place-items:center;line-height:1.15;--c:#b89cf0;--c2:#efe6ff;--cr:rgba(184,156,240,.55);pointer-events:auto;cursor:pointer;animation:mhAfxIn .9s ease-out both}
+.mh-artfx.out{animation:mhAfxOut .3s ease-in forwards;pointer-events:none}
+.mh-artfx:focus-visible{outline:3px solid #fff;outline-offset:-3px}
 .mh-artfx.g4{--c:#f2c14e;--c2:#fff3c0;--cr:rgba(242,193,78,.62)}.mh-artfx.g5{--c:#ffd76a;--c2:#ffffff;--cr:rgba(255,236,160,.75)}.mh-artfx.dark{--c:#e2503a;--c2:#ffd0c4;--cr:rgba(226,80,58,.6)}
 .mh-artfx i{position:absolute;display:block}
 .mh-artfx .veil{inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(23,22,28,.3) 0%,rgba(10,9,14,.9) 78%)}
@@ -494,25 +496,28 @@ img.mh-ic{object-fit:contain}
 .mh-artfx.g4 .rays{animation-duration:7s}
 .mh-artfx.g5 .rays{background:repeating-conic-gradient(from 0deg,transparent 0 6deg,rgba(255,236,160,.8) 6deg 9deg,transparent 9deg 14deg,rgba(240,140,200,.6) 14deg 16deg,transparent 16deg 22deg,rgba(150,190,255,.55) 22deg 24deg,transparent 24deg 30deg);animation-duration:5s}
 .mh-artfx.g5 .rays.r2{width:120%;animation-direction:reverse;animation-duration:8s;opacity:.6}
-.mh-artfx .ring{left:50%;top:50%;width:16%;aspect-ratio:1;border-radius:50%;border:3px solid var(--c2);box-shadow:0 0 16px var(--c),inset 0 0 12px var(--c);transform:translate(-50%,-50%) scale(.2);opacity:0;animation:mhAfxRing 1.2s ease-out .12s forwards}
-.mh-artfx .ring.r2{animation-delay:.55s}.mh-artfx .ring.r3{animation-delay:1.05s}
-.mh-artfx .bolt{inset:0;background:#fff;opacity:0;animation:mhAfxBolt var(--dur) linear forwards}
+.mh-artfx .ring{left:50%;top:50%;width:16%;aspect-ratio:1;border-radius:50%;border:3px solid var(--c2);box-shadow:0 0 16px var(--c),inset 0 0 12px var(--c);transform:translate(-50%,-50%) scale(.2);opacity:0;animation:mhAfxRing 2s ease-out .5s forwards}
+.mh-artfx .ring.r2{animation-delay:1.3s}.mh-artfx .ring.r3{animation-delay:2.1s}
+.mh-artfx .bolt{inset:0;background:#fff;opacity:0;animation:mhAfxBolt 4.2s linear forwards}
 .mh-artfx .pt{position:absolute;bottom:-3%;width:4px;height:4px;background:var(--c2);box-shadow:0 0 6px 1px var(--c);opacity:0;animation:mhAfxPt 1.4s ease-out infinite}
 .mh-artfx.g5 .pt:nth-of-type(3n){background:#ffc0e0;box-shadow:0 0 6px 1px #f08cc8}.mh-artfx.g5 .pt:nth-of-type(3n+1){background:#cfe4ff;box-shadow:0 0 6px 1px #7fb4ff}
-.mh-artfx .tx{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:0 8px;max-width:100%;animation:mhAfxTx var(--dur,2600ms) cubic-bezier(.2,.9,.3,1) forwards}
+.mh-artfx .tx{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:0 8px;max-width:100%;animation:mhAfxTx 2s cubic-bezier(.2,.9,.3,1) .35s both}
 .mh-artfx .tx::before{content:'';position:absolute;left:-18%;right:-18%;top:-30%;bottom:-30%;background:radial-gradient(ellipse at 50% 50%,rgba(10,9,14,.82) 0%,rgba(10,9,14,.55) 45%,transparent 72%);z-index:-1}
 .mh-artfx .tx b{position:relative}
 .mh-artfx .tx em{font-style:normal;font-family:var(--m-f-disp);font-size:clamp(11px,2.3vw,16px);letter-spacing:.34em;padding:2px 6px 2px 11px;color:var(--c2);border:2px solid var(--c);background:rgba(23,22,28,.6)}
 .mh-artfx .tx b{font-family:var(--m-f-disp);font-weight:400;font-size:clamp(25px,7.2vw,58px);white-space:nowrap;color:#fff;text-shadow:0 0 12px var(--c),0 0 30px var(--c),0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c}
 .mh-artfx.g5 .tx b{color:#fffdf2;text-shadow:0 0 10px #ffd76a,0 0 26px #f08cc8,0 0 48px #7fb4ff,0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c,2px 2px 0 #17161c,-2px 2px 0 #17161c;animation:mhAfxHue 1.6s linear infinite}
 .mh-artfx .tx small{font-size:clamp(11px,2.1vw,15px);color:var(--c2);letter-spacing:.08em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c}
-@keyframes mhAfx{0%{opacity:0}5%{opacity:1}86%{opacity:1}100%{opacity:0}}
+@keyframes mhAfxIn{from{opacity:0}to{opacity:1}}
+@keyframes mhAfxOut{from{opacity:1}to{opacity:0}}
+@keyframes mhAfxGo{0%{opacity:0}100%{opacity:.95}}
+@keyframes mhAfxBlink{0%,100%{opacity:.95}50%{opacity:.45}}
 @keyframes mhAfxSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes mhAfxRing{0%{opacity:.95;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(8)}}
 @keyframes mhAfxPt{0%{opacity:0;bottom:-3%}12%{opacity:1}100%{opacity:0;bottom:104%}}
-@keyframes mhAfxTx{0%{opacity:0;transform:scale(2.8)}9%{opacity:1;transform:scale(.93)}14%{transform:scale(1.05)}19%{transform:scale(1)}100%{opacity:1;transform:scale(1.07)}}
+@keyframes mhAfxTx{0%{opacity:0;transform:scale(3)}55%{opacity:1;transform:scale(.94)}75%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
 @keyframes mhAfxHue{0%,100%{filter:none}50%{filter:brightness(1.25) saturate(1.4)}}
-@keyframes mhAfxBolt{0%{opacity:.95}5%{opacity:0}36%{opacity:0}38%{opacity:.75}43%{opacity:0}60%{opacity:0}62%{opacity:.5}66%{opacity:0}100%{opacity:0}}
+@keyframes mhAfxBolt{0%{opacity:.9}7%{opacity:0}35%{opacity:0}37%{opacity:.7}43%{opacity:0}63%{opacity:0}65%{opacity:.45}70%{opacity:0}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.mh-artfx .rays,.mh-artfx .pt,.mh-artfx .ring,.mh-artfx .bolt{display:none}.mh-artfx .tx,.mh-artfx.g5 .tx b{animation:none}}
 
 /* ---- 인생 등급과 인물 카드 ---- */
@@ -538,4 +543,6 @@ img.mh-ic{object-fit:contain}
 .mh-kv dd small{color:var(--m-muted);font-size:12px}
 @media (pointer:coarse),(max-width:560px){.mh-hb{padding:5px 0}.mh-meter .mh-hb{padding:7px 0}}
 
-.mh-hold{color:var(--m-gold);font-size:13.5px}
+
+.mh-artfx .go{position:absolute;left:0;right:0;bottom:7%;text-align:center;font-family:var(--m-f-body);font-size:clamp(11px,2.2vw,14px);line-height:1.2;color:#f4f1e4;letter-spacing:.12em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c,0 -1px 0 #17161c;opacity:0;animation:mhAfxGo .6s ease-out 2.6s forwards,mhAfxBlink 1.8s ease-in-out 3.2s infinite}
+@media (prefers-reduced-motion:reduce){.mh-artfx .go{animation:none;opacity:.95}}

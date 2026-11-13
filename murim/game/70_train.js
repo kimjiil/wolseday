@@ -13,7 +13,7 @@ const TACT=[
 const mt=i=>m.mates[i];
 const alive=i=>m.mates&&m.mates[i]&&!m.mates[i].dead;
 function mateLook(i,o){ const x=m.mates[i]; return npcLook(Object.assign({name:x.name,sex:x.sx,age:m.age+(i===0?3:i===1?-1:0),sect:m.sect,weapon:i===1?null:'sword',blush:i===1&&x.love?1:0,hair:m.sect==='shaolin'?'bald':null},o||{})); }
-function masterLook(o){ const r=m.rels.find(x=>x.role==='사부'); return npcLook(Object.assign({name:r?r.name:'사부',sex:m.sect&&SECTS[m.sect].female?'f':'m',age:58,sect:m.sect,robe:m.sect?null:'#5a5a64',weapon:m.sect==='shaolin'||m.sect==='beggar'?'staff':'sword',hair:m.sect==='shaolin'?'bald':null,beard:'long'},o||{})); }
+function masterLook(o){ const r=m.rels.find(x=>x.role==='사부'); return npcLook(Object.assign({name:r?r.name:'사부',sex:(m.sect&&masterSex(m.sect))||(r&&r.sx)||'m',age:58,sect:m.sect,robe:m.sect?null:'#5a5a64',weapon:m.sect==='shaolin'||m.sect==='beggar'?'staff':'sword',hair:m.sect==='shaolin'?'bald':null,beard:'long'},o||{})); }
 const mateN=(i,x,o)=>N('m'+i,mateLook(i),x,Object.assign({tag:mt(i).name},o||{}));
 function startTrain(){
   m.f.trainDone=1; const S=m.sect&&SECTS[m.sect], mo=S&&S.male, fo=S&&S.female, f=fo||(!mo&&m.sex==='f');

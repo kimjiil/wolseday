@@ -1,6 +1,6 @@
 /* ==== murim:ui — 명부, 행낭, 카드 ==== */
 const pips=v=>`<span class="mh-pips">${Array.from({length:10},(_,i)=>`<i class="${i<v?'on':''}"></i>`).join('')}</span>`;
-const meter=(lab,v,cls)=>`<div class="mh-meter"><span>${lab}</span><span class="mh-bar ${cls||''}"><i style="width:${cl(v)}%"></i></span><span class="mh-num">${Math.round(v)}</span></div>`;
+const meter=(lab,v,cls)=>`<div class="mh-meter"><span>${cls&&HELP[cls]?hb(cls,lab):lab}</span><span class="mh-bar ${cls||''}"><i style="width:${cl(v)}%"></i></span><span class="mh-num">${Math.round(v)}</span></div>`;
 const ptImg=(L,cls)=>`<img class="mh-pt ${cls||''}" src="${portrait(L)}" alt="" width="28" height="28">`;
 const diceHtml=d=>d?`<p class="mh-dice">주사위 <b>${d.roll}</b>${d.lo>1?` <small>(천운: ${d.lo}~20에서 나온다)</small>`:''}${d.b?` + 성격 ${d.b}`:''}${d.j?' + 옥패 1':''} · ${d.need} 이상이면 성공 · <b>${d.ok?'성공':'실패'}</b></p>`:'';
 function resHtml(lr){ if(m.wait) return '<p class="mh-rolling">주사위가 구른다…</p>'; const rec=lr.pick?`<div class="mh-rec">${lr.q?`<p class="q">${esc(lr.q)}</p>`:''}<p class="p"><span>${lr.auto?'맡김':'고른 길'}</span>${esc(lr.pick)}</p></div>`:''; return `${rec}${diceHtml(lr.dice)}<p class="mh-res ${lr.tone||''}">${esc(lr.t)}</p>`; }
@@ -12,25 +12,45 @@ function artList(){ const use=combat().art, eye=eyeArt(), st=stepArt(), bd=bodyA
   const one=({a,g})=>`<span class="mh-art gr${g}${a.k==='마공'?' m':''}${on(a)?' on':''}">${grTag(g)}<b>${esc(a.n)}</b><small>${esc(artSub(a))} · ${artStat(a)}</small></span>`;
   const top=rows.slice(0,8), rest=rows.slice(8);
   return `<div class="mh-arts">${top.map(one).join('')}</div>${rest.length?`<details class="mh-artmore" id="mhArtMore" ${ARTOPEN?'open':''}><summary>나머지 ${rest.length}가지</summary><div class="mh-arts">${rest.map(one).join('')}</div></details>`:''}`; }
+/* ---- 낱말 설명: 신상 칸에서 점선 밑줄이 그어진 낱말을 누르면 바로 밑에 설명이 펼쳐진다 ---- */
+let HELPK=null;
+const hb=(k,lab)=>`<button type="button" class="mh-hb" data-help="${k}" aria-expanded="${HELPK===k}">${lab}</button>`;
+const helpBox=(k,tag)=>HELPK===k?`<${tag||'p'} class="mh-helpbox">${HELP[k]()}</${tag||'p'}>`:'';
+const HELP={
+  hp:()=>'0이 되면 죽는다. 60 아래면 병으로 죽을 확률이 1.3배, 35 아래면 2.2배다. 40 아래면 수련이 0.6배로 더디다. 결투에서 버티는 체력은 건강에 비례한다. 마흔다섯 전에는 해마다 3씩 돌아오고 그 뒤로는 해마다 조금씩 깎인다. 쉬거나 약을 쓰면 오른다.',
+  joy:()=>'70 이상이면 수련이 1.1배다. 30 아래면 수련이 0.85배가 되고 병으로 죽을 확률이 1.25배다. 가만두면 해마다 55 쪽으로 조금씩 돌아간다. 한 생이 끝날 때 인생 등급 점수에도 든다.',
+  bond:()=>'사람들과 쌓은 정이다. 60 이상이면 가게 값이 1할 싸지고, 사문 임무로 얻는 공헌이 1.25배다. 가족이나 사문 사람들과 지내면 오르고, 가만두면 해마다 40 쪽으로 조금씩 돌아간다.',
+  lv:()=>{ if(!m.f.martial) return '아직 무공을 모른다. 무관에 입문하거나 문파에 들거나 비급을 읽으면 무림인이 된다.'; const cur=Math.floor(m.exp+m.ng*.3), nx=LVX[m.lv+1];
+    return `경지는 수련과 내공이 함께 올린다. "무공이 는다"는 수련이 쌓인다는 뜻이고, 수련 + 내공 햇수 × 0.3이 문턱을 넘으면 한 단계 오른다. 지금 ${cur}${nx?`, 다음 경지(${LV[m.lv+1]})는 ${nx}부터`:''}다. 경지가 오르면 무위가 크게 오르고 늙어 죽을 확률이 준다.`; },
+  ng:()=>'기력이 아니라 쌓은 공력의 햇수다(60년이 1갑자). 햇수 × 0.35만큼 무위에 더해지고, 경지를 올릴 때 햇수의 3할이 쳐진다. 결투를 시작할 때 기가 더 차 있고(햇수 × 0.5, 많아야 +40), 늙어 죽을 확률을 낮춘다(10갑자까지). 폭포나 산에서 수련하면 더 빨리 쌓이고, 심법·영약·기연으로도 는다.',
+  gold:()=>'가진 은자와, 강호 사람 가운데 몇째쯤인지. 열다섯 살까지는 집안의 살림으로 친다.',
+  sect:()=>`사문의 임무를 마치면 공헌이 쌓인다(임무마다 4~10, 실패하면 −1, 기한을 넘기면 −3). 공헌 12에 이대제자, 30에 일대제자, 60에 장로가 된다. 서열이 오르면 사문 기본 무공의 위력이 2~3 오르고, 장경각에서 익힐 수 있는 무공이 한 등급 높아진다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS). 장로는 대전에서 지휘를 맡는다.`,
+  st:()=>'근골은 무위(1당 +1.2)와 수련, 품삯에 든다. 오성은 수련(근골보다 조금 더 크게), 내공이 쌓이는 빠르기, 결투에서 낌새를 읽을 확률(1당 +3.5%)에 든다. 기연은 회심(1당 +1%)과 높은 등급 사건이 나올 확률에 든다. 매력은 사람을 상대하는 선택지에 든다. 네 가지 모두 사건 선택지의 성공 확률에 더해진다.',
+  pw:()=>'무위 = 경지에 따른 바탕 + 가장 센 무공(위력 + 든 무기의 공격) + 내공 햇수 × 0.35 + 근골 × 1.2. 무기는 무공과 갈래가 맞아야 공격이 다 들어가고, 안 맞으면 절반만 든다. 결투의 체력과 이길 확률이 여기서 나온다.'
+};
+function wireHelp(el){ el.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>{ HELPK=HELPK===b.dataset.help?null:b.dataset.help; renderRec(); renderBag(); }); }
 function renderRec(){
   const S=m.sect&&SECTS[m.sect], o=OR(m.b.o), fa=m.rels.find(r=>r.role==='아버지'), mo=m.rels.find(r=>r.role==='어머니');
   const kids=m.rels.filter(r=>r.role==='자식'&&!r.dead).length, others=m.rels.filter(r=>!r.dead&&!['아버지','어머니','배우자','자식'].includes(r.role)).slice(-6);
   $m('mhRec').innerHTML=`
     <div class="mh-id">${ptImg(heroLook(),'big')}<div class="mh-name"><b>${esc(m.name)}</b><span>${m.age}세 · ${m.sex==='m'?'남':'여'}${m.dead?' · 고인':''}</span>${m.alias?`<span class="mh-alias">${esc(m.alias)}</span>`:''}</div></div>
     <div class="mh-meters">${meter('건강',m.hp,'hp')}${meter('행복',m.joy,'joy')}${meter('인연',m.bond,'bond')}
-      <div class="mh-meter"><span>무공</span><span><span class="mh-ladder" aria-label="경지 ${LV[m.lv]}">${LV.map((_,i)=>`<i class="${!m.f.martial?'':i<m.lv?'on':i===m.lv?'now':''}"></i>`).join('')}</span></span><span class="mh-lvn">${m.f.martial?LV[m.lv]:'모름'}</span></div></div>
+      <div class="mh-meter"><span>${hb('lv','무공')}</span><span><span class="mh-ladder" aria-label="경지 ${LV[m.lv]}">${LV.map((_,i)=>`<i class="${!m.f.martial?'':i<m.lv?'on':i===m.lv?'now':''}"></i>`).join('')}</span></span><span class="mh-lvn">${m.f.martial?LV[m.lv]:'모름'}</span></div></div>
+    ${helpBox('hp')}${helpBox('joy')}${helpBox('bond')}${helpBox('lv')}
     <dl class="mh-kv">
       <dt>태어난 곳</dt><dd>${esc(ERAS[m.era].n)} · ${esc(regOf(m.b.reg).n)}</dd>
       <dt>집안</dt><dd>${esc(o.n)}${m.b.hidden&&o.hidden?` <small class="mh-red">(${esc(o.hidden)})</small>`:''}</dd>
-      <dt>재산</dt><dd><span class="mh-num">${fmt(m.gold)}냥</span> · ${topStr(pctNow())}</dd>
-      ${m.f.martial?`<dt>내공</dt><dd class="mh-num">${ngStr(m.ng)}</dd>`:''}
-      ${S?`<dt>사문</dt><dd>${esc(S.n)}${m.f.head?' 장문인':''}${m.f.leader?' · 무림맹주':''}${m.f.tianmo?' · 천마':''}</dd>`:m.f.leader?'<dt>지위</dt><dd>무림맹주</dd>':''}
+      <dt>${hb('gold','재산')}</dt><dd><span class="mh-num">${fmt(m.gold)}냥</span> · ${topStr(pctNow())}</dd>${helpBox('gold','dd')}
+      ${m.f.martial?`<dt>${hb('ng','내공')}</dt><dd class="mh-num">${ngStr(m.ng)}</dd>${helpBox('ng','dd')}`:''}
+      ${S?`<dt>${hb('sect','사문')}</dt><dd>${esc(S.n)} ${m.f.head?'장문인':srank()}${m.f.leader?' · 무림맹주':''}${m.f.tianmo?' · 천마':''} · 공헌 <span class="mh-num">${Math.round(m.sc||0)}</span>${scNext()}</dd>${helpBox('sect','dd')}`:m.f.leader?'<dt>지위</dt><dd>무림맹주</dd>':''}
       ${m.wins||m.losses?`<dt>싸움</dt><dd class="mh-num">${m.wins||0}승 ${m.losses||0}패${m.kills?` · 벤 사람 ${m.kills}`:''}</dd>`:''}
       <dt>가족</dt><dd>아버지 ${fa.dead?'<s>':''}${esc(fa.name)}${fa.dead?'</s>':''} · 어머니 ${mo.dead?'<s>':''}${esc(mo.name)}${mo.dead?'</s>':''}${m.sib?` · 형제 ${m.sib}`:''}${m.spouse&&!m.spouse.dead?` · 배우자 ${esc(m.spouse.name)}`:''}${kids?` · 자식 ${kids}`:''}</dd>
     </dl>
     ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4>${artList()}</div>`:''}
     ${others.length?`<div><h4>인연</h4><div class="mh-rels">${others.map(r=>`<span class="mh-relc${r.role==='원수'?' m':''}">${ptImg(relLook(r))}<span><small>${esc(r.role)}</small>${esc(r.name)}</span></span>`).join('')}</div></div>`:''}
-    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd></dl>`;
+    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>${hb('st','타고난 것')}</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd>${helpBox('st','dd')}</dl>
+    <p class="mh-helptip">점선이 그어진 낱말을 누르면 설명이 나온다.</p>`;
+  wireHelp($m('mhRec'));
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   const am=$m('mhArtMore'); if(am) am.ontoggle=()=>{ ARTOPEN=am.open; };
 }
@@ -38,10 +58,11 @@ function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.pha
   const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
   const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(it.book?it.d:useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">${it.book?'읽기':'쓰기'}</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
   const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare gr${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${grTag(it.t)} ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
-  el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
+  el.innerHTML=`<h4>행낭<small>${hb('pw','무위')} ${Math.round(power())}</small></h4>${helpBox('pw')}
     <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
     ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
     ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}${(m.f.medN||0)>=1?`<p class="mh-tol">내공 약을 여러 번 먹어 약효가 ${Math.round(medTol()*100)}%만 듣는다. 건강 회복은 그대로다.</p>`:''}`;
+  wireHelp(el);
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
   el.querySelectorAll('[data-use]').forEach(x=>x.onclick=()=>{ useBag(x.dataset.use); render(); save(); });

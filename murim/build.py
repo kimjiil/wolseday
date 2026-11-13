@@ -12,7 +12,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 INDEX = os.path.join(HERE, '..', 'index.html')
 DESIGN = ['10_base', '20_props', '30_chars', '40_chib', '50_map', '60_icons']
 GAME = ['20_stage_engine', '21_map_engine', '22_mapdata', '23_cathay', '30_items', '40_duel', '50_life', '60_events_a', '61_events_b',
-        '70_train', '71_episodes', '75_map', '76_world', '77_cathay', '80_stage', '81_ui', '90_boot']
+        '70_train', '71_episodes', '75_map', '76_world', '77_cathay', '78_sectlife', '80_stage', '81_ui', '90_boot']
 ORDER = ['game/10_core'] + ['design/' + n for n in DESIGN] + ['game/' + n for n in GAME]
 START = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung'
 END = "<script>\n(function(){\n  const hub=document.getElementById('hub')"

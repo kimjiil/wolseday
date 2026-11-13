@@ -119,9 +119,9 @@ function doSeason(fid,o){ if(!mapMode()) return; o=o||{}; const b=snap(), sea=m.
   CUTQ.push({spec:actStage(fid,o),ms:fid==='idle'?600:1150,txt,sea,t:0});
   if(m.repOn&&!m.rep&&fid!=='enroll') m.rep={fid,o};
   diffFx(b); m.sea++; if(m.sea>3){ m.sea=0; yearTurn(); }
-  if(inCathay()) m.wldN=(m.wldN||0)+1; if(m.wq){ const id=m.wq; m.wq=null; if(startEv(EV[id])) m.wevN=(m.wevN||0)+1; }
+  questTick(); if(inCathay()) m.wldN=(m.wldN||0)+1; if(m.wq){ const id=m.wq; m.wq=null; if(startEv(EV[id])) m.wevN=(m.wevN||0)+1; }
   acc=0; render(); save(); }
-const AUTOEV=new Set(['heartDemon','coldAttack','wedding','birth','doom','revenge','poison','demonWar','leader','demonLord','betray','lastDuel','ascend','famine','assassin','sectHead','masterDeath','spouseSick','kidRun','fever','flee','parentCare','friendDeath','avenge','succession','kinRevenge','sparedReturn','rivalReturn','envoy','exam','child6','child6b','disciple','enlight']);
+const AUTOEV=new Set(['sectRaid','heartDemon','coldAttack','wedding','birth','doom','revenge','poison','demonWar','leader','demonLord','betray','lastDuel','ascend','famine','assassin','sectHead','masterDeath','spouseSick','kidRun','fever','flee','parentCare','friendDeath','avenge','succession','kinRevenge','sparedReturn','rivalReturn','envoy','exam','child6','child6b','disciple','enlight']);
 const markable=ev=>!(AUTOEV.has(ev.id)||ev.epn||(ev.w||0)>=9||ev.min===ev.max);
 const BGSPOT={market:'market',shop:'market',village:'market',inn:'inn',innroom:'inn',stable:'inn',den:'inn',forge:'smithy',mountain:'fall',hermit:'fall',pond:'fall',peak:'fall',cave:'fall',tomb:'fall',cliff:'fall',forest:'forest',bamboo:'forest',fort:'forest',road:'gate',snow:'gate',battle:'gate',river:'bridge',well:'well',school:'school',dojo:'dojo',arena:'dojo',temple:'dojo',library:'dojo',kitchen:'dojo',manor:'office',hall:'office',home:'home',yard:'home',room:'home',wedding:'home',field:'field',grave:'shrine'};
 function spotForEv(ev){ let bg='village'; try{ const s=ev.st&&ev.st(); if(s&&s.bg) bg=s.bg; }catch(e){} return BGSPOT[bg]||'market'; }
@@ -129,7 +129,7 @@ function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; m.wq
   tick(true); if(m.dead){ CUTQ.length=0; return; }
   const fromQ=m.q.length<qn; checkTrain();
   if(m.pending&&!m.train&&!fromQ&&markable(m.pending)){ const ev=m.pending; m.pending=null; m.mark=markFor(ev); }
-  mapMarks(); const d=Math.round(m.gold-g0), age=m.age; vfx(()=>toast(`<b>${age}세</b> 새해가 밝았다${d?` · 한 해 살림 ${d>0?'+':'−'}${fmt(Math.abs(d))}냥`:''}`,'t1',2600));
+  sectYear(); mapMarks(); const d=Math.round(m.gold-g0), age=m.age; vfx(()=>toast(`<b>${age}세</b> 새해가 밝았다${d?` · 한 해 살림 ${d>0?'+':'−'}${fmt(Math.abs(d))}냥`:''}`,'t1',2600));
   if(m.yst){ const s=yearStage(), last=m.log[m.log.length-1]; if(s) CUTQ.push({spec:s,ms:1700,txt:last?last.t:'',sea:0,t:0}); } }
 function triggerMark(){ const ev=EV[m.mark.id]; m.mark=null; m.ai=null; mapMarks();
   if(ev&&m.age>=ev.min&&m.age<=ev.max&&(!ev.when||ev.when())){ m.used[ev.id]=m.age; m.lastRes=null; m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi) vfx(()=>{ callout('奇緣','gi',1500); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; }); }

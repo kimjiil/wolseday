@@ -137,7 +137,7 @@ function startDuel(spec,done){
   if(m.headless){ done(quickDuel(spec)); return; }
   const D=mkDuel(spec); D.done=done; D.base=LASTSPEC; DUEL=D; D.phase='anim'; duelStage(D); render();
   seq((at)=>{ at(2,()=>{ callout(D.lethal?'生死決':'比武',D.lethal?'duel lethal':'duel',1000); sfx('gong'); }); at(44,()=>{}); },()=>{ if(DUEL!==D) return; D.phase='pick'; showTell(D); render(); autoKick(D); }); }
-function autoKick(D){ clearTimeout(D.tm); if(!autoOn(D)) return;
+function autoKick(D){ if(D.war) return warKick(D); clearTimeout(D.tm); if(!autoOn(D)) return;
   D.tm=setTimeout(()=>{ if(DUEL!==D||!autoOn(D)) return; if(D.phase==='pick') duelPick(autoPick(D)); else if(D.phase==='mercy') duelMercy(mercyAuto()); else if(D.phase==='end') duelClose(); },INSTANT?0:D.phase==='pick'?420:1200); }
 function duelPick(my){ const D=DUEL; if(!D||D.phase!=='pick') return; if(my==='U'&&D.me.qi<60) return; if(my==='salve'&&!(m.inv.bag.salve>0)) return;
   D.phase='anim'; const ev=applyRound(D,my), st=duelState(D), mir=D.mirrorNow; render();
@@ -211,10 +211,10 @@ function animEnd(D,st,cb){ const h=A('hero'), e=A('foe');
   },cb); }
 
 /* ---- 결투 표시 ---- */
-function renderHud(){ const el=$m('mhHud'); if(!el) return; const D=DUEL; if(!D){ el.hidden=true; el.textContent=''; return; } el.hidden=false;
+function renderHud(){ const el=$m('mhHud'); if(!el) return; const D=DUEL; if(!D||D.war){ el.hidden=true; el.textContent=''; return; } el.hidden=false;
   const bar=(x,cls,L)=>`<div class="mh-hud ${cls}"><img src="${portrait(L)}" alt="" width="28" height="28"><div><b>${esc(x.name)}</b><span class="hp"><i style="width:${cl(x.hp/x.hpMax*100)}%"></i></span><span class="qi${x.qi>=60?' full':''}"><i style="width:${cl(x.qi)}%"></i></span></div></div>`;
   el.innerHTML=bar(D.me,'me',heroLook())+bar(D.foe,'foe',D.foe.look); }
-function renderDuel(card,eye){
+function renderDuel(card,eye){ if(DUEL.war) return renderWar(card);
   const D=DUEL, me=D.me, f=D.foe, sp=D.spec, stn=sp.stn||STN, can=D.phase==='pick'&&!autoOn(D);
   const head=`<div class="mh-dhead"><p class="mh-qa">${D.lethal?'생사결':'비무'}${D.foes.length>1?` · ${D.idx+1}/${D.foes.length}번째 상대`:''}${sp.survive?` · ${sp.survive}합을 버텨라`:''}</p><b>${esc(f.name)}</b>${f.title?`<small>${esc(f.title)}</small>`:''}</div>`;
   let body;

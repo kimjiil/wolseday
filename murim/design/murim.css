@@ -359,3 +359,28 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-evimg{display:block;width:100%;max-height:240px;object-fit:cover;margin:8px 0 10px;border:1px solid var(--m-line)}
 .mh-titleimg{display:block;width:100%;max-height:300px;object-fit:cover;margin:0 0 14px;border:1px solid var(--m-line)}
 img.mh-ic{object-fit:contain}
+
+/* 지휘전 */
+.mh-war canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:2px solid var(--m-ink);margin:8px 0;background:#86a45c}
+.mh-wgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.mh-wcol{border:1px solid var(--m-line);background:var(--m-panel2);padding:6px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.mh-wcol.won{border-color:var(--m-gold)}.mh-wcol.lost{border-color:var(--m-seal);opacity:.75}
+.mh-wfoe{border-bottom:1px dashed var(--m-line);padding-bottom:4px}
+.mh-wfoe b{display:block;font-size:13px;color:var(--m-seal);word-break:keep-all}.mh-wfoe small{font-size:11px;color:var(--m-muted)}
+.mh-wmine{display:flex;flex-direction:column;gap:4px;min-height:44px}
+.mh-wu{display:flex;align-items:center;gap:5px;width:100%;text-align:left;font:inherit;color:inherit;background:var(--m-panel);border:1px solid var(--m-line);padding:3px 4px;cursor:pointer;min-width:0}
+.mh-wu.on{border-color:var(--m-ink);box-shadow:inset 0 0 0 1px var(--m-ink)}
+.mh-wu.out{opacity:.4}.mh-wu:disabled{cursor:default}
+.mh-wu span{min-width:0;flex:1}
+.mh-wu b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh-wu small{display:block;font-size:10px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh-wu i{display:block;height:3px;background:var(--m-line);margin-top:2px}.mh-wu i em{display:block;height:3px;background:var(--m-jade)}
+.mh-wu .mh-pt{width:22px;height:22px;flex:none}
+.mh-wempty{color:var(--m-muted);font-size:11px}
+.mh-wbtn{display:flex;flex-direction:column;gap:4px;margin-top:auto}
+.mh-wbtn .mh-btn{width:100%;padding:5px 2px;font-size:12px}
+.mh-wbtn .mh-btn.on{background:var(--m-gold);color:#fff;border-color:var(--m-gold)}
+.mh-wlog{list-style:none;margin:8px 0;padding:0;font-size:13px;color:var(--m-muted)}.mh-wlog li:first-child{color:var(--m-ink);font-weight:700}
+.mh-wnote{font-size:12px;color:var(--m-muted);margin:8px 0}
+.mh-wres{font-size:15px;margin:10px 0;line-height:1.6}.mh-wres.good{color:var(--m-jade)}.mh-wres.bad{color:var(--m-seal)}
+.mh-word small{display:block;font-size:12px;color:var(--m-muted);font-weight:400}

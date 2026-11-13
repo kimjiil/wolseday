@@ -1,5 +1,5 @@
 /* ==== murim:stage — 누가 어떤 모습으로, 지금 어떤 장면에 서 있는가 ==== */
-function heroLook(o){ const a=m.age, s=seedOf(m.name), kid=a<13, old=a>=58, S=m.sect&&SECTS[m.sect];
+function heroLook(o){ const a=bodyAge(), s=seedOf(m.name), kid=a<13, old=a>=58, S=m.sect&&SECTS[m.sect];
   let robe=S?S.robe:FAMROBE[m.b.o]||'#8f8a78'; if(m.f.leader) robe='#e3ded0'; if(m.f.tianmo) robe='#3a1418';
   const wi=m.inv&&m.inv.w?ITEMS[m.inv.w]:null, w=wi&&a>=10&&(m.f.martial||wi.atk>=5)?WVIS[wi.k]:null;
   const hair=kid?(m.sex==='f'?'buns':'tuft'):m.sect==='shaolin'?'bald':m.sex==='f'?(a>=30?'bun':'long'):(m.f.leader||m.f.head?'crown':a>=40?'top':'pony');

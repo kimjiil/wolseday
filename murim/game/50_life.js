@@ -110,12 +110,16 @@ function pickBig(){
   const chance=m.age<10?.14:m.age<15?.25:(m.f.martial?.44:.32);
   if(R()>chance) return pickMinor();
   const pool=Object.values(EV).filter(e=>!e.minor&&e.min!==e.max&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)&&!(!e.once&&!e.rep&&m.used[e.id]!=null));
-  if(!pool.length) return null;
+  // 나이가 들면 큰 사건과 기연이 바닥난다. 모자란 몫은 등급 사건으로 채워서, 한 해에 생기는 일과 기연의 수가 젊을 때와 같게 한다
+  if(m.age>=15&&!pool.some(e=>e.gi)&&R()<GIKEEP){ const e=pickGraded(minorPool(),3); if(e){ m.used[e.id]=m.age; return e; } }
+  if(!pool.length){ const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e||null; }
   const lk=.3+ST('luck')*.07;
   const e=wpick(pool,x=>(x.w||1)*(x.once?1.2:1)*(x.gi?lk:1)); m.used[e.id]=m.age; return e;
 }
 // 등급 사건: 큰 사건이 없는 해에 따로 굴린다. 등급부터 정하고 그 안에서 고른다
-function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const pool=Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)); const e=pickGraded(pool); if(e) m.used[e.id]=m.age; return e; }
+const GIKEEP=.12;   // 큰 사건 가운데 기연이 차지하던 몫
+const minorPool=()=>Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep));
+function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e; }
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
 function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));

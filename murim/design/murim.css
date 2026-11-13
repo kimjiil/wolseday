@@ -354,3 +354,8 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-cons{gap:4px 12px}
 
 .mh-tol{margin:6px 0 0;font-size:12px;color:var(--m-muted)}
+
+/* 이미지 스킨 */
+.mh-evimg{display:block;width:100%;max-height:240px;object-fit:cover;margin:8px 0 10px;border:1px solid var(--m-line)}
+.mh-titleimg{display:block;width:100%;max-height:300px;object-fit:cover;margin:0 0 14px;border:1px solid var(--m-line)}
+img.mh-ic{object-fit:contain}

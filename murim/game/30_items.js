@@ -140,7 +140,9 @@ function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); let 
   if(it.s==='w') kind=ICK[it.k]; else if(it.s==='a') kind='armor'; else if(it.s==='h') kind='hat'; else if(it.s==='f') kind='boot';
   else if(it.s==='c'){ kind=ICK[it.fx]; if(!kind){ const c=CIC.find(x=>x[0].test(it.n)); kind=c?c[1]:'jade'; } }
   else if(it.s==='u'){ kind=ICK[id]; if(!kind){ const u=it.use||{}; kind=u.st?'pill':u.ng?'pill':u.ex?'scroll':u.joy&&!u.hp?'gourd':/술|주$|차$|탕$/.test(it.n)?'gourd':/단$|환$/.test(it.n)?'pill':'jar'; } }
-  else kind=ICK[id]; return iconUrl(kind,it.t); }
+  else kind=ICK[id];
+  // 이미지 스킨: icon/<물건 이름> → icon/<모양>_<등급> → icon/<모양>
+  return skinUrl('icon/'+it.n,'icon/'+id,'icon/'+kind+'_'+TIER[it.t],'icon/'+kind)||iconUrl(kind,it.t); }
 const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width="28" height="28">`;
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);

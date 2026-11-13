@@ -161,14 +161,17 @@ function drawFrame(){
   g0.save();
   if(shake>0){ if(!RED) g0.translate(rnd((hsh(tk)-.5)*shake*.9),rnd((hsh(tk*1.7)-.5)*shake*.9)); shake--; }
   // 배경은 1배로 그린 뒤 모서리를 다듬어 2배로 올린다
-  cx=BGX; try{ TER[st.ter](st); for(const p of st.props){ const o=p[2]; if(o&&o.front) continue; PROP[p[0]](p[1],GY+2+((o&&o.dy)||0),st,o); } } finally{ cx=g0; }
-  epxInto(new Uint32Array(BGX.getImageData(0,0,W,H).data.buffer),W,H,BG2D); BG2X.putImageData(BG2I,0,0); g0.drawImage(BG2,0,0,W,H);
+  // 이미지 스킨이 있으면 배경과 소품을 그 한 장으로 갈음한다: bg/<장면>_<night|dusk|dawn> → bg/<장면>_<철> → bg/<장면>
+  const kt='bg/'+st.bg+'_'+st.time, bgi=skinImg(kt,'bg/'+st.bg+'_'+SEAK[st.season],'bg/'+st.bg), bgT=!!bgi&&bgi===SKI[kt];
+  if(bgi){ if(st.scroll){ const ox=-((st.scrollX||0)%W); skinDraw(g0,bgi,ox,0,W,H); skinDraw(g0,bgi,ox+W,0,W,H); } else skinDraw(g0,bgi,0,0,W,H); }
+  else { cx=BGX; try{ TER[st.ter](st); for(const p of st.props){ const o=p[2]; if(o&&o.front) continue; PROP[p[0]](p[1],GY+2+((o&&o.dy)||0),st,o); } } finally{ cx=g0; }
+  epxInto(new Uint32Array(BGX.getImageData(0,0,W,H).data.buffer),W,H,BG2D); BG2X.putImageData(BG2I,0,0); g0.drawImage(BG2,0,0,W,H); }
   const as=st.actors.slice().sort((a,b)=>a.y-b.y);
   for(const a of as){ stepActor(a); if(!a.hide) drawActor(a); }
-  for(const p of st.props){ const o=p[2]; if(o&&o.front) PROP[p[0]](p[1],GY+2+(o.dy||0),st,o); }
+  if(!bgi) for(const p of st.props){ const o=p[2]; if(o&&o.front) PROP[p[0]](p[1],GY+2+(o.dy||0),st,o); }
   drawWeather(st,0); drawFx(0);
-  gradeScene(st);
-  if(SKYTER[st.ter]) drawSkyLights(st);
+  if(!bgT) gradeScene(st);   // 밤·노을 전용 이미지를 넣었으면 색을 덧입히지 않는다
+  if(SKYTER[st.ter]&&!bgi) drawSkyLights(st);   // 이미지 배경에는 달·별을 덧그리지 않는다
   drawLights(); drawWeather(st,1); drawFx(1);
   for(const a of as) drawEmote(a);
   drawDice();

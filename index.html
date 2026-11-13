@@ -3255,6 +3255,11 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-cons{gap:4px 12px}
 
 .mh-tol{margin:6px 0 0;font-size:12px;color:var(--m-muted)}
+
+/* 이미지 스킨 */
+.mh-evimg{display:block;width:100%;max-height:240px;object-fit:cover;margin:8px 0 10px;border:1px solid var(--m-line)}
+.mh-titleimg{display:block;width:100%;max-height:300px;object-fit:cover;margin:0 0 14px;border:1px solid var(--m-line)}
+img.mh-ic{object-fit:contain}
 </style>
 
 <div id="murimApp" hidden>
@@ -3287,12 +3292,13 @@ body.is-murim::before{background:var(--m-bg)}
 
 <script>
 (function(){
+const SKF={};
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
 const MVER='1.2';
 const NOTES=[
-  ['1.2','2026-11-13',['등급 사건이 1041개가 됐다(C 470, B 312, A 157, S 72, SS 25, SSR 5)','일흔이 넘어도 사건이 이어진다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
+  ['1.2','2026-11-13',['등급 사건이 1041개가 됐다(C 470, B 312, A 157, S 72, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
 ];
@@ -3541,6 +3547,21 @@ function sfx(k){ if(!SND||(m&&m.headless)) return; try{ AC=AC||new (window.Audio
     case 'death': tone(110,1.2,'sine',.12,70); tone(165,1.2,'sine',.05,100,.02); break;
     case 'gong': tone(196,.9,'sine',.1,180); tone(392,.5,'triangle',.03,380); break;
   } }catch(e){} }
+/* ==== murim:skin — 이미지 파일로 그림을 갈아끼우는 연결 ====
+   murim/skin/ 아래에 정해진 이름으로 이미지를 넣고 build.py 를 돌리면, 그 자리의 그림이 코드로 그린 것 대신 이미지로 나온다.
+   이미지가 없거나 읽지 못하면 지금까지처럼 코드로 그린다. 이름과 크기는 murim/skin/README.md 에 있다.
+   SKF 는 build.py 가 skin/ 폴더를 훑어서 넣어 주는 목록이다(이름 → 주소). */
+const SKI={};            // 다 읽힌 이미지
+let SKINVER=0, _skt=0;   // 이미지가 하나 읽힐 때마다 올라간다(미리 그려 둔 배경을 다시 그리게)
+const SEAK=['spring','summer','autumn','winter'];
+for(const k in SKF){ const im=new Image(); im.decoding='async';
+  im.onload=()=>{ SKI[k]=im; SKINVER++; clearTimeout(_skt); _skt=setTimeout(()=>{ try{ if(typeof skinLoaded==='function') skinLoaded(); }catch(e){} },150); };
+  im.onerror=()=>{ delete SKF[k]; }; im.src=SKF[k]; }
+// 앞에 적은 이름부터 찾아서 처음 있는 것을 준다
+const skinImg=(...ks)=>{ for(const k of ks) if(SKI[k]) return SKI[k]; return null; };
+const skinUrl=(...ks)=>{ for(const k of ks) if(SKF[k]) return SKF[k]; return null; };
+// 큰 그림은 부드럽게, 도트 크기 그대로인 그림은 또렷하게 줄여 그린다
+function skinDraw(g,im,x,y,w,h){ const sm=g.imageSmoothingEnabled; g.imageSmoothingEnabled=im.width>w*2.5; g.drawImage(im,x,y,w,h); g.imageSmoothingEnabled=sm; }
 /* ==== murim:gfx-base — 도트 장면 엔진: 색, 하늘, 산, 지형 ==== */
 const RED=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const W=192,H=108,GY=86;
@@ -4746,14 +4767,17 @@ function drawFrame(){
   g0.save();
   if(shake>0){ if(!RED) g0.translate(rnd((hsh(tk)-.5)*shake*.9),rnd((hsh(tk*1.7)-.5)*shake*.9)); shake--; }
   // 배경은 1배로 그린 뒤 모서리를 다듬어 2배로 올린다
-  cx=BGX; try{ TER[st.ter](st); for(const p of st.props){ const o=p[2]; if(o&&o.front) continue; PROP[p[0]](p[1],GY+2+((o&&o.dy)||0),st,o); } } finally{ cx=g0; }
-  epxInto(new Uint32Array(BGX.getImageData(0,0,W,H).data.buffer),W,H,BG2D); BG2X.putImageData(BG2I,0,0); g0.drawImage(BG2,0,0,W,H);
+  // 이미지 스킨이 있으면 배경과 소품을 그 한 장으로 갈음한다: bg/<장면>_<night|dusk|dawn> → bg/<장면>_<철> → bg/<장면>
+  const kt='bg/'+st.bg+'_'+st.time, bgi=skinImg(kt,'bg/'+st.bg+'_'+SEAK[st.season],'bg/'+st.bg), bgT=!!bgi&&bgi===SKI[kt];
+  if(bgi){ if(st.scroll){ const ox=-((st.scrollX||0)%W); skinDraw(g0,bgi,ox,0,W,H); skinDraw(g0,bgi,ox+W,0,W,H); } else skinDraw(g0,bgi,0,0,W,H); }
+  else { cx=BGX; try{ TER[st.ter](st); for(const p of st.props){ const o=p[2]; if(o&&o.front) continue; PROP[p[0]](p[1],GY+2+((o&&o.dy)||0),st,o); } } finally{ cx=g0; }
+  epxInto(new Uint32Array(BGX.getImageData(0,0,W,H).data.buffer),W,H,BG2D); BG2X.putImageData(BG2I,0,0); g0.drawImage(BG2,0,0,W,H); }
   const as=st.actors.slice().sort((a,b)=>a.y-b.y);
   for(const a of as){ stepActor(a); if(!a.hide) drawActor(a); }
-  for(const p of st.props){ const o=p[2]; if(o&&o.front) PROP[p[0]](p[1],GY+2+(o.dy||0),st,o); }
+  if(!bgi) for(const p of st.props){ const o=p[2]; if(o&&o.front) PROP[p[0]](p[1],GY+2+(o.dy||0),st,o); }
   drawWeather(st,0); drawFx(0);
-  gradeScene(st);
-  if(SKYTER[st.ter]) drawSkyLights(st);
+  if(!bgT) gradeScene(st);   // 밤·노을 전용 이미지를 넣었으면 색을 덧입히지 않는다
+  if(SKYTER[st.ter]&&!bgi) drawSkyLights(st);   // 이미지 배경에는 달·별을 덧그리지 않는다
   drawLights(); drawWeather(st,1); drawFx(1);
   for(const a of as) drawEmote(a);
   drawDice();
@@ -5132,7 +5156,9 @@ function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); let 
   if(it.s==='w') kind=ICK[it.k]; else if(it.s==='a') kind='armor'; else if(it.s==='h') kind='hat'; else if(it.s==='f') kind='boot';
   else if(it.s==='c'){ kind=ICK[it.fx]; if(!kind){ const c=CIC.find(x=>x[0].test(it.n)); kind=c?c[1]:'jade'; } }
   else if(it.s==='u'){ kind=ICK[id]; if(!kind){ const u=it.use||{}; kind=u.st?'pill':u.ng?'pill':u.ex?'scroll':u.joy&&!u.hp?'gourd':/술|주$|차$|탕$/.test(it.n)?'gourd':/단$|환$/.test(it.n)?'pill':'jar'; } }
-  else kind=ICK[id]; return iconUrl(kind,it.t); }
+  else kind=ICK[id];
+  // 이미지 스킨: icon/<물건 이름> → icon/<모양>_<등급> → icon/<모양>
+  return skinUrl('icon/'+it.n,'icon/'+id,'icon/'+kind+'_'+TIER[it.t],'icon/'+kind)||iconUrl(kind,it.t); }
 const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width="28" height="28">`;
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
@@ -5547,12 +5573,16 @@ function pickBig(){
   const chance=m.age<10?.14:m.age<15?.25:(m.f.martial?.44:.32);
   if(R()>chance) return pickMinor();
   const pool=Object.values(EV).filter(e=>!e.minor&&e.min!==e.max&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)&&!(!e.once&&!e.rep&&m.used[e.id]!=null));
-  if(!pool.length) return null;
+  // 나이가 들면 큰 사건과 기연이 바닥난다. 모자란 몫은 등급 사건으로 채워서, 한 해에 생기는 일과 기연의 수가 젊을 때와 같게 한다
+  if(m.age>=15&&!pool.some(e=>e.gi)&&R()<GIKEEP){ const e=pickGraded(minorPool(),3); if(e){ m.used[e.id]=m.age; return e; } }
+  if(!pool.length){ const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e||null; }
   const lk=.3+ST('luck')*.07;
   const e=wpick(pool,x=>(x.w||1)*(x.once?1.2:1)*(x.gi?lk:1)); m.used[e.id]=m.age; return e;
 }
 // 등급 사건: 큰 사건이 없는 해에 따로 굴린다. 등급부터 정하고 그 안에서 고른다
-function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const pool=Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)); const e=pickGraded(pool); if(e) m.used[e.id]=m.age; return e; }
+const GIKEEP=.12;   // 큰 사건 가운데 기연이 차지하던 몫
+const minorPool=()=>Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep));
+function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e; }
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
 function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
@@ -6093,8 +6123,8 @@ function mkCh(x,g){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ 
   return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); if(ok) qDrop(g,r[1]); return {t:r[0],tone:ok?'good':'bad'}; }}; }
 let QN=0;
 function Q(g,id,c,bg,text,chs){ c=c||{}; QN++; const rep=c.rep!=null?c.rep:GREP[g];
-  const hi=c.a?c.a[1]:70;   // 위쪽 나이가 70 이상이면 나이 제한이 없는 것으로 친다(오래 사는 사람에게도 일이 생기게)
-  E(id,Object.assign({min:c.a?c.a[0]:13,max:hi>=70?150:hi,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!(m.spouse&&!m.spouse.dead)===!!c.wed)&&(c.wed!==0||!isMonk())&&(!c.sex||m.sex===c.sex)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
+  const hi=c.a?c.a[1]:70, top=g==='S'||g==='SS'||g==='SSR'?50:70;   // 위쪽 나이가 70 이상이면(S 이상은 50 이상이면) 나이 제한이 없는 것으로 친다. 오래 사는 사람에게도 일과 기연이 생기게
+  E(id,Object.assign({min:c.a?c.a[0]:13,max:hi>=top?150:hi,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!(m.spouse&&!m.spouse.dead)===!!c.wed)&&(c.wed!==0||!isMonk())&&(!c.sex||m.sex===c.sex)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
     st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(x=>mkCh(x,g))},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }
 /* ==== murim:minor-1 — 등급 사건 첫 묶음 (어린 시절 · 마을 · 길과 저자 · 무림 · 집안) ==== */
 /* ---------- C: 일상 ---------- */
@@ -7962,11 +7992,11 @@ function cathayAuto(){ const s=curSite();
   const near=nearSites(4).filter(x=>x.id!=='home'); if(near.length&&cathGo(pick(near).id)) return; if(acts.length) wpick(acts,a=>a.w).fn(); else doSeason('idle'); }
 /* ---- 화면 ---- */
 function cathBg(sea){ if(CBG&&CBG.sea===sea&&CBG.ver===SKINVER) return; const M=cath(), el=$m('mhCbg'), o=el.getContext('2d'), sc=el.width/(M.w*TS); o.imageSmoothingEnabled=true;
+  const sk=skinImg('map/cathay_'+SEAK[sea],'map/cathay'); if(sk){ skinDraw(o,sk,0,0,el.width,el.height); M._gc=null; M._gk=null; CBG={sea,ver:SKINVER}; return; }
   const gc=drawGround(M,sea); o.drawImage(gc,0,0,el.width,el.height);
   const list=M.objs.map(ob=>({y:(ob.y+ob.h)*TS,ob})).sort((a,b)=>a.y-b.y);
   for(const it of list){ const ob=it.ob, d=OBJ[ob.k], s=objSprite(ob,sea,0), bx=(ob.x+ob.w/2)*TS, by=(ob.y+ob.h)*TS; if(ob.k==='house') o.drawImage(s,(bx-s.width/2)*sc,(by-s.height)*sc,s.width*sc,s.height*sc); else o.drawImage(s,(bx-d.ax)*sc,(by-d.ay-4)*sc,s.width*sc,s.height*sc); }
   M._gc=null; M._gk=null; CBG={sea,ver:SKINVER}; }
-let SKINVER=0;
 function cathayShow(){ const box=cv.parentNode; let el=$m('mhCathay');
   if(!el){ el=document.createElement('div'); el.id='mhCathay'; el.className='mh-cathay'; el.innerHTML='<div class="mh-cw" id="mhCw"><canvas class="bg" id="mhCbg" width="1536" height="1152"></canvas><div id="mhCreg" aria-hidden="true"></div><div id="mhCmk"></div><canvas id="mhChero" class="mh-chero" width="120" height="80" aria-hidden="true"></canvas></div>'; box.insertBefore(el,cv.nextSibling);
     $m('mhCreg').innerHTML=CREG.map(r=>`<span style="left:${r[2]/KW*100}%;top:${r[3]/KH*100}%">${r[1]}</span>`).join('');
@@ -8256,7 +8286,7 @@ function renderPlay(card){
   if(mapMode()) return inCathay()?renderCathayCard(card,eye):renderMapCard(card,eye);
   if(m.train) return renderTrain(card,eye);
   const ev=m.pending, mp=m.age>=MAPAGE;
-  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p><p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}</div></div>`:'';
+  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p>${evArt(ev)}<p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}</div></div>`:'';
   const last=m.lastRes&&m.lastRes.age===m.age&&!ev?resHtml(m.lastRes):'';
   const feed=m.log.slice(-5).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   const seg=`<div class="mh-focus"><span class="mh-lab">올해의 중심</span><div class="mh-seg" role="radiogroup" aria-label="올해의 중심">${FOCUS.map(f=>`<button type="button" role="radio" aria-checked="${m.focus===f.id&&m.age>=6}" data-focus="${f.id}" ${m.age<6?'disabled':''}>${f.n}</button>`).join('')}</div><span class="mh-hint">${m.age<6?'아직 어리다. 하루하루가 그냥 흘러간다.':esc((FOCUS.find(f=>f.id===m.focus)||FOCUS[1]).h)}</span></div>`;
@@ -8267,9 +8297,11 @@ function renderPlay(card){
 }
 function optGroup(key,label,opts){ return `<fieldset class="mh-opt"><legend>${label}</legend><div class="mh-seg">${opts.map(([v,t])=>`<button type="button" data-k="${key}" data-v="${v}" aria-pressed="${setup[key]===v}">${t}</button>`).join('')}</div><p class="mh-hint" id="mhHint-${key}"></p></fieldset>`; }
 const HINTS={era:{peace:ERAS.peace.d,chaos:ERAS.chaos.d,demon:ERAS.demon.d,any:'세 시대 중 하나에 무작위로 태어난다.'},basis:{births:'이 해에 아이가 많이 태어나는 집일수록 그 집에 태어나기 쉽다. 가난한 집일수록 아이가 많다.',pop:'지금 강호에 살아 있는 사람 수만큼의 확률. 살아남은 사람 쪽으로 조금 기운다.'},pace:{fast:'걷기 전 어린 시절은 한 해가 1.5초에 지나간다.',normal:'걷기 전 어린 시절은 한 해가 3초에 지나간다.',slow:'걷기 전 어린 시절은 한 해가 6초에 지나간다.'}};
+// 이미지 스킨: 사건 삽화 ev/<사건 이름표>, 등급 공통 삽화 ev/grade_<등급>
+const evArt=ev=>{ const u=skinUrl('ev/'+ev.id,gradeOf(ev)?'ev/grade_'+gradeOf(ev):'-'); return u?`<img class="mh-evimg" src="${esc(u)}" alt="">`:''; };
 function renderTitle(card){
   const saved=load(), past=lsGet('murim_past')||[];
-  card.innerHTML=`<div class="mh-eye"><span>武林初出</span></div>
+  card.innerHTML=`${skinUrl('title')?`<img class="mh-titleimg" src="${esc(skinUrl('title'))}" alt="">`:''}<div class="mh-eye"><span>武林初出</span></div>
     <h2>강호의 어느 해, 누군가로 태어난다.</h2>
     <p>어디서 누구의 아이로 태어날지는 고를 수 없다. 강호 사람 대부분은 무공을 모르는 농사꾼으로 태어나 농사꾼으로 죽는다. 다섯 살부터는 고향 마을을 직접 걸어 다닌다. 걷는 데는 시간이 들지 않고, 무엇을 할 때마다 한 철이 간다. 네 철이면 한 해다.</p>
     <ul class="mh-how">
@@ -8412,6 +8444,8 @@ $m('mhHub').onclick=()=>{ paused=true; if(m&&m.phase==='play') renderCtl(); loca
 $m('mhVer').textContent='v'+MVER;
 $m('mhNotes').innerHTML=`<b>바뀐 점</b>`+NOTES.map(n=>`<div class="mh-note"><span>v${n[0]} · ${n[1]}</span><ul>${n[2].map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');
 $m('mhVer').onclick=()=>{ const n=$m('mhNotes'); n.hidden=!n.hidden; $m('mhVer').setAttribute('aria-expanded',String(!n.hidden)); };
+// 스킨 이미지가 읽히면 화면을 한 번 다시 그린다
+function skinLoaded(){ if(!$m('murimApp').hidden) render(); }
 window.__murimRender=()=>{ render(); };
 render(); requestAnimationFrame(frame); requestAnimationFrame(loop);
 })();

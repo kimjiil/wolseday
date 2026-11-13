@@ -4,6 +4,14 @@ const meter=(lab,v,cls)=>`<div class="mh-meter"><span>${lab}</span><span class="
 const ptImg=(L,cls)=>`<img class="mh-pt ${cls||''}" src="${portrait(L)}" alt="" width="28" height="28">`;
 const diceHtml=d=>d?`<p class="mh-dice">주사위 <b>${d.roll}</b>${d.lo>1?` <small>(천운: ${d.lo}~20에서 나온다)</small>`:''}${d.b?` + 성격 ${d.b}`:''}${d.j?' + 옥패 1':''} · ${d.need} 이상이면 성공 · <b>${d.ok?'성공':'실패'}</b></p>`:'';
 function resHtml(lr){ if(m.wait) return '<p class="mh-rolling">주사위가 구른다…</p>'; const rec=lr.pick?`<div class="mh-rec">${lr.q?`<p class="q">${esc(lr.q)}</p>`:''}<p class="p"><span>${lr.auto?'맡김':'고른 길'}</span>${esc(lr.pick)}</p></div>`:''; return `${rec}${diceHtml(lr.dice)}<p class="mh-res ${lr.tone||''}">${esc(lr.t)}</p>`; }
+// 신상 칸의 무공 목록: 등급 높은 것부터. 지금 쓰이는 것(가장 센 공격 무공과 가장 높은 보법·안법·외공)에 테를 두른다
+let ARTOPEN=false;
+function artList(){ const use=combat().art, eye=eyeArt(), st=stepArt(), bd=bodyArt();
+  const on=a=>a===use||(a.k==='안법'&&eye>0&&a.p===eye)||(a.k==='보법'&&stepEv(a.p)===st)||(a.k==='외공'&&bd>0&&a.p===bd);
+  const rows=m.arts.map(a=>({a,g:artG(a)})).sort((x,y)=>y.g-x.g||artVal(y.a)-artVal(x.a));
+  const one=({a,g})=>`<span class="mh-art gr${g}${a.k==='마공'?' m':''}${on(a)?' on':''}">${grTag(g)}<b>${esc(a.n)}</b><small>${esc(artSub(a))} · ${artStat(a)}</small></span>`;
+  const top=rows.slice(0,8), rest=rows.slice(8);
+  return `<div class="mh-arts">${top.map(one).join('')}</div>${rest.length?`<details class="mh-artmore" id="mhArtMore" ${ARTOPEN?'open':''}><summary>나머지 ${rest.length}가지</summary><div class="mh-arts">${rest.map(one).join('')}</div></details>`:''}`; }
 function renderRec(){
   const S=m.sect&&SECTS[m.sect], o=OR(m.b.o), fa=m.rels.find(r=>r.role==='아버지'), mo=m.rels.find(r=>r.role==='어머니');
   const kids=m.rels.filter(r=>r.role==='자식'&&!r.dead).length, others=m.rels.filter(r=>!r.dead&&!['아버지','어머니','배우자','자식'].includes(r.role)).slice(-6);
@@ -20,14 +28,15 @@ function renderRec(){
       ${m.wins||m.losses?`<dt>싸움</dt><dd class="mh-num">${m.wins||0}승 ${m.losses||0}패${m.kills?` · 벤 사람 ${m.kills}`:''}</dd>`:''}
       <dt>가족</dt><dd>아버지 ${fa.dead?'<s>':''}${esc(fa.name)}${fa.dead?'</s>':''} · 어머니 ${mo.dead?'<s>':''}${esc(mo.name)}${mo.dead?'</s>':''}${m.sib?` · 형제 ${m.sib}`:''}${m.spouse&&!m.spouse.dead?` · 배우자 ${esc(m.spouse.name)}`:''}${kids?` · 자식 ${kids}`:''}</dd>
     </dl>
-    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.k==='안법'?` · 낌새 읽기 +${a.p}%`:a.k==='보법'?` · 회피 +${Math.round(stepEv(a.p)*100)}%`:a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
+    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4>${artList()}</div>`:''}
     ${others.length?`<div><h4>인연</h4><div class="mh-rels">${others.map(r=>`<span class="mh-relc${r.role==='원수'?' m':''}">${ptImg(relLook(r))}<span><small>${esc(r.role)}</small>${esc(r.name)}</span></span>`).join('')}</div></div>`:''}
     <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd></dl>`;
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
+  const am=$m('mhArtMore'); if(am) am.ontoggle=()=>{ ARTOPEN=am.open; };
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
   const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
-  const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">쓰기</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(it.book?it.d:useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">${it.book?'읽기':'쓰기'}</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
   const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare gr${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${grTag(it.t)} ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
     <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
@@ -102,6 +111,7 @@ function renderTitle(card){
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>천하</b> 열다섯이 넘으면 마을 어귀에서 천하 지도로 나간다. 갈 곳을 누르고 길을 떠나면, 가는 동안 철이 간다. 문파에 들었다면 사문에서 임무를 받아 공헌을 쌓을 수 있고, 가끔은 산문이 습격당한다.</span></li>
       <li>${icImg(iconUrl('sword',1),'sm')}<span><b>결투</b> 강공·수비·변초·절초. 상대의 낌새를 읽고 수를 낸다. 생사결에서 지면 죽을 수 있다.</span></li>
       <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 무기·갑옷·머리·신발·장신구. 등급은 C에서 SSR까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
+      <li>${icImg(iconUrl('scroll',1),'sm')}<span><b>무공</b> 팔백여 가지, 등급은 C에서 SSR까지. 문파 장경각에서 서열대로 익히고, 비급을 읽어 익히고, 기연으로 얻는다.</span></li>
       <li>${icImg(iconUrl('scroll',2),'sm')}<span><b>기연</b> 절벽 아래 동굴, 별똥 쇳덩이, 죽어 가는 노승. 드물게 온다.</span></li>
       <li>${icImg(iconUrl('jade',1),'sm')}<span><b>수련기</b> 무공을 배우면 사문 경내를 걸으며 삼 년을 보낸다. 동문과 정을 쌓고, 때로는 잃는다.</span></li>
     </ul></details>

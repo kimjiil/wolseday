@@ -3372,6 +3372,49 @@ img.mh-ic{object-fit:contain}
   .mh-cathay{max-height:none}
   #mhRec{scroll-margin-top:8px}
 }
+
+/* ---- 무공 등급 ---- */
+.mh-arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:5px}
+.mh-art{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 7px;align-items:center;border:1px solid var(--m-line);border-left-width:3px;padding:4px 7px;background:var(--m-panel2);min-width:0}
+.mh-art .mh-gr{grid-row:1/span 2;margin:0;font-size:11px;padding:0 4px;min-width:1.5em}
+.mh-art b{font-family:var(--m-f-disp);font-weight:400;font-size:15px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh-art small{font-size:12px;color:var(--m-muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh-art.gr1{border-left-color:#6f9a66}.mh-art.gr2{border-left-color:#7f95a3}.mh-art.gr3{border-left-color:#8a5ad0}.mh-art.gr4{border-left-color:var(--m-gold)}.mh-art.gr5{border-left-color:#e0589f}
+.mh-art.gr3 b{color:#8a5ad0}.mh-art.gr4 b{color:var(--m-gold)}.mh-art.gr5 b{color:#c9418a}
+.mh-art.m b{color:var(--m-seal)}
+.mh-art.on{border-color:var(--m-ink);box-shadow:inset 0 0 0 1px var(--m-ink)}
+.mh-artmore{margin-top:5px}.mh-artmore summary{cursor:pointer;font-size:13px;color:var(--m-muted);padding:6px 0}
+.mh-artmore[open] summary{margin-bottom:2px}
+#mhToast{z-index:6}
+/* 높은 등급 무공을 얻었을 때의 연출(artFx) */
+.mh-artfx{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;display:grid;place-items:center;line-height:1.15;--c:#b89cf0;--c2:#efe6ff;--cr:rgba(184,156,240,.55);animation:mhAfx var(--dur,2600ms) linear forwards}
+.mh-artfx.g4{--c:#f2c14e;--c2:#fff3c0;--cr:rgba(242,193,78,.62)}.mh-artfx.g5{--c:#ffd76a;--c2:#ffffff;--cr:rgba(255,236,160,.75)}.mh-artfx.dark{--c:#e2503a;--c2:#ffd0c4;--cr:rgba(226,80,58,.6)}
+.mh-artfx i{position:absolute;display:block}
+.mh-artfx .veil{inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(23,22,28,.3) 0%,rgba(10,9,14,.9) 78%)}
+.mh-artfx .rays{left:50%;top:50%;width:170%;aspect-ratio:1;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,transparent 0 9deg,var(--cr) 9deg 12deg,transparent 12deg 20deg);-webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.75) 20%,transparent 60%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.75) 20%,transparent 60%);animation:mhAfxSpin 10s linear infinite}
+.mh-artfx.g4 .rays{animation-duration:7s}
+.mh-artfx.g5 .rays{background:repeating-conic-gradient(from 0deg,transparent 0 6deg,rgba(255,236,160,.8) 6deg 9deg,transparent 9deg 14deg,rgba(240,140,200,.6) 14deg 16deg,transparent 16deg 22deg,rgba(150,190,255,.55) 22deg 24deg,transparent 24deg 30deg);animation-duration:5s}
+.mh-artfx.g5 .rays.r2{width:120%;animation-direction:reverse;animation-duration:8s;opacity:.6}
+.mh-artfx .ring{left:50%;top:50%;width:16%;aspect-ratio:1;border-radius:50%;border:3px solid var(--c2);box-shadow:0 0 16px var(--c),inset 0 0 12px var(--c);transform:translate(-50%,-50%) scale(.2);opacity:0;animation:mhAfxRing 1.2s ease-out .12s forwards}
+.mh-artfx .ring.r2{animation-delay:.55s}.mh-artfx .ring.r3{animation-delay:1.05s}
+.mh-artfx .bolt{inset:0;background:#fff;opacity:0;animation:mhAfxBolt var(--dur) linear forwards}
+.mh-artfx .pt{position:absolute;bottom:-3%;width:4px;height:4px;background:var(--c2);box-shadow:0 0 6px 1px var(--c);opacity:0;animation:mhAfxPt 1.4s ease-out infinite}
+.mh-artfx.g5 .pt:nth-of-type(3n){background:#ffc0e0;box-shadow:0 0 6px 1px #f08cc8}.mh-artfx.g5 .pt:nth-of-type(3n+1){background:#cfe4ff;box-shadow:0 0 6px 1px #7fb4ff}
+.mh-artfx .tx{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:0 8px;max-width:100%;animation:mhAfxTx var(--dur,2600ms) cubic-bezier(.2,.9,.3,1) forwards}
+.mh-artfx .tx::before{content:'';position:absolute;left:-18%;right:-18%;top:-30%;bottom:-30%;background:radial-gradient(ellipse at 50% 50%,rgba(10,9,14,.82) 0%,rgba(10,9,14,.55) 45%,transparent 72%);z-index:-1}
+.mh-artfx .tx b{position:relative}
+.mh-artfx .tx em{font-style:normal;font-family:var(--m-f-disp);font-size:clamp(11px,2.3vw,16px);letter-spacing:.34em;padding:2px 6px 2px 11px;color:var(--c2);border:2px solid var(--c);background:rgba(23,22,28,.6)}
+.mh-artfx .tx b{font-family:var(--m-f-disp);font-weight:400;font-size:clamp(25px,7.2vw,58px);white-space:nowrap;color:#fff;text-shadow:0 0 12px var(--c),0 0 30px var(--c),0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c}
+.mh-artfx.g5 .tx b{color:#fffdf2;text-shadow:0 0 10px #ffd76a,0 0 26px #f08cc8,0 0 48px #7fb4ff,0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c,2px 2px 0 #17161c,-2px 2px 0 #17161c;animation:mhAfxHue 1.6s linear infinite}
+.mh-artfx .tx small{font-size:clamp(11px,2.1vw,15px);color:var(--c2);letter-spacing:.08em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c}
+@keyframes mhAfx{0%{opacity:0}5%{opacity:1}86%{opacity:1}100%{opacity:0}}
+@keyframes mhAfxSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes mhAfxRing{0%{opacity:.95;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(8)}}
+@keyframes mhAfxPt{0%{opacity:0;bottom:-3%}12%{opacity:1}100%{opacity:0;bottom:104%}}
+@keyframes mhAfxTx{0%{opacity:0;transform:scale(2.8)}9%{opacity:1;transform:scale(.93)}14%{transform:scale(1.05)}19%{transform:scale(1)}100%{opacity:1;transform:scale(1.07)}}
+@keyframes mhAfxHue{0%,100%{filter:none}50%{filter:brightness(1.25) saturate(1.4)}}
+@keyframes mhAfxBolt{0%{opacity:.95}5%{opacity:0}36%{opacity:0}38%{opacity:.75}43%{opacity:0}60%{opacity:0}62%{opacity:.5}66%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.mh-artfx .rays,.mh-artfx .pt,.mh-artfx .ring,.mh-artfx .bolt{display:none}.mh-artfx .tx,.mh-artfx.g5 .tx b{animation:none}}
 </style>
 
 <div id="murimApp" hidden>
@@ -3411,8 +3454,9 @@ const SKF={};
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
-const MVER='1.2';
+const MVER='1.3';
 const NOTES=[
+  ['1.3','2026-11-13',['무공 823가지: 무협에 두루 나오는 무공을 모아 C~SSR 등급을 매겼다(검 183 · 장 163 · 권 116 · 내공 115 · 도 82 · 보법 80 · 암기 38 · 외공 21 · 안법 13 · 마공 12)','문파 장경각: 사문에 가면 서열과 경지에 맞는 사문의 무공을 한 철에 하나씩 익힌다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS)','비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다. 가게에서 팔고, 싸움과 사건에서 떨어진다','외공: 방어를 올려 주는 새 갈래','이름난 무공을 얻는 기연 17가지(독고구검, 능파미보, 구양진경 등)','신상 칸의 무공에 등급과 위력이 보이고, 지금 쓰이는 무공에 테가 둘린다','S 이상 무공을 얻으면 획득 연출이 뜬다(S 絶技, SS 神功, SSR 絶世神功)']],
   ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','이름값을 못 하던 것을 고쳤다: 천운(주사위 8~20), 만독불침·피독주·해독단(독), 혈마체(마공), 염주(주화입마), 보법(위력만큼 회피)','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다','휴대폰 화면 정리: 장면 밑에 건강·행복·돈·내공 한 줄, 작은 글씨와 단추 키움, 알림은 위쪽에 작게, 천하 지도에서 떠나는 단추가 화면 아래에 붙음, 가로로 눕히면 장면 왼쪽·카드 오른쪽']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
@@ -3614,7 +3658,7 @@ function fresh(b){
 const ST=k=>m.b.st[k]+eqSt(k);
 const bump=(k,n)=>{ m.b.st[k]=cl(m.b.st[k]+(n||1),1,10); };
 const hasT=t=>m.b.trait===t;
-const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법'&&a.k!=='안법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||m.arts.filter(a=>a.k==='안법')[0]||null;
+const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법'&&a.k!=='안법'&&a.k!=='외공').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||m.arts.filter(a=>a.k==='안법')[0]||null;
 const ngStr=n=>{n=Math.round(n); if(n<60) return `${n}년`; const g=Math.floor(n/60), r=n%60; return `${g}갑자${r?` ${r}년`:''}`;};
 function log(t,big){ m.log.push({a:m.age,t,big:!!big}); }
 function addExp(n){ if(!m.f.martial) return; m.exp=Math.max(0,m.exp+n); }
@@ -3661,6 +3705,9 @@ function sfx(k){ if(!SND||(m&&m.headless)) return; try{ AC=AC||new (window.Audio
     case 'ult': tone(220,.4,'sawtooth',.06,880); noise(.35,.06,1800); break;
     case 'get': [660,880,1320].forEach((f,i)=>tone(f,.12,'square',.045,null,i*.08)); break;
     case 'giyeon': [523,659,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',.05,null,i*.09)); break;
+    case 'art3': [523,659,784,1047,1319].forEach((f,i)=>tone(f,.24,'triangle',.05,null,i*.08)); tone(1568,.5,'sine',.035,null,.42); break;
+    case 'art4': [392,523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.26,'triangle',.055,null,i*.075)); tone(196,.9,'sine',.08,180); [2093,1568,2093].forEach((f,i)=>tone(f,.3,'sine',.03,null,.6+i*.12)); break;
+    case 'art5': tone(98,1.6,'sine',.12,92); tone(196,1.2,'sine',.07,190); noise(.5,.05,2400); [392,523,659,784,1047,1319,1568,2093].forEach((f,i)=>tone(f,.3,'triangle',.06,null,.35+i*.07)); [2093,2637,3136,2637,3136].forEach((f,i)=>tone(f,.4,'sine',.03,null,1.05+i*.13)); tone(1047,1.2,'triangle',.04,null,1.7); break;
     case 'lv': [392,523,659,784].forEach((f,i)=>tone(f,.16,'square',.045,null,i*.1)); break;
     case 'death': tone(110,1.2,'sine',.12,70); tone(165,1.2,'sine',.05,100,.02); break;
     case 'gong': tone(196,.9,'sine',.1,180); tone(392,.5,'triangle',.03,380); break;
@@ -4919,6 +4966,17 @@ function syncTags(){ if(!SC) return; for(const a of SC.actors){ if(!a._tag) cont
 function floatText(x,y,txt,cls){ const el=$m('mhFl'); if(!el) return; const s=document.createElement('span'); s.className='mh-float '+(cls||''); s.textContent=txt; s.style.left=(x/W*100)+'%'; s.style.top=(y/H*100)+'%'; el.appendChild(s); setTimeout(()=>s.remove(),1500); }
 function heroFloat(txt,cls,dy){ if(MAPON&&MAPV&&MAPV.hero.sx!=null) return floatText(MAPV.hero.sx,MAPV.hero.sy-30-(dy||0),txt,cls); if(!SC) return floatText(96,62-(dy||0),txt,cls); const h=actorOf('hero'); floatText(h?h.x:70,(h?h.y:FY)-30-(dy||0),txt,cls); }
 function toast(html,cls,ms){ const el=$m('mhToast'); if(!el) return; const d=document.createElement('div'); d.className='mh-toastc '+(cls||''); d.innerHTML=html; el.appendChild(d); while(el.children.length>3) el.firstChild.remove(); setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),400); },ms||3200); }
+// 높은 등급(S 이상) 무공을 얻었을 때의 연출: 장면이 어두워지고 빛살이 돌며 이름이 도장처럼 찍힌다. S → SS → SSR 로 갈수록 길고 요란하다
+const AFXT={3:['絶技',2600],4:['神功',3400],5:['絶世神功',4800]};
+function artFx(n,g,sub,dark){ const box=cv.parentNode; if(!box) return 0; const old=box.querySelector('.mh-artfx'); if(old) old.remove();
+  const han=AFXT[g][0], ms=AFXT[g][1], el=document.createElement('div'); el.className='mh-artfx g'+g+(dark?' dark':''); el.style.setProperty('--dur',ms+'ms'); el.setAttribute('aria-hidden','true');
+  const N=g===5?36:g===4?22:12; let pts=''; for(let i=0;i<N;i++) pts+=`<span class="pt" style="left:${(hsh(i*7.3+g)*100).toFixed(1)}%;animation-delay:${Math.round(hsh(i*3.1+1)*ms*.6)}ms;animation-duration:${Math.round(900+hsh(i*5.7+2)*1000)}ms"></span>`;
+  el.innerHTML=`<i class="veil"></i><i class="rays"></i><i class="ring"></i><i class="ring r2"></i>${g>=4?'<i class="ring r3"></i>':''}${g>=5?'<i class="rays r2"></i><i class="bolt"></i>':''}${pts}<div class="tx"><em>${han}</em><b data-n="${esc(n)}">${esc(n)}</b><small>${esc(sub)} · ${TIER[g]}등급</small></div>`;
+  box.appendChild(el); setTimeout(()=>el.remove(),ms+80);
+  const burst=(n2,c)=>{ const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-12,c,n2); };
+  shake=g===5?14:g===4?8:4; flashA=g===5?.9:g===4?.6:.35; flashC=dark?'#ff6a50':g===5?'#fff3c0':g===4?'#ffe08a':'#cdb4ff';
+  if(g>=4) setTimeout(()=>{ shake=g===5?10:5; flashA=g===5?.5:.25; burst(g===5?40:24,'#ffe9a0'); },ms*.38);
+  if(g===5) setTimeout(()=>{ shake=8; flashA=.4; burst(40,'#ffc0e0'); },ms*.62); return ms; }
 function callout(txt,cls,ms){ const el=$m('mhCall'); if(!el) return; el.className='mh-call '+(cls||''); el.textContent=txt; el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; clearTimeout(callout.t); callout.t=setTimeout(()=>{ el.hidden=true; },ms||1300); }
 /* ==== murim:map-engine — 맵 화면 그리기(카메라, 순서, 물결) ==== */
 let MAPV=null;      // {M, season, actors:[], hero, cam:{x,y}, marks:[], step()}
@@ -5199,19 +5257,24 @@ const eq=k=>{ let v=0; if(m&&m.inv) for(const s of SLOTS){ const it=m.inv[s]&&IT
 const eqSt=k=>{ let v=0; if(m&&m.inv) for(const s of SLOTS){ const it=m.inv[s]&&ITEMS[m.inv[s]]; if(it&&it.st&&it.st[k]) v+=it.st[k]; } return v; };
 // 자리·등급·갈래로 물건을 뽑는다. 그 등급에 없으면 한 단계씩 내린다
 const POOL={};
-function pool(s,t,k){ const key=s+'|'+(k||'')+'|'+t; return POOL[key]||(POOL[key]=Object.values(ITEMS).filter(it=>it.s===s&&it.t===t&&(!k||it.k===k)&&!it.lore&&it.id!=='wsword').map(it=>it.id)); }
+// 's' 가 'b' 면 비급(무공서)만, 'u' 면 비급을 뺀 소모품만 뽑는다
+function pool(s,t,k){ const key=s+'|'+(k||'')+'|'+t; return POOL[key]||(POOL[key]=Object.values(ITEMS).filter(it=>(s==='b'?!!it.book:it.s===s&&!it.book)&&it.t===t&&(!k||it.k===k)&&!it.lore&&it.id!=='wsword').map(it=>it.id)); }
 function rndItem(s,t,k,rf){ rf=rf||R; for(let g=Math.min(5,t);g>=0;g--){ const p=pool(s,g,k); if(p.length) return p[Math.floor(rf()*p.length)]; } return null; }
 function seeded(seed){ let x=(seed>>>0)||1; return ()=>{ x^=x<<13; x>>>=0; x^=x>>>17; x^=x<<5; x>>>=0; return x/4294967296; }; }
 const TG=[0,2,3,4];   // 사건에서 쓰던 옛 등급(0~3)이 가리키는 새 등급. 0은 C나 B
 const tgOf=(tier,rf)=>tier<=0?((rf||R)()<.6?0:1):TG[Math.min(3,tier)];
 // 싸움에서 이기거나 사건이 잘 풀렸을 때 덤으로 떨어지는 물건
-function dropItem(t,o){ o=o||{}; const s=o.s||(m.age<13?pick(['u','c']):pick(['w','w','a','h','f','c','u'])), id=rndItem(s,t,s==='w'?myKind():null); if(id) give(id,{}); return id; }
+function dropItem(t,o){ o=o||{}; const s=o.s||(m.age<13?pick(['u','c']):pick(['w','w','a','h','f','c','u','b'])), id=rndItem(s,t,s==='w'?myKind():s==='b'?bookKind():null); if(id) give(id,{}); return id; }
+// 떨어지는 비급의 갈래: 절반은 내가 쓰는 무기에 맞는 것, 나머지는 아무 갈래
+const bookKind=()=>R()<.5?({검:'검',도:'도',권:R()<.5?'권':'장',암기:'암기'})[myKind()]:null;
 // 예전부터 있던 물건의 등급 순서(옛 0~3)
 const WKIND={검:['isword','gsword','psword','hsword'],도:['bsaber','asaber','dsaber','rsaber'],권:['lglove','sglove','cglove','tglove'],암기:['ldart','gdart','ndart','sdart']};
 const ARMORS=['lvest','chain','gvest','silk'];
-const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[]};
+const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[],외공:[]};
 // 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
-const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법';
+const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법'||k==='외공';
+// 외공: 위력이 곧 방어에 더해진다(가장 높은 것 하나)
+const bodyArt=()=>m.arts.reduce((v,a)=>a.k==='외공'&&a.p>v?a.p:v,0);
 const eyeArt=()=>m.arts.reduce((v,a)=>a.k==='안법'&&a.p>v?a.p:v,0);
 const readBonus=()=>eyeArt()/100+eq('rd')-(m.f.deaf?.1:0)+(hasT('star')?.1:0);
 // 보법은 위력이 높을수록 잘 피한다(가장 높은 것 하나)
@@ -5262,7 +5325,7 @@ function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
       vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
     else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
     lvCheck(); return true; }
-  const it=ITEMS[k], u=it&&it.use; if(!u) return false; if(u.hp&&!u.ng&&!u.joy&&!u.ex&&!u.st&&m.hp>=100) return false;
+  const it=ITEMS[k], u=it&&it.use; if(!u) return false; if(u.art!=null) return readManual(k); if(u.hp&&!u.ng&&!u.joy&&!u.ex&&!u.st&&m.hp>=100) return false;
   b[k]--; let got=0; if(u.hp) m.hp=cl(m.hp+u.hp); if(u.ng){ got=ngMed(u.ng); if(!m.f.martial) learn('토납법',0,'내공',got); else m.ng+=got; } if(u.joy) m.joy=cl(m.joy+u.joy); if(u.ex) addExp(gain()*u.ex/100); if(u.st) for(const s in u.st) m.b.st[s]=Math.min(12,(m.b.st[s]||0)+u.st[s]);
   if(it.t>=3) log(`${eul(it.n)} 썼다`,true); vfx(()=>{ healFx(); heroFloat(u.ng?`내공 +${got}년`:useText(u).split(' · ')[0],u.ng?'jade':'good'); }); lvCheck(); return true; }
 // 건강이 바닥일 때 저절로 쓰는 약: 건강만 올리는 것 가운데 등급이 낮은 것부터
@@ -5276,7 +5339,7 @@ const CIC=[[/반지|가락지|지환|환$/,'ring'],[/염주|구슬|주$|단주/,
 function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); let kind;
   if(it.s==='w') kind=ICK[it.k]; else if(it.s==='a') kind='armor'; else if(it.s==='h') kind='hat'; else if(it.s==='f') kind='boot';
   else if(it.s==='c'){ kind=ICK[it.fx]; if(!kind){ const c=CIC.find(x=>x[0].test(it.n)); kind=c?c[1]:'jade'; } }
-  else if(it.s==='u'){ kind=ICK[id]; if(!kind){ const u=it.use||{}; kind=u.st?'pill':u.ng?'pill':u.ex?'scroll':u.joy&&!u.hp?'gourd':/술|주$|차$|탕$/.test(it.n)?'gourd':/단$|환$/.test(it.n)?'pill':'jar'; } }
+  else if(it.s==='u'){ kind=ICK[id]; if(!kind){ const u=it.use||{}; kind=u.art!=null?'scroll':u.st?'pill':u.ng?'pill':u.ex?'scroll':u.joy&&!u.hp?'gourd':/술|주$|차$|탕$/.test(it.n)?'gourd':/단$|환$/.test(it.n)?'pill':'jar'; } }
   else kind=ICK[id];
   // 이미지 스킨: icon/<물건 이름> → icon/<모양>_<등급> → icon/<모양>
   return skinUrl('icon/'+it.n,'icon/'+id,'icon/'+kind+'_'+TIER[it.t],'icon/'+kind)||iconUrl(kind,it.t); }
@@ -5284,8 +5347,11 @@ const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width=
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
-function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:k==='보법'?`회피 +${Math.round(stepEv(p)*100)}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
-  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':'#bfe8ff',12); }
+// 새 무공 알림. S 이상이면 장면 위에 획득 연출이 뜬다(design 의 artFx)
+function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); sfx(g>=3?'art'+g:'get');
+  const tip=()=>toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(artSub(a))} ${grTag(g)}</small><b>${esc(n)}</b><em>${artStat(a)}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'gr'+g,g>=3?4600:4200);
+  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':g>=4?'#ffe9a0':'#bfe8ff',g>=3?22:12);
+  if(g>=3){ const ms=artFx(n,g,artSub(a),k==='마공'); setTimeout(tip,ms*.86); } else tip(); }
 /* ==== murim:items-1 — 검과 도 ==== */
 /* ---------- 검 ---------- */
 IT('w','검','C','녹슨 철검:3|이 빠진 검:2|대나무 검:2:e1|연습용 목검:2:x1|부러진 검 반 토막:2|무쇠 단검:3|쟁기 날로 만든 검:3|낡은 호신검:3|병졸의 환도:4|떠돌이의 검:3|휜 철검:2|장터 싸구려 검:3|청동 검:3|무딘 장검:3|손잡이 헐거운 검:3|대장간 습작검:3|초심자의 검:3:x2|산적의 헌 검:4|빛바랜 예도:3|아이용 목검:2|박달나무 검:3|참나무 목검:3|버드나무 검:2:e1|대추나무 목검:3|금 간 철검:2|그을린 검:3|물에 불은 목검:2|투박한 직검:4|짧은 요검:3|무관 대여검:3|나졸의 헌 검:4|표사 견습검:4|묵은 세검:3:c1|닳은 장검:3|때 묻은 단검:3|헐값의 쌍검:3|주워 온 검:3|장작 패던 검:4|촌무사의 검:4|이름 없는 철검:4|끈으로 감은 검:3|날 없는 연무검:2:x2|헛간에서 나온 검:3');
@@ -5349,6 +5415,156 @@ IU('B','삼계탕:hp16joy3|십전대보탕:hp20|쌍화탕:hp15|우황청심환:h
 IU('A','인삼:hp30ng1|홍삼:hp28ng2|영지:hp30ng1|동충하초:hp25ng2|소환단 가루:hp20ng2|보기환:hp35|양기단:ng3|취기단:ng2hp15|대력환:hp25ex15|청심단:joy15hp15|백 년 묵은 죽엽청:joy18ng1|원숭이 술:joy15ng2|고수의 수련 일지:ex30|문파 주해서:ex25|선대의 검흔 탁본:ex30|내공 심득 한 권:ex15ng2|설련 꽃잎:hp30ng2|빙잠 고치:ng3');
 IU('S','대환단:ng8hp40|천년 설삼:ng6hp50|구전환혼단:hp60ng4|주과:ng7B1|공청석유:ng5W1|태상 주해:ex60ng3|벽사단:hp30L1');
 IU('SS','만년 화리 내단:ng15B1|천지영액:ng12hp50W1|조사 친필 진해:ex120ng5');
+/* ==== murim:arts — 무공 목록과 등급 ====
+   무공도 사건·물건처럼 C~SSR 등급이 있다. 이름은 무협에서 두루 쓰이는 것을 모았고, 수치는 등급에서 나온다.
+   적는 법   AR('갈래','등급','이름|이름:값|…')        문파에 매이지 않은 무공(비급으로 익힌다)
+             SA('문파','갈래등급 이름|갈래등급 이름:값|…')   그 문파 장경각에서만 익히는 무공
+   갈래      검 · 도 · 권 · 장 · 암기 · 마공(공격)  /  내공 · 보법 · 안법 · 외공(받쳐 주는 것, 가장 높은 것 하나만 친다)
+             '장/지법' 처럼 빗금 뒤에 적으면 화면에 보이는 이름만 바뀐다(권: 각법·조법·금나, 장: 지법·수법·음공·봉법)
+   값        공격 무공은 위력, 내공은 익힐 때 얹히는 햇수, 안법은 낌새 읽기 %, 보법은 회피(6% + 값×0.5%), 외공은 방어.
+             안 적으면 등급 범위 안에서 이름에 따라 정해진다(늘 같은 값). 적으면 그 값으로 등급이 정해진다 */
+const ARTS={}, ARTDUP=[];
+const ARNG={atk:[[5,9],[10,14],[15,19],[20,25],[26,33],[34,40]],내공:[[2,4],[5,7],[8,11],[12,19],[20,39],[40,60]],안법:[[3,5],[6,9],[10,13],[14,17],[18,23],[24,28]],보법:[[4,8],[9,11],[12,15],[16,19],[20,25],[26,30]],외공:[[1,2],[3,3],[4,5],[6,7],[8,10],[12,14]]};
+const arng=k=>ARNG[k]||ARNG.atk, artVal=a=>a.k==='내공'?(a.ng||0):(a.p||0);
+function gradeByVal(k,v){ const r=arng(k); let g=0; for(let i=0;i<6;i++) if(v>=r[i][0]) g=i; return g; }
+function AR(kind,grade,list,sect){ const ks=kind.split('/'), k=ks[0], g=TIER.indexOf(grade), r=arng(k)[g];
+  list.split('|').forEach(row=>{ const p=row.trim().split(':'), n=p[0]; if(!n) return; if(ARTS[n]){ ARTDUP.push(n); return; }
+    const fix=p[1]!=null, v=fix?+p[1]:r[0]+strHash(n)%(r[1]-r[0]+1); ARTS[n]={n,k,sub:ks[1]||null,g:fix?gradeByVal(k,v):g,p:k==='내공'?0:v,ng:k==='내공'?v:0,sect:sect||null}; }); }
+function SA(sect,list){ list.split('|').forEach(row=>{ const x=/^(\S+?)(SSR|SS|S|A|B|C)\s+(.+)$/.exec(row.trim()); if(x) AR(x[1],x[2],x[3],sect); }); }
+// 무공 하나의 등급과 화면에 보이는 갈래 이름. 목록에 없는 무공(스스로 창안한 것 따위)은 값으로 등급을 매긴다
+const artG=a=>ARTS[a.n]?ARTS[a.n].g:gradeByVal(a.k,artVal(a));
+const artSub=a=>(ARTS[a.n]&&ARTS[a.n].sub)||(a.k==='내공'?'심법':a.k);
+const artStat=a=>a.k==='내공'?`내공 +${Math.round((a.ng||0)*10)/10}년`:a.k==='안법'?`낌새 읽기 +${a.p}%`:a.k==='보법'?`회피 +${Math.round(stepEv(a.p)*100)}%`:a.k==='외공'?`방어 +${a.p}`:`위력 ${a.p}`;
+const knows=n=>m.arts.some(a=>a.n===n);
+function learnArt(n,ngMul){ const A=ARTS[n]; if(!A) return false; return learn(A.n,A.p,A.k,A.k==='내공'?Math.max(1,Math.round(A.ng*(ngMul==null?1:ngMul))):A.ng); }
+
+/* ---- 문파의 기본 무공(10_core.js 의 SECTS 에 적힌 것) ---- */
+for(const k in SECTS){ const S=SECTS[k]; if(S.art) AR(S.art[2],'C',S.art[0]+':'+S.art[1],k); if(S.inner) AR('내공','C',S.inner[0]+':'+S.inner[1],k); }
+
+/* ---- 문파 장경각 ---- */
+SA('shaolin','권B 복호권|장B 위타장|보법B 연대구품|외공B 나한기공|장A 반야장|장/지법A 금강지|권/조법A 용조수|검A 달마검|권/각법A 항마연환퇴|권S 백보신권|장/지법S 일지선|장/음공S 사자후|내공S 반야신공|보법S 일위도강|장/수법S 대력금강수|장SS 여래신장|내공SS 달마신공|외공SSR 금강불괴신공');
+SA('wudang','검B 양의검|검B 칠성검|권B 무당장권|장B 면장|보법A 제운종:12|권A 태극권|검A 태청검|장A 진천철장|장/지법A 건원지|검S 구궁연환검|검S 현천칠성검|권S 무극권|내공S 육양신공|보법S 현천보|검SS 태극혜검|내공SS 태극신공');
+SA('huashan','검B 옥녀검|검B 양오검|권B 매화권|보법B 암향표|검A 희이검|장A 낙화추영장|장/지법A 매화오품지|보법A 오행매화보|검S 태을검|검S 뇌전검|장S 태을미리장|내공S 옥함신공|검SS 이십사수매화검법|내공SS 자하강기');
+SA('emei','검B 소양검|권B 아미권|장B 사상장|보법B 신행미종보|검A 난피풍검|장A 금정면장|장/지법A 탄금지|권A 복호금강권|내공A 아미구양공|검S 멸절검|장S 적하신장|장S 불광보조장|내공S 대정신공|검SS 대라수미혜검|내공SS 금정천룡신공');
+SA('beggar','권B 취권|권/금나B 쇄후금나수|보법B 취팔선보|장A 연화장|보법A 취리건곤보|권/조법A 타구수|내공S 혼원일기공|장/봉법S 타구봉법|장SSR 강룡십팔장');
+SA('namgung','검B 남궁검법|보법B 대붕전시|검A 섬전검|장A 천뢰장|권A 천풍권|검S 창궁대연검|내공S 창궁신공|보법S 창궁비상|검SS 제왕검형|내공SS 천뢰제왕신공');
+SA('tang','암기B 독질려|장B 독사장|보법B 귀영보|암기A 추혼비도|장/수법A 천주만독수|암기A 천왕침통|암기S 단혼사|내공S 천독신공|암기S 구천십지|암기SS 폭우이화침');
+SA('haomun','암기C 수전|권/금나B 공공묘수|안법B 관상안|보법A 암영보|암기A 무영표|보법S 만변무영');
+SA('nokrim','도C 벌목도법|권B 대력권|도A 녹림패도|도A 개산도법|내공A 녹림호기공|도S 패왕도법');
+SA('zhongnan','검B 천성검|장B 오뢰정인|보법B 잠영보|검A 태을무형검|장/지법A 천궁지|검S 유유무극검|내공S 선천공|장/수법S 건곤산수|검SS 무극검결');
+SA('kunlun','권B 낙안권|장B 운학장|보법B 용형보|권/조법A 용호풍운조|검A 태청용형검|보법A 천기신보|검S 태허도룡검|장S 옥룡장|내공S 도룡신공|검SS 용비구천');
+SA('jeomchang','검B 기봉검|검B 급풍쾌검|보법B 응조칠식|검A 회풍무류검|검A 분광십팔수검|권A 태을무형권|검S 낙영비화검|내공S 태을단목신공|보법S 천룡환허보|검SS 후예사일검');
+SA('gongdong','검B 삼절검|장B 복마장|권/조법A 신풍귀조|검A 무상주천검|장/지법A 건곤지|권S 칠상권|장S 현천신장|내공S 이합신공|검SS 통천검');
+SA('qingcheng','검B 청풍검|장B 풍뢰장|보법B 비류보|검A 칠십이파검|장A 최심장|검S 청운적하검|내공S 천지일기공|보법S 환환미종보|검SS 사전절광검');
+SA('taishan','검B 오대부검|권B 태산권|검A 대종여하|보법A 등천보|검S 칠성낙장공|내공S 태산북두공|검SS 태산압정');
+SA('hengshan_s','검B 축융검|장B 형양장|검A 형산오신검|보법A 안회보|검S 운무십삼식|내공S 축융신공|검SS 백변천환검');
+SA('hengshan_n','검B 항산검법|장B 천장장|검A 면리장침|내공A 북악현공|보법A 현공보|검S 만화쇄금검|검SS 항산진악검');
+SA('botao','검B 보타검|장/수법B 관음수|보법B 연화보|검A 보타육로검법|장A 천수관음장|검S 남해관음검|내공S 보타심경|장SS 자항보도');
+SA('yongho','장B 장심뢰|검B 천사검|보법B 우보|장A 오뢰정법|검A 복마천사검|내공S 오뢰신공|장S 구천응원뢰|장SS 신소뇌법');
+SA('hainan','검B 반수검|검B 비어쾌검|보법B 답랑보|검A 해남환영검법|검A 천강검|도A 사상쾌도|검S 유성추월검|내공S 벽해조음공|검SS 남해비선검');
+SA('jangbaek','검B 장백검법|장B 설화장|보법B 설상비|검A 빙하검|장A 한빙면장|내공S 한빙진기|검S 백두천지검|검SS 설산비호검');
+SA('tianshan','검B 삼분검|검B 냉매검|보법B 칠금신법|장A 칠금장|검A 빙혼검|검S 단천비검|장S 천산육양장|장/수법S 천산절매수|내공S 한음신공|검SS 호접몽환검');
+SA('potala','권B 밀종권|장B 금강수인|보법B 범천보|장A 금강대수인|외공A 호법금강공|장S 화염도|외공S 용상반야공|내공S 무상유가밀승|장SS 대일여래인');
+SA('yasu','권B 호형권|권/조법B 표조|보법B 원후보|권A 웅패권|권A 사형권|내공A 만수공|권S 만수권|보법S 비응신법|권SS 수왕권');
+SA('binggung','검B 빙정검|장B 한빙장|보법B 빙상보|장/지법A 빙혼지|검A 설화신검|장S 현명신장|내공S 현빙신공|보법S 설중매|장SS 빙백수라장');
+SA('odok','암기B 독침술|장B 사독장|권/조법B 오공조|장A 천형독장|암기A 금잠사|장S 만독수|내공S 오독진경|장SS 천독만겁장');
+SA('zhuge','검B 와룡검|보법B 팔진보|장/수법B 와룡수|안법A 기문안|검A 무후검|보법A 구궁팔괘보법|내공S 와룡신공|검S 칠성등천검|보법S 기문둔갑보|검SS 출사검');
+SA('paeng','도B 팽가도법|권B 팽가권|도A 맹호출림도|보법A 호보|도S 오호단혼도|내공S 혼원패기|도SS 혼원벽력도');
+SA('moyong','검B 연자검|장B 성운장|보법B 연자삼초수|검A 용성검법|장/지법S 참합지|내공S 연가진기|검S 고소유룡검|장/수법SS 두전성이');
+SA('suchae','도C 선상도법|권B 수귀권|보법A 수상표|도A 파랑도법|도A 교룡도|도S 장강패도');
+SA('hyeol','장B 혈음장|권/조법A 혈응조|보법A 혈영보|도A 혈풍십사식|마공S 혈마공|내공S 혈하심법|마공SS 혈신대법|마공SS 혈마도법');
+SA('demon','권B 마령권|도A 천마도법|보법A 천마행공|마공S 흡성대법|내공S 천마심법|보법SS 천마군림보|검SS 천마신검|마공SS 천마대멸겁');
+
+/* ---- 예전부터 사건에서 나오던 무공(값을 그대로 둔다) ---- */
+AR('내공','C','무명심법:5|금종조:10|몽중심법:12|무상심법:15|가전심법:15|태허무량공:20|세수경:20|청명심경:30|천서심법:60');
+AR('검','C','삼재검법:6|추풍검:20|유성검:24|태허검결:26|낙엽검:30|구궁검:30');
+AR('장','C','혈수공:9|혈조공:9|천뢰신장:23|강룡장:26');
+AR('안법','C','관기안:5|응시안:8|파사안:12|심안:14|혜안:14|천안통:20|조사심안:22');
+AR('마공','C','혈옥수:22|혈하마공:28|천마혈공:32|혈영마공:34');
+AR('보법','C','유운보:12|취선보:14|답설보:14');
+AR('권','C','금강권:18|파옥권:19'); AR('도','C','금의도법:8'); AR('암기','C','무영살:10');
+
+/* ---- 문파에 매이지 않은 무공 ---- */
+// 검
+AR('검','C','육합검법|오행검법|팔방검|유운검법|청풍검법|비류검법|은성검법|한광검법|풍뢰검법|팔명검법|호수검결|금쇄검법|연환삼선검|표국검법|군문검법|낭인검|흑풍검|회풍검|파랑검|추운검|관중검법|단수검');
+AR('검','B','옥류비검|영환검법|연화비검|대은삼검|성령검법|뇌풍검법|분척십팔수검|사령검법|불명검법|월녀검법|낙일검|화령검법|잔월검결|상혼쾌검|좌가절검|팔황풍검|풍혼검법|심상검법|막영검법|도환검결|청강비검|묵성환영검');
+AR('검','A','청룡환상검|강환검결|탈혼무정검|만류귀종검법|구환마룡검|자전십이파검|단월천수검법|연형추혼검법|능광백팔검|분광뇌풍검법|뇌응검법|벽사검법|섬전십삼뢰|태양광검|난화혈풍검|파사검|천강비검술|무상검결');
+AR('검','S','만혼쇄검|광혼일검|천선비검록|육왕검법|파천십삼검뢰|진천살검|천룡대라삼검|상청비검|이기어검|무형검');
+AR('검','SS','천외비선|심검|멸절마검'); AR('검','SSR','독고구검');
+// 도
+AR('도','C','맹호도법|대원도법|충정도법|표국도법|군문도법|낭인도|초일도법|영일도법|곡명도법|광명도법|거결도법|여진도법|동영도법|양의도법|파양도법|단수도');
+AR('도','B','반월참도법|흑령도법|뇌풍도법|강령도법|종횡비도|해일도법|열화도법|귀명도법|추살도법|환영도법|청운비도|출룡도법|대파산도|묵룡도법|초류십팔식|회풍무류도법|분뢰도법');
+AR('도','A','마강도법|겁라도법|절대도법|팔황비도법|칠상도법|대라천도법|파황도결|거궐도법|멸사도법|단정칠절도|강룡파천도|금룡패황도법|염왕도법|분광십팔도|설형무흔도');
+AR('도','S','혈뢰도법|마황도법|천룡참|파천도|수라겁백도|운하만도|구현사도|잔혼탈백도|광폭혈랑도|무량대도');
+AR('도','SS','파천멸도|도제도결|무도결|역천마뢰인'); AR('도','SSR','천하패도');
+// 권 · 각법 · 조법
+AR('권','C','장권|육합권|통배권|홍권|포권|흑호권|후권|칠성권|풍파권|무풍권|유형권|진창권|광풍권|수타권|벽석권');
+AR('권/각법','C','선풍각|평초각|회풍각');
+AR('권','B','태산거권|풍류권|구룡권|옥면신권|창룡유해권|비형권|묵룡권|서릉권|용화권|흑풍권|천애권|옥류권|백애권|영사권|언가권|심의권|팔극권');
+AR('권/각법','B','원앙각|추미각|천퇴각|금환각'); AR('권/조법','B','금응조법|비응조법|철사조법');
+AR('권','A','질풍광마권|횡령철권|해랑팔권|뇌광권|혈광분쇄권|주려칠권|만영형상권|태허무령권|공로팔극권|아라한신권|천왕삼권|승룡권|금강붕산권');
+AR('권/각법','A','관음십팔퇴|질룡음풍각|무영각|풍신퇴'); AR('권/조법','A','흑룡조법|뇌환조법|영호파쇄조법|응조공');
+AR('권','S','백호암뢰권|사황뇌권|수라마권|수라천멸권|단천열화권|광극천멸권|상허천원권|지척천애권');
+AR('권/각법','S','주작화령각|파성마각'); AR('권/조법','S','구음백골조|금강대력조');
+AR('권','SS','건곤권|무상권|대력신권');
+// 장 · 지법 · 수법 · 음공
+AR('장','C','철사장|개산장법|쌍장타|통비장|팔괘장|금쇄장|접타장|학산장|흑사장|주사장|육합장');
+AR('장/수법','C','난매수|재배수|격퇴수');
+AR('장','B','대환장|옥녀장법|백환장법|선녀경연장|절심장|쇄비장|빙하장|광성장법|명령장법|천강장법|운룡십이장|열양장|칠성장법|한경연장|통비육합장');
+AR('장/지법','B','철영지|연환지법|석영지|운풍지|단금지'); AR('장/수법','B','흑응수|반혼수|환영수|교룡금나수|죽엽수');
+AR('장','A','벽력신장|은영마환장|낙영신장|사일장법|철사혈인장|태형마장|소수인|유령인|육명장|화련장법|파군신장|분혼시독장|칠보음풍장');
+AR('장/지법','A','광한지|만향검지|혈혼지|광섬지|은광섬지|태양열화지|금천지'); AR('장/수법','A','음양혈마수|매화불혈수|수라천심수|뇌영신수|포룡수|백옥수');
+AR('장','S','대륜회겁장|파황신장|금강미타장|무량신장|대력금강장|굉천장|혼원장|태극신장|합마장법');
+AR('장/지법','S','탄지신통|일양지|수라혈지|무형지'); AR('장/수법','S','대나이신수|포천성라수|분뢰수'); AR('장/음공','S','벽해조생곡|창룡음|초혼성');
+AR('장','SS','암연소혼장|천수여래장'); AR('장/수법','SS','건곤대나이'); AR('장/음공','SS','우주파멸곡'); AR('장/지법','SSR','육맥신검');
+// 암기
+AR('암기','C','비황석|철련자|비도술|금전표|철질려|매화침|유엽비도');
+AR('암기','B','연주표|비석투뢰|칠성연주|탈명표|추혼표|자모표|회선표');
+AR('암기','A','천수비도|혈사난무|비폭십팔수|추혼탈명침|무영신침');
+AR('암기','S','폭우천심사|파혼멸절뢰시|폭멸혈뢰|천녀산화');
+AR('암기','SS','공작령|관음루'); AR('암기','SSR','소이비도');
+// 내공
+AR('내공','C','운기토납법|삼재심법|도인법|소주천공|양생공|정좌법|태식법|오금희|팔단금|단전호흡');
+AR('내공','B','소양공|건곤심법|청허기공|회선심법|삼양진기|응원공|후토기공|부동심법|무선팔법|열양공');
+AR('내공','A','비취신공|천성공|천풍신공|벽라신공|사해신공|파산신공|뇌풍강기|자연신공|비천신공|화령신공');
+AR('내공','S','대승범천신공|무상파원기|파황신공|대라신공|구천현녀공|명옥공|무량신공|소무상공');
+AR('내공','SS','구음진경|북명신공|옥현귀진신공|반야대능력'); AR('내공','SSR','구양진경');
+// 보법
+AR('보법','C','삼재보|칠성보|팔괘보|비연보|낙엽보|유수보|표풍보|초상비');
+AR('보법','B','비류표|세류표|청운신법|옥룡팔보|현청보법|유운신법|부운약표|등평도수');
+AR('보법','A','구천비운종|표홀신보|칠성둔형보|일학충천|불영선하보|청운유운보');
+AR('보법','S','답설무흔|어기충소|이형환위|허공답보|부신약영|궁신탄영|금강부동보');
+AR('보법','SS','능공허도|축지성촌|천리호정'); AR('보법','SSR','능파미보');
+// 외공
+AR('외공','C','철두공|철비공|석쇄공|배타공'); AR('외공','B','철포삼|철갑공|횡련공');
+AR('외공','A','십삼태보횡련|철갑금강|대천강벽|탄후강'); AR('외공','S','육신갑|대라강신|불괴연혼강기|호신강기'); AR('외공','SS','현무뇌신갑|금마지체');
+// 안법
+AR('안법','C','야명안'); AR('안법','B','통찰안'); AR('안법','A','천리안'); AR('안법','S','화안금정');
+
+/* ---- 비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다(문파 무공과 마공은 빠진다) ---- */
+const MANK={검:'검보',도:'도보',권:'권보',장:'장보',암기:'암기보',내공:'심법서',보법:'보법서',외공:'외공서',안법:'안법서'}, MANG=['낡은','손때 묻은','귀한','비전','절세'], MANLV=[0,0,1,2,3,5];
+const openArts=(k,g)=>Object.values(ARTS).filter(a=>!a.sect&&a.k!=='마공'&&(!k||a.k===k)&&a.g===g);
+for(const k in MANK) for(let g=0;g<5;g++){ if(!openArts(k,g).length) continue; const n=MANG[g]+' '+MANK[k]; ITEMS[n]={id:n,n,s:'u',t:g,k,book:1,v:Math.round(GVU[g]*3),use:{art:k},d:`읽으면 ${TIER[g]}등급 ${k==='내공'?'내공 심법':k} 하나를 익힌다`}; }
+ITEMS['천고의 비급']={id:'천고의 비급',n:'천고의 비급',s:'u',t:5,k:'',book:1,v:GVU[5]*3,use:{art:''},d:'읽으면 SSR등급 무공 하나를 익힌다'};
+// 내공 심법을 여러 개 익히면 뒤의 것일수록 얹히는 내공이 준다(비급으로 익힐 때만. 사건·문파에서 받는 것은 그대로)
+const innerMul=()=>1/(1+m.arts.filter(a=>a.k==='내공').length*.5);
+function readManual(id){ const it=ITEMS[id], b=m.inv.bag, t=it.t; if(!(b[id]>0)) return false;
+  if(m.age<8||m.lv<MANLV[t]){ vfx(()=>toast(`<span><small>${esc(it.n)}</small><b>아직 뜻을 모르겠다</b><em>${m.age<8?'글을 읽을 나이가 아니다':LV[MANLV[t]]+' 이상이어야 읽힌다'}</em></span>`,'t1',3000)); return false; }
+  b[id]--; let pool=[]; for(let g=t;g>=0&&!pool.length;g--) pool=openArts(it.use.art||null,g).filter(a=>!knows(a.n));
+  if(!pool.length){ addExp(gain()*[.1,.2,.4,.8,1.5,3][t]); log(`${eul(it.n)} 읽었다. 이미 아는 것이었지만 얻는 바가 있었다`); vfx(()=>toast(`<span><small>${esc(it.n)}</small><b>이미 아는 무공이다</b><em>그래도 수련에 보탬이 됐다</em></span>`,'t1',3000)); lvCheck(); return true; }
+  const A=pick(pool); learnArt(A.n,A.k==='내공'?innerMul():1); log(`${eul(it.n)} 읽고 ${eul(A.n)} 익혔다`,A.g>=3); lvCheck(); return true; }
+
+/* ---- 문파 장경각: 서열이 오르면 더 높은 무공이 열린다 ---- */
+const SARTLV=[0,0,1,3,4,6];   // 그 등급을 익히려면 필요한 경지
+function sectArtCap(){ const r=SRANK.map(x=>x[1]).indexOf(srank()); return r>=3&&m.lv>=6?5:Math.min(4,r+1); }
+function sectArtNext(){ if(!m.sect) return null; const cap=sectArtCap(); return Object.values(ARTS).filter(a=>a.sect===m.sect&&a.g<=cap&&m.lv>=SARTLV[a.g]&&!knows(a.n)).sort((a,b)=>a.g-b.g)[0]||null; }
+const sectArtLeft=()=>m.sect?Object.values(ARTS).filter(a=>a.sect===m.sect&&!knows(a.n)).length:0;
+// 익히면 큰 것을 잃는 마공(비급으로는 안 나오고 사건으로만 얻는다)
+AR('마공','SSR','규화보전');
+// 사건에서 목록의 무공을 줄 때: {art:AF('독고구검')}
+const AF=n=>{ const A=ARTS[n]; return [A.n,A.p,A.k,A.ng]; };
+// 맡기기를 켜 두면 해가 바뀔 때 읽을 수 있는 비급을 하나 읽는다
+function autoRead(){ const b=m.inv.bag, k=Object.keys(b).filter(x=>b[x]>0&&ITEMS[x]&&ITEMS[x].book&&m.lv>=MANLV[ITEMS[x].t]&&m.age>=8).sort((x,y)=>ITEMS[y].t-ITEMS[x].t)[0]; if(k) readManual(k); }
 /* ==== murim:duel — 장면 연출(시퀀스)과 초식 결투 ==== */
 /* ---- 시퀀스: 프레임 단위로 배우를 움직인다. 움직임을 줄인 환경이나 가려진 탭에서는 한 번에 끝낸다. ---- */
 const SEQS=[]; let INSTANT=false;
@@ -5409,7 +5625,7 @@ const TELLEMO={A:'anger',G:'...',F:'?',U:'!'};
 function mkFoe(s){ const pow=Math.max(3,Math.round(s.pow)), hp=Math.round(34+pow*1.1);
   return {name:s.name||'상대',look:s.look||LOOK.bandit(),pow,hpMax:hp,hp,qi:Math.round(Math.min(50,10+pow*.3)),def:100/(100+pow/14*6),style:s.style||'even',lv:cl(Math.round(pow/14),0,8),art:s.art||'',mercy:s.mercy==null?.5:s.mercy,beast:!!(s.look&&s.look.animal),title:s.title||'',crit:.06,last:[]}; }
 // 내 기력도 상대와 같은 식으로 잰다. 지금 건강이 그 몇 할을 채우고 들어가는지를 정한다.
-function mkMe(){ const c=combat(), ar=eq('def'), pw=power(), mx=Math.round(34+pw*1.1)+eq('hp');
+function mkMe(){ const c=combat(), ar=eq('def')+bodyArt(), pw=power(), mx=Math.round(34+pw*1.1)+eq('hp');
   return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:Math.min(.4,stepArt()+eq('ev')),art:c.art?c.art.n:'',crit:Math.min(.5,.05+ST('luck')*.01+eq('cr')),last:[]}; }
 function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
   if(spec.qi) D.me.qi=Math.min(100,D.me.qi+spec.qi); D.qi0=D.me.qi; mkTell(D); return D; }
@@ -7650,6 +7866,59 @@ E('rejuv',{min:60,max:150,once:1,w:9,gi:1,when:()=>m.f.martial&&m.lv>=6&&m.ng>=2
   text:()=>'운기를 마치고 눈을 뜨니 손등의 검버섯이 없다. 물에 비친 얼굴에서 주름이 걷히고 있다. 늙음이 극에 이르면 되돌아간다고 했다. 반로환동(返老還童)이다.',ch:[
   {t:'흐름에 몸을 맡긴다',go:()=>{ m.f.rejuv=m.age; m.hp=100; m.ng+=20; m.b.st.body=Math.min(12,m.b.st.body+2); m.fame+=20; log('반로환동을 이루었다. 몸이 서른 해 젊어졌다',true); return {t:'흰 머리가 검어지고 이가 새로 났다. 사흘 뒤 거울 속에는 서른 해 전의 얼굴이 있었다. 사람들은 한동안 나를 알아보지 못했다.',tone:'good',big:'반로환동',cut:()=>{ callout('返老還童','gi gssr',2800); flashA=.95; flashC='#e8fbff'; spark('hero','#bff4ff',26); }}; }},
   {t:'"늙은 대로가 좋다" 한다',go:()=>{ m.hp=100; m.ng+=30; m.hy+=5; m.joy=cl(m.joy+10); log('반로환동의 기회를 내려놓았다',true); return {t:'기운은 돌려 단전에 쌓고, 얼굴은 그대로 두었다. 주름은 내가 산 날들이다.',tone:'good'}; }}]});
+/* ==== murim:events-arts — 이름난 무공과 비급을 얻는 사건 ==== */
+Q('SSR','ar_ssr_ninesword',{a:[18,70],mar:1},'cave','폭포 뒤 석벽에 검흔 아홉 줄이 깊게 패어 있다. 줄마다 방향이 다르고, 초식의 이름은 어디에도 없다.',[
+  ['아홉 줄을 손끝으로 따라 그린다','초식이 아니었다. 초식을 깨는 법이었다. 검, 도, 창, 채찍, 장법, 암기. 아홉 줄이 끝나자 세상 무공의 빈틈이 보였다.',{art:AF('독고구검'),exp:1,fame:5}],
+  ['검흔 앞에서 내 검을 휘둘러 본다','내 초식의 허점이 벽에 그대로 비쳤다. 석 달을 고쳤다.',{exp:1.5,st:{wit:1}}]]);
+Q('SSR','ar_ssr_wave',{a:[15,60]},'pond','달밤, 호수 위를 누가 걷는다. 물결 하나 일지 않는다. 물가 모래에는 발자국이 괘처럼 찍혀 있다.',[
+  ['발자국을 밟아 따라 걷는다','예순네 걸음을 틀리지 않고 밟자 발이 물에 젖지 않았다. 돌아보니 사람은 없고 달만 있었다.',{art:AF('능파미보'),joy:5}],
+  ['모래 위의 괘를 베껴 둔다','뜻을 푸는 데 한 해가 걸렸다. 걸음은 못 배웠지만 멀리 보는 눈이 트였다.',{st:{wit:2},art:AF('천리안')}]]);
+Q('SSR','ar_ssr_dagger',{a:[16,65]},'inn','객잔 구석에서 기침하는 서생이 작은 칼로 나무를 깎는다. 깎는 것은 늘 같은 얼굴이다. 술병이 비었다.',[
+  ['술 한 병을 말없이 놓아 준다','"고맙소." 서생이 일어서며 칼을 한 번 던졌다. 날던 파리의 날개만 떨어졌다. "손이 아니라 마음으로 던지는 거요." 그날 밤 꿈에서도 그 한 수를 보았다.',{art:AF('소이비도'),g:-2,joy:3}],
+  ['깎은 나무를 하나 달라고 한다','서생은 웃으며 하나를 내주었다. 품에 넣고 다니면 이상하게 마음이 가라앉았다.',{st:{charm:1,luck:2},joy:5}]]);
+Q('SSR','ar_ssr_nineyang',{a:[14,60]},'library','절 장경각 청소를 돕다 낡은 불경을 떨어뜨렸다. 뒷장마다 누가 먹으로 숨 쉬는 사람을 그려 놓았다.',[
+  ['그림대로 숨을 쉰다','경전이 아니라 호흡이었다. 한 장씩 따라 하자 아랫배에서 해가 뜨는 듯했다. 그해 겨울 홑옷으로 눈밭을 걸었다.',{art:AF('구양진경'),hp:30}],
+  ['주지에게 알린다','주지는 한참 말이 없더니 첫 장을 손수 풀어 주었다. "나머지는 인연이 닿으면."',{ng:15,hy:5,fame:5}]]);
+Q('SSR','ar_ssr_sixvein',{a:[18,60],mar:1,lv:3},'temple','남쪽 변방의 절. 늙은 승려 여섯이 둘러앉아 손가락 끝으로 촛불을 끈다. 촛불까지는 열 걸음이다. 한 자리가 비어 있다.',[
+  ['빈 자리에 앉는다',{p:[.35,'wit',.05],ok:['손가락 끝에서 보이지 않는 검이 나갔다. 여섯 줄기 가운데 하나를 얻는 데 한 해가 걸렸다. 나머지는 평생의 숙제다.',{art:AF('육맥신검'),exp:1}],no:['내공이 받쳐 주지 못했다. 손끝이 터졌다. 그래도 한 줄기의 길은 알았다.',{hp:-15,art:AF('일양지')}]}],
+  ['문밖에서 지켜본다','해가 질 때까지 보았다. 기가 흐르는 길이 눈에 익었다.',{exp:.8,st:{wit:1}}]]);
+Q('SSR','ar_ssr_sunflower',{a:[18,55],mar:1},'tomb','궁에서 흘러나왔다는 붉은 표지의 책. 첫 장에 한 줄이 적혀 있다. "이 공부를 이루려면 먼저 가장 아끼는 것을 스스로 끊어야 한다."',[
+  ['끊고 익힌다','몸은 가벼워지고 손은 귀신처럼 빨라졌다. 거울 속 얼굴이 낯설었다. 무엇을 잃었는지는 아무에게도 말하지 않았다.',{art:AF('규화보전'),joy:-25,bond:-10,hp:-15}],
+  ['불태운다','재가 날렸다. 이런 것은 세상에 없는 편이 낫다.',{hy:10,joy:5,fame:3}],
+  ['첫 장을 찢고 나머지만 판다','첫 장 없이는 주화입마의 지름길이다. 산 사람이 어찌 됐는지는 모른다. 값은 많이 받았다.',{g:[600,900],ak:8}]]);
+Q('SS','ar_ss_nineyin',{a:[16,60]},'cave','무너진 도관의 우물 바닥에서 기름종이에 싼 책 두 권을 건졌다. 상권은 호흡이고, 하권은 손톱자국 같은 그림이다.',[
+  ['상권부터 차례로 익힌다','한 해가 걸렸다. 급할 것이 없었다. 숨이 깊어지자 하권의 그림도 달리 보였다.',{art:AF('구음진경'),exp:.5}],
+  ['하권의 그림부터 따라 한다','손끝이 돌을 파고들었다. 빨랐지만 밤마다 손이 떨렸다.',{art:AF('구음백골조'),hp:-10,ak:3}]]);
+Q('SS','ar_ss_northsea',{a:[15,55]},'cave','바닷가 절벽 굴. 벽에 물고기가 새가 되어 날아오르는 그림이 이어진다. 마지막 그림 아래 한 줄. "바다는 강을 가리지 않는다."',[
+  ['그림의 차례대로 숨을 쉰다','어떤 기운이든 가리지 않고 받아들이는 법이었다. 단전이 바다처럼 넓어졌다.',{art:AF('북명신공')}],
+  ['글귀만 새겨 온다','무공은 못 얻었다. 그래도 사람을 대하는 품이 넓어졌다.',{st:{charm:2},joy:5}]]);
+Q('SS','ar_ss_sorrow',{a:[25,80],mar:1,need:()=>!!(m.spouse&&m.spouse.dead)},'river','떠난 사람을 묻고 여러 해. 강가에 앉아 있으면 손이 저절로 움직인다. 초식이라 부를 수 없는 것들이다.',[
+  ['그 손짓에 이름을 붙인다','넋이 나간 사람의 걸음, 넋이 나간 사람의 손. 슬픔이 깊을수록 장력이 무거웠다. 웃는 날에는 쓸 수 없는 무공이다.',{art:AF('암연소혼장'),joy:-5}],
+  ['손을 거두고 일어선다','떠난 사람은 내가 이렇게 앉아 있기를 바라지 않을 것이다.',{joy:12,bond:5}]]);
+Q('SS','ar_ss_shift',{a:[16,60],mar:1},'tomb','서역 상인의 유품에서 양가죽 한 장이 나왔다. 글자가 없다. 촛불에 그을리자 글이 떠올랐다.',[
+  ['일곱 층을 차례로 익힌다',{p:[.5,'wit',.05],ok:['남의 힘을 빌려 남을 치는 법. 일곱 층 가운데 다섯을 넘었다. 나머지는 욕심내지 않았다.',{art:AF('건곤대나이')}],no:['셋째 층에서 기가 거꾸로 돌았다. 피를 토하고 가죽을 덮었다.',{hp:-25,exp:.3}]}],
+  ['서역 상단에 돌려준다','상단의 노인이 무릎을 꿇었다. 잃어버린 보물이라 했다. 답례가 무거웠다.',{g:[400,600],hy:8,fame:6}]]);
+Q('S','ar_s_flick',{a:[14,60]},'peak','복사꽃 핀 바위섬. 푸른 옷의 노인이 퉁소를 불다 말고 조약돌을 손가락으로 튕긴다. 바다 위 갈매기가 떨어진다.',[
+  ['조약돌 튕기는 법을 묻는다','"셈을 할 줄 아느냐?" 문제 셋을 풀자 손가락 쓰는 법을 일러 주었다.',{art:AF('탄지신통')}],
+  ['퉁소 가락을 청한다','파도 소리 같은 가락이었다. 듣는 동안 기혈이 가락을 따라 돌았다.',{art:AF('벽해조생곡')}]]);
+Q('S','ar_s_wall',{a:[16,60],mar:1},'tomb','무너진 석실 벽에 사람 그림 서른여섯이 새겨져 있다. 그림마다 발의 자리가 다르다.',[
+  ['탁본을 떠서 나온다','먹이 마르기도 전에 석실이 무너졌다. 손에 남은 것은 탁본 한 묶음이다.',{it:['비전 보법서']}],
+  ['그 자리에서 발을 놓아 본다','서른여섯 걸음을 다 밟기 전에 천장이 울었다. 절반만 익히고 뛰어나왔다.',{exp:.6,hp:-5}]]);
+Q('A','ar_a_ironshirt',{a:[10,40]},'market','약장수가 배에 돌판을 얹고 쇠망치로 깨는 차력을 보인다. 속임수가 아니다.',[
+  ['제자로 받아 달라고 조른다','석 달 동안 모래주머니로 온몸을 두들겨 맞았다. 살갗이 쇠가죽이 됐다.',{art:AF('철포삼'),hp:-5}],
+  ['동전을 던져 준다','약장수가 고약 하나를 덤으로 주었다.',{g:-1,it:['salve']}]]);
+Q('A','ar_a_auction',{a:[18,70],gold:150},'market','경매에 표지 없는 비급이 나왔다. 무슨 무공인지는 낙찰받아야 안다.',[
+  ['백쉰 냥을 부른다','망치가 떨어졌다. 펼쳐 보니 호흡을 다룬 책이었다.',{g:-150,it:['귀한 심법서']}],
+  ['구경만 한다','옆 사람이 낙찰받고 펼쳐 보더니 얼굴이 환해졌다.',{}]]);
+Q('B','ar_b_deadman',{a:[14,60]},'road','길가에 쓰러진 낭인의 품에서 책 한 권이 삐져나와 있다. 숨은 이미 없다.',[
+  ['묻어 주고 책을 챙긴다','흙을 덮고 절을 했다. 책은 그의 평생이었을 것이다.',{it:['손때 묻은 도보'],hy:2}],
+  ['책째 묻어 준다','그의 것은 그와 함께 가는 게 옳다.',{hy:4,joy:2}]]);
+Q('C','ar_c_usedbook',{a:[8,60],gold:2},'market','헌책 좌판에 표지 떨어진 책이 있다. 그림 속 사람이 칼을 들고 있다.',[
+  ['두 냥에 산다','집에 와서 보니 진짜 검보였다. 낡았을 뿐이다.',{g:-2,it:['낡은 검보']}],
+  ['서서 읽고 내려놓는다','주인이 눈을 흘겼다. 세 장은 외웠다.',{exp:.02}]]);
+Q('C','ar_c_breathbook',{a:[8,60],gold:3},'market','떠돌이 도사가 "무병장수 양생법"이라는 책을 판다. 석 냥이다.',[
+  ['속는 셈 치고 산다','반은 허풍이었는데, 숨 쉬는 법만은 진짜였다.',{g:-3,it:['낡은 심법서']}],
+  ['지나친다','도사는 다음 사람을 붙잡았다.',{}]]);
 /* ==== murim:train — 삼 년 수련기: 두 달마다 할 일, 동문, 일과 에피소드 ==== */
 const SEASONS=['정월','삼월','오월','칠월','구월','동짓달'], TSEAS=[3,0,1,1,2,3];
 const trainPlace=()=>m.sect?SECTS[m.sect].n:m.f.master?'은사의 초막':'마을 무관';
@@ -8050,7 +8319,7 @@ const AUTOEV=new Set(['sectRaid','heartDemon','coldAttack','wedding','birth','do
 const markable=ev=>!(AUTOEV.has(ev.id)||ev.epn||(ev.w||0)>=9||ev.min===ev.max);
 const BGSPOT={market:'market',shop:'market',village:'market',inn:'inn',innroom:'inn',stable:'inn',den:'inn',forge:'smithy',mountain:'fall',hermit:'fall',pond:'fall',peak:'fall',cave:'fall',tomb:'fall',cliff:'fall',forest:'forest',bamboo:'forest',fort:'forest',road:'gate',snow:'gate',battle:'gate',river:'bridge',well:'well',school:'school',dojo:'dojo',arena:'dojo',temple:'dojo',library:'dojo',kitchen:'dojo',manor:'office',hall:'office',home:'home',yard:'home',room:'home',wedding:'home',field:'field',grave:'shrine'};
 function spotForEv(ev){ let bg='village'; try{ const s=ev.st&&ev.st(); if(s&&s.bg) bg=s.bg; }catch(e){} return BGSPOT[bg]||'market'; }
-function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; m.wq=m.wq||null; if(m.mark){ delete m.used[m.mark.id]; m.mark=null; }
+function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; if(m.auto) autoRead(); m.wq=m.wq||null; if(m.mark){ delete m.used[m.mark.id]; m.mark=null; }
   tick(true); if(m.dead){ CUTQ.length=0; return; }
   const fromQ=m.q.length<qn; checkTrain();
   if(m.pending&&!m.train&&!fromQ&&markable(m.pending)){ const ev=m.pending; m.pending=null; m.mark=markFor(ev); }
@@ -8097,9 +8366,9 @@ function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home
 // 가게 물건은 철마다 바뀐다. 같은 철에는 같은 것이 놓인다
 function shopList(id){ const rf=seeded(strHash((m.name||'')+id)+m.age*977+(m.sea||0)*31), k=myKind(), ids=[];
   const add=(s,t,kk)=>{ const x=rndItem(s,t,kk,rf); if(x&&!ids.includes(x)) ids.push(x); }, g=a=>{ const r=rf(); let c=0; for(let i=0;i<a.length;i++){ c+=a[i]; if(r<c) return i; } return 0; };
-  if(id==='market'){ ids.push('salve','antidote'); add('u',g([.7,.3])); add('u',g([.7,.3])); add('c',g([.7,.3])); add('h',g([.7,.3])); add('f',g([.7,.3])); add('a',g([.6,.4])); }
+  if(id==='market'){ ids.push('salve','antidote'); add('u',g([.7,.3])); add('u',g([.7,.3])); add('c',g([.7,.3])); add('h',g([.7,.3])); add('f',g([.7,.3])); add('a',g([.6,.4])); add('b',g([.75,.25])); }
   else if(id==='apoth'){ ids.push('salve','antidote','pill'); for(let i=0;i<3;i++) add('u',g([.4,.35,.2,.05])); }
-  else if(id==='city'){ ids.push('salve','antidote','pill'); add('u',g([.2,.4,.3,.1])); add('w',g([0,.4,.4,.2]),k); add('w',g([0,.3,.5,.2]),k); add('a',g([0,.4,.45,.15])); add('h',g([0,.5,.4,.1])); add('f',g([0,.5,.4,.1])); add('c',g([.2,.4,.3,.1])); add('c',g([.2,.4,.3,.1])); }
+  else if(id==='city'){ ids.push('salve','antidote','pill'); add('u',g([.2,.4,.3,.1])); add('w',g([0,.4,.4,.2]),k); add('w',g([0,.3,.5,.2]),k); add('a',g([0,.4,.45,.15])); add('h',g([0,.5,.4,.1])); add('f',g([0,.5,.4,.1])); add('c',g([.2,.4,.3,.1])); add('c',g([.2,.4,.3,.1])); add('b',g([.3,.4,.25,.05])); add('b',g([.2,.4,.3,.1]),({검:'검',도:'도',권:'권',암기:'암기'})[k]); }
   else { add('w',g([.6,.4]),k); add('w',g([.2,.5,.3]),k); add('w',g([0,.5,.5]),k); add('a',g([.5,.5])); add('a',g([.1,.5,.4])); add('h',g([.5,.4,.1])); add('f',g([.5,.4,.1])); }
   return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
 const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'키 큰 수풀이 우거졌다. 헤치고 걷다 보면 뭔가 튀어나올 때가 있다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
@@ -8202,12 +8471,14 @@ const WSEAS={
     const e=pool.length&&R()<.6?pickGraded(pool):null; if(e){ m.wq=e.id; return WFOUND[o.pl]||'낯선 곳에 닿았다.'; }
     if(o.pl==='deep'){ m.hp+=1.5; if(m.f.martial) m.ng+=.05; } else if(o.pl==='city') m.joy+=1; else if(o.pl==='pass'){ if(R()<.3) gold(ri(1,4)); } else if(R()<.2) gold(ri(1,6));
     return pick(WNONE[o.pl]||['하릴없이 한 철이 갔다.']); },
+  sectart:()=>{ const A=sectArtNext(); if(!A) return '장경각을 뒤졌지만 지금 익힐 만한 것이 없었다.'; learnArt(A.n); addExp(gain()*.15); log(`${SECTS[m.sect].n} 장경각에서 ${eul(A.n)} 익혔다`,A.g>=3); return pick([`장경각에서 한 철을 보내며 ${eul(A.n)} 익혔다.`,`사부가 장경각 열쇠를 내주었다. ${eul(A.n)} 손에 익을 때까지 나오지 않았다.`]); },
   wev:o=>{ m.wq=o.ev; return {wBandit:'칼을 고쳐 메고 소굴로 올라갔다.',wSpar:'읍성 비무대 앞에 섰다.',wExam:'산문 앞 돌계단을 올랐다.'}[o.ev]||'길을 나섰다.'; }
 };
 const WSTAGE={
   wwork:()=>Sg('road',{hero:{x:70,act:'wander',xmin:40,xmax:120},cast:[N('pd',LOOK.peddler(),134,{})]}),
   herb:()=>Sg('mountain',{hero:{x:110,act:'wander',xmin:90,xmax:140}}),
   wvisit:()=>Sg('temple',{hero:{x:70,face:1},cast:[N('sa',masterLook(),124,{tag:'사부'})]}),
+  sectart:()=>Sg('temple',{hero:{x:84,face:1,pose:'sit'}}),
   explore:o=>Sg({city:'market',deep:'mountain',pass:'road',tomb:'tomb'}[o.pl]||'road',{hero:{x:70,act:'wander',xmin:40,xmax:120}}),
   wev:o=>Sg({wBandit:'road',wSpar:'arena',wExam:'temple'}[o.ev]||'road',{hero:{x:60,face:1}})
 };
@@ -8276,7 +8547,8 @@ function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const a
     add('물건을 본다','',()=>{ MSHOP=MSHOP?null:'city'; render(); },1); if(m.hp<80&&m.gold>=12) add('의원에게 진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); render(); save(); },1); return acts; }
   const own=!!(s.sect&&m.sect===s.sect);
   if(own){ if(m.quest&&m.quest.step) add('임무를 보고한다',m.quest.fail?'실패를 고한다':'공헌과 상을 받는다',questReport,1); else if(!m.quest) add('임무를 받는다','사문의 일을 맡아 공헌을 쌓는다',questTake,1);
-    add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2); }
+    add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2);
+    const na=sectArtNext(); if(na) add(`장경각에서 ${eul(na.n)} 익힌다`,`${TIER[na.g]}등급 ${artSub(na)} · ${artStat(na)}`,S('sectart'),0,4); }
   else if(t==='sect'&&joinable(s)&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
   if(t==='den'&&!own) add('소굴로 쳐들어간다','생사결이 될 수 있다 · 이기면 전리품',S('wev',{ev:'wBandit'}),0,mar&&m.lv>=3&&m.hp>70?.4:0);
   if(mar) add('근처 산에서 수련한다','내공이 더 붙는다',S('train',{fall:1}),0,2);
@@ -8524,6 +8796,14 @@ const meter=(lab,v,cls)=>`<div class="mh-meter"><span>${lab}</span><span class="
 const ptImg=(L,cls)=>`<img class="mh-pt ${cls||''}" src="${portrait(L)}" alt="" width="28" height="28">`;
 const diceHtml=d=>d?`<p class="mh-dice">주사위 <b>${d.roll}</b>${d.lo>1?` <small>(천운: ${d.lo}~20에서 나온다)</small>`:''}${d.b?` + 성격 ${d.b}`:''}${d.j?' + 옥패 1':''} · ${d.need} 이상이면 성공 · <b>${d.ok?'성공':'실패'}</b></p>`:'';
 function resHtml(lr){ if(m.wait) return '<p class="mh-rolling">주사위가 구른다…</p>'; const rec=lr.pick?`<div class="mh-rec">${lr.q?`<p class="q">${esc(lr.q)}</p>`:''}<p class="p"><span>${lr.auto?'맡김':'고른 길'}</span>${esc(lr.pick)}</p></div>`:''; return `${rec}${diceHtml(lr.dice)}<p class="mh-res ${lr.tone||''}">${esc(lr.t)}</p>`; }
+// 신상 칸의 무공 목록: 등급 높은 것부터. 지금 쓰이는 것(가장 센 공격 무공과 가장 높은 보법·안법·외공)에 테를 두른다
+let ARTOPEN=false;
+function artList(){ const use=combat().art, eye=eyeArt(), st=stepArt(), bd=bodyArt();
+  const on=a=>a===use||(a.k==='안법'&&eye>0&&a.p===eye)||(a.k==='보법'&&stepEv(a.p)===st)||(a.k==='외공'&&bd>0&&a.p===bd);
+  const rows=m.arts.map(a=>({a,g:artG(a)})).sort((x,y)=>y.g-x.g||artVal(y.a)-artVal(x.a));
+  const one=({a,g})=>`<span class="mh-art gr${g}${a.k==='마공'?' m':''}${on(a)?' on':''}">${grTag(g)}<b>${esc(a.n)}</b><small>${esc(artSub(a))} · ${artStat(a)}</small></span>`;
+  const top=rows.slice(0,8), rest=rows.slice(8);
+  return `<div class="mh-arts">${top.map(one).join('')}</div>${rest.length?`<details class="mh-artmore" id="mhArtMore" ${ARTOPEN?'open':''}><summary>나머지 ${rest.length}가지</summary><div class="mh-arts">${rest.map(one).join('')}</div></details>`:''}`; }
 function renderRec(){
   const S=m.sect&&SECTS[m.sect], o=OR(m.b.o), fa=m.rels.find(r=>r.role==='아버지'), mo=m.rels.find(r=>r.role==='어머니');
   const kids=m.rels.filter(r=>r.role==='자식'&&!r.dead).length, others=m.rels.filter(r=>!r.dead&&!['아버지','어머니','배우자','자식'].includes(r.role)).slice(-6);
@@ -8540,14 +8820,15 @@ function renderRec(){
       ${m.wins||m.losses?`<dt>싸움</dt><dd class="mh-num">${m.wins||0}승 ${m.losses||0}패${m.kills?` · 벤 사람 ${m.kills}`:''}</dd>`:''}
       <dt>가족</dt><dd>아버지 ${fa.dead?'<s>':''}${esc(fa.name)}${fa.dead?'</s>':''} · 어머니 ${mo.dead?'<s>':''}${esc(mo.name)}${mo.dead?'</s>':''}${m.sib?` · 형제 ${m.sib}`:''}${m.spouse&&!m.spouse.dead?` · 배우자 ${esc(m.spouse.name)}`:''}${kids?` · 자식 ${kids}`:''}</dd>
     </dl>
-    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.k==='안법'?` · 낌새 읽기 +${a.p}%`:a.k==='보법'?` · 회피 +${Math.round(stepEv(a.p)*100)}%`:a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
+    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4>${artList()}</div>`:''}
     ${others.length?`<div><h4>인연</h4><div class="mh-rels">${others.map(r=>`<span class="mh-relc${r.role==='원수'?' m':''}">${ptImg(relLook(r))}<span><small>${esc(r.role)}</small>${esc(r.name)}</span></span>`).join('')}</div></div>`:''}
     <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd></dl>`;
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
+  const am=$m('mhArtMore'); if(am) am.ontoggle=()=>{ ARTOPEN=am.open; };
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
   const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
-  const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">쓰기</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(it.book?it.d:useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">${it.book?'읽기':'쓰기'}</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
   const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare gr${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${grTag(it.t)} ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
     <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
@@ -8622,6 +8903,7 @@ function renderTitle(card){
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>천하</b> 열다섯이 넘으면 마을 어귀에서 천하 지도로 나간다. 갈 곳을 누르고 길을 떠나면, 가는 동안 철이 간다. 문파에 들었다면 사문에서 임무를 받아 공헌을 쌓을 수 있고, 가끔은 산문이 습격당한다.</span></li>
       <li>${icImg(iconUrl('sword',1),'sm')}<span><b>결투</b> 강공·수비·변초·절초. 상대의 낌새를 읽고 수를 낸다. 생사결에서 지면 죽을 수 있다.</span></li>
       <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 무기·갑옷·머리·신발·장신구. 등급은 C에서 SSR까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
+      <li>${icImg(iconUrl('scroll',1),'sm')}<span><b>무공</b> 팔백여 가지, 등급은 C에서 SSR까지. 문파 장경각에서 서열대로 익히고, 비급을 읽어 익히고, 기연으로 얻는다.</span></li>
       <li>${icImg(iconUrl('scroll',2),'sm')}<span><b>기연</b> 절벽 아래 동굴, 별똥 쇳덩이, 죽어 가는 노승. 드물게 온다.</span></li>
       <li>${icImg(iconUrl('jade',1),'sm')}<span><b>수련기</b> 무공을 배우면 사문 경내를 걸으며 삼 년을 보낸다. 동문과 정을 쌓고, 때로는 잃는다.</span></li>
     </ul></details>

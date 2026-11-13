@@ -125,7 +125,7 @@ const AUTOEV=new Set(['sectRaid','heartDemon','coldAttack','wedding','birth','do
 const markable=ev=>!(AUTOEV.has(ev.id)||ev.epn||(ev.w||0)>=9||ev.min===ev.max);
 const BGSPOT={market:'market',shop:'market',village:'market',inn:'inn',innroom:'inn',stable:'inn',den:'inn',forge:'smithy',mountain:'fall',hermit:'fall',pond:'fall',peak:'fall',cave:'fall',tomb:'fall',cliff:'fall',forest:'forest',bamboo:'forest',fort:'forest',road:'gate',snow:'gate',battle:'gate',river:'bridge',well:'well',school:'school',dojo:'dojo',arena:'dojo',temple:'dojo',library:'dojo',kitchen:'dojo',manor:'office',hall:'office',home:'home',yard:'home',room:'home',wedding:'home',field:'field',grave:'shrine'};
 function spotForEv(ev){ let bg='village'; try{ const s=ev.st&&ev.st(); if(s&&s.bg) bg=s.bg; }catch(e){} return BGSPOT[bg]||'market'; }
-function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; m.wq=m.wq||null; if(m.mark){ delete m.used[m.mark.id]; m.mark=null; }
+function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; if(m.auto) autoRead(); m.wq=m.wq||null; if(m.mark){ delete m.used[m.mark.id]; m.mark=null; }
   tick(true); if(m.dead){ CUTQ.length=0; return; }
   const fromQ=m.q.length<qn; checkTrain();
   if(m.pending&&!m.train&&!fromQ&&markable(m.pending)){ const ev=m.pending; m.pending=null; m.mark=markFor(ev); }
@@ -172,9 +172,9 @@ function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home
 // 가게 물건은 철마다 바뀐다. 같은 철에는 같은 것이 놓인다
 function shopList(id){ const rf=seeded(strHash((m.name||'')+id)+m.age*977+(m.sea||0)*31), k=myKind(), ids=[];
   const add=(s,t,kk)=>{ const x=rndItem(s,t,kk,rf); if(x&&!ids.includes(x)) ids.push(x); }, g=a=>{ const r=rf(); let c=0; for(let i=0;i<a.length;i++){ c+=a[i]; if(r<c) return i; } return 0; };
-  if(id==='market'){ ids.push('salve','antidote'); add('u',g([.7,.3])); add('u',g([.7,.3])); add('c',g([.7,.3])); add('h',g([.7,.3])); add('f',g([.7,.3])); add('a',g([.6,.4])); }
+  if(id==='market'){ ids.push('salve','antidote'); add('u',g([.7,.3])); add('u',g([.7,.3])); add('c',g([.7,.3])); add('h',g([.7,.3])); add('f',g([.7,.3])); add('a',g([.6,.4])); add('b',g([.75,.25])); }
   else if(id==='apoth'){ ids.push('salve','antidote','pill'); for(let i=0;i<3;i++) add('u',g([.4,.35,.2,.05])); }
-  else if(id==='city'){ ids.push('salve','antidote','pill'); add('u',g([.2,.4,.3,.1])); add('w',g([0,.4,.4,.2]),k); add('w',g([0,.3,.5,.2]),k); add('a',g([0,.4,.45,.15])); add('h',g([0,.5,.4,.1])); add('f',g([0,.5,.4,.1])); add('c',g([.2,.4,.3,.1])); add('c',g([.2,.4,.3,.1])); }
+  else if(id==='city'){ ids.push('salve','antidote','pill'); add('u',g([.2,.4,.3,.1])); add('w',g([0,.4,.4,.2]),k); add('w',g([0,.3,.5,.2]),k); add('a',g([0,.4,.45,.15])); add('h',g([0,.5,.4,.1])); add('f',g([0,.5,.4,.1])); add('c',g([.2,.4,.3,.1])); add('c',g([.2,.4,.3,.1])); add('b',g([.3,.4,.25,.05])); add('b',g([.2,.4,.3,.1]),({검:'검',도:'도',권:'권',암기:'암기'})[k]); }
   else { add('w',g([.6,.4]),k); add('w',g([.2,.5,.3]),k); add('w',g([0,.5,.5]),k); add('a',g([.5,.5])); add('a',g([.1,.5,.4])); add('h',g([.5,.4,.1])); add('f',g([.5,.4,.1])); }
   return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
 const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'키 큰 수풀이 우거졌다. 헤치고 걷다 보면 뭔가 튀어나올 때가 있다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};

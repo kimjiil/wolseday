@@ -45,7 +45,8 @@ function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const a
     add('물건을 본다','',()=>{ MSHOP=MSHOP?null:'city'; render(); },1); if(m.hp<80&&m.gold>=12) add('의원에게 진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); render(); save(); },1); return acts; }
   const own=!!(s.sect&&m.sect===s.sect);
   if(own){ if(m.quest&&m.quest.step) add('임무를 보고한다',m.quest.fail?'실패를 고한다':'공헌과 상을 받는다',questReport,1); else if(!m.quest) add('임무를 받는다','사문의 일을 맡아 공헌을 쌓는다',questTake,1);
-    add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2); }
+    add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','인연이 오르고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2);
+    const na=sectArtNext(); if(na) add(`장경각에서 ${eul(na.n)} 익힌다`,`${TIER[na.g]}등급 ${artSub(na)} · ${artStat(na)}`,S('sectart'),0,4); }
   else if(t==='sect'&&joinable(s)&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
   if(t==='den'&&!own) add('소굴로 쳐들어간다','생사결이 될 수 있다 · 이기면 전리품',S('wev',{ev:'wBandit'}),0,mar&&m.lv>=3&&m.hp>70?.4:0);
   if(mar) add('근처 산에서 수련한다','내공이 더 붙는다',S('train',{fall:1}),0,2);

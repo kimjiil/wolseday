@@ -195,4 +195,15 @@ function syncTags(){ if(!SC) return; for(const a of SC.actors){ if(!a._tag) cont
 function floatText(x,y,txt,cls){ const el=$m('mhFl'); if(!el) return; const s=document.createElement('span'); s.className='mh-float '+(cls||''); s.textContent=txt; s.style.left=(x/W*100)+'%'; s.style.top=(y/H*100)+'%'; el.appendChild(s); setTimeout(()=>s.remove(),1500); }
 function heroFloat(txt,cls,dy){ if(MAPON&&MAPV&&MAPV.hero.sx!=null) return floatText(MAPV.hero.sx,MAPV.hero.sy-30-(dy||0),txt,cls); if(!SC) return floatText(96,62-(dy||0),txt,cls); const h=actorOf('hero'); floatText(h?h.x:70,(h?h.y:FY)-30-(dy||0),txt,cls); }
 function toast(html,cls,ms){ const el=$m('mhToast'); if(!el) return; const d=document.createElement('div'); d.className='mh-toastc '+(cls||''); d.innerHTML=html; el.appendChild(d); while(el.children.length>3) el.firstChild.remove(); setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),400); },ms||3200); }
+// 높은 등급(S 이상) 무공을 얻었을 때의 연출: 장면이 어두워지고 빛살이 돌며 이름이 도장처럼 찍힌다. S → SS → SSR 로 갈수록 길고 요란하다
+const AFXT={3:['絶技',2600],4:['神功',3400],5:['絶世神功',4800]};
+function artFx(n,g,sub,dark){ const box=cv.parentNode; if(!box) return 0; const old=box.querySelector('.mh-artfx'); if(old) old.remove();
+  const han=AFXT[g][0], ms=AFXT[g][1], el=document.createElement('div'); el.className='mh-artfx g'+g+(dark?' dark':''); el.style.setProperty('--dur',ms+'ms'); el.setAttribute('aria-hidden','true');
+  const N=g===5?36:g===4?22:12; let pts=''; for(let i=0;i<N;i++) pts+=`<span class="pt" style="left:${(hsh(i*7.3+g)*100).toFixed(1)}%;animation-delay:${Math.round(hsh(i*3.1+1)*ms*.6)}ms;animation-duration:${Math.round(900+hsh(i*5.7+2)*1000)}ms"></span>`;
+  el.innerHTML=`<i class="veil"></i><i class="rays"></i><i class="ring"></i><i class="ring r2"></i>${g>=4?'<i class="ring r3"></i>':''}${g>=5?'<i class="rays r2"></i><i class="bolt"></i>':''}${pts}<div class="tx"><em>${han}</em><b data-n="${esc(n)}">${esc(n)}</b><small>${esc(sub)} · ${TIER[g]}등급</small></div>`;
+  box.appendChild(el); setTimeout(()=>el.remove(),ms+80);
+  const burst=(n2,c)=>{ const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-12,c,n2); };
+  shake=g===5?14:g===4?8:4; flashA=g===5?.9:g===4?.6:.35; flashC=dark?'#ff6a50':g===5?'#fff3c0':g===4?'#ffe08a':'#cdb4ff';
+  if(g>=4) setTimeout(()=>{ shake=g===5?10:5; flashA=g===5?.5:.25; burst(g===5?40:24,'#ffe9a0'); },ms*.38);
+  if(g===5) setTimeout(()=>{ shake=8; flashA=.4; burst(40,'#ffc0e0'); },ms*.62); return ms; }
 function callout(txt,cls,ms){ const el=$m('mhCall'); if(!el) return; el.className='mh-call '+(cls||''); el.textContent=txt; el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation=''; clearTimeout(callout.t); callout.t=setTimeout(()=>{ el.hidden=true; },ms||1300); }

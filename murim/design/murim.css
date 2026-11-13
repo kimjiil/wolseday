@@ -546,3 +546,35 @@ img.mh-ic{object-fit:contain}
 
 .mh-artfx .go{position:absolute;left:0;right:0;bottom:7%;text-align:center;font-family:var(--m-f-body);font-size:clamp(11px,2.2vw,14px);line-height:1.2;color:#f4f1e4;letter-spacing:.12em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c,0 -1px 0 #17161c;opacity:0;animation:mhAfxGo .6s ease-out 2.6s forwards,mhAfxBlink 1.8s ease-in-out 3.2s infinite}
 @media (prefers-reduced-motion:reduce){.mh-artfx .go{animation:none;opacity:.95}}
+
+/* ---- 천하 지도: 일이 있는 곳(!)과 임무가 걸린 곳(◆)이 눈에 띄게 ---- */
+.mh-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.mh-cs.mk,.mh-cs.qt{z-index:3}
+.mh-cs.mk span{color:#fff;background:rgba(178,40,26,.95);padding:2px 6px;text-shadow:none;font-size:1.1em;box-shadow:0 0 0 1px #fff}
+.mh-cs.qt span{color:#fff;background:rgba(138,95,14,.96);padding:2px 6px;text-shadow:none;font-size:1.1em;box-shadow:0 0 0 1px #fff}
+.mh-cs.mk i,.mh-cs.qt i{position:relative;overflow:visible}
+.mh-cs.mk i::after,.mh-cs.qt i::after{content:'';position:absolute;inset:-9px;border-radius:50%;border:2.5px solid #ff4a30;animation:mhCping 1.4s ease-out infinite;pointer-events:none}
+.mh-cs.qt i::after{border-color:#ffd84a}
+.mh-cbang{position:absolute;left:50%;bottom:calc(100% - 3px);min-width:22px;height:24px;padding:0 5px;box-sizing:border-box;display:grid;place-items:center;font:700 17px/1 var(--m-f-disp,serif);font-style:normal;color:#fff;background:#d2331f;border:2px solid #fff;box-shadow:0 0 0 2px #22202a,0 3px 6px rgba(0,0,0,.4);transform:translate(-50%,-2px);animation:mhCbob .7s ease-in-out infinite alternate;pointer-events:none}
+.mh-cbang::after{content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#fff}
+.mh-cbang.q{background:#b27a12;font-size:13px}
+@keyframes mhCbob{from{transform:translate(-50%,-2px)}to{transform:translate(-50%,-9px)}}
+@keyframes mhCping{0%{transform:scale(.55);opacity:1}100%{transform:scale(2.3);opacity:0}}
+/* 지도를 밀어도 왼쪽 위에 붙어 있는 알림. 누르면 그곳으로 지도가 옮겨 가고 갈 곳으로 골라진다 */
+.mh-cnote{position:sticky;left:0;top:0;z-index:6;width:100%;height:0;pointer-events:none}
+.mh-cnote>div{position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.mh-cnb{all:unset;box-sizing:border-box;pointer-events:auto;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--m-f-body);font-weight:600;font-size:13px;line-height:1.2;color:#fff;background:rgba(178,40,26,.95);border:1px solid #fff;padding:5px 9px 5px 5px;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:mhCnb 1.6s ease-in-out infinite}
+.mh-cnb b{display:grid;place-items:center;width:18px;height:18px;background:#fff;color:#b8321f;font:700 13px/1 var(--m-f-disp,serif)}
+.mh-cnb.q{background:rgba(138,95,14,.96);animation:none}.mh-cnb.q b{color:#8a5f0e;font-size:11px}
+.mh-cnb small{font-weight:400;opacity:.92;font-size:12px}
+.mh-cnb:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@keyframes mhCnb{0%,100%{box-shadow:0 2px 6px rgba(0,0,0,.4),0 0 0 0 rgba(255,90,64,.7)}50%{box-shadow:0 2px 6px rgba(0,0,0,.4),0 0 0 6px rgba(255,90,64,0)}}
+/* 카드 맨 위의 알림 줄 */
+.mh-cnrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:1px solid var(--m-seal);border-left-width:4px;background:var(--m-panel2);font-family:var(--m-f-body);font-size:15px;line-height:1.35;color:var(--m-ink)}
+.mh-cnrow b{flex:none;display:grid;place-items:center;width:22px;height:22px;background:var(--m-seal);color:#fff;font:700 15px/1 var(--m-f-disp,serif)}
+.mh-cnrow span{flex:1;min-width:0}.mh-cnrow small{display:block;font-size:12.5px;color:var(--m-muted)}
+.mh-cnrow em{flex:none;font-style:normal;font-size:13px;color:var(--m-seal);border:1px solid currentColor;padding:3px 8px}
+.mh-cnrow.q{border-color:var(--m-gold)}.mh-cnrow.q b{background:var(--m-gold);font-size:12px}.mh-cnrow.q em{color:var(--m-gold)}
+.mh-cnrow[disabled]{opacity:.5;cursor:default}
+.mh-cnrow:focus-visible{outline:2px solid var(--m-seal);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.mh-cbang,.mh-cnb,.mh-cs.mk i::after,.mh-cs.qt i::after{animation:none}}

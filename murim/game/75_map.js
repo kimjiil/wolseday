@@ -90,16 +90,40 @@ function talk(a){ const k=m.age*4+m.sea; MTALK={a,t:a.say?a.say():'…'}; MSHOP=
 /* ---- 철마다 하는 일 ---- */
 const WORKN={tenant:'지주의 논에서 일한다',farmer:'밭일을 한다',blood:'밭일을 한다',beggar:'동냥을 한다',artisan:'쇠를 두드린다',merchant:'가게를 본다',hunter:'사냥을 나간다',inn:'객잔 일을 돕는다',bandit:'길목을 지킨다',escort:'표행을 나선다',doctor:'약방 일을 돕는다',official:'관아에서 문서를 쓴다',clan:'가문의 일을 거든다',tangc:'가문의 일을 거든다'};
 for(const f of FAM) if(f.wn&&!WORKN[f.id]) WORKN[f.id]=f.wn;
-function seasonAct(fid,o){ const a=m.age, O=OR(m.b.o), work=a<10?0:a<16?.5:a<60?1:.6, q=.25; let t='';
+/* 한 계절 동안 하는 일이 바꾸는 값. 선택지 밑에 보이는 숫자(fxLine)와 실제로 적용되는 값(applyActFx)이 같은 식을 쓴다.
+   g 는 은자(수 또는 [최소,최대]), exp 는 수련, ng 는 내공(해). 사건이 생길지, 다칠지 같은 운은 여기 없다 */
+function actFx(fid,o){ o=o||{}; const a=m.age, O=OR(m.b.o), work=a<10?0:a<16?.5:a<60?1:.6, q=.25;
   switch(fid){
-    case 'train': if(m.f.martial){ addExp(gain()*q*(o.fall?.85:1.05)); m.ng+=(.3+ST('wit')/30)*q*(o.fall?1.6:1); m.hp-=q; t=pick(o.fall?['폭포 아래 서서 한 계절을 보냈다.','물소리에 맞춰 숨을 골랐다.']:['같은 초식을 천 번씩 펼쳤다.','달빛 아래서 검로를 다시 그려 보았다.','손이 기억할 때까지 같은 동작을 되풀이했다.']); }
-      else if(a>=8){ m.joy+=.5; t='어깨너머로 무관 사범의 동작을 따라 했다.'; } else { m.joy+=1; t='나뭇가지를 칼 삼아 휘두르며 놀았다.'; } break;
+    case 'train': return m.f.martial?{exp:gain()*q*(o.fall?.85:1.05),ng:(.3+ST('wit')/30)*q*(o.fall?1.6:1),hp:-q}:{joy:a>=8?.5:1};
+    case 'work': return {g:O.inc*work*.3*((m.f.lit||0)>=4?1.1:1)+(a>=10?(m.f.smith?2.5:0)+(m.f.martial&&m.lv>=2?m.lv*1.5:0)+(m.f.med?2:0):0),joy:-q};
+    case 'family': return {joy:4*q,bond:7*q};
+    case 'rest': return {hp:9*q*(o.fall?1.15:1),joy:2*q};
+    case 'study': return {joy:.5};
+    case 'rumor': return {g:-3,joy:1};
+    case 'wwork': return m.f.martial&&m.lv>=2?{g:[5+m.lv*2.2,9+m.lv*2.2],exp:gain()*.08,fame:.3,joy:-.25}:{g:3+ST('body')*.3,joy:-.25};
+    case 'herb': return {g:[3+ST('luck')*.5,8+ST('luck')*.5]};
+    case 'wvisit': return {joy:1.5,bond:2.5,exp:gain()*.12};
+    case 'sectart': return {exp:gain()*.15};
+  }
+  return {}; }
+function applyActFx(f){ if(f.exp) addExp(f.exp); if(f.ng) m.ng+=f.ng; if(f.hp) m.hp+=f.hp; if(f.joy) m.joy+=f.joy; if(f.bond) m.bond+=f.bond; if(f.fame) m.fame+=f.fame; if(f.g!=null) gold(Array.isArray(f.g)?f.g[0]+ri(0,Math.round(f.g[1]-f.g[0])):f.g); }
+// 숫자를 글로: "건강 +2.3 · 행복 +0.5". 작은 값은 소수 둘째 자리까지 보인다
+const sgnN=v=>{ const x=Math.abs(v), s=x<1?(Math.round(x*100)/100):x<10?(Math.round(x*10)/10):Math.round(x); return (v<0?'−':'+')+s; };
+function fxLine(f,tail){ const p=[], add=(k,lab,unit)=>{ const v=f[k]; if(!v||Math.abs(v)<.005) return; p.push([`${lab} ${sgnN(v)}${unit||''}`,v]); };
+  if(f.g!=null){ if(Array.isArray(f.g)) p.push([`은자 +${Math.round(f.g[0])}~${Math.round(f.g[1])}냥`,1]); else if(Math.round(f.g)) p.push([`은자 ${sgnN(Math.round(f.g))}냥`,f.g]); }
+  add('exp','수련'); add('ng','내공','년'); add('hp','건강'); add('joy','행복'); add('bond','인연'); add('fame','명성');
+  const out=p.filter(x=>x[1]>0).concat(p.filter(x=>x[1]<0)).map(x=>x[0]); if(tail) out.push(tail); return out.join(' · '); }   // 얻는 것을 앞에, 잃는 것을 뒤에
+const actSub=(fid,o,tail)=>fxLine(actFx(fid,o),tail);
+function seasonAct(fid,o){ const a=m.age, O=OR(m.b.o), q=.25, F=actFx(fid,o); let t='';
+  switch(fid){
+    case 'train': applyActFx(F); if(m.f.martial){ t=pick(o.fall?['폭포 아래 서서 한 계절을 보냈다.','물소리에 맞춰 숨을 골랐다.']:['같은 초식을 천 번씩 펼쳤다.','달빛 아래서 검로를 다시 그려 보았다.','손이 기억할 때까지 같은 동작을 되풀이했다.']); }
+      else if(a>=8) t='어깨너머로 무관 사범의 동작을 따라 했다.'; else t='나뭇가지를 칼 삼아 휘두르며 놀았다.'; break;
     case 'enroll': gold(-10); learn('삼재검법',6,'검'); addExp(2); if(!m.inv.w) give('wsword',{quiet:1}); log('마을 무관에 들어가 삼재검법을 배웠다.',true); return '무관에 들어가 삼재검법을 배웠다.';
-    case 'work': gold(O.inc*work*.3*((m.f.lit||0)>=4?1.1:1)+(a>=10?(m.f.smith?2.5:0)+(m.f.martial&&m.lv>=2?m.lv*1.5:0)+(m.f.med?2:0):0)); m.joy-=q; t=a<10?'집안일을 거들었다.':pick(WORK[m.b.o]||WORK.farmer); break;
-    case 'family': m.bond+=7*q; m.joy+=4*q; t=pick(['가족과 둘러앉아 저녁을 먹는 날이 많았다.','부모님의 일손을 덜어 드렸다.','이웃 잔치에 빠짐없이 갔다.','식구들과 마루에 앉아 한 계절을 보냈다.']); break;
-    case 'rest': m.hp+=9*q*(o.fall?1.15:1); m.joy+=2*q; t=pick(o.fall?['폭포 소리를 들으며 몸을 쉬었다.']:['일을 줄이고 잠을 늘렸다.','약수터에 다니며 몸을 돌봤다.','아랫목에서 한 계절을 났다.']); break;
-    case 'study': m.f.lit=(m.f.lit||0)+1; m.joy+=.5; t=m.f.lit>=4?'천자문을 뗐다.':'서당에서 글을 배웠다.'; if(m.f.lit===4){ log('글을 깨쳤다',true); return t; } break;
-    case 'rumor': { gold(-3); m.joy+=1; let got=null; if(!m.mark&&R()<.65){ const pool=Object.values(EV).filter(e=>e.min!==e.max&&evOK(e)&&m.used[e.id]==null&&markable(e)); if(pool.length){ got=wpick(pool,x=>x.w||1); m.mark=markFor(got); mapMarks(); } }
+    case 'work': applyActFx(F); t=a<10?'집안일을 거들었다.':pick(WORK[m.b.o]||WORK.farmer); break;
+    case 'family': applyActFx(F); t=pick(['가족과 둘러앉아 저녁을 먹는 날이 많았다.','부모님의 일손을 덜어 드렸다.','이웃 잔치에 빠짐없이 갔다.','식구들과 마루에 앉아 한 계절을 보냈다.']); break;
+    case 'rest': applyActFx(F); t=pick(o.fall?['폭포 소리를 들으며 몸을 쉬었다.']:['일을 줄이고 잠을 늘렸다.','약수터에 다니며 몸을 돌봤다.','아랫목에서 한 계절을 났다.']); break;
+    case 'study': m.f.lit=(m.f.lit||0)+1; applyActFx(F); t=m.f.lit>=4?'천자문을 뗐다.':'서당에서 글을 배웠다.'; if(m.f.lit===4){ log('글을 깨쳤다',true); return t; } break;
+    case 'rumor': { applyActFx(F); let got=null; if(!m.mark&&R()<.65){ const pool=Object.values(EV).filter(e=>e.min!==e.max&&evOK(e)&&m.used[e.id]==null&&markable(e)); if(pool.length){ got=wpick(pool,x=>x.w||1); m.mark=markFor(got); mapMarks(); } }
       t=got?'객잔에서 귀가 솔깃한 이야기를 들었다.':'술잔만 비우고 나왔다. 별 이야기가 없었다.'; break; }
     default: if(WSEAS[fid]){ t=WSEAS[fid](o); break; } m.joy+=.3; t=pick(['하릴없이 한 계절이 갔다.','별일 없이 한 계절을 보냈다.']);
   }
@@ -158,16 +182,16 @@ function mapLoop(dt){
 function cutTick(dt){ const c=CUTQ[0]; if(!c) return; if(!m||m.phase!=='play'){ CUTQ.length=0; return; } c.t+=dt*(m.auto&&!paused?[1,1.4,2][spd]:m.rep?2:1); if(c.t>=c.ms){ CUTQ.shift(); acc=0; render(); save(); } }
 /* ---- 카드 ---- */
 function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home':(s?s.id:null), acts=[], add=(t,sub,fn,free)=>acts.push({t,s:sub,fn,free}), S=(fid,opt)=>()=>doSeason(fid,opt);
-  if(id==='home'){ add(a<10?'식구들 곁에서 논다':'가족과 지낸다','마음이 편해지고 정이 깊어진다',S('family')); add('푹 쉰다','건강을 되찾는다',S('rest')); if(WORKSPOT[o]==='home'&&a>=10) add(WORKN[o],'은자를 번다',S('work')); if(!M.indoor) add('안으로 들어간다','',enterHome,1); }
-  if(!M.indoor&&id&&id===WORKSPOT[o]&&id!=='home') add(a<10?'일을 거든다':WORKN[o]||'일한다',a<10?'아직 어려서 벌이는 없다':'은자를 번다',S('work'));
-  if(id==='dojo'){ if(m.f.martial) add('수련한다','무공이 는다',S('train')); else if(a>=8){ if(m.gold>=10) add('입문한다','10냥 · 삼재검법을 배운다',S('enroll')); add('어깨너머로 본다','',S('train')); } else add('나뭇가지로 칼싸움을 한다','',S('train')); }
-  if(id==='fall'){ if(m.f.martial) add('폭포 아래서 수련한다','내공이 더 쌓인다',S('train',{fall:1})); add('물소리를 들으며 쉰다','건강을 되찾는다',S('rest',{fall:1})); }
-  if(id==='school'&&a>=6&&a<16&&(m.f.lit||0)<4) add('글을 배운다',`${m.f.lit||0}/4 · 깨치면 벌이가 는다`,S('study'));
-  if(id==='shrine') add('절을 올린다','한 해에 한 번, 마음이 가라앉는다',()=>{ if(m.f.pray===m.age){ toast('올해는 이미 절을 올렸다.','',1800); return; } m.f.pray=m.age; m.joy=cl(m.joy+3); sfx('ok'); vfx(()=>heroFloat('행복 +3','good')); render(); save(); },1);
-  if(id==='inn'&&a>=15&&m.gold>=3) add('소문을 듣는다','3냥 · 무슨 일이 생길 수도 있다',S('rumor'));
+  if(id==='home'){ add(a<10?'식구들 곁에서 논다':'가족과 지낸다',actSub('family'),S('family')); add('푹 쉰다',actSub('rest'),S('rest')); if(WORKSPOT[o]==='home'&&a>=10) add(WORKN[o],actSub('work'),S('work')); if(!M.indoor) add('안으로 들어간다','',enterHome,1); }
+  if(!M.indoor&&id&&id===WORKSPOT[o]&&id!=='home') add(a<10?'일을 거든다':WORKN[o]||'일한다',a<10?'아직 어려서 벌이는 없다':actSub('work'),S('work'));
+  if(id==='dojo'){ if(m.f.martial) add('수련한다',actSub('train'),S('train')); else if(a>=8){ if(m.gold>=10) add('입문한다','은자 −10냥 · 삼재검법(C)을 배운다',S('enroll')); add('어깨너머로 본다',actSub('train'),S('train')); } else add('나뭇가지로 칼싸움을 한다',actSub('train'),S('train')); }
+  if(id==='fall'){ if(m.f.martial) add('폭포 아래서 수련한다',actSub('train',{fall:1}),S('train',{fall:1})); add('물소리를 들으며 쉰다',actSub('rest',{fall:1}),S('rest',{fall:1})); }
+  if(id==='school'&&a>=6&&a<16&&(m.f.lit||0)<4) add('글을 배운다',`${m.f.lit||0}/4 · 깨치면 벌이가 1할 는다 · 행복 +0.5`,S('study'));
+  if(id==='shrine') add('절을 올린다','한 해에 한 번 · 행복 +3',()=>{ if(m.f.pray===m.age){ toast('올해는 이미 절을 올렸다.','',1800); return; } m.f.pray=m.age; m.joy=cl(m.joy+3); sfx('ok'); vfx(()=>heroFloat('행복 +3','good')); render(); save(); },1);
+  if(id==='inn'&&a>=15&&m.gold>=3) add('소문을 듣는다',actSub('rumor',null,m.mark?'이미 들은 소문이 있다':'새 소문을 들을 확률 65%'),S('rumor'));
   if(id==='gate'&&canLeave()) add('마을을 나선다','천하 지도로 나간다',leaveVillage,1);
   if(id==='market'||id==='apoth'||id==='smithy') add('물건을 본다','',()=>{ MSHOP=MSHOP?null:id; render(); },1);
-  if(id==='apoth'&&m.hp<80&&m.gold>=12) add('진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); vfx(()=>heroFloat('건강 +18','good')); render(); save(); },1);
+  if(id==='apoth'&&m.hp<80&&m.gold>=12) add('진맥을 받는다','은자 −12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); vfx(()=>heroFloat('건강 +18','good')); render(); save(); },1);
   return acts; }
 // 가게 물건은 철마다 바뀐다. 같은 철에는 같은 것이 놓인다
 function shopList(id){ const rf=seeded(strHash((m.name||'')+id)+m.age*977+(m.sea||0)*31), k=myKind(), ids=[];
@@ -226,8 +250,8 @@ function autoSect(){ const V=MAPV, h=V.hero; if(h.moving||(h.path&&h.path.length
   if((MSPOT&&MSPOT.id===ai.sid)||ai.n>2){ m.ai=null; sectAct(ai.id); return; } ai.n++; if(goSpot(ai.sid)===false) ai.n=9; }
 const SECTHINT={yard:'기합 소리와 목검 부딪는 소리가 난다.',rock:'물소리뿐이다. 숨을 고르기 좋은 자리다.',craft:'쇠와 약초 냄새가 섞여 난다.',chore:'장작과 물동이가 기다린다.',rest:'볕이 잘 드는 마루가 있다.',gate:'이 문을 나서면 산 아래 장터다. 들키면 혼난다.',hall:'사부가 계신 곳이다.'};
 function renderSectCard(card,eye){ const T=m.train, M=MAPV.M, s=MSPOT, busy=m.auto&&!paused, yr=Math.min(3,Math.floor(T.turn/6)+1), acts=[];
-  const aid=s?SECTACT[s.id]:null, a=aid&&TACT.find(x=>x.id===aid); if(a) acts.push({t:a.id==='craft'?craftName():a.n,s:a.s,fn:()=>sectAct(a.id)});
-  if(MTALK&&MTALK.a.mate!=null&&alive(MTALK.a.mate)){ const i=MTALK.a.mate; acts.push({t:`${wa(mt(i).name)} 어울린다`,s:'호감이 오른다',fn:()=>sectAct('mate',i)}); }
+  const aid=s?SECTACT[s.id]:null, a=aid&&TACT.find(x=>x.id===aid); if(a) acts.push({t:a.id==='craft'?craftName():a.n,s:tactSub(a),fn:()=>sectAct(a.id)});
+  if(MTALK&&MTALK.a.mate!=null&&alive(MTALK.a.mate)){ const i=MTALK.a.mate; acts.push({t:`${wa(mt(i).name)} 어울린다`,s:'호감 +6~12 · 인연 +2',fn:()=>sectAct('mate',i)}); }
   const head=`<div class="mh-tr"><span class="mh-qa">${esc(T.place)} 수련기</span><b>${yr}년차 ${SEASONS[T.turn%6]}</b><span class="mh-trbar" aria-label="수련기 진행 ${T.turn}/18"><i style="width:${T.turn/18*100}%"></i></span></div>`;
   const talk=MTALK?`<p class="mh-talk"><b>${esc(MTALK.a.n||'')}</b>${esc(MTALK.t)}</p>`:'';
   const place=`<p class="mh-qa">${esc(T.place)}</p><h3 class="mh-pl">${esc(s?(s.id==='craft'?'공방':s.n):'경내')}</h3><p class="mh-hint">${esc(s?SECTHINT[s.id]||'':'걸어서 수련할 곳을 고른다. 무엇을 하든 두 달이 간다. 동문에게 다가가면 어울릴 수 있다.')}</p>`;

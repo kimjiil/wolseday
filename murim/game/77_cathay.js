@@ -41,16 +41,16 @@ const CHINT={home:'나고 자란 마을이다.',capital:'황궁이 있는 도성
 function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const add=(t,sub,fn,free,w)=>acts.push({t,s:sub,fn,free,w:w==null?1:w}), S=(fid,opt)=>()=>doSeason(fid,opt), mar=m.f.martial, t=s.type;
   if(m.quest&&!m.quest.step&&s.id===m.quest.to) add('임무: '+QT[m.quest.k].act,QT[m.quest.k].n(m.quest),S('quest'),0,9);
   if(t==='home'){ add('마을로 들어간다','',enterVillage,1); return acts; }
-  if(t==='city'||t==='capital'){ add(mar&&m.lv>=2?'표국 일을 맡는다':'짐꾼 일을 한다','은자를 번다',S('wwork'),0,2); if(mar) add('비무대에 오른다','비무 · 이기면 판돈과 이름을 얻는다',S('wev',{ev:'wSpar'}),0,1.2); if(m.gold>=3) add('객잔에서 소문을 듣는다','3냥 · 무슨 일이 생길 수도 있다',S('rumor'),0,.6); add('저잣거리를 돌아본다','무슨 일이 생길지 모른다',S('explore',{pl:'city'}),0,.8);
-    add('물건을 본다','',()=>{ MSHOP=MSHOP?null:'city'; render(); },1); if(m.hp<80&&m.gold>=12) add('의원에게 진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); render(); save(); },1); return acts; }
+  if(t==='city'||t==='capital'){ add(mar&&m.lv>=2?'표국 일을 맡는다':'짐꾼 일을 한다',actSub('wwork'),S('wwork'),0,2); if(mar) add('비무대에 오른다','비무 · 이기면 판돈과 이름을 얻는다',S('wev',{ev:'wSpar'}),0,1.2); if(m.gold>=3) add('객잔에서 소문을 듣는다',actSub('rumor',null,m.mark?'이미 들은 소문이 있다':'새 소문을 들을 확률 65%'),S('rumor'),0,.6); add('저잣거리를 돌아본다','무슨 일이 생길지 모른다',S('explore',{pl:'city'}),0,.8);
+    add('물건을 본다','',()=>{ MSHOP=MSHOP?null:'city'; render(); },1); if(m.hp<80&&m.gold>=12) add('의원에게 진맥을 받는다','은자 −12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); render(); save(); },1); return acts; }
   const own=!!(s.sect&&m.sect===s.sect);
   if(own){ if(m.quest&&m.quest.step) add('임무를 보고한다',m.quest.fail?'실패를 고한다':'공헌과 상을 받는다',questReport,1); else if(!m.quest) add('임무를 받는다','사문의 일을 맡아 공헌을 쌓는다',questTake,1);
-    add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다','정이 깊어지고 가르침을 받는다',S('wvisit'),0,1); add('연무장에서 수련한다','무공이 는다',S('train'),0,2);
-    const na=sectArtNext(); if(na) add(`장경각에서 ${eul(na.n)} 익힌다`,`${TIER[na.g]}등급 ${artSub(na)} · ${artStat(na)}`,S('sectart'),0,4); }
+    add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다',actSub('wvisit'),S('wvisit'),0,1); add('연무장에서 수련한다',actSub('train'),S('train'),0,2);
+    const na=sectArtNext(); if(na) add(`장경각에서 ${eul(na.n)} 익힌다`,`${TIER[na.g]}등급 ${artSub(na)} · ${artStat(na)} · ${actSub('sectart')}`,S('sectart'),0,4); }
   else if(t==='sect'&&joinable(s)&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
   if(t==='den'&&!own) add('소굴로 쳐들어간다','생사결이 될 수 있다 · 이기면 전리품',S('wev',{ev:'wBandit'}),0,mar&&m.lv>=3&&m.hp>70?.4:0);
-  if(mar) add('근처 산에서 수련한다','내공이 더 쌓인다',S('train',{fall:1}),0,2);
-  add('약초를 캔다','은자를 번다 · 다칠 수 있다',S('herb'),0,mar?.3:1);
+  if(mar) add('근처 산에서 수련한다',actSub('train',{fall:1}),S('train',{fall:1}),0,2);
+  add('약초를 캔다',actSub('herb',null,'18%로 다친다(건강 −7)'),S('herb'),0,mar?.3:1);
   add('주변을 살핀다','무슨 일이 생길지 모른다',S('explore',{pl:t==='den'?'pass':t==='demon'?'tomb':'deep'}),0,.6);
   add('옛 자취를 찾는다','무슨 일이 생길지 모른다',S('explore',{pl:'tomb'}),0,.3);
   return acts; }

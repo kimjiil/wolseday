@@ -3232,13 +3232,22 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-call.gssr{font-size:clamp(34px,8.5vw,72px);border:4px solid #fff3b0;color:#fff;background:linear-gradient(100deg,rgba(201,67,46,.82),rgba(217,164,65,.86) 55%,rgba(138,90,208,.82));box-shadow:0 0 60px rgba(255,236,160,.9),0 0 120px rgba(255,200,90,.5);animation:mhSsr 2.8s ease-out}
 @keyframes mhSsr{0%{transform:translate(-50%,-50%) scale(.2) rotate(-8deg);opacity:0}12%{transform:translate(-50%,-50%) scale(1.25) rotate(2deg);opacity:1}22%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.mh-call.gssr{animation:none}}
+
+/* 버전 딱지와 바뀐 점 */
+.mh-ver{font:inherit;font-family:var(--m-f-num);font-size:12px;line-height:1;color:var(--m-muted);background:none;border:1px solid var(--m-line);padding:3px 6px;margin-left:4px;vertical-align:middle;cursor:pointer}
+.mh-ver:hover,.mh-ver[aria-expanded="true"]{color:var(--m-ink);border-color:var(--m-ink)}
+.mh-notes{border:1px solid var(--m-line);background:var(--m-panel);padding:12px 14px;margin:10px 0 0;font-size:14px;line-height:1.6}
+.mh-notes>b{display:block;margin-bottom:4px}
+.mh-note{margin-top:8px}.mh-note span{color:var(--m-muted);font-size:13px}
+.mh-note ul{margin:2px 0 0;padding-left:18px}
 </style>
 
 <div id="murimApp" hidden>
   <header class="mh-top">
-    <div class="mh-brand"><span class="mh-seal" aria-hidden="true">武林</span><div><b>무림초출</b><small>강호의 어느 해, 누군가로 태어난다</small></div></div>
+    <div class="mh-brand"><span class="mh-seal" aria-hidden="true">武林</span><div><b>무림초출 <button type="button" class="mh-ver" id="mhVer" aria-expanded="false" aria-controls="mhNotes"></button></b><small>강호의 어느 해, 누군가로 태어난다</small></div></div>
     <button class="mh-btn" type="button" id="mhHub">‹ 게임 목록</button>
   </header>
+  <div class="mh-notes" id="mhNotes" hidden></div>
   <div class="mh-grid" id="mhGrid">
     <section class="mh-col">
       <div class="mh-scene">
@@ -3265,6 +3274,12 @@ body.is-murim::before{background:var(--m-bg)}
 (function(){
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
+// 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
+const MVER='1.1';
+const NOTES=[
+  ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
+  ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
+];
 const R=()=>Math.random(), ri=(a,b)=>a+Math.floor(R()*(b-a+1)), pick=a=>a[Math.floor(R()*a.length)], cl=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
 const jo=(w,a,b)=>{w=String(w||'');const c=w.charCodeAt(w.length-1)-0xAC00;return (c>=0&&c<11172&&c%28)?a:b;};
 const eul=w=>w+jo(w,'을','를'), iga=w=>w+jo(w,'이','가'), eun=w=>w+jo(w,'은','는'), wa=w=>w+jo(w,'과','와'), ro=w=>w+jo(w,'으로','로');
@@ -7349,6 +7364,9 @@ document.addEventListener('keydown',e=>{
   else if(e.key===' '&&m&&m.phase==='play'&&(!document.activeElement||document.activeElement===document.body)){ paused=!paused; render(); e.preventDefault(); }
 });
 $m('mhHub').onclick=()=>{ paused=true; if(m&&m.phase==='play') renderCtl(); location.hash=''; window.__route&&window.__route(); };
+$m('mhVer').textContent='v'+MVER;
+$m('mhNotes').innerHTML=`<b>바뀐 점</b>`+NOTES.map(n=>`<div class="mh-note"><span>v${n[0]} · ${n[1]}</span><ul>${n[2].map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');
+$m('mhVer').onclick=()=>{ const n=$m('mhNotes'); n.hidden=!n.hidden; $m('mhVer').setAttribute('aria-expanded',String(!n.hidden)); };
 window.__murimRender=()=>{ render(); };
 render(); requestAnimationFrame(frame); requestAnimationFrame(loop);
 })();

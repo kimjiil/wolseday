@@ -192,7 +192,7 @@ function simulate(b){
 }
 function finalize(){
   m.phase='end';
-  try{ const past=lsGet('murim_past')||[]; past.unshift({n:m.name,al:m.alias,age:m.age,lv:m.lv,c:m.deathCause,era:ERAS[m.era].n,reg:regOf(m.b.reg).n,o:OR(m.b.o).n}); lsSet('murim_past',past.slice(0,30)); }catch(e){}
+  try{ const past=lsGet('murim_past')||[]; past.unshift({n:m.name,al:m.alias,g:lifeScore().g,age:m.age,lv:m.lv,c:m.deathCause,era:ERAS[m.era].n,reg:regOf(m.b.reg).n,o:OR(m.b.o).n}); lsSet('murim_past',past.slice(0,30)); }catch(e){}
   lsSet('murim_run',null); render();
 }
 function epitaph(){

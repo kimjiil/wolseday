@@ -3415,6 +3415,19 @@ img.mh-ic{object-fit:contain}
 @keyframes mhAfxHue{0%,100%{filter:none}50%{filter:brightness(1.25) saturate(1.4)}}
 @keyframes mhAfxBolt{0%{opacity:.95}5%{opacity:0}36%{opacity:0}38%{opacity:.75}43%{opacity:0}60%{opacity:0}62%{opacity:.5}66%{opacity:0}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.mh-artfx .rays,.mh-artfx .pt,.mh-artfx .ring,.mh-artfx .bolt{display:none}.mh-artfx .tx,.mh-artfx.g5 .tx b{animation:none}}
+
+/* ---- 인생 등급과 인물 카드 ---- */
+.mh-lg{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px}
+.mh-lg .mh-gr{font-size:30px;line-height:1.3;padding:2px 16px;margin:0;letter-spacing:.06em;border-width:2.5px}
+.mh-lg b{font-family:var(--m-f-disp);font-weight:400;font-size:20px;color:var(--m-ink)}
+.mh-lg small{font-size:13px;color:var(--m-muted)}
+.mh-cardbox{display:flex;flex-direction:column;align-items:center;gap:10px}
+#murimApp img.mh-cardimg{display:block;width:min(100%,360px);max-width:100%;height:auto;border:1px solid var(--m-line);box-shadow:0 4px 18px rgba(0,0,0,.2);-webkit-touch-callout:default}
+.mh-cardbox .mh-row{justify-content:center}
+.mh-cardbox .mh-hint{text-align:center;font-size:13px}
+.mh-lgd{width:100%}.mh-lgd summary{cursor:pointer;font-size:13px;color:var(--m-muted);padding:6px 0}
+.mh-lgd div{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--m-muted);margin:2px 0 6px}.mh-lgd div b{color:var(--m-ink);font-family:var(--m-f-num);font-weight:500}
+.mh-past .mh-gr{font-size:11px;padding:0 4px;margin-right:6px}
 </style>
 
 <div id="murimApp" hidden>
@@ -3456,7 +3469,7 @@ const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
 const MVER='1.3';
 const NOTES=[
-  ['1.3','2026-11-13',['무공 823가지: 무협에 두루 나오는 무공을 모아 C~SSR 등급을 매겼다(검 183 · 장 163 · 권 116 · 내공 115 · 도 82 · 보법 80 · 암기 38 · 외공 21 · 안법 13 · 마공 12)','문파 장경각: 사문에 가면 서열과 경지에 맞는 사문의 무공을 한 계절에 하나씩 익힌다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS)','비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다. 가게에서 팔고, 싸움과 사건에서 떨어진다','외공: 방어를 올려 주는 새 갈래','이름난 무공을 얻는 기연 17가지(독고구검, 능파미보, 구양진경 등)','신상 칸의 무공에 등급과 위력이 보이고, 지금 쓰이는 무공에 테가 둘린다','S 이상 무공을 얻으면 획득 연출이 뜬다(S 絶技, SS 神功, SSR 絶世神功)','걸리는 시간을 "철" 대신 석 달·반년·1년 반처럼 적는다']],
+  ['1.3','2026-11-13',['무공 823가지: 무협에 두루 나오는 무공을 모아 C~SSR 등급을 매겼다(검 183 · 장 163 · 권 116 · 내공 115 · 도 82 · 보법 80 · 암기 38 · 외공 21 · 안법 13 · 마공 12)','문파 장경각: 사문에 가면 서열과 경지에 맞는 사문의 무공을 한 계절에 하나씩 익힌다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS)','비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다. 가게에서 팔고, 싸움과 사건에서 떨어진다','외공: 방어를 올려 주는 새 갈래','이름난 무공을 얻는 기연 17가지(독고구검, 능파미보, 구양진경 등)','신상 칸의 무공에 등급과 위력이 보이고, 지금 쓰이는 무공에 테가 둘린다','S 이상 무공을 얻으면 획득 연출이 뜬다(S 絶技, SS 神功, SSR 絶世神功)','걸리는 시간을 "철" 대신 석 달·반년·1년 반처럼 적는다','인생 등급: 한 생이 끝나면 살아온 것을 점수로 매겨 C~SSR 등급을 준다','인물 카드: 끝 화면에서 등급이 찍힌 카드 그림을 카카오톡 등으로 보내거나 저장한다']],
   ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','이름값을 못 하던 것을 고쳤다: 천운(주사위 8~20), 만독불침·피독주·해독단(독), 혈마체(마공), 염주(주화입마), 보법(위력만큼 회피)','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다','휴대폰 화면 정리: 장면 밑에 건강·행복·돈·내공 한 줄, 작은 글씨와 단추 키움, 알림은 위쪽에 작게, 천하 지도에서 떠나는 단추가 화면 아래에 붙음, 가로로 눕히면 장면 왼쪽·카드 오른쪽']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
@@ -6103,7 +6116,7 @@ function simulate(b){
 }
 function finalize(){
   m.phase='end';
-  try{ const past=lsGet('murim_past')||[]; past.unshift({n:m.name,al:m.alias,age:m.age,lv:m.lv,c:m.deathCause,era:ERAS[m.era].n,reg:regOf(m.b.reg).n,o:OR(m.b.o).n}); lsSet('murim_past',past.slice(0,30)); }catch(e){}
+  try{ const past=lsGet('murim_past')||[]; past.unshift({n:m.name,al:m.alias,g:lifeScore().g,age:m.age,lv:m.lv,c:m.deathCause,era:ERAS[m.era].n,reg:regOf(m.b.reg).n,o:OR(m.b.o).n}); lsSet('murim_past',past.slice(0,30)); }catch(e){}
   lsSet('murim_run',null); render();
 }
 function epitaph(){
@@ -8913,7 +8926,7 @@ function renderTitle(card){
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
     ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
     <div class="mh-row">${saved?`<button class="mh-btn" type="button" id="mhResume">이어 살기 · ${esc(saved.name)} ${saved.age}세</button>`:''}<button class="mh-go seal" type="button" id="mhStart">태어나기</button></div>
-    ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
+    ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${p.g?`<span class="mh-gr g-${esc(p.g)}">${esc(p.g)}</span>`:''}${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
   const hint=()=>['era','basis','pace'].forEach(k=>{ $m('mhHint-'+k).textContent=HINTS[k][setup[k]]; });
   card.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ setup[b.dataset.k]=b.dataset.v; card.querySelectorAll(`[data-k="${b.dataset.k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b)); hint(); });
   hint();
@@ -8965,8 +8978,9 @@ function otherCard(o){ const L=npcLook({name:o.name,sex:o.sex,age:o.age,sect:o.s
   return `<div class="mh-other"><span class="mh-who">${ptImg(L)}<b>${esc(o.alias?o.alias+' ':'')}${esc(o.name)}</b></span><span>${o.sex==='m'?'남':'여'} · ${esc(regOf(o.reg).n)} · ${esc(OR(o.o).n)}</span><span class="mh-num">${oneIn(o.P)}명 중 1명</span><span>향년 ${o.age}세 · ${esc(o.cause)}</span>${o.martial?`<span>${LV[o.lv]}${o.sect?' · '+esc(SECTS[o.sect].n):''}${o.wins?` · ${o.wins}승`:''}${o.wn?` · ${esc(o.wn)}`:''}</span>`:''}${o.hi?`<span class="mh-hi">${esc(o.hi)}</span>`:''}</div>`;
 }
 function renderEnd(card){
-  const o=OR(m.b.o), big=m.log.filter(x=>x.big), inv=m.inv||{}, gear=['w','a','c'].map(s=>inv[s]).filter(Boolean);
+  const o=OR(m.b.o), big=m.log.filter(x=>x.big), inv=m.inv||{}, gear=SLOTS.map(s=>inv[s]).filter(Boolean), G=lifeScore(), C=lifeCard(), fn=`murim-card-${G.g}-${m.age}.png`;   // 파일 이름은 영문으로(한글 이름이 깨지는 환경이 있다)
   card.innerHTML=`<div class="mh-tomb">
+      <div class="mh-lg"><span class="mh-gr g-${G.g}">${G.g}</span><b>${G.title}</b><small>인생 점수 ${G.score} · ${G.line}</small></div>
       ${ptImg(heroLook(),'big')}
       ${m.alias?`<span class="al">${esc(m.alias)}</span>`:''}
       <span class="nm">${esc(m.name)}</span>
@@ -8975,21 +8989,29 @@ function renderEnd(card){
       <p class="mh-bye">"${esc(epitaph())}"</p>
     </div>
     <div class="mh-sum"><div>무공<b>${m.f.martial?LV[m.lv]:'모름'}</b></div><div>재산<b>${topStr(pctNow())}</b></div><div>싸움<b>${m.wins||0}승 ${m.losses||0}패</b></div><div>벤 사람<b>${m.kills||0}명</b></div><div>기연<b>${m.giN||0}번</b></div><div>자식<b>${m.rels.filter(r=>r.role==='자식').length}명</b></div><div>행복<b>${Math.round(m.joy)}</b></div></div>
+    <h3>인물 카드</h3>
+    <div class="mh-cardbox"><img id="mhCardImg" class="mh-cardimg" src="${C.url}" alt="${esc(m.name)}의 인물 카드. 인생 등급 ${G.g}, ${G.title}">
+      <div class="mh-row"><button class="mh-go" type="button" id="mhCardSend" data-label="카드 보내기">카드 보내기</button><button class="mh-btn" type="button" id="mhCardSave">그림 저장</button><button class="mh-btn" type="button" id="mhShare" data-label="글로 복사">글로 복사</button></div>
+      <p class="mh-hint">휴대폰에서는 공유 창이 뜨고, PC에서는 그림이 복사된다. 안 되면 그림을 길게 눌러 저장한다.</p>
+      <textarea id="mhCopy" readonly hidden aria-label="복사할 기록"></textarea>
+      <details class="mh-lgd"><summary>점수 내역</summary><div>${G.parts.map(x=>`<span>${x[0]} <b>+${x[1]}</b></span>`).join('')}<span>모두 <b>${G.score}</b></span></div><p class="mh-hint">${LGRADE.map(x=>`${x[1]} ${x[0]}점부터`).join(' · ')}</p></details></div>
     ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot gr${it.t}">${icImg(itIcon(id))}<span><small>${SLOTN[it.s]||''} ${grTag(it.t)}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
     ${Object.keys(m.answers).length?`<h3>대답들</h3><div class="mh-past">${Object.entries(MILES).filter(([a])=>m.answers[a]!=null).map(([a,q])=>`<div><span>${esc(q)}<br><b>${m.answers[a]?esc(m.answers[a]):'(대답하지 않았다)'}</b></span><span>${a}세</span></div>`).join('')}</div>`:''}
     <h3>같은 순간 태어난 네 사람</h3>
     <div class="mh-others">${m.others.map(otherCard).join('')}</div>
     <h3>인생의 기록</h3>
     <div class="mh-past">${big.map(x=>`<div><span>${esc(x.t)}</span><span>${x.a}세</span></div>`).join('')}</div>
-    <div class="mh-row"><button class="mh-go seal" type="button" id="mhAgain">다시 태어나기</button><button class="mh-btn" type="button" id="mhShare" data-label="기록 복사">기록 복사</button></div>
-    <textarea id="mhCopy" readonly hidden aria-label="복사할 기록"></textarea>`;
+    <div class="mh-row"><button class="mh-go seal" type="button" id="mhAgain">다시 태어나기</button></div>`;
   $m('mhAgain').onclick=()=>{ m=null; render(); };
+  $m('mhCardSend').onclick=()=>sendCard($m('mhCardSend'));
+  if(!C.f){ C.f=1; cardFonts(()=>{ const N=lifeCard(); N.f=1; const im=$m('mhCardImg'); if(im) im.src=N.url; }); }
+  $m('mhCardSave').onclick=()=>saveCard(fn);
   $m('mhShare').onclick=()=>{ const txt=shareText(), btn=$m('mhShare'), ta=$m('mhCopy'); const fb=()=>{ ta.value=txt; ta.hidden=false; ta.select(); btn.textContent='아래 글을 복사하세요'; };
     try{ navigator.clipboard.writeText(txt).then(()=>{ btn.textContent='복사했어요'; setTimeout(()=>btn.textContent=btn.dataset.label,1800); },fb); }catch(e){ fb(); } };
 }
 function shareText(){
   const o=OR(m.b.o), w=m.inv&&m.inv.w?ITEMS[m.inv.w]:null;
-  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${ERAS[m.era].n} ${regOf(m.b.reg).n}, ${famAs(o)} · ${oneIn(m.b.P)}명 중 1명\n향년 ${m.age}세 · ${m.deathCause}${m.f.martial?` · ${LV[m.lv]}`:''}${m.wins||m.losses?` · ${m.wins||0}승 ${m.losses||0}패`:''}${w&&w.t>=2?` · ${w.n}`:''}\n"${epitaph()}"\n같은 순간 태어난 넷: ${m.others.map(x=>`${x.name} ${x.age}세`).join(', ')}\nwolseday.com/#murim`;
+  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${ERAS[m.era].n} ${regOf(m.b.reg).n}, ${famAs(o)} · ${oneIn(m.b.P)}명 중 1명\n향년 ${m.age}세 · ${m.deathCause}${m.f.martial?` · ${LV[m.lv]}`:''}${m.wins||m.losses?` · ${m.wins||0}승 ${m.losses||0}패`:''}${w&&w.t>=2?` · ${w.n}`:''}\n인생 등급 ${lifeScore().g}(${lifeScore().title}) · ${lifeScore().score}점\n"${epitaph()}"\n같은 순간 태어난 넷: ${m.others.map(x=>`${x.name} ${x.age}세`).join(', ')}\nwolseday.com/#murim`;
 }
 let RKEY='';
 // 좁은 화면에서는 장면이 위에 붙어 있어서, 사건이나 결과가 새로 뜨면 카드 머리가 가려지지 않게 끌어온다
@@ -9015,6 +9037,90 @@ function render0(){
   else renderPlay(card);
   flushVfx();
 }
+/* ==== murim:card — 인생 등급과, 보내기 좋은 인물 카드(그림) ====
+   한 생이 끝나면 살아온 것을 점수로 매겨 C~SSR 등급을 준다. 카드는 캔버스에 그려 PNG 로 만든다.
+   휴대폰에서는 공유 창(카카오톡 등)으로 보내고, PC 에서는 그림을 클립보드에 복사하거나 내려받는다. */
+const LGRADE=[[0,'C','무명','이름 없이 살다 갔다'],[12,'B','범부','제 몫의 삶을 살았다'],[28,'A','명사','고을에 이름이 남았다'],[50,'S','고수','강호가 그 이름을 안다'],[80,'SS','종사','한 시대가 그를 따랐다'],[115,'SSR','전설','이야기꾼들이 대대로 전한다']];
+const LGCOL={C:'#8a8a80',B:'#4f8a5a',A:'#3f6f9a',S:'#8a5ad0',SS:'#c9862a',SSR:'#d9a441'};
+// 점수: 경지가 가장 크고, 이름·자리·싸움·기연·재산·수명·가족·행복·무공·물건·협행이 조금씩 보탠다
+function lifeScore(){ const P=[], add=(l,v)=>{ v=Math.round(v*10)/10; if(v>0) P.push([l,v]); }, kids=m.rels.filter(r=>r.role==='자식').length;
+  add('경지',m.f.martial?[0,4,8,14,22,30,40,52,65][m.lv]||0:0);
+  add('이름',Math.min(12,(m.fame||0)*.1)+(m.alias?4:0));
+  let seat=(m.f.leader?8:0)+(m.f.champ?6:0); try{ if(m.sect&&srank()==='장로') seat+=3; if(m.f.ally&&!m.f.leader) seat+=({맹원:0,당주:1,장로:2,부맹주:4})[arank()]||0; }catch(e){} add('자리',seat);
+  add('싸움',Math.min(8,(m.wins||0)*.4));
+  add('기연',Math.min(8,(m.giN||0)*1.5));
+  add('재산',cl((pctNow()-50)/50*8,0,8));
+  add('수명',cl((m.age-40)/10*1.5,0,6));
+  add('가족',(m.spouse?2:0)+Math.min(4,kids*1.5));
+  add('행복',cl((m.joy-50)/50*6,0,6));
+  add('무공',m.arts.reduce((v,a)=>Math.max(v,artG(a)),0)*1.5);
+  add('물건',SLOTS.reduce((v,s)=>Math.max(v,m.inv&&m.inv[s]&&ITEMS[m.inv[s]]?ITEMS[m.inv[s]].t:0),0));
+  add('협행',Math.min(5,Math.max(0,m.hy||0)*.1));
+  const score=Math.round(P.reduce((a,x)=>a+x[1],0)); let L=LGRADE[0]; for(const x of LGRADE) if(score>=x[0]) L=x;
+  return {score,g:L[1],title:L[2],line:L[3],parts:P}; }
+
+/* ---- 카드 그리기 ---- */
+const CARDW=720, CARDH=1000;
+function cardWrap(k,txt,maxW){ const out=[]; let line=''; for(const ch of String(txt)){ if(k.measureText(line+ch).width>maxW&&line){ out.push(line); line=ch.trim()?ch:''; } else line+=ch; } if(line) out.push(line); return out; }
+function drawLifeCard(){ const L=lifeScore(), c=document.createElement('canvas'); c.width=CARDW; c.height=CARDH; const k=c.getContext('2d'), col=LGCOL[L.g], ssr=L.g==='SSR';
+  const DISP='"Song Myung","Nanum Myeongjo","Batang",serif', BODY='"Gowun Batang","Nanum Myeongjo","Batang",serif', NUM='"IBM Plex Mono",Consolas,monospace', INK='#1c201c', MUT='#556052', PAPER='#eef0e6', SEAL='#b8321f';
+  const frame=()=>{ if(!ssr) return col; const g=k.createLinearGradient(0,0,CARDW,CARDH); g.addColorStop(0,'#c9432e'); g.addColorStop(.5,'#d9a441'); g.addColorStop(1,'#8a5ad0'); return g; };
+  // 바탕과 테
+  k.fillStyle=frame(); k.fillRect(0,0,CARDW,CARDH); k.fillStyle=PAPER; k.fillRect(14,14,CARDW-28,CARDH-28); k.strokeStyle=INK; k.lineWidth=2; k.strokeRect(22,22,CARDW-44,CARDH-44);
+  // 높은 등급은 인물 뒤로 빛살
+  const px=60, py=150, ps=248, gi=TIER.indexOf(L.g);
+  if(gi>=3){ k.save(); k.beginPath(); k.rect(23,23,CARDW-46,430); k.clip(); k.translate(px+ps/2,py+ps/2); const n=gi>=5?36:gi>=4?28:20; for(let i=0;i<n;i++){ k.rotate(Math.PI*2/n); k.fillStyle=ssr?['rgba(201,67,46,.13)','rgba(217,164,65,.16)','rgba(138,90,208,.13)'][i%3]:col+'22'; k.beginPath(); k.moveTo(0,0); k.lineTo(-22,-760); k.lineTo(22,-760); k.closePath(); k.fill(); } k.restore(); }
+  // 머리글
+  k.fillStyle=SEAL; k.fillRect(48,48,40,56); k.fillStyle=PAPER; k.font=`22px ${DISP}`; k.textAlign='center'; k.textBaseline='middle'; k.fillText('武',68,64); k.fillText('林',68,89);
+  k.textAlign='left'; k.fillStyle=INK; k.font=`34px ${DISP}`; k.fillText('무림초출',102,66); k.fillStyle=MUT; k.font=`17px ${BODY}`; k.fillText('강호의 어느 해, 누군가로 태어났다',102,96);
+  // 등급 도장
+  const gx=CARDW-128, gy=92; k.save(); k.translate(gx,gy); k.rotate(.06); k.fillStyle=frame(); k.fillRect(-66,-50,132,100); k.fillStyle=PAPER; k.fillRect(-60,-44,120,88); k.fillStyle=frame(); k.fillRect(-56,-40,112,80);
+  k.fillStyle='#fff'; k.textAlign='center'; k.font=`700 ${L.g.length>=3?44:L.g.length===2?54:62}px ${DISP}`; k.fillText(L.g,0,-6); k.font=`17px ${BODY}`; k.fillText(L.title,0,26); k.restore();
+  // 인물
+  k.fillStyle='#17161c'; k.fillRect(px-6,py-6,ps+12,ps+12); k.fillStyle=frame(); k.fillRect(px-3,py-3,ps+6,ps+6); k.fillStyle='#dfe3d2'; k.fillRect(px,py,ps,ps);
+  try{ const Lk=heroLook(), s=charSprite(Lk,'idle',0), top=Lk.size==='kid'?OY*2-41:OY*2-47; k.imageSmoothingEnabled=false; k.drawImage(s,OX*2-15,top,30,30,px+4,py+4,ps-8,ps-8); k.imageSmoothingEnabled=true; }catch(e){}
+  // 이름
+  const tx=px+ps+34, tw=CARDW-tx-46; k.textAlign='left'; k.textBaseline='alphabetic'; let y=py+34;
+  if(m.alias){ k.fillStyle=SEAL; k.font=`34px ${DISP}`; let a=m.alias; while(k.measureText(a).width>tw&&a.length>2) a=a.slice(0,-1); k.fillText(a,tx,y); y+=62; } else y+=26;
+  k.fillStyle=INK; k.font=`60px ${DISP}`; k.fillText(m.name,tx,y); y+=40;
+  k.fillStyle=MUT; k.font=`20px ${BODY}`; for(const ln of cardWrap(k,`${ERAS[m.era].n} · ${regOf(m.b.reg).n} · ${OR(m.b.o).n}`,tw)){ k.fillText(ln,tx,y); y+=28; }
+  k.fillText(`${oneIn(m.b.P)}명 중 1명`,tx,y); y+=40;
+  k.fillStyle=INK; k.font=`24px ${BODY}`; for(const ln of cardWrap(k,`향년 ${m.age}세 · ${m.deathCause||'천수'}`,tw)){ k.fillText(ln,tx,y); y+=32; }
+  if(m.sect&&SECTS[m.sect]){ k.fillStyle=MUT; k.font=`20px ${BODY}`; let sr=''; try{ sr=' '+srank(); }catch(e){} k.fillText(SECTS[m.sect].n+sr,tx,y+2); }
+  // 가른 줄
+  const hr=yy=>{ k.strokeStyle='#c1c8b3'; k.lineWidth=1.5; k.setLineDash([6,5]); k.beginPath(); k.moveTo(48,yy); k.lineTo(CARDW-48,yy); k.stroke(); k.setLineDash([]); };
+  hr(446);
+  // 숫자 여섯 칸
+  const kids=m.rels.filter(r=>r.role==='자식').length, cells=[['경지',m.f.martial?LV[m.lv]:'모름'],['싸움',`${m.wins||0}승 ${m.losses||0}패`],['기연',`${m.giN||0}번`],['재산',topStr(pctNow())],['자식',`${kids}명`],['행복',String(Math.round(m.joy))]];
+  const cw=(CARDW-96)/3; cells.forEach((cx,i)=>{ const x=48+(i%3)*cw, yy=476+Math.floor(i/3)*92; k.fillStyle='#e6e9dc'; k.fillRect(x+4,yy,cw-8,80); k.strokeStyle='#c1c8b3'; k.lineWidth=1; k.strokeRect(x+4.5,yy+.5,cw-9,79); k.fillStyle=MUT; k.font=`17px ${BODY}`; k.textAlign='left'; k.fillText(cx[0],x+18,yy+27); k.fillStyle=INK; k.font=`30px ${DISP}`; let v=cx[1]; while(k.measureText(v).width>cw-36&&v.length>2) v=v.slice(0,-1); k.fillText(v,x+18,yy+64); });
+  // 무공과 무기
+  const tag=(g,x,yy)=>{ const t=TIER[g], w=t.length>=3?52:t.length===2?40:30; k.fillStyle=g>=5?frame():LGCOL[t]; k.fillRect(x,yy-21,w,27); k.fillStyle='#fff'; k.font=`700 17px ${DISP}`; k.textAlign='center'; k.fillText(t,x+w/2,yy-1); k.textAlign='left'; return w+10; };
+  let ry=702; const row=(lab,g,name,sub)=>{ k.fillStyle=MUT; k.font=`18px ${BODY}`; k.fillText(lab,52,ry); const w=tag(g,136,ry+2); k.fillStyle=INK; k.font=`27px ${DISP}`; let nm=name; while(k.measureText(nm).width>330&&nm.length>2) nm=nm.slice(0,-1); k.fillText(nm,136+w,ry+2); const nw=k.measureText(nm).width; k.fillStyle=MUT; k.font=`18px ${BODY}`; k.fillText(sub,136+w+nw+14,ry); ry+=46; };
+  const ba=m.arts.slice().sort((a,b)=>artG(b)-artG(a)||artVal(b)-artVal(a))[0]; if(ba) row('무공',artG(ba),ba.n,`${artSub(ba)} · 모두 ${m.arts.length}가지`);
+  const be=SLOTS.map(s=>m.inv&&m.inv[s]&&ITEMS[m.inv[s]]).filter(Boolean).sort((a,b)=>b.t-a.t)[0]; if(be) row('물건',be.t,be.n,SLOTN[be.s]||'');
+  if(!ba&&!be){ k.fillStyle=MUT; k.font=`20px ${BODY}`; k.fillText('무공도 보물도 남기지 않았다.',52,ry); ry+=46; }
+  hr(Math.max(ry-8,790));
+  // 마지막 말
+  k.fillStyle=INK; k.font=`25px ${DISP}`; k.textAlign='center'; const q=cardWrap(k,`"${epitaph()}"`,CARDW-150).slice(0,3); let qy=Math.max(ry+38,832)+(3-q.length)*16; for(const ln of q){ k.fillText(ln,CARDW/2,qy); qy+=36; }
+  // 꼬리말
+  k.fillStyle=MUT; k.font=`17px ${BODY}`; k.textAlign='left'; k.fillText(`인생 점수 ${L.score} · ${L.line}`,48,CARDH-44); k.textAlign='right'; k.font=`17px ${NUM}`; k.fillText('wolseday.com/#murim',CARDW-48,CARDH-44);
+  return c; }
+
+let CARDC=null;
+function lifeCard(){ const key=m.name+'|'+m.age+'|'+m.deathCause+'|'+(m.bye||''); if(CARDC&&CARDC.key===key) return CARDC; const c=drawLifeCard(), C=CARDC={key,c,url:c.toDataURL('image/png'),blob:null}; try{ c.toBlob(b=>{ C.blob=b; },'image/png'); }catch(e){} return C; }
+const cardBlob=()=>new Promise(res=>{ try{ lifeCard().c.toBlob(b=>res(b),'image/png'); }catch(e){ res(null); } });
+// 보내기: 공유 창 → 클립보드에 그림 복사 → 둘 다 안 되면 그림을 길게 눌러 저장하라고 알린다
+function sendCard(btn){ const say=t=>{ btn.textContent=t; setTimeout(()=>{ btn.textContent=btn.dataset.label; },2800); }, hint='그림을 길게 눌러(PC는 오른쪽 눌러) 저장하세요';
+  // 누른 그 순간에 바로 공유·복사를 불러야 브라우저가 막지 않는다. 그래서 그림은 미리 만들어 둔다
+  const go=async blob=>{ if(!blob){ say(hint); return; } const file=new File([blob],`murim-card-${lifeScore().g}-${m.age}.png`,{type:'image/png'});
+    try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:'무림초출',text:shareText()}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+    try{ await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]); say('그림을 복사했어요. 대화창에 붙여 넣으세요'); return; }catch(e){}
+    say(hint); };
+  const C=lifeCard(); if(C.blob) go(C.blob); else cardBlob().then(go); }
+// 글꼴이 늦게 오면 카드를 다시 그린다
+function cardFonts(done){ try{ Promise.all([document.fonts.load('60px "Song Myung"',m.name+'무림초출'),document.fonts.load('20px "Gowun Batang"','가')]).then(()=>{ CARDC=null; done(); },()=>{}); }catch(e){} }
+// 그림 파일로 내려받기
+function saveCard(fn){ const go=blob=>{ try{ const a=document.createElement('a'), u=blob?URL.createObjectURL(blob):lifeCard().url; a.href=u; a.download=fn; document.body.appendChild(a); a.click(); a.remove(); if(blob) setTimeout(()=>URL.revokeObjectURL(u),4000); }catch(e){} }; const C=lifeCard(); if(C.blob) go(C.blob); else cardBlob().then(go); }
 /* ==== murim:boot — 시간의 흐름, 키보드, 시작 ==== */
 function step(){ tick(); if(!m.dead) checkTrain(); render(); save(); }
 let lastT=performance.now(), titleT=0;

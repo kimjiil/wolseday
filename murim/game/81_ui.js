@@ -119,7 +119,7 @@ function renderTitle(card){
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
     ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
     <div class="mh-row">${saved?`<button class="mh-btn" type="button" id="mhResume">이어 살기 · ${esc(saved.name)} ${saved.age}세</button>`:''}<button class="mh-go seal" type="button" id="mhStart">태어나기</button></div>
-    ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
+    ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${p.g?`<span class="mh-gr g-${esc(p.g)}">${esc(p.g)}</span>`:''}${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
   const hint=()=>['era','basis','pace'].forEach(k=>{ $m('mhHint-'+k).textContent=HINTS[k][setup[k]]; });
   card.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ setup[b.dataset.k]=b.dataset.v; card.querySelectorAll(`[data-k="${b.dataset.k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b)); hint(); });
   hint();
@@ -171,8 +171,9 @@ function otherCard(o){ const L=npcLook({name:o.name,sex:o.sex,age:o.age,sect:o.s
   return `<div class="mh-other"><span class="mh-who">${ptImg(L)}<b>${esc(o.alias?o.alias+' ':'')}${esc(o.name)}</b></span><span>${o.sex==='m'?'남':'여'} · ${esc(regOf(o.reg).n)} · ${esc(OR(o.o).n)}</span><span class="mh-num">${oneIn(o.P)}명 중 1명</span><span>향년 ${o.age}세 · ${esc(o.cause)}</span>${o.martial?`<span>${LV[o.lv]}${o.sect?' · '+esc(SECTS[o.sect].n):''}${o.wins?` · ${o.wins}승`:''}${o.wn?` · ${esc(o.wn)}`:''}</span>`:''}${o.hi?`<span class="mh-hi">${esc(o.hi)}</span>`:''}</div>`;
 }
 function renderEnd(card){
-  const o=OR(m.b.o), big=m.log.filter(x=>x.big), inv=m.inv||{}, gear=['w','a','c'].map(s=>inv[s]).filter(Boolean);
+  const o=OR(m.b.o), big=m.log.filter(x=>x.big), inv=m.inv||{}, gear=SLOTS.map(s=>inv[s]).filter(Boolean), G=lifeScore(), C=lifeCard(), fn=`murim-card-${G.g}-${m.age}.png`;   // 파일 이름은 영문으로(한글 이름이 깨지는 환경이 있다)
   card.innerHTML=`<div class="mh-tomb">
+      <div class="mh-lg"><span class="mh-gr g-${G.g}">${G.g}</span><b>${G.title}</b><small>인생 점수 ${G.score} · ${G.line}</small></div>
       ${ptImg(heroLook(),'big')}
       ${m.alias?`<span class="al">${esc(m.alias)}</span>`:''}
       <span class="nm">${esc(m.name)}</span>
@@ -181,21 +182,29 @@ function renderEnd(card){
       <p class="mh-bye">"${esc(epitaph())}"</p>
     </div>
     <div class="mh-sum"><div>무공<b>${m.f.martial?LV[m.lv]:'모름'}</b></div><div>재산<b>${topStr(pctNow())}</b></div><div>싸움<b>${m.wins||0}승 ${m.losses||0}패</b></div><div>벤 사람<b>${m.kills||0}명</b></div><div>기연<b>${m.giN||0}번</b></div><div>자식<b>${m.rels.filter(r=>r.role==='자식').length}명</b></div><div>행복<b>${Math.round(m.joy)}</b></div></div>
+    <h3>인물 카드</h3>
+    <div class="mh-cardbox"><img id="mhCardImg" class="mh-cardimg" src="${C.url}" alt="${esc(m.name)}의 인물 카드. 인생 등급 ${G.g}, ${G.title}">
+      <div class="mh-row"><button class="mh-go" type="button" id="mhCardSend" data-label="카드 보내기">카드 보내기</button><button class="mh-btn" type="button" id="mhCardSave">그림 저장</button><button class="mh-btn" type="button" id="mhShare" data-label="글로 복사">글로 복사</button></div>
+      <p class="mh-hint">휴대폰에서는 공유 창이 뜨고, PC에서는 그림이 복사된다. 안 되면 그림을 길게 눌러 저장한다.</p>
+      <textarea id="mhCopy" readonly hidden aria-label="복사할 기록"></textarea>
+      <details class="mh-lgd"><summary>점수 내역</summary><div>${G.parts.map(x=>`<span>${x[0]} <b>+${x[1]}</b></span>`).join('')}<span>모두 <b>${G.score}</b></span></div><p class="mh-hint">${LGRADE.map(x=>`${x[1]} ${x[0]}점부터`).join(' · ')}</p></details></div>
     ${gear.length?`<h3>남긴 물건</h3><div class="mh-eq">${gear.map(id=>{ const it=ITEMS[id]; return `<div class="mh-slot gr${it.t}">${icImg(itIcon(id))}<span><small>${SLOTN[it.s]||''} ${grTag(it.t)}</small><b>${esc(it.n)}</b><em>${esc(itDesc(it))}</em></span></div>`; }).join('')}</div>`:''}
     ${Object.keys(m.answers).length?`<h3>대답들</h3><div class="mh-past">${Object.entries(MILES).filter(([a])=>m.answers[a]!=null).map(([a,q])=>`<div><span>${esc(q)}<br><b>${m.answers[a]?esc(m.answers[a]):'(대답하지 않았다)'}</b></span><span>${a}세</span></div>`).join('')}</div>`:''}
     <h3>같은 순간 태어난 네 사람</h3>
     <div class="mh-others">${m.others.map(otherCard).join('')}</div>
     <h3>인생의 기록</h3>
     <div class="mh-past">${big.map(x=>`<div><span>${esc(x.t)}</span><span>${x.a}세</span></div>`).join('')}</div>
-    <div class="mh-row"><button class="mh-go seal" type="button" id="mhAgain">다시 태어나기</button><button class="mh-btn" type="button" id="mhShare" data-label="기록 복사">기록 복사</button></div>
-    <textarea id="mhCopy" readonly hidden aria-label="복사할 기록"></textarea>`;
+    <div class="mh-row"><button class="mh-go seal" type="button" id="mhAgain">다시 태어나기</button></div>`;
   $m('mhAgain').onclick=()=>{ m=null; render(); };
+  $m('mhCardSend').onclick=()=>sendCard($m('mhCardSend'));
+  if(!C.f){ C.f=1; cardFonts(()=>{ const N=lifeCard(); N.f=1; const im=$m('mhCardImg'); if(im) im.src=N.url; }); }
+  $m('mhCardSave').onclick=()=>saveCard(fn);
   $m('mhShare').onclick=()=>{ const txt=shareText(), btn=$m('mhShare'), ta=$m('mhCopy'); const fb=()=>{ ta.value=txt; ta.hidden=false; ta.select(); btn.textContent='아래 글을 복사하세요'; };
     try{ navigator.clipboard.writeText(txt).then(()=>{ btn.textContent='복사했어요'; setTimeout(()=>btn.textContent=btn.dataset.label,1800); },fb); }catch(e){ fb(); } };
 }
 function shareText(){
   const o=OR(m.b.o), w=m.inv&&m.inv.w?ITEMS[m.inv.w]:null;
-  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${ERAS[m.era].n} ${regOf(m.b.reg).n}, ${famAs(o)} · ${oneIn(m.b.P)}명 중 1명\n향년 ${m.age}세 · ${m.deathCause}${m.f.martial?` · ${LV[m.lv]}`:''}${m.wins||m.losses?` · ${m.wins||0}승 ${m.losses||0}패`:''}${w&&w.t>=2?` · ${w.n}`:''}\n"${epitaph()}"\n같은 순간 태어난 넷: ${m.others.map(x=>`${x.name} ${x.age}세`).join(', ')}\nwolseday.com/#murim`;
+  return `무림초출 · ${m.alias?m.alias+' ':''}${m.name}\n${ERAS[m.era].n} ${regOf(m.b.reg).n}, ${famAs(o)} · ${oneIn(m.b.P)}명 중 1명\n향년 ${m.age}세 · ${m.deathCause}${m.f.martial?` · ${LV[m.lv]}`:''}${m.wins||m.losses?` · ${m.wins||0}승 ${m.losses||0}패`:''}${w&&w.t>=2?` · ${w.n}`:''}\n인생 등급 ${lifeScore().g}(${lifeScore().title}) · ${lifeScore().score}점\n"${epitaph()}"\n같은 순간 태어난 넷: ${m.others.map(x=>`${x.name} ${x.age}세`).join(', ')}\nwolseday.com/#murim`;
 }
 let RKEY='';
 // 좁은 화면에서는 장면이 위에 붙어 있어서, 사건이나 결과가 새로 뜨면 카드 머리가 가려지지 않게 끌어온다

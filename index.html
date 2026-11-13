@@ -3240,6 +3240,11 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-notes>b{display:block;margin-bottom:4px}
 .mh-note{margin-top:8px}.mh-note span{color:var(--m-muted);font-size:13px}
 .mh-note ul{margin:2px 0 0;padding-left:18px}
+
+/* 사연이 있는 물건(행낭) */
+.mh-rare{grid-template-columns:auto minmax(0,1fr) auto;align-items:start;margin:6px 0;padding:8px 8px 8px 8px;background:var(--m-panel2)}
+.mh-rare em{display:block;font-style:normal;font-size:12px;line-height:1.5;color:var(--m-ink);margin-top:4px;border-top:1px dashed var(--m-line);padding-top:4px}
+.mh-rare b{font-size:14px}
 </style>
 
 <div id="murimApp" hidden>
@@ -3275,8 +3280,9 @@ body.is-murim::before{background:var(--m-bg)}
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
-const MVER='1.1';
+const MVER='1.2';
 const NOTES=[
+  ['1.2','2026-11-13',['등급 사건이 1000개가 됐다(C 450, B 300, A 150, S 70, SS 25, SSR 5)','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
   ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
 ];
@@ -3474,7 +3480,7 @@ function fresh(b){
 const ST=k=>m.b.st[k]+(k==='charm'&&hasFx('charm')?1:0);
 const bump=(k,n)=>{ m.b.st[k]=cl(m.b.st[k]+(n||1),1,10); };
 const hasT=t=>m.b.trait===t;
-const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||null;
+const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법'&&a.k!=='안법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||m.arts.filter(a=>a.k==='안법')[0]||null;
 const ngStr=n=>{n=Math.round(n); if(n<60) return `${n}년`; const g=Math.floor(n/60), r=n%60; return `${g}갑자${r?` ${r}년`:''}`;};
 function log(t,big){ m.log.push({a:m.age,t,big:!!big}); }
 function addExp(n){ if(!m.f.martial) return; m.exp=Math.max(0,m.exp+n); }
@@ -3496,7 +3502,7 @@ function makeAlias(){
   const a=bestArt(), k=a?a.k:'권';
   const evil=m.ak>m.hy+10, hi=m.lv>=6;
   const Pf=evil?['혈영','흑풍','귀면','독안','적혈','음풍']:['청풍','일월','백운','태산','신룡','유성','설화','현천'];
-  const S=({검:hi?'검성':'검협',도:hi?'도왕':'도객',권:hi?'권왕':'신권',장:hi?'장왕':'신장',암기:'비영',보법:'신투',마공:hi?'마존':'마두'})[k]||'협객';
+  const S=({검:hi?'검성':'검협',도:hi?'도왕':'도객',권:hi?'권왕':'신권',장:hi?'장왕':'신장',암기:'비영',보법:'신투',안법:'신안',마공:hi?'마존':'마두'})[k]||'협객';
   const pre=m.alias?m.alias.slice(0,2):pick(Pf);
   return pre+(evil&&!/마/.test(S)?'마'+S.slice(-1):S);
 }
@@ -4546,6 +4552,8 @@ const ICON={
   beads(){ for(let i=0;i<10;i++){ const a=i/10*6.283; P(6+Math.cos(a)*4.4,6+Math.sin(a)*4.4,2,2,i%3?'#7d5a3a':'#a8805a'); } },
   sachet(){ P(5,2,4,1,'#b8321f'); P(4,3,6,2,'#c0788a'); P(3,5,8,6,'#c0788a'); P(4,11,6,1,'#9a5a6a'); P(6,6,2,2,'#f4d070'); },
   talis(){ P(4,1,6,12,'#f0d878'); P(5,3,4,1,'#b8321f'); P(6,4,2,5,'#b8321f'); P(5,9,4,1,'#b8321f'); },
+  eye(c){ disc(7,7,5,c[1]); P(3,6,8,3,'#f4f1e6'); P(4,5,6,1,'#f4f1e6'); P(4,9,6,1,'#f4f1e6'); disc(7,7,2,c[0]); P(7,7,1,1,'#14161c'); P(6,6,1,1,'#ffffff'); },
+  bottle(){ P(6,0,2,1,'#7d5a3a'); P(6,1,2,3,'#cfe8c0'); P(5,4,4,1,'#9fd08a'); P(4,5,6,8,'#4fae5a'); P(5,6,1,5,'#b8f0a0'); P(4,12,6,1,'#2f7a3c'); P(6,8,3,3,'#f0e8c8'); P(7,9,1,1,'#b8321f'); },
   pearl(){ disc(7,7,4,'#6a4fae'); disc(7,7,3,'#8f74d8'); P(5,5,2,2,'#e8dcff'); },
   fan(){ for(let i=0;i<7;i++){ const a=-2.75+i*.39; line(7,11,7+Math.cos(a)*7,11+Math.sin(a)*7,i%2?'#f6f6f0':'#cfd6d9'); } P(6,11,3,2,'#b8321f'); },
   jar(){ P(5,2,4,1,'#7d5a3a'); P(4,3,6,2,'#e9e2c8'); P(3,5,8,7,'#e9e2c8'); P(4,7,6,3,'#b8321f'); P(3,11,8,1,'#cbc0a2'); },
@@ -4999,22 +5007,29 @@ const ITEMS={
   talis:{n:'벽사부',s:'c',fx:'plague',t:0,v:12,d:'역병이 비켜 간다'},
   pearl:{n:'피독주',s:'c',fx:'poison',t:2,v:280,d:'독이 통하지 않는다'},
   fan:{n:'학우선',s:'c',fx:'qi',t:2,v:260,d:'결투에서 기가 빨리 찬다'},
+  eyebead:{n:'명안주',s:'c',fx:'read',rd:.08,t:1,v:110,d:'결투에서 낌새를 읽을 확률 +8%'},
+  hawkeye:{n:'응안석',s:'c',fx:'read',rd:.15,t:2,v:320,d:'결투에서 낌새를 읽을 확률 +15%'},
   salve:{n:'금창약',s:'u',t:0,v:8,d:'결투 중 체력 +25'},
   pill:{n:'소환단',s:'u',t:2,v:120,d:'내공 +5년, 건강 +30'},
   antidote:{n:'해독단',s:'u',t:1,v:20,d:'웬만한 독은 푼다'},
+  absinthe:{n:'압생투강주',s:'u',t:3,v:300,d:'마시면 내공 +10년. 열에 셋은 주화입마가 오고, 귀를 잃을 수도 있다',lore:'서역에서 온 초록빛 독주. 이 술을 마시고 칩 설계를 하다가 제 귀를 잘랐다는 도X구의 이야기가 전한다.'},
   ore:{n:'천외운철',s:'m',t:3,v:400,d:'별에서 떨어진 쇠. 솜씨 좋은 대장장이를 만나면 신병이 된다'}
 };
 for(const k in ITEMS) ITEMS[k].id=k;
 // 등급 0(범품)~3(신병) 순서
 const WKIND={검:['isword','gsword','psword','hsword'],도:['bsaber','asaber','dsaber','rsaber'],권:['lglove','sglove','cglove','tglove'],암기:['ldart','gdart','ndart','sdart']};
 const ARMORS=['lvest','chain','gvest','silk'];
-const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[]};
+const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[]};
+// 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
+const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법';
+const eyeArt=()=>m.arts.reduce((v,a)=>a.k==='안법'&&a.p>v?a.p:v,0);
+const readBonus=()=>eyeArt()/100+(hasFx('read')?ITEMS[m.inv.c].rd||0:0)-(m.f.deaf?.1:0);
 const itDesc=it=>it.s==='w'?`${it.k} · 공격 +${it.atk}`:it.s==='a'?`방어 +${it.def}`:(it.d||'');
 function hasFx(fx){ return !!(m&&m.inv&&m.inv.c&&ITEMS[m.inv.c]&&ITEMS[m.inv.c].fx===fx); }
 // 지금 든 무기로 가장 센 무공을 고른다. 갈래가 안 맞는 무기는 절반만 힘을 보탠다.
 function artWith(a,w){ const match=w&&(WMATCH[a.k]||[]).includes(w.k); return a.p+(w?(match?w.atk:w.atk*.5):0); }
 function combat(wid){ const id=wid===undefined?(m.inv&&m.inv.w):wid, w=id?ITEMS[id]:null; let art=null, pw=w?w.atk*.5:0;
-  for(const a of m.arts){ if(a.k==='내공'||a.k==='보법') continue; const v=artWith(a,w); if(!art||v>pw){ pw=v; art=a; } }
+  for(const a of m.arts){ if(PASSIVE(a.k)) continue; const v=artWith(a,w); if(!art||v>pw){ pw=v; art=a; } }
   return {art,w,pw}; }
 const power=()=>LVP[m.lv]+combat().pw+m.ng*.35+ST('body')*1.2+(m.f.magong?6:0);
 const fightP=e=>1/(1+Math.exp(-(power()-e)/9));
@@ -5037,16 +5052,23 @@ function sellAt(i){ const inv=m.inv, id=inv.stash[i]; if(!id) return; inv.stash.
 function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
   if(k==='salve'){ if(m.hp>=100) return false; b.salve--; m.hp=cl(m.hp+25); vfx(()=>{ healFx(); heroFloat('건강 +25','good'); }); return true; }
   if(k==='pill'){ b.pill--; m.ng+=5; m.hp=cl(m.hp+30); vfx(()=>{ healFx(); heroFloat('내공 +5년','jade'); }); return true; }
+  // 압생투강주: 내공 +10년. 30%로 주화입마(건강 −25), 그 가운데 절반은 귀를 잃는다(낌새 읽기 −10%)
+  if(k==='absinthe'){ b.absinthe--; if(!m.f.martial) learn('취몽심법',0,'내공',10); else m.ng+=10; m.f.absN=(m.f.absN||0)+1; vfx(()=>{ healFx(); heroFloat('내공 +10년','jade'); });
+    if(R()<.3){ m.hp=Math.max(1,m.hp-25); m.joy=cl(m.joy-8); const ear=!m.f.deaf&&R()<.5; if(ear) m.f.deaf=1;
+      log(ear?'압생투강주를 마시고 주화입마에 들었다. 정신을 차려 보니 한쪽 귀가 없었다':'압생투강주를 마시고 주화입마에 들었다',true);
+      vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
+    else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
+    lvCheck(); return true; }
   return false; }
 function healFx(){ const h=actorOf('hero'); if(!h) return; for(let i=0;i<5;i++) FX.push({t:'heal',x:h.x-6+i*3,y:h.y-8-(i%2)*6,life:22+i*3,max:30}); }
-function bagTotal(){ const b=m.inv.bag; return (b.salve||0)+(b.pill||0)+(b.antidote||0); }
+function bagTotal(){ const b=m.inv.bag; return (b.salve||0)+(b.pill||0)+(b.antidote||0)+(b.absinthe||0); }
 
-const ICK={검:'sword',도:'saber',권:'glove',암기:'dart',guard:'mirror',dice:'jade',calm:'beads',charm:'sachet',plague:'talis',poison:'pearl',qi:'fan',salve:'jar',pill:'pill',antidote:'vial',ore:'ore'};
+const ICK={검:'sword',도:'saber',권:'glove',암기:'dart',guard:'mirror',dice:'jade',calm:'beads',charm:'sachet',plague:'talis',poison:'pearl',qi:'fan',read:'eye',salve:'jar',pill:'pill',antidote:'vial',absinthe:'bottle',ore:'ore'};
 function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); const kind=it.s==='w'?ICK[it.k]:it.s==='a'?'armor':it.s==='c'?ICK[it.fx]:ICK[id]; return iconUrl(kind,it.t); }
 const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width="28" height="28">`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=2?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${TIER[it.t]}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'t'+it.t,it.t>=2?4600:3400);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=2?'#ffe9a0':'#ffffff',it.t>=2?16:8); }
-function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
+function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':'#bfe8ff',12); }
 /* ==== murim:duel — 장면 연출(시퀀스)과 초식 결투 ==== */
 /* ---- 시퀀스: 프레임 단위로 배우를 움직인다. 움직임을 줄인 환경이나 가려진 탭에서는 한 번에 끝낸다. ---- */
@@ -5115,7 +5137,7 @@ function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx
 function foePick(D){ const f=D.foe, l=D.me.last; if(f.qi>=60&&R()<.55) return 'U';
   const w=Object.assign({},STYLE[f.style]||STYLE.even); const n=l.length; if(n>=2&&l[n-1]===l[n-2]&&l[n-1]!=='U') w[BEATS[l[n-1]]]+=.4;
   return wpick(['A','G','F'],k=>w[k]); }
-function mkTell(D){ const f=D.foe; D.next=foePick(D); const acc=cl(.38+ST('wit')*.035+(m.lv-f.lv)*.03,.4,.9);
+function mkTell(D){ const f=D.foe; D.next=foePick(D); const acc=cl(.38+ST('wit')*.035+(m.lv-f.lv)*.03+readBonus(),.4,.95);
   const shown=R()<acc?D.next:pick(['A','G','F','U'].filter(k=>k!==D.next&&(k!=='U'||f.qi>=60))); D.tell={s:shown,acc,txt:pick(TELLS[shown])}; }
 function autoPick(D){ const me=D.me, t=D.tell.s; if(D.lethal&&me.hp<me.hpMax*.28&&m.inv.bag.salve>0) return 'salve';
   if(me.qi>=60&&t!=='G'&&R()<.8) return 'U'; if(R()<.15) return pick(['A','G','F']); return BEATS[t]||'A'; }
@@ -5832,7 +5854,7 @@ E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==
     if(m.f.smith) out.push({t:'화로를 빌려 내 손으로 벼린다',s:'10냥 · 수련기에 익힌 솜씨',when:()=>m.gold>=10&&better(wOf(1,k),m.inv.w),go:()=>{ gold(-10); give(wOf(1,k)); return {t:'사흘 밤을 두드렸다. 대장장이가 날을 만져 보고 고개를 끄덕였다.',tone:'good'}; }});
     out.push({t:'구경만 한다',go:()=>'날 선 것들을 한참 구경하다 나왔다.'}); return out.slice(-5); }});
 E('peddler',{min:12,max:75,rep:7,w:1,when:()=>m.gold>=12,st:()=>Sg('village',{cast:[N('pd',LOOK.peddler(),112,{tag:'방물장수',pose:'point'})]}),
-  text:()=>'등짐 진 방물장수가 마을에 들어왔다. 보따리에서 별것이 다 나온다.',ch:()=>{ const out=[], cs=['sachet','talis','jadep','beads','mirror'].filter(id=>m.inv.c!==id&&!m.inv.stash.includes(id)).sort(()=>R()-.5).slice(0,2);
+  text:()=>'등짐 진 방물장수가 마을에 들어왔다. 보따리에서 별것이 다 나온다.',ch:()=>{ const out=[], cs=['sachet','talis','jadep','beads','mirror','eyebead'].filter(id=>m.inv.c!==id&&!m.inv.stash.includes(id)).sort(()=>R()-.5).slice(0,2);
     cs.forEach(id=>out.push(buy(id,ITEMS[id].v))); out.push(buy('salve',16,2)); if(R()<.5) out.push(buy('antidote',20)); else if(R()<.4) out.push(buy('pill',120));
     out.push({t:'구경만 한다',go:()=>'방물장수는 다음 고을로 떠났다.'}); return out; }});
 
@@ -5912,12 +5934,15 @@ function evIntro(ev){ const g=gradeOf(ev); if(g==='SSR'){ callout('SSR · 天運
 const gradeBadge=ev=>{ const g=ev&&gradeOf(ev); return g?`<span class="mh-gr g-${g}" title="${GNAME[g]}">${g}</span>`:''; };
 /* ---- 한 줄 사건: Q(등급, 이름표, 조건, 배경, 글, 선택지) ----
    조건  a:[몇 살부터, 몇 살까지] · mar:1 무림인만/0 아닌 사람만 · sect:1 문파에 든 사람만 · sea:[철] · rep:되풀이 간격 · w:비중
-         par:'m' 어머니/'f' 아버지가 살아 있을 때, 1 고아가 아닐 때 · tier:[집안 형편 낮게, 높게] · org:[출신] · reg:[고향] · wed:1 혼인한 사람/0 안 한 사람 · kid:1 자식이 있을 때 · gold·fame·lv:그 이상일 때
+         par:'m' 어머니/'f' 아버지가 살아 있을 때, 1 고아가 아닐 때 · tier:[집안 형편 낮게, 높게] · org:[출신] · reg:[고향] · wed:1 혼인한 사람/0 안 한 사람 · sex:'m'/'f' · kid:1 자식이 있을 때 · gold·fame·lv:그 이상일 때
+         sc:[문파] 그 문파 사람만 · side:'정사마중' 가운데 그쪽 문파 사람만 · free:1 문파가 없는 사람만 · need:함수
    선택지 [글, 결과, 얻는 것]  또는  [글, {p:[기본 확률, 능력, 능력 1당], ok:[결과, 얻는 것], no:[결과, 얻는 것]}]  또는  [글, {duel:{n,pow,look,lethal}, ok:[..], no:[..]}]
-   얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기 등급 · ar:방어구 등급 · art:[이름,위력,종류,내공] */
+   얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기 등급 · ar:방어구 등급 · art:[이름,위력,종류,내공] · wed:1 혼인한다 · kid:n 자식이 태어난다 */
 const ARMS=['lvest','chain','gvest','silk'];
 function applyFx(f){ if(!f) return; if(f.g!=null) gold(Array.isArray(f.g)?ri(f.g[0],f.g[1]):f.g); if(f.hp) m.hp=f.hp<0?Math.max(1,m.hp+f.hp):cl(m.hp+f.hp); if(f.joy) m.joy=cl(m.joy+f.joy); if(f.bond) m.bond+=f.bond; if(f.fame) m.fame=Math.max(0,m.fame+f.fame); if(f.hy) m.hy+=f.hy; if(f.ak) m.ak+=f.ak;
-  if(f.exp) addExp(gain()*f.exp); if(f.ng&&m.f.martial) m.ng+=f.ng; if(f.st) for(const k in f.st) m.b.st[k]=Math.min(12,(m.b.st[k]||0)+f.st[k]); if(f.it) for(const id of f.it) give(id,{}); if(f.wt!=null) give(wOf(f.wt,myKind()),{}); if(f.ar!=null) give(ARMS[f.ar],{}); if(f.art) learn(f.art[0],f.art[1],f.art[2],f.art[3]); }
+  if(f.exp) addExp(gain()*f.exp); if(f.ng&&m.f.martial) m.ng+=f.ng; if(f.st) for(const k in f.st) m.b.st[k]=Math.min(12,(m.b.st[k]||0)+f.st[k]); if(f.it) for(const id of f.it) give(id,{}); if(f.wt!=null) give(wOf(f.wt,myKind()),{}); if(f.ar!=null) give(ARMS[f.ar],{}); if(f.wed&&!(m.spouse&&!m.spouse.dead)){ const r=relOf('정인')||rel('배우자'); r.role='배우자'; m.spouse=r; log(`${wa(r.name)} 혼인했다`,true); if(!m.q.some(q=>q.id==='birth')) m.q.push({age:m.age+ri(1,3),id:'birth'}); }
+  if(f.kid) for(let i=0;i<f.kid;i++){ m.kids++; const n=m.b.sur+gname(); rel('자식',n,80,{sx:R()<.5?'m':'f'}); log(`자식 ${iga(n)} 태어났다`,true); }
+  if(f.art) learn(f.art[0],f.art[1],f.art[2],f.art[3]); }
 const fxTone=f=>{ if(!f) return ''; const neg=(f.hp<0)||(typeof f.g==='number'&&f.g<0)||(f.joy<0)||(f.fame<0), pos=Object.keys(f).some(k=>k!=='ak'&&(Array.isArray(f[k])||typeof f[k]==='object'||f[k]>0)); return pos&&!neg?'good':neg&&!pos?'bad':''; };
 function mkCh(x){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ applyFx(x[2]); return {t:x[1],tone:fxTone(x[2])}; }};
   const o=x[1]; if(o.duel) return {t,duel:()=>Object.assign({foe:{name:o.duel.n,look:(LOOK[o.duel.look]||LOOK.bandit)(),pow:o.duel.pow+m.lv*(o.duel.lv==null?5:o.duel.lv)+ri(0,6),style:o.duel.style||'sword',mercy:o.duel.lethal?.4:1,art:o.duel.art||'삼재검법'}},o.duel.lethal?{lethal:1,cause:o.duel.cause||o.duel.n+'의 칼'}:{}),
@@ -5925,7 +5950,7 @@ function mkCh(x){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ ap
   return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); return {t:r[0],tone:ok?'good':'bad'}; }}; }
 let QN=0;
 function Q(g,id,c,bg,text,chs){ c=c||{}; QN++; const rep=c.rep!=null?c.rep:GREP[g];
-  E(id,Object.assign({min:c.a?c.a[0]:13,max:c.a?c.a[1]:70,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!m.spouse===!!c.wed)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.need||c.need()),
+  E(id,Object.assign({min:c.a?c.a[0]:13,max:c.a?c.a[1]:70,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!(m.spouse&&!m.spouse.dead)===!!c.wed)&&(!c.sex||m.sex===c.sex)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
     st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(mkCh)},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }
 /* ==== murim:minor-1 — 등급 사건 첫 묶음 (어린 시절 · 마을 · 길과 저자 · 무림 · 집안) ==== */
 /* ---------- C: 일상 ---------- */
@@ -6133,7 +6158,7 @@ Q('B','hb_bell',{a:[14,65]},'temple','절에서 종을 새로 만든다며 시�
 Q('B','hb_ginseng',{a:[14,65],sea:[2]},'mountain','심마니들이 산에 든다. 짐꾼을 구한다.',[['따라간다',{p:[.4,'luck',.05],ok:['내 발밑에서 삼이 나왔다. 몫을 나눠 받았다.',{g:[12,22]}],no:['빈손으로 내려왔다. 품삯은 받았다.',{g:[2,4],hp:-2}]}],['안 간다','심마니들은 열흘 뒤에 내려왔다.',{}]]);
 Q('B','hb_well',{a:[16,60]},'well','마을 우물이 말랐다. 새 우물 자리를 찾는다.',[['버드나무 가지를 들고 돈다',{p:[.3,'luck',.06],ok:['가지가 떨린 자리에서 물이 솟았다. 우물에 내 이름이 붙었다.',{fame:2,joy:3}],no:['헛구덩이만 세 개 팠다.',{hp:-3}]}],['구덩이 파는 걸 거든다','물은 닷새 만에 나왔다.',{hp:-2,bond:.5,fame:.3}]]);
 // 혼인과 자식
-Q('B','wb_dowry',{wed:1,a:[20,60]},'home','처가에서 급한 기별이 왔다. 돈이 필요하다고 한다.',[['있는 대로 보낸다','두고두고 고마워했다.',{g:-10,bond:3}],['형편껏 보낸다','그래도 마음은 전해졌다.',{g:-4,bond:1}]]);
+Q('B','wb_dowry',{wed:1,sex:'m',a:[20,60]},'home','처가에서 급한 기별이 왔다. 돈이 필요하다고 한다.',[['있는 대로 보낸다','두고두고 고마워했다.',{g:-10,bond:3}],['형편껏 보낸다','그래도 마음은 전해졌다.',{g:-4,bond:1}]]);
 Q('B','wb_sick',{wed:1,a:[22,65]},'home','배우자가 앓아누웠다.',[['일을 접고 곁을 지킨다','한 달 만에 일어났다. 손을 오래 잡고 있었다.',{g:-5,bond:3,joy:2}],['약값을 벌러 나간다','약은 좋은 걸 썼다. 곁에 있어 주지는 못했다.',{g:-3,bond:.5}]]);
 Q('B','cb_talent',{kid:1,a:[25,60]},'school','훈장이 아이에게 재주가 있다며 큰 서원에 보내라고 한다.',[['보낸다','살림은 빠듯해졌지만 아이의 편지가 달마다 왔다.',{g:-15,bond:2,joy:3,fame:.5}],['곁에 둔다','아이는 아무 말도 하지 않았다.',{bond:-.5}]]);
 Q('B','cb_fight',{kid:1,a:[25,60]},'village','아이가 동네 아이를 때리고 왔다. 상대 부모가 찾아왔다.',[['아이와 함께 사과하러 간다','아이는 입이 나왔지만 고개는 숙였다.',{bond:1,hy:.5,g:-2}],['사정을 먼저 듣는다','약한 아이를 괴롭히는 걸 말린 것이었다. 어깨를 두드려 주었다.',{bond:1.5,joy:2}]]);
@@ -6157,7 +6182,7 @@ Q('A','oa_khan',{org:['nomad'],a:[15,50]},'field','칸의 매가 내 천막 위�
 Q('A','oa_escape',{org:['slave','retainer'],a:[14,40]},'manor','주인댁에 불이 났다. 문서고가 탄다.',[['주인 식구를 업어 낸다','주인이 노비 문서를 불 속에 던졌다. "가거라." 은자도 쥐여 주었다.',{g:[25,40],hy:3,joy:6}],['그 틈에 달아난다','자유였다. 뒤를 자꾸 돌아보게 됐다.',{joy:3,ak:1}]]);
 Q('A','ha_treasuremap',{a:[15,60]},'shop','헌책 사이에서 지도 한 장이 떨어졌다. 뒷산 어딘가에 표시가 있다.',[['파러 간다',{p:[.4,'luck',.06],ok:['항아리에 옛 은전이 가득했다.',{g:[40,75]}],no:['사흘을 팠다. 물만 나왔다.',{hp:-4}]}],['호사가에게 판다','확실한 돈이었다.',{g:[15,25]}]]);
 Q('A','ha_magistrate',{a:[18,60]},'hall','현령이 억울한 옥사를 저지르려 한다. 증인이 될 수 있는 건 나뿐이다.',[['나선다',{p:[.5,'charm',.05],ok:['감찰어사가 마침 고을에 와 있었다. 현령이 물러났다.',{fame:4,hy:4,g:[20,35]}],no:['곤장을 맞고 쫓겨났다. 사람들은 내 이름을 기억했다.',{hp:-12,hy:3,fame:2}]}],['입을 다문다','밤마다 그 얼굴이 떠올랐다.',{joy:-5,ak:1}]]);
-Q('A','wa_twins',{wed:1,a:[20,40]},'home','산파가 놀란 얼굴로 나온다. "둘입니다."',[['둘 다 안아 본다','한 팔에 하나씩이었다. 세상을 다 가진 것 같았다.',{joy:10,bond:3,g:-5}],['산모부터 살핀다','지친 얼굴이 웃었다.',{joy:8,bond:5}]]);
+Q('A','wa_twins',{wed:1,sex:'m',a:[20,40],need:()=>m.kids<3},'home','산파가 놀란 얼굴로 나온다. "둘입니다."',[['둘 다 안아 본다','한 팔에 하나씩이었다. 세상을 다 가진 것 같았다.',{joy:10,bond:3,g:-5,kid:2}],['산모부터 살핀다','지친 얼굴이 웃었다.',{joy:8,bond:5,kid:2}]]);
 Q('A','ea_reunion',{a:[50,70]},'inn','죽은 줄 알았던 옛 벗이 객잔에 앉아 있다.',[['달려가 끌어안는다','사흘 밤낮을 이야기했다. 벗이 품에서 낡은 향낭을 꺼내 주었다. 젊을 적 내가 준 것이었다.',{joy:10,it:['sachet'],bond:2}],['조용히 맞은편에 앉는다','벗이 고개를 들었다. 한참 말이 없다가 둘 다 웃었다.',{joy:8,hp:3}]]);
 
 /* ---------- S ---------- */
@@ -6277,6 +6302,824 @@ Q('SS','jss_demonheir',{mar:1,a:[18,55]},'battle','정파와 마교가 맞붙은
 
 /* ---------- SSR ---------- */
 Q('SSR','ssr_immortal',{a:[15,60]},'peak','구름 위 봉우리에서 두 노인이 바둑을 둔다. 한 판 구경하고 내려오니 산 아래는 계절이 바뀌어 있다. 소매에 복숭아 한 알이 들어 있다.',[['먹는다','천 년에 한 번 열린다는 반도였다. 뼈와 살이 새로 짜이는 듯했다. 품에는 어느새 바둑돌 주머니가 들어 있었는데, 돌 하나하나가 금이었다.',{ng:60,hp:50,st:{body:2,wit:2,luck:1},g:[1500,2500],ar:3,fame:5}],['씨앗째 고향 땅에 심는다','나무는 하룻밤에 자라 꽃을 피웠다. 그 그늘에 선 마을은 대대로 병을 몰랐고, 사람들은 내 이름을 사당에 모셨다.',{fame:25,hy:15,st:{luck:3},joy:15,hp:30}]]);
+/* ==== murim:minor-4 — 등급 사건 넷째 묶음 (사계절 · 명절 · 날씨 · 짐승 · 어린 시절) ==== */
+/* ---------- C ---------- */
+// 봄
+Q('C','n4_plum',{a:[8,70],sea:[0]},'village','매화가 먼저 폈다. 아직 바람은 차다.',[['가지 하나를 꺾어 꽂는다','방 안에 향이 돌았다.',{joy:2}],['나무 아래 서 있는다','꽃잎 하나가 어깨에 앉았다.',{joy:2}]]);
+Q('C','n4_sprout',{a:[8,70],sea:[0]},'field','언 땅이 풀렸다. 냉이가 올라왔다.',[['한 소쿠리 캔다','된장국이 봄 맛이었다.',{hp:1,joy:1}],['밭두렁을 태운다','연기가 매웠다. 해충은 줄 것이다.',{joy:1}]]);
+Q('C','n4_swallow',{a:[6,70],sea:[0]},'home','제비가 처마에 집을 짓는다.',[['받침대를 달아 준다','새끼 다섯 마리가 입을 벌렸다.',{joy:3}],['똥 떨어지는 자리만 치운다','제비는 해마다 돌아왔다.',{joy:1}]]);
+Q('C','n4_kiteline',{a:[6,14],sea:[0]},'field','연줄이 끊어졌다. 연이 산 너머로 간다.',[['쫓아간다','산 너머 아이가 주워 들고 있었다. 동무가 됐다.',{joy:3}],['손을 흔든다','액을 싣고 가라고 빌었다.',{joy:1}]]);
+Q('C','n4_seed',{a:[12,65],sea:[0]},'field','볍씨를 고르는 날이다.',[['소금물에 띄워 고른다','가라앉은 것만 썼다. 모가 고르게 났다.',{g:[1,2]}],['눈대중으로 고른다','빈 자리가 좀 났다.',{}]]);
+Q('C','n4_bamboo',{a:[8,70],sea:[0]},'bamboo','비 온 뒤 죽순이 솟았다.',[['캐다 삶는다','아삭했다.',{hp:1,joy:1}],['하루에 얼마나 크나 재 본다','한 뼘이 넘었다.',{joy:2}]]);
+Q('C','n4_qingming',{a:[10,70],sea:[0],par:1},'grave','청명이다. 온 집안이 성묘를 간다.',[['봉분에 흙을 돋운다','어른들이 고개를 끄덕였다.',{bond:.5,hp:-1}],['버들가지를 꺾어 꽂는다','바람에 한참 흔들렸다.',{joy:1,bond:.3}]]);
+Q('C','n4_tadpole',{a:[5,11],sea:[0]},'pond','웅덩이에 올챙이가 까맣다.',[['사발에 담아 온다','뒷다리가 나올 때까지 날마다 들여다봤다.',{joy:3}],['손을 넣어 본다','간질간질했다.',{joy:2}]]);
+// 여름
+Q('C','n4_cicada',{a:[5,70],sea:[1]},'village','매미 소리가 귀를 찢는다.',[['그늘에서 부채질한다','낮잠이 쏟아졌다.',{hp:1}],['매미채를 든다','세 마리 잡아 도로 날렸다.',{joy:2}]]);
+Q('C','n4_melon',{a:[5,70],sea:[1]},'well','참외를 우물에 담가 두었다.',[['건져서 나눠 먹는다','이가 시릴 만큼 찼다.',{hp:1,joy:2}],['혼자 다 먹는다','배가 살살 아팠다.',{joy:1}]]);
+Q('C','n4_mosquito',{a:[5,70],sea:[1]},'home','모기 때문에 잠을 못 잔다.',[['쑥을 태운다','연기는 매웠지만 모기는 갔다.',{hp:1}],['이불을 뒤집어쓴다','땀으로 목욕을 했다.',{hp:-1}]]);
+Q('C','n4_thunder',{a:[5,70],sea:[1]},'home','천둥이 지붕을 흔든다.',[['마루에 나가 본다','번개가 산을 갈랐다. 무섭고 근사했다.',{joy:2}],['이불 속으로 들어간다','어느새 잠들었다.',{hp:1}]]);
+Q('C','n4_duanwu',{a:[6,70],sea:[1]},'village','단오다. 문마다 쑥과 창포를 걸었다.',[['창포물에 머리를 감는다','머리가 가벼웠다.',{joy:2,hp:1}],['종자를 빚는다','대잎 향이 손에 뱄다.',{joy:2}]]);
+Q('C','n4_starnight',{a:[5,70],sea:[1]},'yard','칠석 밤, 은하수가 또렷하다.',[['평상에 누워 본다','별똥이 하나 떨어졌다.',{joy:3}],['견우직녀 이야기를 듣는다','까치가 다리를 놓는다고 했다.',{joy:2}]]);
+Q('C','n4_weed',{a:[10,65],sea:[1]},'field','김매기가 끝이 없다.',[['이랑 끝까지 맨다','허리를 펴니 해가 넘어가 있었다.',{hp:-1,g:[1,2]}],['새참 때까지만 한다','막걸리가 달았다.',{joy:1}]]);
+Q('C','n4_leech',{a:[8,60],sea:[1]},'field','논에서 나오니 다리에 거머리가 붙었다.',[['담뱃재로 뗀다','피가 조금 났다.',{}],['소리를 지른다','옆 논 사람들이 다 웃었다.',{joy:1}]]);
+// 가을
+Q('C','n4_chestnut',{a:[5,70],sea:[2]},'forest','밤송이가 벌어졌다.',[['발로 까서 줍는다','한 자루 주웠다.',{hp:1,joy:1}],['구워 먹는다','터지는 소리에 깜짝 놀랐다.',{joy:2}]]);
+Q('C','n4_geese',{a:[5,70],sea:[2]},'field','기러기 떼가 남쪽으로 간다.',[['수를 센다','서른까지 세다 놓쳤다.',{joy:1}],['먼 데 있는 사람을 생각한다','편지를 쓰기로 했다.',{joy:1,bond:.3}]]);
+Q('C','n4_cricket',{a:[6,60],sea:[2]},'yard','귀뚜라미 싸움이 벌어졌다. 아이들이 둘러앉았다.',[['내 것을 내보낸다',{p:[.5,'luck',.03],ok:['이겼다. 구슬 다섯 알을 땄다.',{joy:3}],no:['졌다. 귀뚜라미는 풀숲으로 달아났다.',{joy:1}]}],['구경한다','작은 놈이 큰 놈을 이겼다.',{joy:2}]]);
+Q('C','n4_chrys',{a:[12,70],sea:[2]},'yard','중양절이다. 국화주를 거른다.',[['높은 데 올라 마신다','멀리까지 보였다.',{joy:3}],['어른께 먼저 올린다','덕담을 들었다.',{bond:.5,joy:1}]]);
+Q('C','n4_thresh',{a:[10,65],sea:[2]},'yard','타작마당에 도리깨 소리가 난다.',[['도리깨를 잡는다','어깨가 빠지는 줄 알았다. 낟알이 수북했다.',{hp:-1,g:[1,3]}],['키질을 한다','바람이 쭉정이를 날렸다.',{g:[1,2]}]]);
+Q('C','n4_redleaf',{a:[8,70],sea:[2]},'mountain','산이 붉게 탄다.',[['단풍 구경을 간다','내려오는 길에 다리가 풀렸다. 좋았다.',{joy:3,hp:-1}],['고운 잎을 책갈피에 끼운다','겨울에 펴 보니 그대로였다.',{joy:2}]]);
+Q('C','n4_dryfish',{a:[10,70],sea:[2]},'yard','겨울 준비로 생선을 말린다.',[['고양이를 쫓으며 지킨다','세 마리는 지켰다. 한 마리는 못 지켰다.',{joy:1}],['높이 매단다','까치가 쪼아 먹었다.',{joy:1}]]);
+// 겨울
+Q('C','n4_ice',{a:[5,14],sea:[3]},'pond','연못이 꽁꽁 얼었다.',[['썰매를 탄다','넘어져도 웃음이 났다.',{joy:3}],['팽이를 친다','얼음 위에서는 한참을 돌았다.',{joy:2}]]);
+Q('C','n4_brazier',{a:[5,70],sea:[3]},'home','화로에 고구마를 묻어 두었다.',[['익기를 기다린다','기다린 만큼 달았다.',{hp:1,joy:2}],['못 참고 꺼낸다','속이 설었다. 그래도 먹었다.',{joy:1}]]);
+Q('C','n4_icicle',{a:[5,12],sea:[3]},'home','처마에 고드름이 주렁주렁하다.',[['따서 칼싸움을 한다','금방 부러졌다.',{joy:2}],['빨아 먹는다','혀가 붙을 뻔했다.',{joy:1}]]);
+Q('C','n4_dongzhi',{a:[5,70],sea:[3]},'kitchen','동지다. 팥죽을 쑨다.',[['새알심을 빚는다','나이만큼 먹으려다 배가 터질 뻔했다.',{hp:1,joy:2}],['대문에 팥죽을 뿌린다','잡귀가 물러간다고 했다.',{joy:1}]]);
+Q('C','n4_firewood',{a:[10,65],sea:[3,2]},'forest','땔감이 모자란다.',[['산에 가서 한 짐 한다','지게가 어깨를 눌렀다.',{hp:-1}],['나무꾼에게 산다','편했다.',{g:-2}]]);
+Q('C','n4_frostbite',{a:[8,65],sea:[3]},'snow','손끝이 얼어 감각이 없다.',[['눈으로 비빈다','어른들 말대로 하니 돌아왔다.',{}],['불에 바로 쬔다','가렵고 쓰라렸다.',{hp:-1}]]);
+Q('C','n4_newcoat',{a:[5,14],sea:[3],par:'m'},'home','어머니가 솜옷을 새로 지어 주셨다.',[['입고 뛰어나간다','하나도 안 추웠다.',{joy:3,bond:.5}],['아껴 둔다','설날에 입기로 했다.',{joy:2}]]);
+// 짐승
+Q('C','n4_magpie',{a:[5,70]},'village','아침부터 까치가 운다.',[['손님이 오려나 한다','정말 반가운 이가 왔다.',{joy:2}],['그냥 까치다','그냥 까치였다.',{}]]);
+Q('C','n4_calf',{a:[8,65],sea:[0,1]},'stable','이웃 소가 송아지를 낳는다. 다리가 먼저 나왔다.',[['같이 당긴다','송아지가 김을 내며 섰다.',{joy:3,bond:.3}],['더운물을 나른다','할 일은 그것뿐이었다.',{joy:1}]]);
+Q('C','n4_hedgehog',{a:[5,14]},'forest','고슴도치가 길을 건넌다.',[['모자에 담아 온다','밤새 부스럭거려서 아침에 놓아줬다.',{joy:2}],['길을 터 준다','바삐 지나갔다.',{joy:1}]]);
+Q('C','n4_snakehouse',{a:[10,70],sea:[1]},'home','구렁이가 대들보에 감겨 있다.',[['업이라 여기고 둔다','쥐가 사라졌다.',{joy:1}],['장대로 내보낸다','구렁이는 담을 넘어갔다.',{}]]);
+Q('C','n4_heron',{a:[6,70],sea:[1,2]},'river','백로가 한 다리로 서 있다.',[['흉내를 낸다','열을 못 세고 비틀거렸다.',{joy:2}],['고기 잡는 걸 본다','단번에 찍어 올렸다.',{joy:1}]]);
+Q('C','n4_fox',{a:[8,70],sea:[3]},'snow','여우가 닭장 주위를 맴돈 자국이 있다.',[['울타리를 손본다','그 뒤로는 오지 않았다.',{}],['덫을 놓는다',{p:[.4,'wit',.04],ok:['여우 가죽을 팔았다.',{g:[2,4]}],no:['덫에는 이웃집 개가 걸렸다. 사과하러 갔다.',{g:-1}]}]]);
+Q('C','n4_ox',{a:[10,65]},'field','소가 꼼짝을 안 한다.',[['콩깍지를 내민다','그제야 걸었다.',{joy:1}],['같이 쉰다','소도 쉬고 싶은 날이 있다.',{hp:1}]]);
+Q('C','n4_duck',{a:[5,14],sea:[0,1]},'pond','오리 새끼들이 줄지어 간다.',[['맨 뒤에 붙어 따라간다','어미가 꽥 소리를 질렀다.',{joy:2}],['수를 센다','일곱 마리였다.',{joy:1}]]);
+// 어린 시절
+Q('C','n4_hide',{a:[5,11]},'village','숨바꼭질 술래가 됐다.',[['구석구석 찾는다','마지막 아이는 장독 뒤에서 자고 있었다.',{joy:2}],['숨을 죽이고 기다린다','못 참은 놈이 먼저 웃었다.',{joy:2}]]);
+Q('C','n4_stilts',{a:[6,13]},'village','죽마를 탄 아이들이 지나간다.',[['대나무를 얻어 만든다','무릎이 까졌지만 사흘 만에 탔다.',{joy:3,hp:-1}],['빌려 탄다','세 걸음 가고 넘어졌다.',{joy:1}]]);
+Q('C','n4_scar',{a:[6,13]},'village','나무에서 떨어져 이마가 찢어졌다.',[['안 운다','어른들이 장하다고 했다. 사실 울고 싶었다.',{hp:-2,joy:1}],['운다','엿을 얻었다.',{hp:-2,joy:1}]]);
+Q('C','n4_secret',{a:[6,13]},'forest','동무와 숲속에 비밀 장소를 만들었다.',[['보물을 묻는다','구슬 세 알과 새 깃털이었다.',{joy:3}],['맹세를 한다','어른이 돼도 동무 하기로 했다.',{joy:3}]]);
+Q('C','n4_mimic',{a:[5,12]},'village','지나가던 무사의 걸음걸이를 흉내 낸다.',[['팔자걸음으로 걷는다','동네 어른들이 배를 잡았다.',{joy:2}],['막대기를 허리에 찬다','하루 종일 협객이었다.',{joy:2,exp:.01}]]);
+Q('C','n4_chore',{a:[7,13],par:1},'home','물 긷기, 마당 쓸기, 닭 모이. 할 일이 셋이다.',[['얼른 해치우고 논다','해가 길었다.',{joy:2}],['놀다가 한다','꾸중을 들었다.',{joy:1,bond:-.2}]]);
+Q('C','n4_sibling',{a:[6,14],need:()=>m.b.sib>0},'home','형제와 마지막 떡 하나를 두고 다툰다.',[['반으로 가른다','큰 쪽을 누가 먹느냐로 또 싸웠다.',{joy:1}],['양보한다','나중에 엿 반쪽이 돌아왔다.',{bond:.5,joy:1}]]);
+Q('C','n4_dreamfly',{a:[5,12]},'home','하늘을 나는 꿈을 꿨다.',[['키 크는 꿈이라고 한다','정말 한 치 자랐다.',{joy:2}],['또 꾸려고 일찍 잔다','이번엔 떨어지는 꿈이었다.',{joy:1}]]);
+
+/* ---------- B ---------- */
+Q('B','n4b_hail',{a:[12,65],sea:[1,2]},'field','우박이 쏟아진다. 주먹만 하다.',[['거적을 들고 밭으로 뛴다',{p:[.5,'body',.04],ok:['모종 절반을 덮었다.',{g:[2,5],hp:-2}],no:['머리를 맞고 쓰러졌다.',{hp:-8}]}],['집 안에서 기다린다','밭은 엉망이 됐다.',{g:-6}]]);
+Q('B','n4b_springflood',{a:[12,65],sea:[0]},'river','눈 녹은 물에 다리가 떠내려갔다.',[['마을 사람들과 다시 놓는다','열흘이 걸렸다. 다리 이름을 내가 지었다.',{hp:-3,fame:.8,bond:.5}],['나룻배를 띄운다','다리가 놓일 때까지 뱃삯을 벌었다.',{g:[6,12]}]]);
+Q('B','n4b_heat',{a:[12,70],sea:[1]},'field','더위에 사람이 쓰러진다.',[['그늘로 옮기고 물을 먹인다','살아났다. 가을에 쌀 한 말을 지고 왔다.',{hy:1.5,g:[3,6]}],['소금물을 타 먹인다',{p:[.6,'wit',.04],ok:['금세 정신을 차렸다. 의원이 잘했다고 했다.',{hy:1.5,fame:.5}],no:['토했다. 그래도 깨어나긴 했다.',{hy:1}]}]]);
+Q('B','n4b_harvestmoon',{a:[14,45],sea:[2]},'village','한가위 씨름판에 황소가 걸렸다.',[['샅바를 잡는다',{p:[.3,'body',.07],ok:['결승에서 뒤집기로 이겼다.',{g:[14,22],fame:1.2,joy:4}],no:['준결승에서 졌다. 광목 한 필은 받았다.',{g:[3,5]}]}],['줄다리기에 낀다','우리 편이 이겼다. 풍년이 든다고 했다.',{joy:3,bond:.5}]]);
+Q('B','n4b_blizzard',{a:[12,65],sea:[3]},'snow','눈보라 속에서 길을 잃었다.',[['굴을 파고 버틴다',{p:[.6,'wit',.04],ok:['아침에 눈이 그쳤다. 마을이 코앞이었다.',{hp:-3}],no:['발가락 하나가 얼었다.',{hp:-10}]}],['바람을 등지고 걷는다',{p:[.5,'luck',.05],ok:['사냥꾼 움막에 닿았다. 더운 국을 얻어먹었다.',{hp:2}],no:['밤새 헤맸다.',{hp:-8}]}]]);
+Q('B','n4b_lantern',{a:[10,50],sea:[3,0]},'market','대보름 등 축제에서 가장 고운 등을 뽑는다.',[['밤새 등을 만든다',{p:[.35,'wit',.06],ok:['용 모양 등이 으뜸으로 뽑혔다.',{g:[8,14],fame:1,joy:3}],no:['불이 붙어 타 버렸다.',{joy:-1}]}],['다리밟기를 한다','열두 다리를 다 밟았다. 한 해 다리가 튼튼했다.',{hp:4,joy:2}]]);
+Q('B','n4b_tigertrack',{a:[14,60],sea:[3]},'snow','마을 뒷산에 범 발자국이 났다.',[['몰이꾼으로 나선다',{p:[.5,'body',.05],ok:['범은 딴 산으로 넘어갔다. 관에서 품삯이 나왔다.',{g:[6,12],fame:.5}],no:['범과 눈이 마주쳤다. 어떻게 내려왔는지 기억이 없다.',{hp:-6,joy:-3}]}],['밤마다 징을 친다','범은 내려오지 않았다. 잠은 모자랐다.',{hp:-2,fame:.3}]]);
+Q('B','n4b_dog',{a:[8,60]},'village','다리를 저는 강아지가 따라온다.',[['데려다 기른다','다리가 나은 개는 밤마다 집을 지켰다. 도둑이 한 번 왔다가 물려 갔다.',{joy:5,bond:1,g:[2,4]}],['밥만 주고 보낸다','개는 해마다 한 번씩 찾아왔다.',{joy:2}]]);
+Q('B','n4b_hawk',{a:[12,55]},'forest','날개 다친 매가 덤불에 걸려 있다.',[['치료해서 날려 보낸다','며칠 뒤 문 앞에 꿩이 놓여 있었다. 그 뒤로도 가끔.',{hp:4,joy:3,hy:.5}],['길들인다',{p:[.35,'wit',.06],ok:['매사냥으로 한 철 벌이가 쏠쏠했다.',{g:[12,20],fame:.5}],no:['손등만 쪼였다. 매는 날아갔다.',{hp:-3}]}]]);
+Q('B','n4b_bees',{a:[14,65],sea:[0,1]},'forest','빈 벌통에 분봉한 벌 떼가 들었다.',[['벌을 친다',{p:[.5,'wit',.05],ok:['가을에 꿀을 세 되 땄다.',{g:[8,14],hp:2}],no:['벌이 다 도망갔다. 쏘인 자리만 남았다.',{hp:-3}]}],['벌통째 판다','양봉하는 이가 값을 쳐줬다.',{g:[4,7]}]]);
+Q('B','n4b_carp',{a:[10,65],sea:[0,1]},'pond','연못 물을 빼는 날이다. 바닥에서 팔뚝만 한 잉어가 퍼덕인다.',[['잡아서 판다','잔칫집에서 사 갔다.',{g:[5,10]}],['강에 놓아준다','잉어는 한 바퀴 돌고 갔다. 그해 일이 잘 풀렸다.',{st:{luck:1},joy:2}]]);
+Q('B','n4b_wolfcub',{a:[10,50],sea:[0]},'forest','어미 잃은 늑대 새끼가 굴 앞에서 운다.',[['데려다 기른다',{p:[.5,'charm',.05],ok:['개보다 영리했다. 산길에서는 늘 앞장섰다.',{joy:5,st:{luck:1}}],no:['반년 뒤 산으로 돌아갔다. 달 밝은 밤이면 울음소리가 들렸다.',{joy:2}]}],['사냥꾼에게 알린다','사냥꾼이 데려갔다.',{g:[2,4]}]]);
+Q('B','n4b_horsefoal',{a:[12,60],gold:15},'stable','말 시장에 비쩍 마른 망아지가 나왔다. 값이 싸다.',[['산다',{p:[.5,'wit',.05],ok:['잘 먹이니 준마가 됐다. 세 곱절에 팔았다.',{g:[20,35]}],no:['병이 있었다.',{g:-10}]}],['이빨만 보고 간다','말 보는 눈이 조금 생겼다.',{joy:1}]]);
+Q('B','n4b_orchard',{a:[14,65],sea:[2]},'forest','주인 없는 산에 돌배나무가 휘도록 열렸다.',[['따다 판다','장에서 금방 동났다.',{g:[6,11]}],['술을 담근다','이듬해 봄에 열었다. 이웃이 줄을 섰다.',{joy:4,bond:.8,g:[2,4]}]]);
+Q('B','n4b_eclipse',{a:[8,70]},'village','한낮에 해가 가려진다. 마을이 술렁인다.',[['징을 치며 뛴다','해가 돌아왔다. 다들 내 덕이라고 했다.',{fame:.8,joy:2}],['물동이에 비춰 본다',{p:[.4,'wit',.06],ok:['훈장이 기특해하며 천문 책을 빌려줬다.',{st:{wit:1}}],no:['눈만 시렸다.',{}]}]]);
+Q('B','n4b_comet',{a:[8,70]},'peak','꼬리 긴 별이 밤하늘에 걸렸다. 흉조라고들 한다.',[['소원을 빈다','흉조인지 길조인지, 그해는 무탈했다.',{joy:2,st:{luck:1}}],['사재기에 낀다',{p:[.5,'luck',.04],ok:['쌀값이 뛰었다. 되팔아 남겼다.',{g:[8,15],ak:.5}],no:['아무 일도 없었다. 쌀만 쌓였다.',{g:-5}]}]]);
+Q('B','n4b_kidrescue',{a:[9,14],sea:[1]},'river','동무가 물에 빠졌다. 어른이 없다.',[['장대를 내민다','끌어냈다. 동무 어머니가 나를 안고 울었다.',{hy:2,fame:.8,joy:2}],['뛰어든다',{p:[.45,'body',.07],ok:['둘 다 나왔다. 온 마을이 칭찬했다.',{hy:3,fame:1.5}],no:['둘 다 떠내려가다 어부에게 건져졌다.',{hp:-8,hy:2}]}]]);
+Q('B','n4b_kidcoin',{a:[7,13]},'market','길에서 은자 한 닢을 주웠다. 평생 처음 보는 큰돈이다.',[['부모님께 드린다','한참 말이 없더니 머리를 쓰다듬었다.',{bond:2,g:2}],['엿과 팽이와 연을 산다','사흘 동안 왕이었다.',{joy:6}]]);
+Q('B','n4b_kidmaster',{a:[8,13]},'yard','담 너머로 무관 수련을 훔쳐보다 들켰다.',[['빌며 가르쳐 달라고 한다',{p:[.4,'charm',.06],ok:['사범이 웃으며 마보를 가르쳐 줬다.',{exp:.15,st:{body:1}}],no:['귀를 잡혀 끌려 나왔다.',{joy:-1}]}],['달아난다','다음 날부터는 나무 위에서 봤다.',{exp:.05}]]);
+Q('B','n4b_kidbook',{a:[8,14]},'school','훈장이 아끼는 책에 먹물을 쏟았다.',[['바로 말씀드린다','종아리를 맞았다. 그러고는 그 책을 내게 주었다. "네가 읽어라."',{hp:-2,st:{wit:1}}],['덮어 둔다','사흘 뒤 들켰다. 종아리를 곱절로 맞았다.',{hp:-4,joy:-2}]]);
+Q('B','n4b_kidfair',{a:[8,14]},'market','장터 곡예단이 일손 아이를 찾는다. 하루 품삯에 구경은 공짜다.',[['한다','줄 타는 누나가 중심 잡는 법을 알려 줬다.',{g:[1,3],joy:4,st:{body:1}}],['구경만 한다','입을 벌리고 봤다.',{joy:3}]]);
+Q('B','n4b_plow',{a:[15,60],sea:[0]},'field','쟁기 끝에 쇳소리가 났다.',[['파 본다',{p:[.5,'luck',.05],ok:['옛 동전 꿰미였다.',{g:[8,16]}],no:['녹슨 솥뚜껑이었다.',{joy:1}]}],['그냥 갈아엎는다','봄일이 바빴다.',{}]]);
+Q('B','n4b_rainpray',{a:[14,70],sea:[1]},'temple','석 달 가뭄이다. 기우제 제관을 뽑는다.',[['나선다',{p:[.3,'luck',.06],ok:['제를 올린 밤에 비가 왔다. 마을이 나를 다시 봤다.',{fame:2,joy:3}],no:['비는 열흘 뒤에 왔다.',{hp:-2}]}],['우물을 더 깊이 판다','물은 나왔다. 손바닥은 다 벗겨졌다.',{hp:-4,fame:.8,bond:.5}]]);
+Q('B','n4b_flooddebris',{a:[12,65],sea:[1]},'river','큰물 뒤, 강가에 온갖 것이 떠밀려 왔다.',[['쓸 만한 것을 건진다',{p:[.5,'luck',.05],ok:['궤짝 하나에 멀쩡한 포목이 들어 있었다.',{g:[8,15]}],no:['썩은 통나무뿐이었다. 땔감은 됐다.',{}]}],['떠내려온 소를 건진다','주인이 사흘 만에 찾아왔다. 사례로 쌀을 받았다.',{hy:1,g:[4,7]}]]);
+Q('B','n4b_winterherb',{a:[12,65],sea:[3]},'snow','눈 속에 푸른 잎이 보인다. 겨울에만 난다는 약초다.',[['캐서 약방에 판다','귀한 것이라고 했다.',{g:[8,14]}],['달여서 식구를 먹인다','그 겨울엔 아무도 앓지 않았다.',{hp:5,bond:1}]]);
+Q('B','n4b_ratyear',{a:[12,65]},'kitchen','쥐가 곳간을 턴다.',[['고양이를 들인다','곳간이 조용해졌다. 무릎도 따뜻해졌다.',{joy:3,g:[2,4]}],['쥐구멍을 찾아 막는다',{p:[.5,'wit',.04],ok:['구멍 안쪽에 쥐가 모아 둔 낟알이 한 되였다.',{g:[2,4]}],no:['막으면 딴 데를 뚫었다.',{g:-3}]}]]);
+Q('B','n4b_stork',{a:[10,70],sea:[0]},'village','마을 고목에 황새가 둥지를 틀었다. 길조라고 한다.',[['둥지 밑에 울타리를 친다','황새는 해마다 왔다. 마을에 좋은 일이 이어졌다.',{fame:.5,st:{luck:1}}],['알을 구경하러 올라간다','부리에 쪼일 뻔했다.',{hp:-2}]]);
+Q('B','n4b_newyearbet',{a:[14,60],sea:[3]},'home','설날 윷판이 커졌다. 판돈이 제법 모였다.',[['윷을 던진다',{p:[.45,'luck',.04],ok:['모가 연달아 나왔다.',{g:[6,12],joy:3}],no:['도만 나왔다.',{g:-5}]}],['말판을 쓴다',{p:[.5,'wit',.05],ok:['업고 가서 한 번에 났다. 내 편이 한턱냈다.',{g:[3,6],joy:3}],no:['잡혔다. 다들 웃었다.',{joy:1}]}]]);
+Q('B','n4b_mushroomking',{a:[12,65],sea:[2]},'mountain','소나무 밑에 송이가 무더기로 났다.',[['조용히 혼자 딴다','해마다 그 자리는 나만 알았다.',{g:[10,18]}],['마을에 알린다','다 같이 따서 잔치를 했다.',{bond:1,fame:.8,g:[3,5]}]]);
+Q('B','n4b_seeye',{a:[10,60]},'forest','사냥꾼 노인이 멀리 나는 새의 수를 맞히는 내기를 건다.',[['같이 세어 본다','노인은 눈 쓰는 법을 일러 주었다. 한 점을 보지 말고 흐름을 보라고 했다.',{art:['관기안',5,'안법'],joy:2}],['내기는 사양한다','노인은 혼자 중얼거리며 셌다.',{}]]);
+
+/* ---------- A ---------- */
+Q('A','n4a_drought',{a:[16,65],sea:[1]},'field','대가뭄이다. 곡식 값이 열 곱절로 뛴다.',[['곳간을 연다','마을이 굶지 않았다. 사람들은 그 여름을 잊지 않았다.',{g:-20,hy:5,fame:4,bond:2}],['곡식을 판다','큰돈을 만졌다. 인사하는 사람은 줄었다.',{g:[40,70],ak:3,fame:-1}]]);
+Q('A','n4a_landslide',{a:[14,60],sea:[1]},'mountain','산이 무너졌다. 이웃집이 흙에 묻혔다.',[['맨손으로 판다',{p:[.5,'body',.06],ok:['일가족 넷을 꺼냈다.',{hy:5,fame:3,hp:-6}],no:['둘은 구했다. 둘은 늦었다.',{hy:3,hp:-8,joy:-4}]}],['사람을 모아 온다','다 같이 팠다. 모두 살았다.',{hy:3,fame:1.5}]]);
+Q('A','n4a_whiteboar',{a:[15,55],sea:[2,3]},'forest','흰 멧돼지가 밭을 휩쓴다. 산신의 짐승이라며 아무도 못 건드린다.',[['창을 든다',{p:[.4,'body',.07],ok:['잡았다. 재앙은 없었고 가죽은 고을 수령이 사 갔다.',{g:[35,60],fame:2}],no:['엄니에 받혔다.',{hp:-16}]}],['제를 올리고 달랜다',{p:[.4,'luck',.06],ok:['멧돼지는 산으로 돌아갔다. 그해 농사가 유난히 잘됐다.',{g:[20,35],st:{luck:1}}],no:['밭은 다 헤집어졌다.',{g:-10}]}]]);
+Q('A','n4a_crane',{a:[10,60]},'pond','다리에 화살이 박힌 학이 못가에 쓰러져 있다.',[['화살을 뽑고 돌본다','학은 달포 뒤에 날아갔다. 이듬해 봄, 못가에 옥 조각을 떨구고 갔다.',{it:['jadep'],hy:2,joy:4}],['깃털을 뽑아 판다','부채 장인이 값을 쳐줬다. 학은 그날 밤 죽었다.',{g:[20,30],ak:2,joy:-3}]]);
+Q('A','n4a_bearcub',{a:[12,50],sea:[0]},'forest','어미 잃은 곰 새끼가 꿀단지를 뒤집어쓰고 있다.',[['데려다 기른다','이태를 같이 살았다. 산으로 돌려보낸 뒤로 그 산의 짐승은 나를 피해 갔다.',{joy:8,st:{body:1},hy:1}],['곡예단에 판다','은자를 넉넉히 받았다. 가끔 생각이 났다.',{g:[25,40],joy:-2}]]);
+Q('A','n4a_festival',{a:[15,50],sea:[0,2]},'market','고을 큰 축제에서 재주꾼을 뽑는다. 상이 걸렸다.',[['노래한다',{p:[.3,'charm',.08],ok:['수령이 일으켜 세워 다시 부르게 했다.',{g:[25,45],fame:3}],no:['박수는 받았다.',{joy:2}]}],['힘자랑에 나간다',{p:[.3,'body',.08],ok:['맷돌을 머리 위로 들었다.',{g:[25,45],fame:3}],no:['허리를 삐끗했다.',{hp:-5}]}]]);
+Q('A','n4a_oldtree',{a:[14,65]},'village','벼락 맞은 당산나무를 베는데 속이 비어 있다. 안에 항아리가 있다.',[['마을 어른들과 연다','백 년 전 마을 사람들이 묻은 구휼 은이었다. 찾은 사람 몫을 받았다.',{g:[30,50],fame:2}],['밤에 혼자 온다','항아리는 무거웠다. 발걸음은 더 무거웠다.',{g:[60,90],ak:3}]]);
+Q('A','n4a_ferrystorm',{a:[14,60],sea:[1,2]},'river','나룻배가 강 한가운데서 돌풍을 만났다.',[['노를 잡는다',{p:[.5,'body',.06],ok:['스무 명이 살았다. 그중에 큰 상인이 있었다.',{g:[30,55],hy:4,fame:2}],no:['배가 뒤집혔다. 아이 하나를 안고 헤엄쳐 나왔다.',{hp:-10,hy:3}]}],['짐을 버리자고 외친다','배가 가벼워져 버텼다. 짐 주인들은 원망했다.',{hy:2,fame:.5}]]);
+Q('A','n4a_kidprodigy',{a:[8,13]},'school','고을 수령이 서당에 들러 아이들에게 글을 지어 보라 한다.',[['붓을 든다',{p:[.3,'wit',.08],ok:['수령이 내 글을 들고 갔다. 며칠 뒤 지필묵 한 궤와 은자가 왔다.',{g:[20,35],fame:2,st:{wit:1}}],no:['떨려서 글자가 번졌다.',{joy:-1}]}],['동무의 글을 거들어 준다','동무가 상을 탔다. 평생 그 일을 고마워했다.',{hy:1.5,bond:1,joy:2}]]);
+Q('A','n4a_kidhermit',{a:[8,14]},'mountain','산에서 길을 잃었다. 초막의 노인이 하룻밤 재워 준다.',[['밤새 노인의 이야기를 듣는다','강호 이야기였다. 아침에 노인이 호흡하는 법 하나를 일러 주었다.',{exp:.4,st:{body:1}}],['장작을 패 드린다','노인은 아침에 환약 한 알을 쥐여 주었다.',{it:['pill']}]]);
+Q('A','n4a_meteorshower',{a:[10,70],sea:[2,3]},'peak','별이 비처럼 쏟아지는 밤이다.',[['떨어진 자리를 찾아간다',{p:[.3,'luck',.07],ok:['아직 따뜻한 쇳덩이를 주웠다.',{it:['ore']}],no:['밤새 헤맸지만 없었다. 밤하늘은 실컷 봤다.',{joy:3}]}],['끝까지 올려다본다','평생 다시 못 볼 밤이었다.',{joy:8,st:{luck:1}}]]);
+Q('A','n4a_hawkeye',{a:[14,60]},'mountain','매를 부리는 늙은 응사가 눈이 침침해졌다며 매를 넘겨받을 사람을 찾는다.',[['한 철 곁에서 배운다','매의 눈으로 보는 법을 배웠다. 노인은 떠나며 목에 걸던 돌을 주었다.',{art:['응시안',8,'안법'],it:['eyebead']}],['매만 산다','좋은 매였다. 사냥으로 본전은 뽑았다.',{g:[10,20]}]]);
+Q('A','n4a_silkworm',{a:[14,60],sea:[0,1]},'home','누에가 유난히 잘됐다. 고치가 금빛이다.',[['도성 비단전에 가져간다','진상품 감이라고 했다.',{g:[40,65],fame:1}],['실을 뽑아 옷을 짓는다','가볍고 질겼다. 칼이 스쳐도 올이 나가지 않았다.',{ar:1,joy:3}]]);
+Q('A','n4a_wintergranary',{a:[16,65],sea:[3]},'village','한겨울에 마을 곳간이 탔다.',[['내 것을 나눈다','봄까지 다 같이 죽을 먹었다. 누구도 굶어 죽지 않았다.',{g:-12,hy:4,fame:3,bond:2}],['불낸 자를 찾는다',{p:[.4,'wit',.07],ok:['이웃 고을 지주가 시킨 일이었다. 관아가 배상을 물렸다.',{fame:3,g:[20,35]}],no:['끝내 못 찾았다.',{}]}]]);
+Q('A','n4a_riverlord',{a:[14,60],sea:[1]},'river','강에서 사람만 한 메기가 잡혔다. 수염이 희다.',[['놓아준다','그날 밤 꿈에 흰 수염 노인이 절했다. 이후 물에서는 죽을 고비를 넘겼다.',{st:{luck:1},hp:8,hy:1}],['고을에 판다','잔치가 벌어졌다.',{g:[30,50],fame:1}]]);
+
+/* ---------- S ---------- */
+Q('S','n4s_snowlotus',{a:[14,60],sea:[3]},'snow','눈 덮인 벼랑 끝에 흰 꽃이 피었다. 설련화다.',[['기어올라 딴다',{p:[.5,'body',.06],ok:['꽃잎을 씹자 얼었던 몸에 불이 돌았다.',{hp:30,ng:6,st:{body:1}}],no:['미끄러졌다. 꽃잎 두 장만 쥐고 있었다.',{hp:-10,ng:2}]}],['자리를 알려 주고 값을 받는다','약왕곡 사람이 은자를 궤로 내놓았다.',{g:[130,200]}]]);
+Q('S','n4s_whitetiger',{a:[14,55]},'forest','덫에 걸린 흰 범 새끼를 풀어 주었더니, 어미가 수풀에서 지켜보고 있었다.',[['천천히 물러난다','어미는 새끼를 물고 갔다. 이튿날 문 앞에 사슴 한 마리가, 그 뒤로 철마다 무언가가 놓였다.',{hp:15,st:{body:1,luck:1},joy:6}],['새끼를 안고 선다','어미가 다가와 내 손을 핥았다. 그 산의 범은 평생 나를 해치지 않았다.',{st:{luck:2},fame:4,joy:8}]]);
+Q('S','n4s_goldcarp',{a:[10,60],sea:[0]},'river','봄 물살을 거슬러 금빛 잉어가 폭포를 오른다. 번번이 떨어진다.',[['손으로 받쳐 올려 준다','잉어는 폭포 위로 사라졌다. 물안개 속에서 무언가 길게 솟구쳤다. 손바닥에 비늘 하나가 남았다.',{st:{luck:2},hp:15,it:['pearl']}],['그물로 뜬다','비늘 하나하나가 금이었다.',{g:[150,230],ak:2}]]);
+Q('S','n4s_harvestking',{a:[18,65],sea:[2]},'field','십 년에 한 번 올 풍년이다. 이웃 고을은 흉년이다.',[['이웃 고을에 제값에 판다','양쪽이 다 살았다. 이름이 두 고을에 났다.',{g:[130,190],fame:4,hy:3}],['값이 오르기를 기다린다',{p:[.5,'luck',.05],ok:['곱절로 팔았다.',{g:[220,300],ak:3}],no:['관에서 구휼미를 풀었다. 헐값에 넘겼다.',{g:[40,60]}]}]]);
+Q('S','n4s_kidimmortal',{a:[7,13]},'peak','나무하러 갔다가 바위 위에서 조는 노인을 보았다. 수염에 새가 앉아 있다.',[['깰 때까지 기다린다','노인은 해 질 녘에 눈을 떴다. "기다릴 줄 아는구나." 등을 한 번 쓸어 주었는데, 그날부터 병을 몰랐다.',{hp:30,st:{body:2},ng:3}],['나뭇짐을 덮어 드린다','이튿날 나뭇짐은 문 앞에 돌아와 있었다. 속에 금덩이가 하나 들어 있었다.',{g:[120,180],hy:2}]]);
+Q('S','n4s_thunderwood',{mar:1,a:[16,60],sea:[1]},'forest','벼락 맞은 천 년 대추나무가 속까지 까맣게 탔다. 한 토막이 쇠처럼 단단하다.',[['깎아서 몸에 지닌다','사악한 기운이 비켜 갔다. 운기가 한결 맑았다.',{ng:6,it:['talis'],st:{luck:1}}],['장인에게 가져간다','벽력목으로 자루를 한 병기가 됐다.',{wt:2}]]);
+Q('S','n4s_truesight',{a:[14,60]},'pond','물가에서 물총새가 고기를 낚는 것을 한 철 내내 지켜보았다. 어느 날, 새가 움직이기 전에 내가 먼저 알았다.',[['그 느낌을 붙든다','몸이 움직이기 전의 기미가 보이기 시작했다.',{art:['파사안',12,'안법'],st:{wit:1}}],['웃고 일어난다','깨달음이라 부르기엔 쑥스러웠다. 그래도 눈은 전과 달랐다.',{art:['관기안',6,'안법'],joy:5}]]);
+
+/* ---------- SS ---------- */
+Q('SS','n4ss_qilin',{a:[10,60]},'forest','안개 낀 새벽 숲에서 뿔 하나 달린 짐승이 물을 마신다. 발굽이 풀을 밟지 않는다.',[['숨을 죽이고 본다','짐승이 고개를 들어 한참 나를 보았다. 떠난 자리에 뿔 조각이 떨어져 있었다. 지니고 다니자 독도 병도 범접하지 못했다.',{it:['pearl'],hp:40,st:{luck:2,body:1},fame:5}],['절한다','짐승이 다가와 이마에 콧김을 불었다. 머릿속이 씻은 듯 맑아졌다.',{st:{wit:2,luck:2},ng:12,joy:10}]]);
+Q('SS','n4ss_springvein',{a:[14,60]},'cave','가뭄에 물길을 찾아 굴을 파다 젖빛 샘을 뚫었다. 석유(石乳)다. 만 년에 한 방울 맺힌다는 것이 고여 있다.',[['마신다','뼈마디가 새로 맞춰지는 듯했다. 열흘을 잤다.',{hp:50,ng:18,st:{body:2}}],['단지에 담아 도성에 판다','황실 약고에서 사 갔다. 값은 부르는 대로였다.',{g:[550,800],fame:4}]]);
+
+/* ---------- 압생투강주 ---------- */
+Q('S','n4s_absinthe',{a:[16,65]},'inn','객잔에서 서역 상인이 초록빛 술병을 꺼낸다. "압생투강주요. 한 병에 십 년 공력이 붙지. 다만…" 그는 제 귀를 가리켰다. 한쪽이 없다.',[['술 내기를 한다',{p:[.45,'body',.05],ok:['상인이 먼저 탁자에 엎어졌다. 술병은 내 것이 됐다.',{it:['absinthe']}],no:['내가 먼저 엎어졌다. 술값은 내가 냈다.',{g:-10,hp:-3}]}],['귀 이야기를 끝까지 들어 준다','도 아무개라는 자가 이 술을 마시고 밤새 무언가를 설계하다 제 귀를 잘랐다고 했다. 다 들어 준 값으로 병을 받았다. "설계 같은 건 하지 마시오."',{it:['absinthe'],joy:2}]]);
+Q('A','n4a_absinthe',{a:[18,65],gold:150},'den','암시장에 초록빛 술이 나왔다. 압생투강주라고 한다. 은자 백오십 냥이다.',[['산다','병이 손에서 미지근했다. 마실지는 나중에 정하기로 했다.',{g:-150,it:['absinthe']}],['냄새만 맡는다','쑥 냄새가 코를 찔렀다. 귀가 괜히 간지러웠다.',{joy:1}]]);
+/* ==== murim:minor-5 — 등급 사건 다섯째 묶음 (일과 돈 · 장사 · 관아 · 글공부 · 떠돌이 재주꾼) ==== */
+/* ---------- C ---------- */
+// 품과 일
+Q('C','w5_porter',{a:[14,60]},'market','장터에서 짐꾼을 구한다. 쌀가마 스무 섬이다.',[['진다','어깨가 내려앉았다. 품삯은 제때 받았다.',{g:[2,4],hp:-1}],['절반만 진다','품삯도 절반이었다.',{g:[1,2]}]]);
+Q('C','w5_roofer',{a:[15,60],sea:[2,3]},'village','이웃이 이엉 얹는 걸 도와 달란다.',[['지붕에 오른다','새 짚 냄새가 좋았다. 막걸리를 얻어 마셨다.',{g:[1,2],joy:1}],['밑에서 짚단을 던져 준다','팔이 뻐근했다.',{g:1}]]);
+Q('C','w5_ditch',{a:[14,60],sea:[0]},'field','봄 도랑 치는 날이다. 집집이 한 사람씩 나온다.',[['삽을 든다','물길이 시원하게 뚫렸다.',{bond:.3,hp:-1}],['새참을 나른다','다들 반겼다.',{bond:.3,joy:1}]]);
+Q('C','w5_well',{a:[15,60]},'well','두레박 줄이 끊어져 우물에 빠졌다.',[['갈고리로 건진다','한참 휘저어 걸어 올렸다.',{joy:1}],['새 두레박을 만든다','전보다 물이 덜 샜다.',{g:-1,joy:1}]]);
+Q('C','w5_mill',{a:[12,65],sea:[2,3]},'village','물레방앗간에 줄이 길다.',[['차례를 기다린다','기다리며 온 마을 소식을 다 들었다.',{joy:1}],['집에서 절구로 찧는다','팔이 떨어지는 줄 알았다.',{hp:-1}]]);
+Q('C','w5_charcoal',{a:[14,60],sea:[3,2]},'forest','숯가마에서 일손을 찾는다.',[['사흘 일한다','얼굴이 새까매졌다. 숯 한 섬을 품삯으로 받았다.',{g:[2,4],hp:-1}],['숯만 산다','겨울이 따뜻했다.',{g:-2,hp:1}]]);
+Q('C','w5_straw',{a:[12,70],sea:[3]},'home','겨울밤 새끼를 꼰다.',[['밤늦도록 꼰다','장에 내다 팔 만큼 됐다.',{g:[1,3]}],['이야기하며 꼰다','손은 느렸고 웃음은 많았다.',{joy:2,bond:.3}]]);
+Q('C','w5_ferryman',{a:[14,60]},'river','사공이 허리를 다쳤다며 하루만 노를 저어 달란다.',[['젓는다','강을 스무 번 건넜다. 뱃삯 절반을 받았다.',{g:[2,4],hp:-1}],['손님을 모아 준다','그것만으로도 고마워했다.',{g:1}]]);
+Q('C','w5_tile',{a:[14,60]},'village','기와 굽는 가마에 불 때는 날이다.',[['밤새 불을 지킨다','불빛을 보고 있으니 잡념이 사라졌다.',{g:[2,3],joy:1}],['흙 반죽을 밟는다','종아리가 단단해졌다.',{g:[1,2]}]]);
+Q('C','w5_pawn',{a:[16,70]},'shop','급히 돈이 필요해 전당포 앞에 섰다.',[['겨울옷을 잡힌다','봄에 찾으러 가기로 했다.',{g:3}],['그냥 돌아선다','어떻게든 버텨 보기로 했다.',{}]]);
+Q('C','w5_wage',{a:[15,60]},'market','품삯을 받았는데 한 닢이 모자란다.',[['따진다','주인이 셈을 다시 했다. 한 닢을 더 받았다.',{g:1}],['넘어간다','다음부터는 그 집 일을 안 하기로 했다.',{}]]);
+Q('C','w5_rope',{a:[12,60]},'river','나루에서 배 끄는 줄꾼을 모은다.',[['줄을 멘다','강바람에 소리를 맞췄다.',{g:[1,3],hp:-1}],['구령만 붙인다','목청이 좋다고 했다.',{g:1,joy:1}]]);
+// 장사
+Q('C','t5_stall',{a:[14,65]},'market','장터에 좌판 자리가 하나 비었다.',[['푸성귀를 내다 판다','해 질 녘에 다 팔았다.',{g:[2,4]}],['자리만 맡아 준다','옆 좌판 할멈이 떡을 줬다.',{hp:1}]]);
+Q('C','t5_scale',{a:[14,70]},'market','쌀장수 저울이 수상하다.',[['내 되로 다시 달자고 한다','쌀장수가 한 줌을 더 얹었다.',{g:1}],['다른 집에서 산다','조금 비쌌지만 속이 편했다.',{}]]);
+Q('C','t5_egg',{a:[10,70]},'market','달걀 한 꾸러미를 팔러 간다.',[['장까지 조심조심 간다','하나도 안 깨졌다.',{g:[1,2]}],['가는 길에 이웃에 판다','값은 덜 받았지만 다리가 편했다.',{g:1}]]);
+Q('C','t5_cloth',{a:[14,70]},'shop','포목점에 새 무명이 들어왔다.',[['한 필 끊는다','식구들 옷이 새로워졌다.',{g:-3,bond:.5,joy:1}],['만져만 본다','주인이 눈치를 줬다.',{}]]);
+Q('C','t5_salt',{a:[14,70]},'market','소금장수가 왔다. 값이 올랐다.',[['한 해 치를 산다','가을에 값이 더 올랐다. 잘 샀다.',{g:-2,joy:1}],['조금만 산다','가을에 더 비싸게 샀다.',{g:-3}]]);
+Q('C','t5_fake',{a:[14,70]},'market','떠돌이 장수가 진품 옥이라며 반지를 내민다.',[['산다',{p:[.3,'wit',.05],ok:['진짜였다. 곱절에 되팔았다.',{g:[2,5]}],no:['유리였다.',{g:-3}]}],['웃고 지나간다','장수는 다음 사람을 붙잡았다.',{}]]);
+Q('C','t5_change',{a:[10,70]},'market','거스름돈을 한 닢 더 받았다.',[['돌려준다','주인이 덤을 줬다.',{hy:.3,hp:1}],['주머니에 넣는다','엿을 사 먹었다.',{g:1,ak:.2}]]);
+Q('C','t5_credit',{a:[16,70]},'inn','단골 주막의 외상 장부가 꽤 쌓였다.',[['한꺼번에 갚는다','주모가 술 한 사발을 그냥 줬다.',{g:-3,joy:1}],['조금만 갚는다','주모의 눈이 가늘어졌다.',{g:-1}]]);
+// 관아와 나라
+Q('C','g5_notice',{a:[12,70]},'hall','관아 앞에 방이 붙었다. 글 아는 이가 없다.',[['읽어 준다','사람들이 고마워했다.',{joy:1,fame:.2}],['남이 읽는 걸 듣는다','부역 날짜였다.',{}]]);
+Q('C','g5_corvee',{a:[16,55]},'road','부역 차례가 왔다. 관도를 닦는다.',[['나간다','열흘을 돌을 날랐다.',{hp:-2}],['삯꾼을 사서 보낸다','돈으로 몸을 아꼈다.',{g:-4}]]);
+Q('C','g5_census',{a:[16,70]},'hall','호구 조사가 나왔다.',[['있는 대로 말한다','별일 없이 지나갔다.',{}],['아전에게 술을 낸다','장부의 글씨가 조금 흐려졌다.',{g:-2}]]);
+Q('C','g5_parade',{a:[6,70]},'road','새 수령이 부임한다. 행차가 길다.',[['길가에 엎드려 구경한다','가마가 생각보다 작았다.',{joy:1}],['담 위에서 본다','나졸에게 쫓겨 내려왔다.',{joy:2}]]);
+Q('C','g5_tally',{a:[16,65],sea:[2]},'hall','세곡 바치는 날이다. 줄이 길다.',[['새벽같이 간다','일찍 끝내고 장 구경을 했다.',{joy:1}],['느지막이 간다','해 떨어질 때까지 섰다.',{hp:-1}]]);
+Q('C','g5_drum',{a:[12,70]},'hall','누가 신문고를 친다. 구경꾼이 몰린다.',[['끝까지 본다','소 한 마리를 두고 다투는 송사였다.',{joy:2}],['갈 길을 간다','북소리가 등 뒤에서 울렸다.',{}]]);
+// 글과 붓
+Q('C','s5_letter',{a:[12,70],need:()=>(m.f.lit||0)>=1},'village','글 모르는 이웃이 편지를 써 달란다.',[['써 준다','군에 간 아들에게 가는 편지였다. 받아 적다 목이 멨다.',{hy:.5,joy:1}],['읽어만 준다','그것만으로도 눈물을 훔쳤다.',{hy:.3}]]);
+Q('C','s5_copybook',{a:[10,40]},'school','서당에서 책 한 권을 통째로 베끼라고 한다.',[['한 자 한 자 쓴다','끝날 즈음에는 절반을 외웠다.',{joy:1,exp:.01}],['동무와 나눠 쓴다','글씨가 달라 들켰다.',{joy:1}]]);
+Q('C','s5_poem',{a:[12,70]},'inn','객잔 벽에 누가 시를 적어 놓았다.',[['소리 내어 읽는다','옆자리 선비가 고개를 끄덕였다.',{joy:2}],['밑에 한 줄 보탠다','다음에 와 보니 누가 또 보탰다.',{joy:2}]]);
+Q('C','s5_ink',{a:[10,60]},'school','좋은 먹 하나를 얻었다.',[['아껴 쓴다','글씨가 달라 보였다.',{joy:2}],['동무와 나눠 쓴다','둘 다 손이 까매졌다.',{joy:1,bond:.3}]]);
+Q('C','s5_story',{a:[10,70]},'shop','책방에 새 협객전이 들어왔다.',[['빌려 본다','밤을 새웠다.',{g:-1,joy:3}],['서서 읽는다','다리가 저렸다. 주인이 헛기침을 했다.',{joy:2}]]);
+// 떠돌이 재주꾼
+Q('C','e5_puppet',{a:[5,70]},'market','인형극 판이 벌어졌다.',[['아이들 틈에 앉는다','인형이 싸울 때 다 같이 소리를 질렀다.',{joy:3}],['인형 놀리는 손을 본다','실 아홉 가닥이었다.',{joy:2}]]);
+Q('C','e5_firebreath',{a:[5,70]},'market','불 뿜는 재주꾼이 왔다.',[['맨 앞에서 본다','눈썹이 조금 탔다.',{joy:3}],['비결을 묻는다','입에 머금은 건 독한 술이라 했다.',{joy:2}]]);
+Q('C','e5_blindsinger',{a:[8,70]},'inn','눈먼 소리꾼이 객잔에서 한 자락 뽑는다.',[['엽전을 놓는다','소리꾼이 내 쪽으로 고개를 숙였다.',{g:-1,joy:3}],['눈을 감고 듣는다','강물 소리가 들리는 듯했다.',{joy:3}]]);
+Q('C','e5_monkey',{a:[5,70]},'market','재주 부리던 원숭이가 내 모자를 채 갔다.',[['같이 웃는다','원숭이가 모자를 쓰고 절을 했다. 돌려받았다.',{joy:3}],['쫓아간다','지붕까지 쫓아갔다. 구경거리는 내가 됐다.',{joy:1}]]);
+Q('C','e5_swordswallow',{a:[8,70]},'market','칼 삼키는 사내가 구경꾼을 부른다.',[['숨죽이고 본다','정말 들어갔다.',{joy:2}],['칼을 만져 보자고 한다','날이 없는 칼이었다. 사내가 눈을 찡긋했다.',{joy:2}]]);
+Q('C','e5_chessman',{a:[12,70]},'market','길바닥 장기판에 묘수풀이가 걸렸다. 한 번에 엽전 두 닢이다.',[['도전한다',{p:[.3,'wit',.06],ok:['풀었다. 판 주인이 혀를 찼다.',{g:[3,5],joy:2}],no:['함정이 있었다.',{g:-2}]}],['훈수만 둔다','판 주인이 노려봤다.',{joy:1}]]);
+// 살림살이 돈
+Q('C','m5_jar',{a:[14,70]},'home','장독 밑에 숨겨 둔 엽전 꾸러미를 꺼내 셌다.',[['한 닢 더 넣는다','조금씩 느는 맛이 있었다.',{joy:2}],['꺼내서 쓴다','오랜만에 고기를 먹었다.',{hp:2,g:-2}]]);
+Q('C','m5_lend',{a:[16,70]},'village','이웃이 엽전 몇 닢을 꿔 달란다.',[['꿔 준다','보름 뒤에 달걀 한 꾸러미와 함께 돌아왔다.',{bond:.5,hp:1}],['없다고 한다','이웃은 다른 집으로 갔다.',{}]]);
+Q('C','m5_tax',{a:[18,65],sea:[2]},'home','세금 낼 돈을 세어 보니 빠듯하다.',[['허리띠를 조인다','한 달을 죽으로 났다.',{hp:-1}],['품을 더 판다','밤에도 일했다.',{g:2,hp:-2}]]);
+Q('C','m5_windfall',{a:[10,70]},'road','옷을 빨다가 주머니에서 잊고 있던 은자가 나왔다.',[['횡재다','떡을 사서 돌렸다.',{g:2,joy:2}],['도로 넣어 둔다','다음에 또 놀라기로 했다.',{g:3}]]);
+Q('C','m5_bargain',{a:[14,70]},'market','파장 무렵이라 떨이가 나온다.',[['생선을 떨이로 산다','저녁상이 푸짐했다.',{g:-1,hp:2}],['값을 더 깎는다',{p:[.5,'charm',.05],ok:['거의 거저였다.',{hp:2,joy:1}],no:['상한 것을 줬다.',{hp:-1}]}]]);
+Q('C','m5_rent',{a:[18,65],tier:[0,1]},'home','집주인이 세를 올리겠다고 한다.',[['사정한다',{p:[.4,'charm',.06],ok:['한 해만 그대로 두기로 했다.',{joy:1}],no:['올랐다.',{g:-2}]}],['그러라고 한다','살림이 빠듯해졌다.',{g:-2}]]);
+Q('C','m5_thrift',{a:[14,70]},'home','헌 옷을 뜯어 아이 옷을 짓는다.',[['밤새 바느질한다','새 옷 같았다.',{joy:2,bond:.3}],['솜씨 좋은 이웃에게 맡긴다','품삯은 고구마로 줬다.',{bond:.3}]]);
+
+/* ---------- B ---------- */
+Q('B','w5b_mine',{a:[16,50]},'cave','광산에서 사람을 뽑는다. 삯이 세다. 위험하다.',[['한 철 들어간다',{p:[.65,'luck',.03],ok:['무사히 나왔다. 주머니가 묵직했다.',{g:[12,20],hp:-4}],no:['갱이 무너졌다. 사흘 만에 파내졌다.',{hp:-15,g:[4,6]}]}],['입구에서 짐만 나른다','삯은 절반, 햇빛은 온전했다.',{g:[5,9]}]]);
+Q('B','w5b_dike',{a:[16,55],sea:[0,3]},'river','관에서 제방 공사 인부를 모은다. 석 달이다.',[['간다','밥은 나왔고 품삯도 나왔다. 손은 돌이 됐다.',{g:[10,16],hp:-5,st:{body:1}}],['감독 일을 청한다',{p:[.3,'wit',.07],ok:['글과 셈을 안다고 했더니 장부를 맡겼다.',{g:[14,22],fame:.5}],no:['삽이나 들라고 했다.',{g:[8,12],hp:-5}]}]]);
+Q('B','w5b_apprentice',{mar:0,a:[12,22]},'forge','대장장이가 풀무꾼을 찾는다. 삼 년 하면 망치를 쥐여 준다고 한다.',[['들어간다','팔뚝이 굵어졌다. 쇠 보는 눈도 생겼다.',{st:{body:1},g:[4,8]}],['한 달만 해 본다','불똥 자국만 남았다.',{g:[1,3]}]]);
+Q('B','w5b_cook',{a:[14,55]},'kitchen','큰 객잔 주방에서 칼잡이를 구한다.',[['칼을 잡는다',{p:[.5,'wit',.05],ok:['채 써는 솜씨를 보고 주방장이 붙잡았다. 한 해 벌이가 좋았다.',{g:[10,18],hp:3}],no:['손가락을 벴다.',{hp:-3,g:[2,4]}]}],['설거지부터 한다','어깨너머로 탕 끓이는 법을 익혔다.',{g:[4,7],hp:2}]]);
+Q('B','w5b_scribe',{a:[15,60],need:()=>(m.f.lit||0)>=2},'hall','관아에서 서기 일을 며칠 도와 달란다.',[['간다','장부 속에서 고을 돌아가는 사정을 알게 됐다.',{g:[6,12],st:{wit:1}}],['대필 가게를 연다','편지, 소장, 축문. 일감이 끊이지 않았다.',{g:[8,15]}]]);
+Q('B','w5b_guardjob',{a:[16,50]},'manor','부잣집에서 야경꾼을 구한다.',[['선다',{p:[.6,'body',.04],ok:['도둑 하나를 쫓았다. 주인이 웃돈을 줬다.',{g:[10,16],fame:.5}],no:['졸다가 들켰다.',{g:[2,4]}]}],['사양한다','밤잠이 더 귀했다.',{}]]);
+Q('B','w5b_raft',{a:[16,50],sea:[0,1]},'river','상류에서 뗏목을 몰고 내려갈 사람을 찾는다.',[['탄다',{p:[.55,'body',.05],ok:['여울 셋을 넘었다. 삯이 두둑했다.',{g:[12,20]}],no:['여울에서 뒤집혔다.',{hp:-8,g:[2,4]}]}],['통나무만 엮어 준다','매듭 솜씨가 좋다는 말을 들었다.',{g:[4,7]}]]);
+Q('B','t5b_ginseng',{a:[16,65],gold:15},'shop','약재상이 급히 떠나며 재고를 싸게 넘긴다고 한다.',[['산다',{p:[.5,'wit',.05],ok:['감초와 당귀가 제철에 값이 뛰었다.',{g:[10,20]}],no:['절반이 벌레 먹었다.',{g:-10}]}],['좋은 것만 골라 조금 산다','집안 상비약이 됐다.',{g:-5,hp:6}]]);
+Q('B','t5b_peddle',{a:[16,55]},'road','등짐장수가 같이 한 바퀴 돌자고 한다. 고을 다섯을 돈다.',[['따라나선다',{p:[.55,'charm',.05],ok:['물건이 날개 돋친 듯 나갔다.',{g:[12,20]}],no:['비만 맞고 다녔다.',{g:[1,3],hp:-3}]}],['물건만 맡긴다','이문은 적었지만 발은 편했다.',{g:[4,8]}]]);
+Q('B','t5b_fakecoin',{a:[16,70]},'market','받은 은자가 가볍다. 가짜다.',[['준 사람을 찾아간다',{p:[.45,'wit',.05],ok:['위조꾼 일당의 꼬리였다. 관아에서 포상이 나왔다.',{g:[10,18],fame:.8}],no:['이미 떠났다.',{g:-4}]}],['모른 척 써 버린다','받은 사람이 나중에 찾아왔다. 낯이 뜨거웠다.',{ak:1,joy:-2}]]);
+Q('B','t5b_auction',{a:[18,65],gold:10},'hall','관아에서 압수품을 공매한다.',[['궤짝 하나를 낙찰받는다',{p:[.45,'luck',.05],ok:['안에 쇄자갑이 들어 있었다.',{g:-10,ar:1}],no:['녹슨 솥과 헌 이불이었다.',{g:-10}]}],['말 한 필에 값을 부른다',{p:[.4,'wit',.05],ok:['좋은 말이었다. 되팔아 남겼다.',{g:[10,18]}],no:['남이 더 불렀다.',{}]}]]);
+Q('B','t5b_wine',{a:[18,65],sea:[2]},'kitchen','올해 빚은 술이 유난히 잘됐다.',[['주막에 낸다','소문이 나서 이웃 고을에서도 사러 왔다.',{g:[10,18],fame:.5}],['잔치를 연다','온 마을이 취했다.',{joy:5,bond:1.5}]]);
+Q('B','t5b_partner',{a:[20,60],gold:20},'inn','동업을 하자는 사람이 있다. 말은 번지르르하다.',[['밑천을 댄다',{p:[.4,'wit',.06],ok:['사람은 믿을 만했다. 이문을 나눴다.',{g:[15,30]}],no:['밑천을 들고 사라졌다.',{g:-20}]}],['사람부터 알아본다','세 고을에서 같은 수법을 쓴 자였다. 관아에 알렸다.',{fame:.8,hy:.5}]]);
+Q('B','t5b_market',{a:[18,60]},'market','장터 자릿세를 걷는 왈패들이 값을 올렸다.',[['상인들을 모아 버틴다',{p:[.4,'charm',.06],ok:['왈패들이 물러섰다. 상인들이 나를 행수로 불렀다.',{fame:1.5,g:[5,10]}],no:['좌판이 엎어졌다.',{g:-6,hp:-4}]}],['낸다','분했지만 장사는 했다.',{g:-4}]]);
+Q('B','g5b_witness',{a:[16,65]},'hall','이웃이 누명을 썼다. 그 시각에 같이 있었던 건 나다.',[['증언한다','이웃이 풀려났다. 평생 형님 소리를 들었다.',{hy:2,bond:1.5,fame:.5}],['엮이기 싫다','이웃은 석 달을 옥에 있었다.',{joy:-3,ak:1}]]);
+Q('B','g5b_bribe',{a:[18,65]},'hall','아전이 뒷돈을 주면 부역을 빼 주겠다고 한다.',[['준다','몸은 편했다.',{g:-6}],['거절하고 부역을 간다','어깨가 내려앉았다. 아전은 그 뒤로 나를 건드리지 않았다.',{hp:-4,fame:.5}]]);
+Q('B','g5b_recruit',{mar:0,a:[16,40]},'fort','모병관이 왔다. 변방 삼 년에 은자와 땅을 준다고 한다.',[['간다',{p:[.6,'body',.04],ok:['살아 돌아왔다. 창 쓰는 법과 은자를 얻었다.',{g:[15,25],st:{body:1},fame:1}],no:['화살을 맞고 일 년 만에 돌아왔다.',{hp:-15,g:[5,8]}]}],['숨는다','모병관은 사흘 뒤 떠났다.',{}]]);
+Q('B','g5b_lawsuit',{a:[20,65]},'hall','밭 경계를 두고 송사가 붙었다.',[['문서를 찾아 낸다',{p:[.45,'wit',.06],ok:['할아버지 때 문서가 나왔다. 이겼다.',{g:[8,14]}],no:['문서가 없었다. 졌다.',{g:-8}]}],['반씩 나누자고 한다','이웃과 원수는 안 됐다.',{g:-3,bond:.5}]]);
+Q('B','g5b_relief',{a:[16,70]},'hall','흉년이라 관에서 구휼미를 푼다. 나눠 줄 사람이 모자란다.',[['거든다','공정하게 나눴다는 말을 들었다.',{hy:1.5,fame:.8}],['줄을 선다','한 말을 받았다.',{g:2,hp:1}]]);
+Q('B','s5b_tutor',{a:[16,60],need:()=>(m.f.lit||0)>=3},'manor','부잣집에서 아이 글 선생을 찾는다.',[['맡는다','아이가 천자문을 뗐다. 사례가 넉넉했다.',{g:[10,18],fame:.5}],['서당을 연다','동네 아이 열이 모였다. 벌이는 적었지만 스승 소리를 들었다.',{g:[5,9],fame:1,joy:2}]]);
+Q('B','s5b_calligraphy',{a:[14,60]},'market','현판 글씨를 쓸 사람을 찾는다.',[['붓을 든다',{p:[.3,'wit',.07],ok:['내 글씨가 주루 대문에 걸렸다.',{g:[8,14],fame:1}],no:['획이 떨렸다.',{joy:-1}]}],['먹을 갈아 준다','명필의 붓놀림을 가까이서 봤다.',{joy:2}]]);
+Q('B','s5b_oldbook',{a:[14,65]},'shop','헌책 더미에서 의서 한 권이 나왔다.',[['사서 읽는다','집안 잔병은 내가 다스리게 됐다.',{g:-4,hp:6,st:{wit:1}}],['의원에게 판다','의원이 반색했다.',{g:[5,9]}]]);
+Q('B','e5b_troupe',{a:[14,35]},'market','곡예단이 사람을 뽑는다. 한 철 따라다닌다.',[['따라간다',{p:[.5,'body',.05],ok:['재주넘기와 줄타기를 배웠다. 몸이 가벼워졌다.',{g:[6,12],st:{body:1},joy:3}],no:['줄에서 떨어졌다.',{hp:-8}]}],['북만 쳐 준다','박자 감각이 좋다고 했다.',{g:[3,5],joy:2}]]);
+Q('B','e5b_storytell',{a:[16,65]},'inn','이야기꾼이 목이 쉬었다. 대신 할 사람을 찾는다.',[['나선다',{p:[.4,'charm',.07],ok:['객잔이 조용해졌다가 박수가 터졌다.',{g:[6,12],fame:.8,joy:3}],no:['중간에 줄거리를 잊었다.',{joy:-1}]}],['뒤에서 대사를 불러 준다','이야기꾼이 술을 샀다.',{joy:2}]]);
+Q('B','e5b_facereader',{a:[14,65]},'market','관상쟁이가 은자 한 냥에 평생 운을 봐 주겠다고 한다.',[['본다',{p:[.5,'luck',.04],ok:['"눈이 좋소. 남이 움직이기 전에 아는 눈이오." 눈 쓰는 법 하나를 일러 주었다.',{g:-1,art:['관기안',5,'안법']}],no:['"평범하오." 한 냥이 아까웠다.',{g:-1}]}],['관상 보는 법을 묻는다',{p:[.35,'wit',.06],ok:['사람 얼굴에서 속을 읽는 요령을 들었다.',{st:{wit:1}}],no:['영업 비밀이라고 했다.',{}]}]]);
+Q('B','m5b_inherit',{a:[20,65]},'home','먼 숙부가 돌아가셨다. 빚도 유산도 내 몫이라고 한다.',[['받는다',{p:[.5,'luck',.05],ok:['빚을 갚고도 남았다.',{g:[10,20]}],no:['빚이 더 많았다.',{g:-10}]}],['포기한다','장례만 치러 드렸다.',{hy:.5,g:-2}]]);
+Q('B','m5b_thief',{a:[16,70]},'home','집에 도둑이 들었다. 궤짝이 열려 있다.',[['발자국을 쫓는다',{p:[.4,'wit',.06],ok:['이웃 고을 장물아비 집에서 찾았다.',{fame:.5,joy:2}],no:['강가에서 끊겼다.',{g:-8}]}],['관아에 알린다','나졸은 장부에 적기만 했다.',{g:-8}]]);
+Q('B','m5b_gamblehouse',{a:[18,60],gold:8},'den','골패 판에 끼라고 한다. 딴 사람이 있다고 한다.',[['낀다',{p:[.4,'luck',.05],ok:['땄다. 일어설 때를 알았다.',{g:[8,16]}],no:['잃었다.',{g:-8}]}],['딴 사람이 누군지 본다','판 주인의 조카였다. 조용히 나왔다.',{joy:1}]]);
+Q('B','m5b_dowrysave',{a:[20,60],kid:1},'home','아이 혼수 밑천을 모으기 시작했다.',[['허리띠를 졸라맨다','몇 해 뒤 궤 하나가 찼다.',{g:-6,bond:1.5,joy:2}],['계를 든다',{p:[.6,'luck',.04],ok:['내 차례가 일찍 왔다.',{g:[6,12],bond:.5}],no:['계주가 달아났다.',{g:-8}]}]]);
+Q('B','m5b_charity',{a:[18,70],gold:20},'temple','절에서 고아들을 거둔다. 시주를 청한다.',[['넉넉히 낸다','아이들이 지은 짚신 한 켤레가 왔다. 오래 신었다.',{g:-12,hy:3,joy:3}],['쌀을 보낸다','스님이 염주를 보내왔다.',{g:-5,hy:1.5,it:['beads']}]]);
+
+/* ---------- A ---------- */
+Q('A','w5a_saltwell',{a:[18,55],reg:['sichuan','shanxi','yunnan']},'cave','소금 우물 파는 일에 지분을 준다고 한다. 파 봐야 안다.',[['들어간다',{p:[.4,'luck',.06],ok:['간수가 솟았다. 지분이 돈이 됐다.',{g:[45,80]}],no:['마른 구덩이였다.',{g:-15,hp:-4}]}],['품삯만 받는다','확실한 돈이었다.',{g:[12,18]}]]);
+Q('A','w5a_bridge',{a:[18,60]},'river','고을에서 돌다리를 놓는다. 도편수가 쓰러졌다.',[['일을 이어받는다',{p:[.35,'wit',.07],ok:['홍수 세 번을 버틴 다리가 됐다. 다리에 이름이 새겨졌다.',{g:[30,50],fame:4}],no:['한 칸이 무너졌다. 다친 사람은 없었다.',{fame:-1,g:-5}]}],['석공들 밥을 댄다','공사 내내 밥집이 붐볐다.',{g:[20,35]}]]);
+Q('A','t5a_teahorse',{a:[18,55],gold:30},'road','차를 지고 설산을 넘어 말과 바꾸는 길이 열렸다.',[['마방을 따라간다',{p:[.5,'body',.05],ok:['말 세 필을 끌고 돌아왔다.',{g:[50,85],st:{body:1}}],no:['고산병에 쓰러졌다. 차는 헐값에 넘겼다.',{hp:-14,g:-10}]}],['차만 댄다','이문은 반이었다.',{g:[20,35]}]]);
+Q('A','t5a_shop',{mar:0,a:[22,55],gold:40},'market','목 좋은 자리에 점포가 났다.',[['포목점을 낸다',{p:[.5,'wit',.05],ok:['단골이 붙었다.',{g:[40,70],fame:1}],no:['맞은편에 큰 가게가 들어섰다.',{g:-30}]}],['주막을 낸다',{p:[.5,'charm',.05],ok:['사람이 사람을 불렀다.',{g:[35,60],joy:3}],no:['외상만 쌓였다.',{g:-25}]}]]);
+Q('A','t5a_monopoly',{a:[20,60],gold:40},'market','고을의 소금을 누가 다 사들이고 있다.',[['나도 사 모은다',{p:[.45,'luck',.05],ok:['값이 뛰었을 때 풀었다.',{g:[50,90],ak:2}],no:['관에서 값을 묶었다.',{g:-25}]}],['관아에 알린다','매점한 자가 잡혔다. 포상이 나왔다.',{g:[20,30],fame:2,hy:2}]]);
+Q('A','t5a_shipwreckgoods',{a:[18,60],reg:['fujian','guangdong','zhejiang','hainan','shandong']},'river','난파한 남만 상선의 짐이 해변에 밀려왔다.',[['건져서 판다','향료와 상아였다.',{g:[40,70],ak:1}],['선원들을 구한다','선주가 뒷날 사례를 보냈다. 낯선 나라의 구슬이었다.',{hy:4,it:['pearl'],fame:1}]]);
+Q('A','g5a_exam',{a:[18,40],need:()=>(m.f.lit||0)>=4},'school','향시 방이 붙었다. 올해는 문제가 쉬웠다고들 한다.',[['응시한다',{p:[.2,'wit',.08],ok:['합격자 명단에 이름이 있었다. 마을이 뒤집혔다.',{g:[30,50],fame:5,joy:8}],no:['낙방이었다. 그래도 글이 늘었다.',{st:{wit:1}}]}],['남의 글을 봐 준다','봐 준 이가 붙었다. 두둑이 사례했다.',{g:[20,35]}]]);
+Q('A','g5a_inspector',{a:[18,65]},'inn','객잔에서 허름한 선비가 고을 사정을 꼬치꼬치 묻는다.',[['있는 대로 말한다','암행어사였다. 탐관이 쫓겨나고 내게는 포상이 내렸다.',{g:[25,45],fame:3,hy:3}],['수상해서 입을 닫는다','선비는 웃으며 떠났다. 며칠 뒤 고을이 발칵 뒤집혔다.',{joy:1}]]);
+Q('A','g5a_prison',{a:[18,60]},'hall','누명을 쓰고 옥에 갇혔다. 옆 칸에 늙은 죄수가 있다.',[['말벗이 된다','노인은 한때 강호를 주름잡던 자였다. 풀려나던 날 호흡법 하나를 일러 주었다.',{exp:.5,ng:2,hp:-5}],['탈옥을 꾀한다',{p:[.3,'wit',.07],ok:['빠져나왔다. 진범이 잡혀 누명도 벗었다.',{fame:2,joy:4}],no:['잡혀서 곤장을 맞았다.',{hp:-15}]}]]);
+Q('A','g5a_border',{a:[18,50]},'fort','변방에서 봉화가 올랐다. 고을 장정을 모은다.',[['나간다',{p:[.5,'body',.06],ok:['성벽에서 사흘을 버텼다. 공을 인정받았다.',{g:[25,40],fame:4,st:{body:1}}],no:['화살을 맞았다. 성은 지켰다.',{hp:-18,fame:2}]}],['군량을 나른다','화살이 날아드는 길을 열 번 오갔다.',{g:[10,18],fame:1.5,hp:-4}]]);
+Q('A','s5a_library',{a:[14,60]},'library','무너진 서원 터에서 책 궤가 나왔다. 반은 썩었다.',[['말려서 읽는다','병법과 의술과 잡학이 뒤섞여 있었다. 한 해를 읽었다.',{st:{wit:2}}],['성한 것을 골라 판다','도성 서생이 큰돈을 냈다.',{g:[30,55]}]]);
+Q('A','s5a_painting',{a:[16,65]},'shop','넝마 속에서 그림 한 폭이 나왔다. 낙관이 예사롭지 않다.',[['감정을 받는다',{p:[.4,'luck',.06],ok:['전조 명인의 진적이었다.',{g:[50,90]}],no:['모작이었다. 그래도 걸어 두니 좋았다.',{joy:3}]}],['걸어 두고 본다','볼수록 좋았다. 손님마다 물었다.',{joy:5,fame:.5}]]);
+Q('A','e5a_theater',{a:[16,45]},'market','도성의 큰 극단이 지나다 내 목소리를 들었다.',[['한 철 따라간다',{p:[.4,'charm',.07],ok:['무대에서 박수를 받았다. 이름이 났다.',{g:[30,50],fame:3,st:{charm:1}}],no:['대사를 까먹었다. 단역으로 돌았다.',{g:[5,10],joy:1}]}],['사양한다','극단은 다음 고을로 갔다.',{}]]);
+Q('A','m5a_buriedpot',{a:[16,65]},'home','담을 헐다가 항아리가 나왔다.',[['연다','옛 은전이 가득했다.',{g:[40,75]}],['전 주인에게 알린다','전 주인의 손자가 절반을 떼어 주었다. 인심이 났다.',{g:[20,35],hy:3,fame:1.5}]]);
+Q('A','m5a_usurer',{a:[20,65]},'shop','고리대금업자가 죽었다. 장부가 내 손에 들어왔다. 마을 절반의 빚이 적혀 있다.',[['태운다','마을이 술렁였다. 누가 했는지는 다들 알았다.',{hy:6,fame:4,joy:5}],['받아 낸다','돈은 들어왔다. 인사는 끊겼다.',{g:[50,80],ak:5,fame:-2}]]);
+Q('A','m5a_hawkstone',{a:[18,65],gold:60},'shop','보석상이 매의 눈알 같은 돌을 내놓았다. 응안석이다. 지니면 남의 기색이 먼저 보인다고 한다.',[['산다','돌이 손바닥에서 차가웠다. 세상이 조금 느려 보였다.',{g:-60,it:['hawkeye']}],['들여다보기만 한다','돌 속에 내 눈이 비쳤다.',{joy:1}]]);
+
+/* ---------- S ---------- */
+Q('S','w5s_goldvein',{a:[18,55]},'cave','산사태로 드러난 바위에 누런 줄이 박혀 있다.',[['조용히 캔다',{p:[.55,'luck',.05],ok:['한 철을 캤다. 금맥은 짧았지만 굵었다.',{g:[160,250]}],no:['소문이 났다. 관이 산을 막았다. 주머니에 든 것만 남았다.',{g:[50,80]}]}],['관에 알린다','나라의 금광이 됐다. 발견한 공으로 상과 벼슬 없는 품계를 받았다.',{g:[110,160],fame:6}]]);
+Q('S','t5s_silkroad',{a:[20,55],gold:60},'road','서역 대상의 길잡이가 죽었다. 길을 아는 건 나뿐이라고들 한다. 실은 반쯤 안다.',[['앞장선다',{p:[.5,'wit',.06],ok:['사막을 건넜다. 대상주가 이문의 한 몫을 떼어 주었다.',{g:[180,270],fame:4}],no:['길을 잃었다. 낙타 절반을 잃고 돌아왔다.',{hp:-18,g:-40}]}],['아는 데까지만 간다','정직했다는 말을 들었다. 삯은 넉넉했다.',{g:[60,90],fame:2}]]);
+Q('S','g5s_minister',{a:[16,60]},'road','진창에 빠진 가마를 밀어 주었다. 안에 탄 이는 낙향하던 재상이었다.',[['아무것도 바라지 않는다','재상은 내 이름을 물었다. 반년 뒤 도성에서 은자와 친필 편액이 왔다.',{g:[150,220],fame:7,hy:2}],['글을 한 줄 청한다','재상은 부채에 글을 써 주었다. 그 부채를 든 뒤로 기가 순하게 돌았다.',{it:['fan'],fame:4,st:{wit:1}}]]);
+Q('S','s5s_wordless',{a:[14,60]},'library','헌책방에서 산 책이 백지다. 물에 젖자 글자가 떠오른다.',[['밤새 읽는다','천문과 사람의 기색을 읽는 법이 적혀 있었다.',{art:['파사안',12,'안법'],st:{wit:1}}],['필사해서 판다','호사가들이 줄을 섰다.',{g:[130,200],fame:2}]]);
+Q('S','e5s_blindmaster',{a:[14,55]},'inn','눈먼 소리꾼이 내 발소리만 듣고 말한다. "왼 무릎이 안 좋군. 눈에 기대는 자는 반만 보는 걸세."',[['가르침을 청한다','석 달 동안 눈을 가리고 살았다. 가리개를 벗었을 때 세상이 달리 보였다.',{art:['심안',14,'안법'],st:{wit:1}}],['술을 산다','소리꾼은 한 곡을 불러 주었다. 듣는 동안 십 년 묵은 응어리가 풀렸다.',{joy:12,hp:15,st:{luck:1}}]]);
+Q('S','m5s_lostheir',{a:[14,40]},'manor','낯선 가마가 집 앞에 섰다. 대갓집 노마님이 내 귀 뒤 점을 보더니 운다. 잃어버린 손자와 닮았다고 한다.',[['사실대로 말한다','손자는 아니었다. 노마님은 그 정직함을 높이 사 양손으로 삼았다.',{g:[160,240],fame:4,hy:3}],['손자 노릇을 한다','한 재산이 생겼다. 밤마다 노마님의 얼굴이 마음에 걸렸다.',{g:[220,300],ak:6,joy:-4}]]);
+Q('S','m5s_lottery',{a:[16,65]},'temple','절에서 불사 기금으로 복권을 판다. 으뜸 상은 금불상 한 구다.',[['한 장 산다',{p:[.1,'luck',.03],ok:['내 번호였다. 불상은 절에 도로 모시고, 절에서 대신 금을 내주었다.',{g:[180,260],fame:3,hy:2}],no:['꽝이었다. 시주한 셈 쳤다.',{g:-1,hy:.3}]}],['그 돈으로 초를 켠다','마음이 편했다.',{g:-1,joy:2}]]);
+
+/* ---------- SS ---------- */
+Q('SS','t5ss_fleet',{a:[20,58],gold:80},'river','남양으로 가는 큰 배가 화주를 모은다. 돌아오면 열 곱절, 못 돌아오면 그만이다.',[['전 재산을 싣는다',{p:[.55,'luck',.05],ok:['이태 만에 돛이 보였다. 배는 후추와 진주로 가라앉을 듯했다.',{g:[600,900],it:['pearl'],fame:5}],no:['배는 돌아오지 않았다. 석 달 뒤 선원 하나가 내 몫이라며 구슬 한 알을 들고 왔다.',{g:-80,it:['pearl']}]}],['직접 탄다',{p:[.5,'body',.05],ok:['폭풍과 해적을 넘어 돌아왔다. 재물과 함께 바다 사람의 몸을 얻었다.',{g:[450,700],st:{body:2,luck:1},fame:6}],no:['난파했다. 섬에서 한 해를 살다 지나는 배에 구조됐다.',{hp:-25,st:{body:1}}]}]]);
+Q('SS','g5ss_imperial',{a:[18,60]},'hall','황제의 순행이 고을을 지난다. 자객이 군중 속에서 움직이는 것을 본 건 나뿐이다.',[['몸을 던진다',{p:[.5,'body',.06],ok:['자객의 칼이 내 팔을 스쳤다. 황제가 직접 이름을 물었다.',{g:[500,750],fame:15,hp:-10,ar:2}],no:['칼을 대신 맞았다. 자객은 잡혔고 나는 석 달을 누웠다. 상은 그대로 내렸다.',{hp:-30,g:[400,600],fame:12}]}],['소리를 지른다','호위가 자객을 덮쳤다. 황제의 가마가 멈췄다.',{g:[300,450],fame:10}]]);
+
+/* ---------- SSR ---------- */
+Q('SSR','ssr_dragonvein',{a:[18,60]},'cave','우물을 파다 땅 밑 빈 굴로 떨어졌다. 벽이 스스로 빛난다. 용맥이 지나는 자리, 천하의 지기가 한 점에 고인 혈이다. 한가운데 옥으로 된 상자가 있다.',[['상자를 연다','전조 황실이 묻은 진국지보였다. 금과 옥, 천잠보의, 그리고 한 알의 대환단. 삼키자 지기가 몸으로 흘러들었다.',{g:[2000,3000],ar:3,ng:50,hp:40,st:{luck:2,body:1},fame:5}],['혈자리에 앉는다','사흘을 앉아 있었다. 땅의 숨이 내 숨이 됐다. 일어섰을 때는 눈이 달라져 있었다. 사람의 기색이, 다음 걸음이 먼저 보였다.',{ng:70,hp:50,art:['천안통',20,'안법'],st:{wit:2,body:2}}]]);
+/* ==== murim:minor-6 — 등급 사건 여섯째 묶음 (낭인살이 · 객잔 · 표국 · 녹림과 수적 · 흑도와 마교 · 독과 암기) ==== */
+/* ---------- C ---------- */
+// 낭인살이
+Q('C','x6_nomoney',{mar:1,free:1,a:[16,65]},'inn','주머니가 비었다. 객잔 주인이 눈치를 준다.',[['장작을 패 주고 밥을 얻는다','검 쓰는 손으로 도끼를 잡았다. 밥은 따뜻했다.',{hp:1}],['굶고 떠난다','물로 배를 채웠다.',{hp:-1}]]);
+Q('C','x6_patch',{mar:1,a:[16,65]},'road','신발 밑창이 떨어졌다.',[['칡넝쿨로 묶는다','다음 고을까지는 버텼다.',{}],['맨발로 걷는다','발바닥이 두꺼워졌다.',{hp:-1,exp:.01}]]);
+Q('C','x6_shrine',{mar:1,a:[16,70]},'temple','빈 사당에서 하룻밤 묵는다. 먼지 앉은 신상이 내려다본다.',[['먼지를 닦아 드린다','잠자리가 편했다.',{hy:.3,hp:1}],['문간에서 잔다','밤새 바람 소리가 났다.',{}]]);
+Q('C','x6_campfire',{mar:1,a:[16,70]},'forest','노숙하는 밤, 모닥불에 낯선 낭인이 다가온다.',[['자리를 내준다','말없이 건량을 나눠 먹었다. 아침에 그는 없었다.',{joy:1}],['검을 무릎에 올린다','그도 검을 무릎에 올렸다. 둘 다 못 잤다.',{hp:-1}]]);
+Q('C','x6_wash',{mar:1,a:[16,70],sea:[1,2]},'river','냇가에서 피 묻은 옷을 빤다.',[['말끔히 빤다','물이 한참 붉었다.',{joy:1}],['옷을 태우고 새로 산다','새 옷은 몸에 설었다.',{g:-2}]]);
+Q('C','x6_mapless',{mar:1,a:[16,65]},'road','갈림길이다. 이정표가 뽑혀 있다.',[['나뭇가지를 던진다','가지가 가리킨 길에 주막이 있었다.',{joy:1}],['지나는 이를 기다린다','나무꾼이 반대쪽이라고 했다.',{}]]);
+Q('C','x6_oldwound',{mar:1,a:[20,70]},'innroom','객잔 방에서 혼자 상처를 꿰맨다.',[['이를 물고 꿰맨다','바느질이 조금 늘었다.',{hp:1}],['술로 씻고 잔다','아침에 욱신거렸다.',{hp:-1}]]);
+Q('C','x6_namecard',{mar:1,a:[18,65]},'inn','통성명을 하는데 상대가 내 이름을 모른다.',[['그러려니 한다','나도 상대 이름을 처음 들었다.',{}],['사문과 내력을 길게 읊는다','상대가 하품을 했다.',{joy:-1}]]);
+Q('C','x6_sparkid',{mar:1,a:[18,70]},'yard','객잔 주인 아들이 나무칼을 들고 덤빈다.',[['져 준다','아이가 종일 자랑하고 다녔다.',{joy:3}],['한 수 가르친다','쥐는 법부터 다시 잡아 줬다.',{joy:2,hy:.3}]]);
+Q('C','x6_whetstone',{mar:1,a:[16,70]},'forge','대장간 앞을 지나는데 날 가는 소리가 좋다.',[['검을 맡긴다','머리카락이 날에 닿자 갈라졌다.',{g:-2,joy:1}],['구경만 한다','불똥이 예뻤다.',{joy:1}]]);
+// 객잔
+Q('C','i6_table',{mar:1,a:[16,70]},'inn','객잔 한가운데 탁자에 검 든 자들이 둘러앉았다. 공기가 팽팽하다.',[['구석 자리에 앉는다','국수를 먹는 동안 아무 일도 없었다.',{hp:1}],['계단 위에서 내려다본다','누가 누구를 경계하는지 보였다.',{exp:.02}]]);
+Q('C','i6_waiter',{mar:1,a:[16,70]},'inn','점소이가 발소리 없이 걷는다.',[['모른 척한다','점소이도 내 검을 모른 척했다.',{}],['웃으며 술을 권한다','점소이가 씩 웃었다. "손님 눈이 밝으십니다."',{joy:1,exp:.02}]]);
+Q('C','i6_bedbug',{a:[16,70]},'innroom','객잔 이불에 빈대가 있다.',[['마루에서 잔다','등이 배겼다.',{}],['주인에게 따진다','방값을 깎아 줬다.',{g:1}]]);
+Q('C','i6_rumor',{mar:1,a:[16,70]},'inn','옆 탁자에서 내 사문 이야기가 나온다.',[['귀를 기울인다','절반은 틀린 이야기였다.',{joy:1}],['바로잡아 준다','술 한 잔이 건너왔다.',{joy:2}]]);
+Q('C','i6_chess',{a:[16,70]},'inn','객잔 주인이 바둑을 두자고 한다. 지면 술값이 곱절이다.',[['둔다',{p:[.4,'wit',.06],ok:['이겼다. 술이 공짜였다.',{joy:2,g:1}],no:['졌다. 주인이 바둑으로 돈을 버는 모양이다.',{g:-2}]}],['술만 마신다','주인이 아쉬워했다.',{joy:1}]]);
+Q('C','i6_latenight',{mar:1,a:[16,70]},'innroom','한밤에 지붕 위로 발소리가 지나간다.',[['검을 쥐고 기다린다','발소리는 멀어졌다.',{exp:.02}],['이불을 덮는다','내 일이 아니다.',{hp:1}]]);
+// 표국
+Q('C','e6_flag',{mar:1,a:[16,65]},'road','표국 깃발을 단 수레가 지나간다. 표사들이 경계한다.',[['길을 비켜 준다','표두가 고개를 까딱했다.',{}],['같은 방향이라 뒤따른다','밤에 모닥불 곁을 내줬다.',{joy:1}]]);
+Q('C','e6_shout',{mar:1,a:[16,65]},'road','표행의 길잡이가 고개마다 길게 외친다.',[['무슨 뜻이냐고 묻는다','녹림에 인사하는 소리라 했다. 싸우지 않는 게 으뜸이라고.',{joy:1,exp:.02}],['따라 외쳐 본다','표사들이 웃었다.',{joy:2}]]);
+Q('C','e6_horse',{mar:1,a:[16,65]},'stable','표국 마구간에서 말 손질할 사람을 찾는다.',[['하루 돕는다','말 다루는 법을 조금 익혔다.',{g:[1,3]}],['지나간다','말이 푸르르 떨었다.',{}]]);
+// 녹림과 수적
+Q('C','b6_lookout',{mar:1,a:[16,65]},'mountain','고갯마루 나무 위에 망보는 놈이 있다.',[['손을 흔들어 준다','놈이 당황해서 숨었다.',{joy:2}],['못 본 척 지나간다','휘파람 소리가 뒤에서 났다. 아무도 나오지 않았다.',{}]]);
+Q('C','b6_toll',{mar:1,a:[16,65]},'forest','산적이 길을 막는다. 내 검을 보더니 머뭇거린다.',[['한 걸음 다가선다','산적은 뒷걸음질 쳤다.',{joy:1,fame:.2}],['건량을 던져 준다','산적이 꾸벅 절했다. 굶은 농사꾼이었다.',{hy:.5}]]);
+Q('C','b6_riverfog',{mar:1,a:[16,65]},'river','안개 낀 강에서 노 젓는 소리가 여럿 들린다.',[['배 바닥에 엎드린다','소리는 지나갔다.',{}],['검을 뽑아 뱃전에 선다','안개 속에서 누군가 혀를 찼다. 배들은 방향을 틀었다.',{fame:.3}]]);
+// 흑도와 저자 뒷골목
+Q('C','u6_alley',{mar:1,a:[16,65]},'den','뒷골목에서 누가 은근히 부른다. "좋은 물건 있소."',[['들여다본다','녹슨 비수였다.',{}],['대꾸 없이 지나간다','욕이 등 뒤에 붙었다.',{}]]);
+Q('C','u6_pickpocket',{mar:1,a:[16,70]},'market','주머니로 들어오는 손목을 잡았다. 아이다.',[['만두를 사 준다','아이는 두 개를 품에 넣고 뛰었다. 동생 몫이라 했다.',{g:-1,hy:.5}],['놓아준다','아이는 뒤도 안 보고 달아났다.',{}]]);
+Q('C','u6_gamblers',{mar:1,a:[18,65]},'den','도박장 문지기가 검은 맡기고 들어가란다.',[['안 들어간다','검 없이 들어갈 곳은 아니다.',{}],['맡기고 구경한다','주사위 소리에 한숨 소리가 섞였다.',{joy:1}]]);
+Q('C','u6_fence',{mar:1,a:[18,65]},'shop','전당포 주인이 내 검을 유심히 본다.',[['값을 물어본다','생각보다 높았다. 팔지는 않았다.',{joy:1}],['검을 가린다','주인이 입맛을 다셨다.',{}]]);
+// 독과 암기
+Q('C','p6_needle',{mar:1,a:[16,65]},'inn','탁자 밑에 바늘 하나가 꽂혀 있다. 끝이 푸르다.',[['젓가락으로 뽑아 버린다','누구 것인지는 알고 싶지 않았다.',{}],['점소이를 부른다','점소이는 아무 말 없이 치웠다.',{}]]);
+Q('C','p6_tea',{mar:1,a:[16,65]},'inn','찻물 빛이 평소와 다르다.',[['은비녀를 담가 본다','멀쩡했다. 새 찻잎이었다.',{joy:1}],['안 마신다','조심해서 손해 볼 건 없다.',{}]]);
+Q('C','p6_snake',{mar:1,a:[16,65],sea:[1]},'forest','풀숲에서 독사가 고개를 든다.',[['검집으로 걷어 낸다','뱀은 멀리 날아갔다.',{}],['움직임을 지켜본다','치기 전에 목이 먼저 움츠러들었다.',{exp:.03}]]);
+Q('C','p6_dartplay',{mar:1,a:[16,60]},'yard','나무에 과녁을 그리고 비도를 던져 본다.',[['백 번 던진다','스무 번은 맞았다.',{exp:.03}],['눈 감고 던진다','나무를 맞히긴 했다.',{joy:1,exp:.02}]]);
+// 무림 예법과 소문
+Q('C','c6_bow',{mar:1,a:[16,70]},'road','길에서 마주친 노검객이 먼저 포권한다.',[['허리를 깊이 숙인다','노검객이 웃으며 지나갔다.',{joy:1}],['같은 높이로 받는다','노검객의 눈썹이 조금 올랐다.',{}]]);
+Q('C','c6_ranking',{mar:1,a:[16,70]},'inn','강호 고수 서열이라는 종이가 돈다.',[['사서 본다','아는 이름이 셋 있었다. 내 이름은 없었다.',{g:-1,joy:1}],['코웃음 친다','누가 매긴 서열인지 아무도 몰랐다.',{}]]);
+Q('C','c6_funeral',{mar:1,a:[18,70]},'grave','이름난 협객의 장례 행렬이 지나간다.',[['길가에서 검을 세워 예를 표한다','상주가 맞절했다.',{hy:.3,joy:1}],['행렬 뒤를 따른다','무덤까지 십 리였다.',{hy:.5,hp:-1}]]);
+Q('C','c6_drunkhero',{mar:1,a:[18,70]},'inn','취한 사내가 자기가 왕년의 고수였다고 한다.',[['술을 따라 준다','이야기는 그럴듯했다. 손은 떨렸다.',{joy:1}],['한 수 보여 달라고 한다','젓가락이 기둥에 박혔다. 사내는 그대로 엎어져 잤다.',{exp:.03,joy:1}]]);
+Q('C','c6_letter',{mar:1,a:[18,65]},'inn','객잔에 내 앞으로 편지가 와 있다. 발신인이 없다.',[['읽는다','"잘 지내는가." 그 한 줄이었다. 누군지 알 것 같았다.',{joy:2}],['태운다','재가 한참 날았다.',{}]]);
+Q('C','c6_sect_gate',{mar:1,free:1,a:[16,60]},'peak','명문의 산문 앞을 지난다. 제자들의 기합 소리가 들린다.',[['한참 듣는다','부럽기도 하고, 아니기도 했다.',{joy:1}],['발길을 재촉한다','내 길은 내 발로 간다.',{exp:.02}]]);
+Q('C','c6_swordname',{mar:1,a:[16,65]},'innroom','검에 이름을 붙일까 한다.',[['붙인다','부르기 쑥스러워 혼자만 안다.',{joy:2}],['검은 검이다','이름은 남이 붙이는 것이다.',{}]]);
+Q('C','c6_training_view',{mar:1,a:[16,65]},'arena','비무대 뒤편에서 선수들이 몸을 푼다.',[['눈여겨본다','푸는 동작만 봐도 문파가 보였다.',{exp:.03}],['내 몸도 푼다','옆 사람이 흘끗 봤다.',{exp:.02}]]);
+Q('C','c6_bounty_wall',{mar:1,a:[16,65]},'hall','현상범 방 앞에 낭인들이 모였다.',[['얼굴을 외워 둔다','언젠가 마주칠지 모른다.',{}],['현상금 액수만 본다','목값이 내 검값보다 비쌌다.',{joy:1}]]);
+Q('C','c6_rain_duel',{mar:1,a:[16,65],sea:[1]},'road','빗속에서 두 사람이 겨루고 있다.',[['처마 밑에서 본다','빗물에 미끄러진 쪽이 졌다.',{exp:.04}],['지나간다','칼 소리가 빗소리에 묻혔다.',{}]]);
+Q('C','c6_old_inscription',{mar:1,a:[16,70]},'peak','절벽에 옛사람이 손가락으로 새겼다는 글자가 있다.',[['손을 대 본다','깊이가 한 치였다.',{joy:1,exp:.02}],['글의 뜻을 새긴다','"검은 마음이다." 흔한 말인데 오래 남았다.',{exp:.03}]]);
+Q('C','c6_cheap_manual',{mar:1,a:[16,60]},'market','좌판에서 "절세 비급"을 닷 푼에 판다.',[['산다','삼재검법이었다. 그림은 잘 그렸다.',{g:-1,joy:1}],['웃고 간다','장수가 "천하제일이 될 기회"라고 외쳤다.',{joy:1}]]);
+Q('C','c6_tired',{mar:1,a:[30,70]},'road','문득 검이 무겁다.',[['앉아서 쉰다','해가 넘어갈 때까지 앉아 있었다.',{hp:1,joy:1}],['고쳐 메고 걷는다','무거운 건 검이 아니었다.',{}]]);
+Q('C','c6_first_blood',{mar:1,a:[16,30]},'river','처음 사람을 벤 날을 떠올린다.',[['검을 오래 씻는다','물은 금방 맑아졌다.',{joy:-1,hy:.3}],['술을 마신다','취하지 않았다.',{g:-1}]]);
+
+/* ---------- B ---------- */
+Q('B','x6b_bodyguard',{mar:1,free:1,a:[17,60]},'manor','지주가 한 달 호위를 구한다. 원한 산 데가 있는 모양이다.',[['맡는다',{duel:{n:'원한 품은 칼잡이',pow:19,look:'blackclad'},ok:['한 달을 무사히 넘겼다.',{g:[14,22]}],no:['지주는 다쳤고 삯은 깎였다.',{g:[3,6],hp:-4}]}],['원한의 까닭부터 묻는다','지주가 소작인을 죽게 한 일이었다. 일을 거절했다.',{hy:1.5}]]);
+Q('B','x6b_teach',{mar:1,free:1,a:[20,65],lv:2},'dojo','마을 무관에서 한 철 사범을 해 달란다.',[['맡는다','가르치다 보니 내 기본이 다져졌다.',{g:[10,16],exp:.2,fame:.5}],['사흘만 봐 준다','아이들이 못내 아쉬워했다.',{g:[3,5],joy:2}]]);
+Q('B','x6b_duelmoney',{mar:1,free:1,a:[17,50]},'arena','저자에서 내기 비무판이 벌어졌다. 이기면 판돈의 반이다.',[['오른다',{duel:{n:'내기꾼 검객',pow:18,look:'swordsman'},ok:['판돈을 챙겼다.',{g:[10,18],fame:.5}],no:['구경꾼들 웃음소리를 들으며 내려왔다.',{hp:-3}]}],['상대에게 건다',{p:[.5,'wit',.05],ok:['보는 눈이 맞았다.',{g:[5,10]}],no:['틀렸다.',{g:-5}]}]]);
+Q('B','x6b_sickroad',{mar:1,a:[17,65]},'road','길에서 열이 올랐다. 다음 고을이 멀다.',[['운기로 버틴다',{p:[.5,'wit',.05],ok:['땀을 쏟고 나았다. 기가 한결 순했다.',{ng:.5}],no:['쓰러졌다. 나무꾼이 업어 갔다.',{hp:-10}]}],['길가 농가에 청한다','노부부가 사흘을 돌봐 주었다. 떠날 때 장작을 한 달 치 패 놓았다.',{hp:-3,hy:.5}]]);
+Q('B','x6b_swordbreak',{mar:1,a:[17,60]},'road','대련 중에 검에 금이 갔다.',[['대장간에서 고친다','전보다 조금 무거워졌다. 손에는 더 맞았다.',{g:-6,exp:.1}],['맨손으로 다닌다','한 달 동안 권각을 다시 익혔다.',{exp:.25}]]);
+Q('B','i6b_brawl',{mar:1,a:[17,60]},'inn','객잔에서 패싸움이 났다. 탁자가 날아온다.',[['양쪽을 다 눕힌다',{duel:{n:'술 취한 패거리의 우두머리',pow:17,look:'bandit',style:'brute'},ok:['객잔 주인이 석 달 치 술을 약속했다.',{fame:1,joy:3,g:[3,6]}],no:['의자에 맞았다.',{hp:-6}]}],['국수 그릇을 들고 피한다','한 방울도 안 흘렸다. 누군가 박수를 쳤다.',{joy:2,exp:.05}]]);
+Q('B','i6b_poisoner',{mar:1,a:[17,65]},'inn','옆자리 손님이 거품을 물고 쓰러진다.',[['해독단을 먹인다','살아났다. 큰 상단의 아들이었다.',{hy:2,g:[10,18],fame:.8}],['누가 탔는지 살핀다',{p:[.4,'wit',.07],ok:['주방으로 빠지는 자를 잡았다.',{fame:1.5,hy:1.5,g:[6,10]}],no:['놓쳤다. 손님은 의원이 살렸다.',{}]}]]);
+Q('B','i6b_roommate',{mar:1,a:[17,65]},'innroom','방이 없어 낯선 이와 한방을 쓴다. 밤중에 그가 신음한다. 내상이다.',[['운기를 도와 준다','새벽에 그는 깊이 절하고 떠났다. 베개 밑에 환약이 있었다.',{hy:1.5,it:['pill'],hp:-3}],['의원을 부른다','의원이 왔을 때는 고비를 넘긴 뒤였다.',{hy:.5,g:-2}]]);
+Q('B','i6b_innkeeper',{mar:1,a:[18,65]},'inn','객잔 주인이 은밀히 청한다. 보호비 뜯는 왈패를 쫓아 달란다.',[['쫓는다',{duel:{n:'왈패 두목',pow:16,look:'bandit',style:'bandit'},ok:['왈패들은 다시 오지 않았다. 그 객잔에서는 평생 밥값을 안 냈다.',{hy:1.5,fame:.8,g:[5,10]}],no:['얻어맞았다. 주인이 약값을 댔다.',{hp:-6}]}],['왈패와 말로 푼다',{p:[.4,'charm',.06],ok:['반값으로 줄였다. 주인은 그것만도 고마워했다.',{g:[3,6]}],no:['말이 안 통했다.',{}]}]]);
+Q('B','e6b_shortescort',{mar:1,a:[17,58]},'road','표국이 하루짜리 짧은 표행에 사람이 모자란다.',[['끼어 간다',{p:[.7,'luck',.03],ok:['아무 일 없었다.',{g:[8,14]}],no:['좀도둑 떼가 붙었다. 쫓느라 진을 뺐다.',{g:[8,14],hp:-4,exp:.1}]}],['사양한다','표두가 명함을 줬다. 다음에 오라고.',{}]]);
+Q('B','e6b_lostcargo',{mar:1,a:[17,60]},'forest','숲에 표국 인장이 찍힌 상자가 굴러 있다.',[['표국에 가져다준다','표국주가 사례하고 이름을 적어 갔다.',{g:[10,16],hy:1.5,fame:.5}],['열어 본다','약재였다. 내다 팔았다.',{g:[12,20],ak:1.5}]]);
+Q('B','e6b_test',{mar:1,free:1,a:[17,45]},'yard','표국이 표사를 뽑는다. 시험은 표두와의 대련이다.',[['치른다',{duel:{n:'표두',pow:21,look:'soldier'},ok:['붙었다. 한 철 일하고 삯을 받았다.',{g:[14,22],fame:.8}],no:['떨어졌다. 표두가 허점을 짚어 줬다.',{exp:.15}]}],['구경한다','붙은 자는 열에 하나였다.',{exp:.05}]]);
+Q('B','b6b_ambush',{mar:1,a:[17,60]},'forest','화살이 귀 옆을 스쳤다. 매복이다.',[['나무 뒤로 돌아 들어간다',{duel:{n:'녹림 궁수',pow:18,look:'bandit'},ok:['활과 전대를 두고 달아났다.',{g:[8,14],fame:.5}],no:['어깨에 한 대 맞았다.',{hp:-8}]}],['전력으로 뛴다',{p:[.6,'body',.04],ok:['화살은 다 빗나갔다.',{exp:.05}],no:['종아리를 스쳤다.',{hp:-5}]}]]);
+Q('B','b6b_chief',{mar:1,a:[18,58]},'fort','녹림 두목이 길을 막고 술을 권한다. "한 잔 받으면 통과요."',[['받는다',{p:[.6,'luck',.04],ok:['독한 술이었다. 두목이 껄껄 웃으며 길을 텄다.',{joy:2,fame:.5}],no:['몽한약이 들어 있었다. 깨어 보니 전대가 없었다.',{g:-10}]}],['검으로 답한다',{duel:{n:'녹림 두목',pow:22,look:'chief',style:'brute'},ok:['두목이 길을 텄다. "다음엔 그냥 지나가시오."',{fame:1.5,g:[6,12]}],no:['통행세를 곱절로 냈다.',{g:-10,hp:-4}]}]]);
+Q('B','b6b_hostage',{mar:1,a:[18,60]},'fort','산채에 고을 아이가 잡혀 있다고 한다. 몸값을 못 낸다고.',[['밤에 숨어든다',{p:[.5,'body',.05],ok:['아이를 업고 내려왔다.',{hy:3,fame:1.5}],no:['들켰다. 싸우며 빠져나왔다. 아이는 그 틈에 달아났다.',{hp:-8,hy:2}]}],['몸값을 대신 낸다','아이 어미가 땅에 이마를 댔다.',{g:-10,hy:2.5}]]);
+Q('B','b6b_pirateboat',{mar:1,a:[17,60]},'river','수적선이 나룻배에 갈고리를 건다.',[['갈고리 줄을 끊는다',{p:[.55,'body',.05],ok:['배가 멀어졌다. 승객들이 뱃삯을 모아 줬다.',{g:[6,12],fame:.8,hy:1}],no:['두 번째 갈고리가 걸렸다. 싸움이 붙어 겨우 쫓았다.',{hp:-6,hy:1}]}],['수적선으로 건너뛴다',{duel:{n:'수적 두령',pow:20,look:'bandit',style:'bandit'},ok:['두령이 강물에 빠졌다.',{fame:1.5,g:[8,15]}],no:['강물에 빠진 건 나였다.',{hp:-6}]}]]);
+Q('B','u6b_blackmarket',{mar:1,a:[18,65],gold:15},'den','암시장에 출처 모를 호심경이 나왔다.',[['산다','목숨값 치고는 쌌다.',{g:-15,it:['mirror']}],['출처를 캔다',{p:[.4,'wit',.06],ok:['살해당한 표사의 것이었다. 표국에 알렸다.',{hy:1.5,fame:.8,g:[5,9]}],no:['칼 든 자들이 다가왔다. 물러났다.',{}]}]]);
+Q('B','u6b_informant',{mar:1,a:[18,65]},'den','하오문 사람이 정보를 판다. "당신을 찾는 자가 있소."',[['산다','옛 원한이었다. 미리 알고 길을 바꿨다.',{g:-6,joy:1,exp:.05}],['값을 깎는다',{p:[.4,'charm',.06],ok:['반값에 들었다.',{g:-3}],no:['입을 닫았다.',{}]}]]);
+Q('B','u6b_debtcollect',{mar:1,free:1,a:[18,60]},'shop','전당포 주인이 빚 받아 오는 일을 맡긴다.',[['간다','빚진 집은 찢어지게 가난했다. 받아 낸 건 절반이었다.',{g:[8,14],ak:1}],['빚진 집 사정을 듣고 돌아선다','주인이 화를 냈다. 다시는 일을 안 준다고 했다.',{hy:1.5}]]);
+Q('B','u6b_fightclub',{mar:1,a:[18,45]},'den','지하 투기장이 열린다. 죽이지만 않으면 된다고 한다.',[['나간다',{duel:{n:'투기장의 맹수',pow:21,look:'bandit',style:'brute'},ok:['판돈이 내 쪽으로 쏠렸다.',{g:[14,24],fame:.5,ak:.5}],no:['끌려 나왔다.',{hp:-10}]}],['구경한다','사람이 사람을 치는 걸 돈 내고 보는 곳이었다.',{joy:-1}]]);
+Q('B','p6b_antidote',{mar:1,a:[17,65]},'forest','독버섯을 잘못 먹은 나무꾼이 쓰러져 있다.',[['해독단을 쓴다','살았다. 나무꾼의 딸이 산나물을 한 광주리 이고 왔다.',{hy:2,hp:3}],['토하게 한다',{p:[.5,'wit',.05],ok:['다 게워 냈다. 고비를 넘겼다.',{hy:2}],no:['늦었다.',{joy:-3}]}]]);
+Q('B','p6b_darts',{mar:1,a:[17,55]},'shop','암기 장인이 새로 만든 비도를 시험해 줄 사람을 찾는다.',[['던져 본다',{p:[.45,'body',.05],ok:['열에 아홉을 맞혔다. 장인이 한 벌을 줬다.',{it:['ldart'],exp:.1}],no:['과녁 옆 장독을 깼다.',{g:-2}]}],['균형을 봐 준다','무게 중심을 짚어 줬다. 장인이 고마워했다.',{g:[4,8]}]]);
+Q('B','p6b_poisonmaster',{mar:1,a:[18,60]},'cave','동굴에서 독물을 기르는 노파를 만났다.',[['독 이야기를 청해 듣는다','해독은 독에서 나온다고 했다. 해독단 두 알을 얻었다.',{it:['antidote','antidote']}],['약초를 구해다 준다','노파가 독 기운 구별하는 법을 일러 줬다.',{st:{wit:1},hp:-2}]]);
+Q('B','c6b_letterduel',{mar:1,a:[18,55]},'inn','도전장이 왔다. 이름 모를 자다.',[['나간다',{duel:{n:'도전자',pow:20,look:'swordsman'},ok:['상대가 검을 거두고 예를 갖췄다.',{fame:1.2,exp:.15}],no:['졌다. 이름값이 조금 깎였다.',{fame:-.5,exp:.1}]}],['무시한다','도전자는 사흘을 기다리다 갔다.',{}]]);
+Q('B','c6b_mediate',{mar:1,a:[20,65],fame:8},'hall','두 작은 문파가 우물 하나를 두고 칼을 뽑으려 한다.',[['중재한다',{p:[.45,'charm',.06],ok:['날짜를 나눠 쓰기로 했다. 양쪽에서 답례가 왔다.',{fame:2,hy:2,g:[6,12]}],no:['양쪽이 다 나를 의심했다.',{fame:-.5}]}],['끼지 않는다','칼부림이 났다고 들었다.',{}]]);
+Q('B','c6b_impostor',{mar:1,a:[20,65],fame:10},'village','내 이름을 사칭한 자가 마을에서 밥을 얻어먹고 있다.',[['조용히 불러 타이른다','굶주린 낭인이었다. 밥값을 대신 내 줬다.',{g:-3,hy:1.5}],['사람들 앞에서 밝힌다','가짜는 달아났고 진짜는 대접을 받았다.',{fame:1,hp:2}]]);
+Q('B','c6b_oldfriend',{mar:1,a:[25,65]},'inn','옛 동문을 만났다. 한쪽 팔이 없다.',[['술을 사고 이야기를 듣는다','그가 못 이룬 초식 하나를 내게 맡겼다.',{exp:.3,joy:2,g:-3}],['노자를 쥐여 준다','그는 받지 않으려다 받았다.',{g:-8,hy:1.5}]]);
+Q('B','c6b_swordexpo',{mar:1,a:[17,65]},'market','명검 품평회가 열린다.',[['내 검을 내놓는다',{p:[.4,'luck',.05],ok:['감정가가 벼린 솜씨를 칭찬했다. 손질 값은 받지 않았다.',{joy:3,exp:.1}],no:['흔한 검이라고 했다.',{joy:-1}]}],['남의 검을 구경한다','좋은 검이 어떤 것인지 눈이 트였다.',{exp:.1}]]);
+Q('B','c6b_eyetrain',{mar:1,a:[17,60]},'yard','늙은 표사가 날아가는 파리를 젓가락으로 집는다. "손이 아니라 눈이오."',[['눈 쓰는 법을 청한다','어깨를 보라고 했다. 어깨가 먼저 움직인다고.',{art:['관기안',5,'안법'],exp:.1}],['술을 산다','표사는 옛 표행 이야기를 밤새 했다.',{joy:3,g:-2}]]);
+Q('B','c6b_nightwatch',{mar:1,a:[17,60]},'village','마을에 밤마다 도둑이 든다. 촌장이 부탁한다.',[['지붕에서 기다린다',{p:[.5,'wit',.05],ok:['사흘째 밤에 잡았다.',{g:[6,12],fame:.8,hy:1}],no:['도둑은 오지 않았다. 내가 온 걸 안 모양이다.',{g:[2,4]}]}],['덫을 놓는다','촌장의 조카가 걸렸다. 촌장이 얼굴을 붉혔다.',{g:[3,6],joy:2}]]);
+
+/* ---------- A ---------- */
+Q('A','x6a_swordgrave',{mar:1,a:[18,60]},'grave','이름 없는 검객들을 묻은 검총이 있다. 묘비 대신 검이 꽂혀 있다.',[['하나하나 술을 붓는다','마지막 무덤 앞에서 검 하나가 저절로 기울었다. 가져가라는 듯이.',{wt:1,hy:3}],['검흔을 읽는다','묘마다 마지막 일격의 흔적이 남아 있었다. 사흘을 읽었다.',{exp:.8}]]);
+Q('A','x6a_wanderduel',{mar:1,free:1,a:[18,55]},'bamboo','"사문 없는 검이 어디까지 가나 봅시다." 명문 제자가 길을 막는다.',[['보여 준다',{duel:{n:'명문의 제자',pow:27,look:'whitesword'},ok:['그가 검을 거두고 한참 말이 없었다.',{fame:3,exp:.4}],no:['졌다. 그는 비웃지 않았다.',{exp:.3}]}],['웃고 지나간다','그의 얼굴이 붉어졌다.',{joy:2}]]);
+Q('A','i6a_secretroom',{mar:1,a:[18,60]},'innroom','객잔 방 벽 뒤에서 바람이 샌다. 밀실이다.',[['들어간다',{p:[.5,'luck',.05],ok:['전 주인이 숨긴 은자와 갑옷이 있었다.',{g:[30,50],ar:1}],no:['시체 하나와 빈 궤뿐이었다.',{joy:-3}]}],['주인에게 알린다','주인도 몰랐다고 했다. 관아에 함께 알렸다. 포상을 나눴다.',{g:[15,25],fame:1}]]);
+Q('A','i6a_assassin',{mar:1,a:[20,60],fame:10},'innroom','한밤에 창이 열린다. 살수다.',[['맞선다',{duel:{n:'살수',pow:28,look:'blackclad',style:'assassin',lethal:1,cause:'살수의 비수'},ok:['살수의 품에서 청부 문서가 나왔다. 누가 보냈는지 알았다.',{fame:2,g:[20,40],exp:.3}],no:['창밖으로 몸을 던져 살았다.',{hp:-12}]}],['자는 척하다 제압한다',{p:[.4,'wit',.07],ok:['손목을 꺾었다. 살수는 혀를 깨물려 했다.',{fame:2,exp:.4}],no:['한 칼 맞았다. 살수는 달아났다.',{hp:-15}]}]]);
+Q('A','e6a_bigescort',{mar:1,a:[20,58],lv:2},'road','표국이 큰 표행을 띄운다. 은 만 냥이다. 부표두 자리가 비었다.',[['맡는다',{duel:{n:'녹림 삼채의 채주',pow:29,look:'chief',style:'brute',lethal:1,cause:'표행 길의 칼'},ok:['표물은 한 닢도 빠지지 않았다.',{g:[50,85],fame:3}],no:['표물 일부를 잃었다. 목숨은 붙었다.',{hp:-12,g:[5,10]}]}],['길 잡는 일만 돕는다','험한 고개를 피해 돌아갔다. 늦었지만 무사했다.',{g:[20,35],fame:1}]]);
+Q('A','e6a_betrayal',{mar:1,a:[20,60]},'road','표행 중에 표사 하나가 밤마다 표식을 남긴다.',[['현장에서 잡는다',{p:[.5,'wit',.06],ok:['녹림의 끄나풀이었다. 매복을 피했다. 표국주가 두둑이 사례했다.',{g:[35,60],fame:2}],no:['증거가 없었다. 내가 의심을 샀다.',{fame:-1}]}],['표두에게 귀띔한다','표두가 길을 바꿨다. 무사히 닿았다.',{g:[15,25],fame:1}]]);
+Q('A','b6a_strongholdraid',{mar:1,a:[20,58],lv:2},'fort','관군이 산채를 친다. 길잡이 겸 선봉을 구한다.',[['선봉에 선다',{duel:{n:'산채의 부두목',pow:28,look:'chief',style:'brute',lethal:1,cause:'산채의 도끼'},ok:['산채가 떨어졌다. 포상이 내렸다.',{g:[40,70],fame:4}],no:['다쳐서 실려 내려왔다. 산채는 떨어졌다.',{hp:-15,g:[10,20],fame:1}]}],['잡혀 있던 사람들을 빼낸다','불길 속에서 열두 명을 데리고 나왔다.',{hy:5,fame:3,hp:-5}]]);
+Q('A','b6a_greenwoodhonor',{mar:1,a:[20,60]},'fort','녹림 총채주가 사람을 보냈다. 지난번 내가 살려 보낸 부하의 일로 술을 내겠다고 한다.',[['간다','산채 술은 독했다. 총채주가 녹림패를 줬다. 그걸 보이면 길이 열린다고.',{fame:2,it:['jadep'],joy:3}],['사양한다','심부름꾼이 은자 주머니를 놓고 갔다.',{g:[25,40]}]]);
+Q('A','u6a_heist',{mar:1,a:[18,55]},'den','하오문이 탐관의 금고를 턴다. 망볼 사람이 필요하다.',[['망을 본다',{p:[.55,'luck',.04],ok:['몫을 받았다. 절반은 굶는 마을에 뿌려졌다고 했다.',{g:[35,60],ak:1,hy:1}],no:['들켰다. 지붕을 넘어 달아났다.',{hp:-6,ak:1}]}],['탐관의 장부를 빼내 달라고 한다','장부가 어사 손에 들어갔다. 탐관이 쫓겨났다.',{fame:3,hy:3}]]);
+Q('A','u6a_poisonking',{mar:1,a:[20,60]},'cave','독왕곡에서 왔다는 자가 내기를 건다. 석 잔 중 한 잔에 독이 있다.',[['고른다',{p:[.33,'luck',.04],ok:['독 없는 잔이었다. 그는 피독주를 내놓았다.',{it:['pearl'],fame:1}],no:['독 든 잔이었다. 그가 해독약을 주며 웃었다. 사흘을 앓았다.',{hp:-18}]}],['세 잔을 다 엎는다','그가 눈을 가늘게 떴다. "재미없는 양반이군."',{}]]);
+Q('A','p6a_needlebox',{mar:1,a:[18,60]},'tomb','죽은 암기 고수의 무덤에 기관이 살아 있다.',[['기관을 푼다',{p:[.4,'wit',.07],ok:['관 속 폭우침통은 멀쩡했다.',{it:['ndart'],exp:.2}],no:['침이 쏟아졌다. 몇 대를 맞았다.',{hp:-14}]}],['입구에서 향만 올린다','옛 고수에게 예를 표했다.',{hy:1}]]);
+Q('A','c6a_duelwitness',{mar:1,a:[18,65]},'peak','두 절정 고수가 산정에서 십 년 만의 결전을 치른다. 구경꾼은 열 명 남짓이다.',[['눈을 떼지 않는다','백 합을 넘겼다. 반은 못 알아봤지만, 알아본 반이 한 해 수련이었다.',{exp:1}],['두 사람의 눈을 본다','칼보다 눈이 먼저 싸우고 있었다.',{art:['응시안',8,'안법'],exp:.3}]]);
+Q('A','c6a_stolenbaby',{mar:1,a:[18,60]},'road','흑의인들이 포대기를 안고 달아난다. 뒤에서 여인이 울부짖는다.',[['쫓는다',{duel:{n:'흑의인 우두머리',pow:26,look:'blackclad',style:'assassin'},ok:['아이를 돌려주었다. 어느 세가의 손자였다. 세가에서 답례가 왔다.',{hy:5,fame:3,g:[30,50]}],no:['놓쳤다. 그 울음소리가 오래 남았다.',{hp:-8,joy:-5}]}],['여인을 진정시키고 관아로 간다','수배령이 내렸다. 아이는 열흘 뒤 돌아왔다고 들었다.',{hy:1.5}]]);
+Q('A','c6a_oldmaster',{mar:1,a:[18,50]},'hermit','은거한 노고수가 물을 길어 주면 한 가지를 가르쳐 주겠다고 한다. 물은 산 아래에 있다.',[['석 달을 긷는다','물지게가 가벼워진 날, 노고수가 보법 하나를 보여 주었다.',{art:['답설보',14,'보법'],st:{body:1}}],['한 달을 긷는다','노고수는 웃으며 호흡 한 줄을 일러 주었다.',{ng:2,exp:.2}]]);
+Q('A','c6a_tournamentbet',{mar:1,a:[18,60],gold:20},'arena','큰 비무 대회에 판이 섰다. 아무도 안 거는 무명 검객이 눈에 든다.',[['건다',{p:[.4,'wit',.07],ok:['무명이 우승했다. 판돈이 열 곱절이었다.',{g:[60,100]}],no:['첫 판에 떨어졌다.',{g:-20}]}],['그 검객을 찾아가 한 수 청한다','검객은 대회 전날 밤 한 초식을 보여 주었다.',{exp:.6}]]);
+
+/* ---------- S ---------- */
+Q('S','x6s_dyingmaster',{mar:1,a:[17,50]},'forest','숲에서 피투성이 노인이 나무에 기대 있다. "제자가 있었지. 그놈에게 당했네. 남은 공력을 버리긴 아깝군."',[['등을 내어 준다','뜨거운 것이 밀려 들어왔다. 노인은 웃으며 눈을 감았다.',{ng:12,exp:.8,hy:2}],['원수를 갚아 주겠다고 한다','노인이 품에서 비급과 패를 꺼냈다. "갚지 말고, 잇게."',{art:['유성검',24,'검'],exp:.5,hy:4}]]);
+Q('S','i6s_treasuremap',{mar:1,a:[18,60]},'inn','객잔에서 죽어 가는 자가 가죽 조각을 쥐여 준다. 보물 지도의 반쪽이다. 나머지 반쪽을 쥔 자들이 문밖에 있다.',[['싸운다',{duel:{n:'지도를 쫓는 흑도 고수',pow:36,look:'blackclad',style:'assassin',lethal:1,cause:'지도를 노린 칼'},ok:['두 쪽을 맞췄다. 지도 끝에는 옛 표국의 은고가 있었다.',{g:[160,250],fame:3}],no:['지도를 빼앗겼다.',{hp:-15}]}],['반쪽을 넘기고 몫을 흥정한다',{p:[.5,'charm',.06],ok:['뜻밖에 약속을 지키는 자들이었다.',{g:[80,120]}],no:['칼이 먼저 왔다. 창으로 뛰었다.',{hp:-10}]}]]);
+Q('S','e6s_imperialcargo',{mar:1,a:[20,58],lv:3},'road','황실 진상품 표행이다. 표두가 독에 쓰러져 지휘할 사람이 없다.',[['지휘를 맡는다',{duel:{n:'흑도 연합의 수괴',pow:40,look:'chief',style:'brute',lethal:1,cause:'진상품을 노린 칼'},ok:['도성에 닿았다. 황실에서 상이 내렸다.',{g:[170,250],fame:8}],no:['진상품 절반을 잃었다. 표국은 문을 닫았다.',{hp:-18,fame:-2}]}],['길을 바꿔 물길로 간다',{p:[.5,'wit',.06],ok:['매복은 헛물을 켰다. 무사히 닿았다.',{g:[130,190],fame:5}],no:['수적을 만났다. 싸워서 지켰다.',{g:[60,90],hp:-12,fame:2}]}]]);
+Q('S','b6s_kingoftheroad',{mar:1,a:[20,58],lv:3},'fort','녹림 열두 채의 총채주가 비무를 청한다. 이기면 녹림이 내 이름 앞에 길을 연다고 한다.',[['받는다',{duel:{n:'녹림 총채주',pow:44,look:'chief',style:'brute'},ok:['총채주가 도를 내려놓았다. 그 뒤로 내 표행을 건드리는 산채는 없었다.',{fame:8,g:[120,180],wt:2}],no:['졌다. 총채주는 술을 따라 주었다. "배짱은 샀소."',{fame:2,exp:.4}]}],['술로 겨루자고 한다',{p:[.4,'body',.06],ok:['총채주가 먼저 쓰러졌다. 산채가 뒤집어지게 웃었다.',{fame:5,joy:8,g:[60,90]}],no:['사흘을 못 일어났다.',{hp:-10,joy:3}]}]]);
+Q('S','u6s_hiddenvault',{mar:1,a:[18,60]},'den','망한 흑도 방파의 비밀 금고 자리를 안다는 자가 있다. 열쇠는 그가, 칼은 내가 가졌다.',[['같이 간다',{p:[.55,'luck',.05],ok:['금고는 그대로였다. 약속대로 나눴다.',{g:[150,230],ak:1}],no:['금고 앞에서 그가 등을 찔렀다. 얕았다. 그를 눕히고 절반만 들고 나왔다.',{g:[70,110],hp:-15}]}],['관아에 알린다','장물이 주인들에게 돌아갔다. 포상과 이름이 따랐다.',{g:[80,120],fame:5,hy:4}]]);
+Q('S','p6s_thousandpoison',{mar:1,a:[18,58]},'cave','독물이 우글거리는 골짜기 한가운데 흰 지네가 있다. 독물의 왕은 스스로 해독의 보물이 된다.',[['잡는다',{p:[.45,'body',.06],ok:['물리며 잡았다. 독과 독이 싸우다 몸이 독을 이겼다.',{it:['pearl'],ng:5,hp:-10,st:{body:1}}],no:['한 달을 사경에서 헤맸다.',{hp:-30}]}],['멀리서 지켜본다','독물들이 왕을 둘러싸고 움직이는 모양이 그대로 진법이었다.',{exp:.9,st:{wit:1}}]]);
+Q('S','c6s_swordpool',{mar:1,a:[18,58]},'pond','세검지(洗劍池). 옛 검객들이 은퇴하며 검을 던져 넣었다는 못이다. 가뭄에 바닥이 보인다.',[['내려가 한 자루를 고른다','손이 먼저 알아봤다. 백 년 물속에서도 녹슬지 않은 검이었다.',{wt:2,fame:2}],['검들이 누운 모양을 본다','마지막으로 던진 자세가 그대로 남아 있었다. 수십 가지 검로가 못 바닥에 그려져 있었다.',{exp:1.6}]]);
+
+/* ---------- SS ---------- */
+Q('SS','x6ss_ninepalace',{mar:1,a:[18,58]},'tomb','사막의 모래 폭풍이 지나간 자리에 돌문이 드러났다. 구궁의 기관진 너머, 전설의 검마가 묻혔다는 곳이다.',[['기관진을 뚫는다',{p:[.5,'wit',.06],ok:['관 앞에 검 한 자루와 죽간이 있었다. "나를 넘는 자가 가지라."',{wt:3,art:['구궁검',30,'검'],exp:2,fame:6}],no:['화살비를 뚫고 겨우 나왔다. 입구에서 주운 죽간 한 조각이 전부였다.',{hp:-25,exp:1.2}]}],['입구의 벽화만 베낀다','벽화는 검마의 젊은 날 수련이었다. 그것만으로 눈이 트였다.',{exp:2.5,ng:8}]]);
+Q('SS','e6ss_goldlion',{mar:1,a:[22,58],lv:3},'hall','천하제일 표국의 노표국주가 은퇴하며 후계 시험을 연다. 가문도 문파도 묻지 않는다.',[['시험을 치른다',{duel:{n:'금사 표국의 수석 표두',pow:48,look:'soldier',lv:6},ok:['노표국주가 금사자 깃발을 내주었다. 표국의 금고와 가보가 함께였다.',{g:[550,800],fame:12,ar:3}],no:['졌다. 노표국주는 내 손을 잡고 말했다. "자네 같은 사람이 강호에 있어 다행이네." 은자가 뒤따라왔다.',{g:[150,220],fame:4,exp:.6}]}],['시험 대신 표행 하나를 무사히 마쳐 보인다',{p:[.5,'wit',.06],ok:['싸우지 않고 닿았다. "그게 표사다." 노표국주는 그렇게 말했다.',{g:[450,650],fame:10,st:{wit:1}}],no:['중간에 길이 막혀 돌아왔다. 삯은 받았다.',{g:[60,90]}]}]]);
+Q('SS','c6ss_godeye',{mar:1,a:[20,58],lv:2},'peak','절벽 위 외딴 정자에 장님 노인이 앉아 있다. 사람들은 그를 신안(神眼)이라 부른다. "보려고 하지 말게. 보이게 두게."',[['곁에 앉는다','한 철을 말없이 앉아 있었다. 어느 날 날아가는 새의 다음 날갯짓이 먼저 보였다.',{art:['천안통',20,'안법'],exp:1,st:{wit:2}}],['한 수를 청한다','노인은 눈을 감은 채 내 일곱 수를 다 피했다. 여덟째 수에서 내 검이 멈췄다. 그가 웃었다. "이제 됐네." 그의 목에 걸린 돌이 내 손에 쥐어졌다.',{it:['hawkeye'],exp:2,ng:6}]]);
+/* ==== murim:minor-7 — 등급 사건 일곱째 묶음 (문파 생활 · 문파별 · 세가 · 사파와 마교) ==== */
+/* ---------- C ---------- */
+// 문파 일상
+Q('C','s7_roll',{sect:1,a:[13,60]},'yard','새벽 점호에 한 사람이 빈다.',[['대신 대답해 준다','사형이 눈을 찡긋했다. 빚을 하나 달았다.',{bond:.3}],['가만히 있는다','빈 사람은 뒷산을 뛰었다.',{}]]);
+Q('C','s7_meal',{sect:1,a:[13,60]},'kitchen','오늘 공양은 두부다. 한 모가 남았다.',[['막내에게 준다','막내가 입이 귀에 걸렸다.',{bond:.5,joy:1}],['젓가락이 빠른 자가 임자다','내가 빨랐다.',{hp:1}]]);
+Q('C','s7_lecture',{sect:1,a:[13,60]},'hall','장로의 강론이 길다. 다리가 저리다.',[['끝까지 꿇어앉는다','마지막 한마디가 귀에 남았다.',{exp:.04}],['몰래 다리를 편다','옆 사형도 펴고 있었다.',{joy:1}]]);
+Q('C','s7_laundry',{sect:1,a:[13,35]},'river','빨래 당번이다. 도복이 산더미다.',[['방망이질을 초식 삼는다','빨래는 깨끗했고 팔은 풀렸다.',{exp:.03}],['사제들과 물싸움을 한다','다 젖었다. 다 웃었다.',{joy:3,bond:.3}]]);
+Q('C','s7_incense',{sect:1,a:[13,60]},'temple','조사전에 향을 올리는 날이다.',[['정성껏 올린다','연기가 곧게 올랐다.',{joy:1,bond:.3}],['역대 조사의 위패를 읽는다','이름마다 이야기가 있을 것이다.',{joy:1}]]);
+Q('C','s7_pairup',{sect:1,mar:1,a:[13,50]},'dojo','대련 짝을 정한다. 늘 지는 상대가 걸렸다.',[['이번엔 다르게 해 본다','또 졌다. 덜 아프게 졌다.',{exp:.05,hp:-1}],['하던 대로 한다','하던 대로 졌다.',{exp:.03,hp:-1}]]);
+Q('C','s7_nightpractice',{sect:1,mar:1,a:[13,50]},'yard','밤에 몰래 연무장에 나왔더니 이미 누가 있다.',[['같이 한다','말없이 한 시진을 휘둘렀다.',{exp:.05,bond:.3}],['돌아간다','나만 그런 게 아니었다.',{joy:1}]]);
+Q('C','s7_teasing',{sect:1,a:[13,30]},'dojo','사형들이 내 걸음걸이를 흉내 낸다.',[['같이 웃는다','그날부터 별명이 생겼다.',{joy:2,bond:.3}],['더 과장해서 걷는다','사형들이 배를 잡았다.',{joy:3}]]);
+Q('C','s7_homesick',{sect:1,a:[13,22]},'peak','산문에서 고향 쪽을 본다.',[['한참 본다','보이지는 않았다.',{joy:-1,bond:.5}],['돌아서 수련한다','땀을 내니 잊혔다.',{exp:.03}]]);
+Q('C','s7_newyear',{sect:1,a:[13,60],sea:[3]},'hall','설날, 장문인이 제자들에게 덕담을 한다.',[['세배를 올린다','세뱃돈 대신 구결 한 줄을 받았다.',{exp:.04}],['사제들 세배를 받는다','줄 것이 없어 엿을 줬다.',{joy:2,g:-1}]]);
+Q('C','s7_chores',{sect:1,a:[13,40]},'yard','장작, 물, 청소. 수련은 언제 하나 싶다.',[['이것도 수련이다','어느 날 물지게가 가벼웠다.',{exp:.03}],['투덜대며 한다','사부가 듣고 장작을 곱절로 줬다.',{hp:-1}]]);
+Q('C','s7_secretsnack',{sect:1,a:[13,30]},'forest','사형이 뒷산에서 꿩을 구웠다. 계율 위반이다.',[['한 다리 받는다','공범이 됐다. 맛있었다.',{hp:2,joy:2}],['망을 봐 준다','사형이 나중에 날개를 가져왔다.',{hp:1,bond:.3}]]);
+Q('C','s7_mistake',{sect:1,mar:1,a:[13,50]},'dojo','초식 순서를 틀렸다. 사부가 보고 있다.',[['처음부터 다시 한다','사부는 아무 말 없이 고개를 끄덕였다.',{exp:.04}],['틀린 채로 끝까지 간다','"그것도 한 초식이긴 하다." 사부가 웃었다.',{joy:1}]]);
+Q('C','s7_visitorkid',{sect:1,a:[16,60]},'peak','산 아래 아이가 제자가 되겠다며 산문 앞에 꿇어앉았다.',[['물을 가져다준다','아이는 사흘을 버텼다. 그 뒤는 장로들 몫이었다.',{hy:.3}],['집에 가라고 타이른다','아이는 고개를 저었다.',{}]]);
+Q('C','s7_swordrack',{sect:1,mar:1,a:[13,60]},'dojo','병기고 정리 당번이다.',[['하나하나 닦는다','선배들이 쓰던 검에는 손자국이 패어 있었다.',{exp:.02,joy:1}],['제일 좋은 검을 몰래 쥐어 본다','무게가 달랐다.',{joy:2}]]);
+// 문파별
+Q('C','s7_shaolin_sweep',{sc:['shaolin'],a:[13,65]},'temple','대웅전 앞 낙엽을 쓴다.',[['빗자루 끝에 마음을 둔다','쓸다 보니 마음도 쓸렸다.',{exp:.04,joy:1}],['낙엽으로 글자를 만든다','지나던 사형이 웃었다.',{joy:2}]]);
+Q('C','s7_shaolin_wood',{sc:['shaolin'],mar:1,a:[13,50]},'dojo','목인장을 친다. 팔뚝이 퍼렇다.',[['백 번을 채운다','나무가 닳기 전에 내 팔이 먼저 익을 것이다.',{exp:.05,hp:-1}],['나무의 결을 본다','치는 자리가 정해져 있었다.',{exp:.04}]]);
+Q('C','s7_wudang_cloud',{sc:['wudang'],a:[13,65]},'peak','무당산에 구름이 발아래 깔렸다.',[['태극을 그린다','구름이 손을 따라 도는 듯했다.',{exp:.05,joy:1}],['앉아서 본다','오래 앉아 있었다.',{joy:2}]]);
+Q('C','s7_huashan_plum',{sc:['huashan'],a:[13,65],sea:[0,3]},'peak','화산에 매화가 폈다.',[['꽃잎을 검끝으로 받는다','스무 번에 한 번 받았다.',{exp:.05}],['가지 아래서 차를 마신다','향이 찻물에 들었다.',{joy:2}]]);
+Q('C','s7_emei_dawn',{sc:['emei'],a:[13,65]},'peak','금정에서 일출을 본다. 불광이 어린다.',[['합장한다','마음이 고요했다.',{joy:2}],['사자매들과 본다','아무도 말하지 않았다.',{joy:2,bond:.3}]]);
+Q('C','s7_beggar_bowl',{sc:['beggar'],a:[10,65]},'market','개방 제자는 구걸도 수련이다.',[['장터에서 타령을 한다','엽전이 제법 떨어졌다.',{g:[1,3],joy:1}],['부잣집 대문 앞에 눕는다','쫓겨났다. 그것도 수련이다.',{exp:.02}]]);
+Q('C','s7_kunlun_snow',{sc:['kunlun','tianshan','binggung','jangbaek'],a:[13,65],sea:[3]},'snow','눈밭에 발자국 없이 걷는 수련이다.',[['숨을 고르고 딛는다','열 걸음 중 세 걸음은 자국이 얕았다.',{exp:.05}],['사형의 발을 본다','눈이 밟히는 소리가 나지 않았다.',{exp:.03}]]);
+Q('C','s7_tang_needle',{sc:['tang','odok'],a:[10,60]},'yard','독침 고르는 날이다. 장갑을 낀다.',[['조심조심 고른다','손끝이 떨리지 않게 됐다.',{exp:.04}],['어른들 손놀림을 본다','장갑도 안 끼고 했다.',{exp:.03}]]);
+Q('C','s7_clan_ancestral',{sc:['namgung','zhuge','paeng','moyong'],a:[10,65]},'hall','가문 제사다. 항렬대로 선다.',[['끝까지 꼿꼿이 선다','숙부들이 고개를 끄덕였다.',{bond:.5}],['족보를 훑어본다','이름 옆에 "검으로 죽다"가 많았다.',{joy:1}]]);
+Q('C','s7_potala_prayer',{sc:['potala'],a:[13,65]},'temple','경통을 돌리며 탑을 돈다.',[['백팔 번을 돈다','무릎이 아팠다. 마음은 가벼웠다.',{joy:2,hp:-1}],['진언을 왼다','소리가 뱃속에서 울렸다.',{exp:.04}]]);
+Q('C','s7_hainan_wave',{sc:['hainan','botao'],a:[13,65],sea:[1,2]},'river','파도 속에서 검을 휘두르는 수련이다.',[['허리까지 들어간다','파도가 밀 때 베고 당길 때 거뒀다.',{exp:.05,hp:-1}],['모래밭에서 본다','사형이 물 위에 서 있는 것 같았다.',{exp:.03}]]);
+Q('C','s7_yasu_beast',{sc:['yasu'],a:[10,60]},'forest','야수궁의 아이는 짐승과 먼저 사귄다.',[['표범에게 먹이를 준다','손을 핥았다. 혀가 거칠었다.',{joy:2}],['짐승의 걸음을 따라 한다','소리 없이 걷는 법을 몸이 익혔다.',{exp:.04}]]);
+// 사파와 마교
+Q('C','d7_oath',{side:'마',a:[10,60]},'hall','교주에게 올리는 맹세를 왼다.',[['목청껏 왼다','옆 사람보다 컸다.',{joy:1}],['입만 벙긋한다','아무도 몰랐다.',{}]]);
+Q('C','d7_rank',{side:'마사',a:[13,60]},'fort','서열 다툼이 붙었다. 위아래가 주먹으로 정해진다.',[['끼어든다',{p:[.5,'body',.05],ok:['한 칸 올랐다.',{fame:.3,exp:.03}],no:['한 칸 내려갔다.',{hp:-2}]}],['구경한다','이긴 쪽에 술을 따랐다.',{}]]);
+Q('C','d7_darkcave',{side:'마',mar:1,a:[13,55]},'cave','어둠 속에서 사흘을 버티는 수련이다.',[['버틴다','어둠에도 결이 있었다.',{exp:.05,hp:-1}],['하루 만에 나온다','비웃음을 샀다.',{joy:-1}]]);
+Q('C','d7_outside',{side:'마',a:[13,60]},'village','교 밖 마을 사람들이 나를 보고 문을 닫는다.',[['그러려니 한다','익숙했다.',{}],['아이가 떨어뜨린 공을 주워 준다','아이는 받았다. 어미가 채 갔다.',{hy:.3,joy:-1}]]);
+Q('C','d7_bloodmoon',{side:'마',a:[13,60]},'peak','붉은 달이 뜬 밤, 교도들이 제단에 모였다.',[['의식에 선다','북소리가 뱃속을 울렸다.',{joy:1}],['뒤에서 본다','다들 무엇을 비는지 궁금했다.',{}]]);
+Q('C','d7_senior',{side:'마사',a:[13,50]},'fort','선배가 제 일을 떠넘긴다.',[['한다','익숙한 일이다.',{hp:-1}],['한 번은 버틴다',{p:[.4,'body',.05],ok:['선배가 물러났다.',{fame:.2}],no:['곱절로 했다.',{hp:-2}]}]]);
+Q('C','d7_spoils',{sc:['nokrim','suchae'],a:[13,60]},'fort','털어 온 짐을 푼다.',[['비단을 고른다','어디 쓸 데도 없는데 골랐다.',{g:[1,3]}],['책 한 권을 집는다','다들 웃었다. 밤에 혼자 읽었다.',{joy:2}]]);
+Q('C','d7_thiefpractice',{sc:['haomun'],a:[10,55]},'den','방울 달린 허수아비에서 주머니를 빼내는 수련이다.',[['숨을 죽이고 뺀다','방울이 한 번 울렸다.',{exp:.04}],['방울부터 뗀다','사부가 뒤통수를 쳤다. 그리고 웃었다.',{joy:2}]]);
+// 속가·하산
+Q('C','s7_downhill',{sect:1,a:[15,60]},'market','오랜만에 산 아래 장에 내려왔다.',[['탕후루를 사 먹는다','산에서는 못 먹는 맛이다.',{g:-1,joy:3}],['사형제들 줄 것을 산다','다들 반겼다.',{g:-2,bond:.8}]]);
+Q('C','s7_robe_stare',{sect:1,a:[15,60]},'inn','객잔에서 사람들이 내 도복을 보고 수군거린다.',[['모른 척 먹는다','누가 술값을 대신 냈다.',{joy:1}],['포권으로 인사한다','다들 엉거주춤 일어나 맞절했다.',{joy:2,fame:.2}]]);
+Q('C','s7_fakesect',{sect:1,a:[16,60]},'market','장터에서 누가 우리 문파 제자라며 약을 판다.',[['조용히 다가선다','내 도복을 보더니 보따리를 싸 들고 뛰었다.',{joy:2}],['약을 사 본다','밀가루였다.',{g:-1,joy:1}]]);
+Q('C','s7_parentsvisit',{sect:1,a:[13,30],par:1},'peak','부모님이 산문까지 찾아오셨다.',[['수련하는 모습을 보여 드린다','어머니가 눈물을 훔쳤다.',{bond:1.5,joy:2}],['싸 오신 음식을 사형제와 나눈다','다들 고향 생각을 했다.',{bond:1,hp:1}]]);
+Q('C','s7_oldelder',{sect:1,a:[13,60]},'yard','은퇴한 장로가 볕을 쬐며 존다.',[['어깨를 주물러 드린다','잠꼬대로 구결 한 줄을 흘렸다.',{exp:.04,hy:.3}],['담요를 덮어 드린다','깨지 않았다.',{hy:.3}]]);
+Q('C','s7_cat',{sect:1,a:[13,60]},'kitchen','주방에 사는 고양이가 새끼를 낳았다.',[['한 마리를 방에 데려온다','밤에 가슴 위에서 잤다.',{joy:3}],['생선 대가리를 갖다 준다','어미가 경계를 풀었다.',{joy:2}]]);
+Q('C','s7_inkstone',{sect:1,a:[13,60]},'library','장경각에서 먹을 간다. 필사할 것이 열 권이다.',[['먹 가는 것부터 정성을 들인다','글씨가 곧았다.',{exp:.03}],['글의 뜻을 새기며 쓴다','세 권째에서 무릎을 쳤다.',{exp:.05}]]);
+Q('C','s7_storm',{sect:1,a:[13,60],sea:[1]},'peak','태풍이 산을 친다. 기왓장이 난다.',[['지붕에 올라 누른다','사형제 열이 지붕에 엎드렸다.',{bond:.5,hp:-1}],['장경각 문을 막는다','책은 한 권도 젖지 않았다.',{fame:.3}]]);
+
+/* ---------- B ---------- */
+Q('B','s7b_monthly',{sect:1,mar:1,a:[14,45]},'dojo','월례 비무다. 순위가 붙는다.',[['나간다',{duel:{n:'동기 제자',pow:15,look:'youth'},ok:['순위가 올랐다. 약당에서 보약이 나왔다.',{exp:.2,hp:5,fame:.3}],no:['순위가 내렸다.',{exp:.1}]}],['참관한다','남의 버릇이 눈에 들어왔다.',{exp:.08}]]);
+Q('B','s7b_punish',{sect:1,a:[13,40]},'yard','사제가 계율을 어겼다. 내가 보았다.',[['대신 벌을 받는다','물구나무로 한 시진을 섰다. 사제가 평생 따랐다.',{hp:-4,bond:2,hy:1}],['사부께 고한다','사제는 벌을 받았다. 계율은 계율이다.',{fame:.3,bond:-.5}]]);
+Q('B','s7b_herbgarden',{sect:1,a:[14,60]},'forest','약초밭 당번을 맡았다. 한 철이다.',[['정성껏 가꾼다','풍작이었다. 약당 장로가 환약을 나눠 줬다.',{hp:8,exp:.05}],['약초 이름을 외운다','반은 외웠다.',{st:{wit:1}}]]);
+Q('B','s7b_bookborrow',{sect:1,mar:1,a:[15,55]},'library','윗서열만 볼 수 있는 서가에 열쇠가 꽂혀 있다.',[['몰래 본다',{p:[.5,'luck',.05],ok:['한 권을 훑었다.',{exp:.35}],no:['장로에게 들켰다. 석 달 장경각 출입 금지다.',{joy:-2}]}],['열쇠를 장로에게 가져간다','장로가 웃으며 한 권을 빌려줬다.',{exp:.25,fame:.3}]]);
+Q('B','s7b_sistersecret',{sect:1,a:[15,35]},'peak','사매가 밤마다 운다. 고향에 일이 있다고 한다.',[['들어 준다','밤새 이야기했다. 아침에 사매는 웃었다.',{bond:1.5,joy:1}],['노자를 모아 준다','사형제들이 한 닢씩 보탰다. 사매는 고향에 다녀왔다.',{g:-3,bond:2,hy:1}]]);
+Q('B','s7b_challenger',{sect:1,mar:1,a:[16,55]},'peak','낭인이 산문에서 도전장을 내민다. 응대할 차례가 나다.',[['맞는다',{duel:{n:'도전해 온 낭인',pow:19,look:'swordsman'},ok:['사문의 체면을 지켰다.',{fame:1,exp:.15}],no:['사형이 대신 나섰다.',{fame:-.3,exp:.1}]}],['차를 권한다','낭인은 차를 마시고 한참 이야기하다 갔다.',{joy:2}]]);
+Q('B','s7b_artifact',{sect:1,a:[15,60]},'hall','조사의 유물을 닦다가 금이 간 것을 봤다. 내가 낸 건 아니다.',[['바로 알린다','원래 있던 금이었다. 장로가 정직하다고 했다.',{fame:.5}],['누가 냈는지 찾는다',{p:[.4,'wit',.06],ok:['쥐가 갉은 자국이었다. 창고의 쥐구멍을 막았다.',{fame:.8}],no:['괜한 의심만 샀다.',{bond:-.5}]}]]);
+Q('B','s7b_seniorfavor',{sect:1,mar:1,a:[14,40]},'dojo','대사형이 따로 불러 한 수를 봐 준다.',[['죽어라 따라 한다','사흘 만에 흉내는 냈다.',{exp:.3,bond:.5}],['까닭을 묻는다','"네가 제일 늦게까지 남아 있어서." 대사형이 웃었다.',{exp:.2,joy:2}]]);
+Q('B','s7b_foodpoison',{sect:1,a:[14,60]},'kitchen','공양 뒤에 제자 절반이 배를 잡는다.',[['약당으로 업어 나른다','열 명을 날랐다. 나도 뒤늦게 쓰러졌다.',{hp:-4,hy:1.5,bond:1}],['주방을 살핀다',{p:[.4,'wit',.06],ok:['상한 버섯이 섞여 있었다. 누가 넣은 건 아니었다.',{fame:.8}],no:['알 수 없었다.',{}]}]]);
+Q('B','s7b_jealous',{sect:1,mar:1,a:[15,40]},'dojo','내가 사부의 눈에 든 뒤로 사형 하나가 차갑다.',[['먼저 술을 청한다',{p:[.5,'charm',.05],ok:['사형이 털어놓았다. 그날부터 대련 짝이 됐다.',{bond:1.5,exp:.15}],no:['사형은 잔을 엎었다.',{joy:-2}]}],['실력으로 보인다','더 열심히 했다. 사형도 그랬다.',{exp:.25}]]);
+Q('B','s7b_escortelder',{sect:1,mar:1,a:[17,55]},'road','장로를 모시고 다른 문파에 간다.',[['길 내내 시중든다','장로가 길에서 한마디씩 일러 줬다.',{exp:.3}],['앞장서서 길을 살핀다',{p:[.5,'wit',.05],ok:['매복 낌새를 먼저 알았다. 장로가 칭찬했다.',{fame:1,exp:.15}],no:['아무 일도 없었다.',{exp:.1}]}]]);
+Q('B','s7b_disciplefee',{sect:1,a:[13,40],tier:[0,1]},'hall','속가에서 보낼 공양미가 올해는 못 온다는 기별이다.',[['일로 때운다','한 해 물지게를 곱절로 졌다.',{hp:-3,st:{body:1}}],['사부께 말씀드린다','사부는 손을 저었다. "쌀로 제자를 받은 적 없다."',{bond:2,joy:2}]]);
+Q('B','s7b_shaolin_copper',{sc:['shaolin'],mar:1,a:[18,50]},'dojo','나한당 수련이다. 구리 인형 여덟이 선다.',[['들어간다',{p:[.4,'body',.06],ok:['여섯째까지 넘겼다.',{exp:.4,fame:.5}],no:['둘째에서 나가떨어졌다.',{hp:-6,exp:.15}]}],['밖에서 길을 읽는다','인형이 움직이는 차례가 보였다.',{exp:.15}]]);
+Q('B','s7b_shaolin_sutra',{sc:['shaolin','emei','potala'],a:[14,65]},'temple','한 철 묵언 수행을 하라는 명이다.',[['지킨다','말이 없으니 귀가 열렸다.',{exp:.2,st:{wit:1}}],['한 달 만에 깬다','방장이 웃었다. "한 달이면 됐다."',{exp:.1,joy:1}]]);
+Q('B','s7b_wudang_pushhands',{sc:['wudang'],mar:1,a:[15,60]},'dojo','추수(推手) 수련에서 사부가 직접 손을 댄다.',[['힘을 뺀다',{p:[.45,'wit',.06],ok:['처음으로 사부의 힘을 흘렸다.',{exp:.4}],no:['나가떨어졌다.',{exp:.15,hp:-2}]}],['버틴다','더 멀리 나가떨어졌다. "버티니까 그렇지."',{exp:.2,hp:-3}]]);
+Q('B','s7b_huashan_cliff',{sc:['huashan'],mar:1,a:[15,50]},'peak','천 길 벼랑 끝 널빤지 길에서 검을 수련한다.',[['나선다',{p:[.55,'body',.05],ok:['발밑이 허공이니 군더더기가 사라졌다.',{exp:.4}],no:['미끄러졌다. 쇠사슬을 잡았다.',{hp:-6,exp:.1}]}],['사형들 하는 걸 본다','보는 것만으로 손에 땀이 났다.',{exp:.1}]]);
+Q('B','s7b_beggar_stick',{sc:['beggar'],mar:1,a:[14,55]},'den','분타 모임에서 타구진을 선다.',[['한 자리를 맡는다',{p:[.5,'body',.05],ok:['진이 흐트러지지 않았다. 매듭 하나를 더 받았다.',{fame:1,exp:.25}],no:['내 자리에서 뚫렸다.',{exp:.1}]}],['북을 친다','박자에 따라 진이 숨 쉬었다.',{exp:.15}]]);
+Q('B','s7b_beggar_news',{sc:['beggar'],a:[12,60]},'market','분타주가 소식을 모아 오라고 한다.',[['주루 뒷문에 눕는다','밤새 들은 것만으로 분타주가 무릎을 쳤다.',{fame:.8,g:[4,8]}],['관아 담 밑에 눕는다',{p:[.4,'luck',.05],ok:['큰 건을 들었다.',{fame:1.5,g:[6,12]}],no:['나졸에게 걷어차였다.',{hp:-3}]}]]);
+Q('B','s7b_tang_test',{sc:['tang','odok'],a:[14,50]},'yard','해독 시험이다. 세 가지 독 중 하나를 마시고 스스로 푼다.',[['마신다',{p:[.5,'wit',.06],ok:['한 시진 만에 풀었다.',{exp:.3,st:{wit:1}}],no:['어른이 해독약을 먹였다. 사흘을 누웠다.',{hp:-10,exp:.1}]}],['독을 냄새로 맞혀 본다','둘은 맞혔다.',{exp:.15}]]);
+Q('B','s7b_clan_heir',{sc:['namgung','zhuge','paeng','moyong'],mar:1,a:[15,40]},'dojo','방계와 직계가 비무로 겨룬다. 가문의 눈이 모였다.',[['나선다',{duel:{n:'사촌',pow:20,look:'youth'},ok:['가주가 처음으로 내 이름을 불렀다.',{fame:1.5,exp:.2}],no:['졌다. 사촌이 손을 내밀었다.',{exp:.15}]}],['사촌의 편을 든다','사촌이 이겼다. 그날부터 형제 같았다.',{bond:2}]]);
+Q('B','s7b_kunlun_ice',{sc:['kunlun','tianshan','binggung','jangbaek'],mar:1,a:[15,55],sea:[3]},'snow','얼음 호수에 몸을 담그고 운기하는 수련이다.',[['들어간다',{p:[.5,'body',.05],ok:['추위가 사라졌다. 단전이 불덩이였다.',{ng:1.5,exp:.2}],no:['동상이 왔다.',{hp:-8}]}],['발만 담근다','그것도 쉽지 않았다.',{ng:.5}]]);
+Q('B','d7b_mission',{side:'마',mar:1,a:[16,55]},'road','정파 표행을 치라는 명이 내렸다.',[['친다',{duel:{n:'표사',pow:19,look:'soldier'},ok:['짐을 뺏었다. 몫이 떨어졌다.',{g:[12,20],ak:2,fame:.5}],no:['쫓겨 왔다. 채찍을 맞았다.',{hp:-8}]}],['표사들을 살려 보낸다','짐만 뺏었다. 윗선이 눈을 흘겼다.',{g:[6,10],ak:.5,hy:1}]]);
+Q('B','d7b_spy',{side:'마',a:[16,55]},'inn','정파 고을에 숨어들어 소식을 캐 오란다.',[['행상으로 꾸민다',{p:[.5,'wit',.05],ok:['들을 만큼 들었다. 그 고을 국수가 맛있었다.',{g:[8,14],fame:.8}],no:['들통났다. 지붕을 넘어 달아났다.',{hp:-6}]}],['캐는 척만 한다','아무도 다치지 않았다. 보고는 대충 꾸몄다.',{hy:1}]]);
+Q('B','d7b_rival',{side:'마사',mar:1,a:[16,50]},'fort','윗자리가 하나 비었다. 노리는 자가 셋이다.',[['겨룬다',{duel:{n:'자리를 노리는 동료',pow:20,look:'cultist',style:'bandit'},ok:['자리를 차지했다.',{fame:1.5,g:[8,14]}],no:['밀려났다.',{hp:-6}]}],['이긴 자 밑에 붙는다','새 윗사람이 나를 기억했다.',{g:[4,8]}]]);
+Q('B','d7b_prisoner',{side:'마사',a:[16,60]},'cave','잡혀 온 정파 젊은이의 간수를 맡았다.',[['물을 넉넉히 준다','젊은이가 내 이름을 물었다.',{hy:1.5}],['밤에 사슬을 느슨히 한다','아침에 그는 없었다. 채찍 열 대를 맞았다.',{hp:-8,hy:3}]]);
+Q('B','d7b_forbidden',{side:'마',mar:1,a:[16,55]},'library','금서고에서 마공 주해를 봤다.',[['읽는다',{p:[.5,'wit',.05],ok:['빠르고 위험한 길이 보였다.',{exp:.4,ak:1}],no:['기가 뒤틀렸다.',{hp:-10}]}],['덮는다','빠른 길에는 값이 있다.',{exp:.05,hy:.5}]]);
+Q('B','d7b_nokrim_share',{sc:['nokrim','suchae'],a:[15,60]},'fort','흉년 든 마을을 털자는 말이 나왔다.',[['반대한다',{p:[.4,'charm',.06],ok:['두목이 고개를 끄덕였다. 대신 지주 집을 털었다.',{hy:2,fame:.8,g:[5,10]}],no:['겁쟁이 소리를 들었다. 빠지기만 했다.',{hy:1}]}],['따라간다','빈 쌀독뿐이었다. 다들 말이 없었다.',{ak:2,joy:-3}]]);
+Q('B','s7b_eyedrill',{sect:1,mar:1,a:[14,50]},'dojo','사부가 등불 하나를 켜고 불꽃이 흔들리기 전에 손을 내밀라고 한다.',[['한 철을 한다','불꽃이 흔들리려는 낌새가 보이기 시작했다.',{art:['관기안',6,'안법'],exp:.1}],['사흘 하고 만다','눈만 아팠다.',{exp:.03}]]);
+Q('B','s7b_guestlecture',{sect:1,mar:1,a:[15,60]},'hall','다른 문파의 고수가 손님으로 와 강론한다.',[['맨 앞에 앉는다','우리 것과 다른 길이 있다는 걸 알았다.',{exp:.3}],['질문한다',{p:[.4,'wit',.06],ok:['고수가 질문을 칭찬하고 따로 답해 줬다.',{exp:.45,fame:.3}],no:['엉뚱한 질문이었다. 다들 웃었다.',{exp:.15}]}]]);
+Q('B','s7b_festivalduty',{sect:1,a:[15,60]},'market','산 아래 마을 축제에 사자춤을 추러 간다.',[['사자 머리를 쓴다','아이들이 뒤를 따랐다. 마을에서 쌀을 올려 보냈다.',{joy:4,fame:.5,bond:.5}],['북을 친다','팔이 떨어지게 쳤다.',{joy:3}]]);
+
+/* ---------- A ---------- */
+Q('A','s7a_closeddoor',{sect:1,mar:1,a:[17,55],lv:2},'cave','사부가 폐관 수련을 허락했다. 석 달이다.',[['들어간다',{p:[.55,'wit',.05],ok:['문을 나섰을 때 사부가 한 번 훑어보고 웃었다.',{exp:.9,ng:3}],no:['벽을 넘지 못했다. 그래도 헛되지는 않았다.',{exp:.35,ng:1}]}],['한 달만 한다','무리하지 않았다.',{exp:.4,ng:1}]]);
+Q('A','s7a_inheritmove',{sect:1,mar:1,a:[18,55],lv:2},'peak','사부가 달밤에 따로 부른다. 직전 제자에게만 주는 한 초식이다.',[['받는다','세 번 보여 주고는 "잊어라" 했다. 잊히지 않았다.',{exp:.8,bond:2}],['사형에게 먼저 주십사 한다','사부가 한참 보더니 둘 다 불렀다.',{exp:.6,bond:3,hy:1}]]);
+Q('A','s7a_sectwar',{sect:1,mar:1,a:[18,58]},'battle','이웃 문파와 광산을 두고 싸움이 붙었다.',[['선봉에 선다',{duel:{n:'상대 문파의 고수',pow:28,look:'swordsman',lethal:1,cause:'문파 간 싸움의 칼'},ok:['이겼다. 사문에서 상이 내렸다.',{fame:3,g:[25,45],exp:.3}],no:['실려 왔다.',{hp:-15}]}],['화해를 주선한다',{p:[.35,'charm',.07],ok:['광산을 반씩 나눴다. 양쪽 장문이 내 이름을 알았다.',{fame:4,hy:3}],no:['양쪽에서 겁쟁이 소리를 들었다.',{fame:-1}]}]]);
+Q('A','s7a_stolenmanual',{sect:1,mar:1,a:[18,58]},'library','장경각에서 비급이 사라졌다. 발자국이 산 아래로 이어진다.',[['쫓는다',{duel:{n:'비급 도둑',pow:27,look:'blackclad',style:'assassin'},ok:['되찾았다. 장문인이 그 비급의 한 장을 열어 보였다.',{exp:.7,fame:3}],no:['놓쳤다.',{hp:-8}]}],['내부를 살핀다',{p:[.4,'wit',.07],ok:['문지기 제자가 매수돼 있었다.',{fame:2.5,exp:.2}],no:['엉뚱한 사람을 의심했다.',{bond:-1}]}]]);
+Q('A','s7a_treasurehall',{sect:1,a:[18,60],need:()=>(m.sc||0)>=12},'hall','공헌이 쌓여 보고(寶庫)에서 하나를 고를 자격이 생겼다.',[['병기를 고른다','손에 맞는 것이 있었다.',{wt:1}],['갑주를 고른다','가볍고 단단했다.',{ar:1}]]);
+Q('A','s7a_alliance',{sect:1,mar:1,a:[20,58]},'hall','무림맹 회합에 사문 대표를 수행한다.',[['비무 시연에 나선다',{duel:{n:'타 문파의 대표 제자',pow:29,look:'whitesword'},ok:['사문의 이름이 높아졌다.',{fame:4,exp:.4}],no:['졌다. 얻은 것은 있었다.',{exp:.3}]}],['고수들 이야기를 귀동냥한다','강호가 돌아가는 판이 보였다.',{st:{wit:1},exp:.2}]]);
+Q('A','s7a_shaolin_marrow',{sc:['shaolin'],mar:1,a:[20,58],lv:2},'temple','방장이 역근경 한 구절을 풀어 준다. 평생 한 번 있는 일이다.',[['받아 적지 않고 듣는다','몸이 먼저 알아들었다.',{ng:4,exp:.5}],['밤새 되뇐다','새벽에 숨이 달라졌다.',{ng:3,exp:.6}]]);
+Q('A','s7a_wudang_sword',{sc:['wudang'],mar:1,a:[20,58],lv:2},'peak','진무전 앞에서 장문인이 태극검의 원을 그린다. 구름이 따라 돈다.',[['같이 그린다','원 안에 서니 힘쓸 데가 없었다.',{exp:.8,ng:2}],['발을 본다','검이 아니라 발이 원을 그리고 있었다.',{exp:.6,art:['제운종',12,'보법']}]]);
+Q('A','s7a_huashan_plumblossom',{sc:['huashan'],mar:1,a:[18,58],lv:2},'peak','매화 스물네 송이를 한 호흡에 찍는 시험이다.',[['해 본다',{p:[.4,'body',.06],ok:['스물넷을 찍었다. 꽃잎은 하나도 떨어지지 않았다.',{exp:.9,fame:2}],no:['열일곱에서 숨이 찼다.',{exp:.4}]}],['열두 송이부터 한다','무리하지 않았다.',{exp:.45}]]);
+Q('A','s7a_beggar_elder',{sc:['beggar'],mar:1,a:[18,58]},'den','장로가 닭다리를 뜯으며 한 수를 보여 준다. "한 번만 한다."',[['눈을 부릅뜬다','한 번이면 됐다. 반은 건졌다.',{exp:.7}],['닭 한 마리를 더 구해 온다','두 번 보여 줬다.',{exp:.9,g:-3}]]);
+Q('A','s7a_tang_rain',{sc:['tang'],mar:1,a:[18,58]},'yard','가문의 암기 제작실에 들어갈 허락이 떨어졌다.',[['폭우침통을 만든다',{p:[.5,'wit',.06],ok:['제 손으로 만든 것은 손에 붙었다.',{it:['ndart'],exp:.3}],no:['용수철이 튀었다. 손등에 박혔다.',{hp:-8}]}],['어른들 솜씨를 배운다','나사 하나의 각도가 달랐다.',{exp:.5,st:{wit:1}}]]);
+Q('A','s7a_clan_trial',{sc:['namgung','zhuge','paeng','moyong'],mar:1,a:[18,45]},'hall','가문의 성년 시험이다. 가전 무공을 가주 앞에서 펼친다.',[['펼친다',{p:[.5,'body',.05],ok:['가주가 가문의 패를 내렸다.',{fame:3,it:['jadep'],exp:.3}],no:['한 초식이 흐트러졌다. 한 해 뒤에 다시다.',{exp:.2}]}],['가주에게 한 수를 청한다',{duel:{n:'가주',pow:40,look:'master',lv:6},ok:['가주가 한 걸음 물러났다. 좌중이 얼어붙었다.',{fame:6,exp:.8}],no:['세 합이었다. 가주는 웃었다. "배짱은 내 핏줄이다."',{exp:.5,fame:1}]}]]);
+Q('A','d7a_bloodpool',{side:'마',mar:1,a:[18,55]},'cave','혈지(血池) 수련이 허락됐다. 견디면 얻고 못 견디면 잃는다.',[['들어간다',{p:[.5,'body',.05],ok:['견뎠다.',{ng:5,exp:.4,ak:2}],no:['기절한 채 건져졌다.',{hp:-20}]}],['사양한다','겁쟁이 소리를 들었다. 몸은 온전했다.',{hy:.5}]]);
+Q('A','d7a_defect',{side:'마',a:[18,55]},'road','정파에 투항하면 받아 주겠다는 밀서가 왔다.',[['떠난다',{p:[.5,'luck',.05],ok:['추격을 따돌렸다. 새 이름으로 살기 시작했다.',{hy:6,fame:2,joy:5}],no:['추격대와 싸웠다. 상처투성이로 벗어났다.',{hp:-18,hy:5}]}],['밀서를 태운다','갈 곳은 여기뿐이다.',{}]]);
+Q('A','d7a_innocent',{side:'마사',a:[17,58]},'village','마을을 불태우라는 명이다.',[['사람들을 먼저 내보낸다','빈집만 탔다. 윗선은 연기만 보고 흡족해했다.',{hy:5,ak:1}],['거부한다',{p:[.4,'charm',.06],ok:['다른 조도 손을 놓았다. 명은 흐지부지됐다.',{hy:6,fame:2}],no:['채찍 서른 대를 맞았다. 마을은 다른 자들이 태웠다.',{hp:-15,hy:4}]}]]);
+
+/* ---------- S ---------- */
+Q('S','s7s_founder',{sect:1,mar:1,a:[18,58],lv:2},'cave','뒷산이 무너져 굴이 드러났다. 조사가 좌화한 동굴이다. 벽에 조사가 말년에 고친 구결이 있다. 문파에 전하지 않은 것이다.',[['장문인에게 알린다','사문이 뒤집혔다. 장문인은 발견한 제자에게 가장 먼저 그것을 열어 주었다.',{exp:1.3,ng:5,fame:5}],['먼저 혼자 익힌다','석 달 뒤에 알렸다. 그사이 반은 내 것이 됐다.',{exp:1.6,ng:6,ak:1}]]);
+Q('S','s7s_successor',{sect:1,mar:1,a:[22,55],lv:3},'hall','장문인이 후계를 정하려 한다. 대사형과 나, 둘이 남았다.',[['비무로 가린다',{duel:{n:'대사형',pow:42,look:'swordsman',lv:6},ok:['대사형이 먼저 무릎을 꿇었다. "장문 사제."',{fame:8,exp:.8,wt:2}],no:['졌다. 대사형은 나를 수석 장로로 삼았다.',{fame:4,exp:.5}]}],['대사형을 민다','대사형이 장문이 됐다. 첫 명은 사문의 보검을 내게 내리는 것이었다.',{wt:2,fame:4,hy:3,bond:3}]]);
+Q('S','s7s_shaolin_seventy',{sc:['shaolin'],mar:1,a:[20,58],lv:2},'library','장경각 수호승이 묻는다. "칠십이 절예 가운데 하나를 고르라면?"',[['금종조를 청한다','쇠 종을 뒤집어쓴 듯 몸이 단단해졌다.',{art:['금종조',0,'내공',10],hp:20,st:{body:1}}],['아무것도 고르지 않는다','수호승이 웃었다. "그럼 이걸 보게." 눈으로 기를 읽는 법이었다.',{art:['혜안',14,'안법'],exp:.8}]]);
+Q('S','s7s_wudang_taiji',{sc:['wudang'],mar:1,a:[20,58],lv:2},'peak','은거한 태사조가 구름 속에서 나왔다. 백 살이 넘었다고 한다. 손짓으로 부른다.',[['다가간다','태사조는 아무 말 없이 내 손을 잡고 원을 그렸다. 한 번이었다.',{exp:1.5,ng:6}],['엎드린다','태사조가 등에 손을 얹었다. 따뜻한 것이 흘러들었다.',{ng:12,hp:15}]]);
+Q('S','s7s_beggar_dog',{sc:['beggar'],mar:1,a:[18,58]},'den','방주가 닭 한 마리를 다 먹고 손을 닦는다. "타구봉법 서른여섯 수 중에 여섯을 보여 주마."',[['다 받아 낸다',{p:[.5,'wit',.06],ok:['여섯 수가 다 들어왔다.',{exp:1.4,fame:3}],no:['넷을 건졌다.',{exp:.9}]}],['한 수만 깊이 판다','방주가 고개를 끄덕였다. "욕심 없는 놈이 오래간다."',{exp:1.1,st:{wit:1}}]]);
+Q('S','s7s_clan_vault',{sc:['namgung','zhuge','paeng','moyong','tang'],mar:1,a:[20,55]},'manor','가주가 가문 비고의 열쇠를 건넨다. "하나만 가지고 나와라."',[['병기를 든다','선조가 쓰던 것이었다.',{wt:2,fame:2}],['갑주를 든다','가문의 문장이 새겨져 있었다.',{ar:2,fame:2}]]);
+Q('S','d7s_demonart',{side:'마',mar:1,a:[18,55]},'cave','교의 금지에서 선대 교주의 유골과 마주쳤다. 무릎 위에 책이 있다.',[['편다','글자가 눈으로 기어 들어왔다. 힘이 넘쳤다. 값은 나중에 치를 것이다.',{art:['천마혈공',32,'마공'],ng:8,ak:6}],['유골을 수습하고 책을 같이 묻는다','그날 밤 꿈에 선대 교주가 웃었다. "그게 내가 못 한 일이다." 깨어 보니 숨이 달라져 있었다.',{ng:12,hy:6,exp:.8}]]);
+
+/* ---------- SS ---------- */
+Q('SS','s7ss_legendblade',{sect:1,mar:1,a:[20,58],lv:3},'peak','사문의 진산 병기가 백 년 만에 운다. 주인을 부른다는 것이다. 제자들이 차례로 손을 댄다. 내 차례다.',[['손을 댄다',{p:[.5,'luck',.06],ok:['울음이 그쳤다. 병기가 손에 붙었다. 장문인이 무릎을 꿇었다.',{wt:3,fame:12,exp:1.5}],no:['울음은 그치지 않았다. 그래도 병기는 내 손에서 한 번 빛났다. 그것으로 족했다.',{exp:2,ng:8}]}],['양보한다','마지막까지 남았다. 아무도 못 뽑은 병기가 내 앞에서 스스로 기울었다.',{wt:3,fame:10,hy:5}]]);
+Q('SS','s7ss_tworivers',{sect:1,mar:1,a:[22,58],lv:3},'pond','정파와 마교의 두 노고수가 평생의 싸움을 끝내고 나란히 앉아 있다. 둘 다 곧 숨이 진다. "젊은이, 우리 둘의 것을 다 받겠나."',[['둘 다 받는다',{p:[.5,'wit',.06],ok:['물과 불이 몸 안에서 한 바퀴를 돌더니 하나가 됐다.',{ng:35,exp:2,st:{body:1,wit:1}}],no:['두 기운이 부딪쳤다. 반년을 누웠다. 일어났을 때 남은 것만도 엄청났다.',{ng:20,hp:-30,exp:1}]}],['한쪽만 받는다','정파 고수의 손을 잡았다. 마교 고수는 웃으며 제 검을 밀어 주었다.',{ng:20,wt:3,hy:5}]]);
+Q('SS','d7ss_throne',{side:'마',mar:1,a:[22,55],lv:3},'hall','교주가 죽었다. 옥좌가 비었다. 호법 넷 가운데 셋이 서로 죽였고, 남은 하나가 나를 본다.',[['옥좌에 앉는다',{duel:{n:'마지막 호법',pow:50,look:'cultist',style:'assassin',lv:6,lethal:1,cause:'호법의 칼'},ok:['교도들이 엎드렸다. 교의 보고가 열렸다.',{g:[600,900],fame:12,wt:3,ak:8}],no:['밀려났다. 목숨은 붙었다.',{hp:-25}]}],['교를 흩는다','보고를 열어 교도들에게 나눠 주고 문을 닫았다. 강호가 그 일을 오래 이야기했다.',{g:[300,450],fame:15,hy:15,ar:3}]]);
+
+/* ---------- SSR ---------- */
+Q('SSR','ssr_ancestor',{sect:1,mar:1,a:[18,58]},'peak','폐관 중에 꿈인지 생시인지 모를 곳에 섰다. 역대 조사들이 둘러앉아 있다. 맨 윗자리의 개파 조사가 손짓한다. "하나씩 물어라. 하나씩 답하마."',[['밤새 묻는다','눈을 떴을 때 석 달이 지나 있었다. 사문 천 년의 무학이 뼈에 새겨져 있었고, 무릎 위에는 조사의 병기가 놓여 있었다.',{exp:6,ng:60,wt:3,ar:3,st:{wit:2,body:2},fame:10}],['아무것도 묻지 않고 차를 올린다','조사들이 웃었다. "묻지 않는 놈이 처음이다." 개파 조사가 이마를 짚었다. 눈이 열렸다. 세상의 모든 움직임이 한 박자 먼저 보였다.',{art:['조사심안',22,'안법'],ng:70,exp:4,st:{wit:3,luck:2},hp:50}]]);
+/* ==== murim:minor-8 — 등급 사건 여덟째 묶음 (설렘 · 혼인 · 자식 · 부모 형제 · 벗 · 원한) ==== */
+/* ---------- C ---------- */
+// 설렘
+Q('C','l8_glance',{wed:0,a:[15,35]},'market','장터에서 눈이 마주친 사람이 있다. 먼저 고개를 돌린 건 나다.',[['다시 본다','그쪽도 다시 보고 있었다.',{joy:3}],['갈 길을 간다','종일 그 얼굴이 떠올랐다.',{joy:1}]]);
+Q('C','l8_flower',{wed:0,a:[15,35],sea:[0]},'village','누가 문 앞에 꽃가지를 두고 갔다.',[['물그릇에 꽂는다','누군지 짐작이 갔다.',{joy:3}],['누군지 캐묻고 다닌다','온 동네가 알게 됐다. 꽃은 다시 오지 않았다.',{joy:1}]]);
+Q('C','l8_well',{wed:0,a:[15,35]},'well','우물가에서 늘 같은 시각에 마주치는 사람이 있다.',[['두레박을 대신 올려 준다','고맙다는 말이 작았다. 귀는 빨갰다.',{joy:3}],['시각을 맞춰 나간다','마주치는 날이 늘었다.',{joy:2}]]);
+Q('C','l8_festival',{wed:0,a:[15,35],sea:[3,0]},'market','등불 축제의 인파 속에서 누군가와 손이 스쳤다.',[['같이 걷자고 한다','등불이 다 꺼질 때까지 걸었다.',{joy:4}],['인파에 떠밀려 간다','돌아보니 그 사람도 돌아보고 있었다.',{joy:2}]]);
+Q('C','l8_rain',{wed:0,a:[15,35],sea:[1]},'road','소나기에 한 처마 밑에 둘이 섰다.',[['말을 건다','비가 그치지 않기를 바랐다.',{joy:3}],['우산 삼아 겉옷을 씌워 준다','나는 젖었다. 괜찮았다.',{joy:3,hp:-1}]]);
+Q('C','l8_letter',{wed:0,a:[15,35]},'home','연서를 쓴다. 벌써 다섯 장째 구겼다.',[['여섯 장째를 보낸다','답장은 사흘 뒤에 왔다. 짧았다. 좋았다.',{joy:4}],['서랍에 넣는다','보내지 못한 편지가 쌓였다.',{joy:1}]]);
+Q('C','l8_rival',{wed:0,a:[15,35]},'village','마음에 둔 사람 곁에 다른 이가 얼쩡거린다.',[['모른 척한다','속이 탔다.',{joy:-1}],['나도 얼쩡거린다','셋이 어색하게 웃었다.',{joy:1}]]);
+Q('C','l8_heartbreak',{wed:0,a:[16,40]},'river','그 사람이 다른 이와 혼인한다는 소식이다.',[['냇가에서 돌을 던진다','돌이 물수제비를 일곱 번 떴다. 위로는 안 됐다.',{joy:-2}],['부조를 하고 온다','웃으며 축하했다. 돌아오는 길이 길었다.',{joy:-1,hy:.3,g:-1}]]);
+Q('C','l8_matchtalk',{wed:0,a:[17,35],par:1},'home','부모님이 혼처 이야기를 꺼내신다.',[['듣기만 한다','이야기는 밤늦도록 이어졌다.',{bond:.3}],['아직 이르다고 한다','어머니가 한숨을 쉬었다.',{}]]);
+Q('C','l8_matchsee',{wed:0,a:[17,35]},'inn','맞선 자리다. 서로 찻잔만 본다.',[['먼저 웃는다','상대도 웃었다. 그다음은 쉬웠다.',{joy:3}],['날씨 이야기를 한다','날씨 이야기만 하다 헤어졌다.',{joy:1}]]);
+// 혼인
+Q('C','w8_morning',{wed:1,a:[18,70]},'home','아침에 눈을 뜨니 밥 냄새가 난다.',[['일어나 거든다','둘이 차린 상이 더 맛있었다.',{bond:1,joy:2}],['조금 더 누워 있는다','부르는 소리에 일어났다. 그 소리가 좋았다.',{joy:2}]]);
+Q('C','w8_hair',{wed:1,a:[18,70]},'home','머리를 빗겨 달라고 한다.',[['천천히 빗긴다','말이 없어도 좋았다.',{bond:1,joy:2}],['서툴게 땋아 본다','삐뚤어졌다. 그대로 하루를 다녔다.',{bond:1,joy:3}]]);
+Q('C','w8_anniv',{wed:1,a:[20,70]},'home','혼인한 날이 돌아왔다. 깜빡 잊을 뻔했다.',[['들꽃을 꺾어 온다','꽃보다 기억한 것을 반겼다.',{bond:1.5,joy:2}],['고기를 끊어 온다','오랜만에 상이 푸짐했다.',{g:-2,bond:1,hp:1}]]);
+Q('C','w8_sulk',{wed:1,a:[18,65]},'home','무엇 때문인지 말을 안 한다.',[['까닭을 생각해 본다','어제 한 말이 걸렸다. 사과했다.',{bond:1}],['좋아하는 떡을 사 온다','떡은 받았다. 말은 한나절 뒤에 했다.',{g:-1,bond:.5}]]);
+Q('C','w8_snore',{wed:1,a:[20,70]},'home','옆에서 코를 곤다.',[['돌아눕힌다','조용해졌다.',{joy:1}],['그 소리에 맞춰 잔다','없으면 허전할 소리다.',{joy:2}]]);
+Q('C','w8_inlaws',{wed:1,sex:'m',a:[18,60]},'village','처가 식구가 온다고 한다.',[['닭을 잡는다','장인이 술을 따라 줬다.',{g:-2,bond:1}],['일 핑계로 늦게 들어간다','눈치가 보였다.',{bond:-.3}]]);
+Q('C','w8_market',{wed:1,a:[18,70]},'market','둘이 장을 본다.',[['짐을 다 든다','어깨는 아팠고 기분은 좋았다.',{bond:.8,joy:1}],['엿을 사서 나눠 먹는다','아이들 같다고 웃었다.',{g:-1,joy:3}]]);
+Q('C','w8_worry',{wed:1,mar:1,a:[20,60]},'home','길 떠나는 내 옷깃을 한참 매만진다.',[['꼭 돌아오겠다고 한다','대답 대신 옷깃을 한 번 더 여몄다.',{bond:1.5}],['웃어 보인다','웃음이 돌아왔다. 눈은 젖어 있었다.',{bond:1,joy:1}]]);
+Q('C','w8_oldcouple',{wed:1,a:[50,70]},'yard','마루에 나란히 앉아 해 지는 걸 본다.',[['손을 잡는다','주름진 손이 따뜻했다.',{bond:1.5,joy:3}],['옛이야기를 한다','서로 기억이 달랐다. 둘 다 우겼다.',{joy:3}]]);
+// 자식
+Q('C','c8_firststep',{kid:1,a:[20,50]},'home','아이가 걸음마를 뗀다.',[['두 팔을 벌린다','세 걸음 만에 안겼다.',{joy:5,bond:1}],['뒤에서 따라간다','넘어지기 전에 받았다.',{joy:4}]]);
+Q('C','c8_question',{kid:1,a:[22,55]},'home','아이가 "왜?"를 백 번 묻는다.',[['백 번 답한다','백한 번째에서 막혔다.',{bond:1,joy:2}],['되묻는다','아이가 한참 생각했다. 기특했다.',{joy:2}]]);
+Q('C','c8_nightmare',{kid:1,a:[22,55]},'home','아이가 무서운 꿈을 꿨다며 온다.',[['곁에 눕힌다','금세 잠들었다. 나는 못 잤다.',{bond:1,hp:-1}],['옛날이야기를 해 준다','도깨비가 착한 편인 이야기였다.',{bond:1,joy:2}]]);
+Q('C','c8_gift',{kid:1,a:[22,60]},'home','아이가 들꽃을 꺾어 왔다. 뿌리째다.',[['사발에 심는다','사흘을 살았다.',{joy:3,bond:1}],['머리에 꽂는다','아이가 좋아서 뛰었다.',{joy:4}]]);
+Q('C','c8_tooth',{kid:1,a:[24,55]},'home','아이 이가 흔들린다. 실을 가져오니 달아난다.',[['쫓아간다','온 집 안을 돌았다.',{joy:2}],['곶감으로 꾄다','먹다가 빠졌다.',{joy:3}]]);
+Q('C','c8_resemble',{kid:1,a:[24,60]},'home','아이가 나와 똑같이 뒷짐을 지고 걷는다.',[['웃는다','배우자도 웃었다.',{joy:4,bond:1}],['같이 뒷짐 지고 걷는다','둘이 마당을 세 바퀴 돌았다.',{joy:4}]]);
+Q('C','c8_fever2',{kid:1,a:[22,55],sea:[3,0]},'home','아이가 기침을 한다.',[['배를 꿀에 쪄 먹인다','이틀 만에 멎었다.',{bond:.5}],['업고 의원에게 간다','별것 아니라고 했다. 마음이 놓였다.',{g:-1,joy:1}]]);
+Q('C','c8_grown',{kid:1,a:[38,70]},'home','아이가 어느새 나보다 크다.',[['키를 대 본다','한 뼘이 넘었다.',{joy:3}],['어깨를 두드린다','어깨가 단단했다.',{joy:3,bond:.5}]]);
+// 부모 형제
+Q('C','f8_mothersfood',{a:[14,50],par:'m'},'home','어머니가 내가 좋아하는 걸 해 놓으셨다.',[['두 그릇 먹는다','어머니가 흐뭇하게 보셨다.',{hp:2,bond:1,joy:2}],['하는 법을 여쭌다','손맛은 못 따라갔다.',{bond:1}]]);
+Q('C','f8_fathersback',{a:[14,50],par:'f'},'yard','아버지 등이 굽은 걸 오늘 처음 봤다.',[['짐을 받아 든다','아버지는 손을 저었다가 내주셨다.',{bond:1.5}],['말없이 뒤를 따른다','걸음이 느려지셨다.',{bond:.5,joy:-1}]]);
+Q('C','f8_nag',{a:[15,40],par:1},'home','부모님 잔소리가 길다.',[['끝까지 듣는다','끝에는 "밥은 먹었냐"였다.',{bond:1}],['"네, 네" 한다','한 대 맞았다.',{joy:1}]]);
+Q('C','f8_siblingvisit',{a:[18,65],need:()=>m.b.sib>0},'home','시집간 누이가 다니러 왔다.',[['밤새 이야기한다','어릴 적 일로 한참 웃었다.',{bond:1.5,joy:3}],['조카에게 엿을 사 준다','조카가 나를 제일 좋아하게 됐다.',{g:-1,joy:3}]]);
+Q('C','f8_siblingloan',{a:[20,65],need:()=>m.b.sib>0},'home','형제가 쌀을 꾸러 왔다.',[['말없이 퍼 준다','형제도 말없이 받아 갔다.',{g:-2,bond:1.5}],['밥부터 먹인다','먹고 나서 꾸러 왔다는 말을 했다.',{g:-2,bond:1.5,hp:1}]]);
+Q('C','f8_parentsick',{a:[20,55],par:1},'home','부모님이 감기로 누우셨다.',[['죽을 쑨다','"네가 쑨 죽이 제일이다." 거짓말인 줄 알았다.',{bond:1.5}],['약을 지어 온다','이틀 만에 일어나셨다.',{g:-2,bond:1}]]);
+Q('C','f8_memorial',{a:[20,70]},'home','제삿날이다.',[['정성껏 차린다','향 연기가 곧게 올랐다.',{bond:.8,g:-2}],['형편껏 차린다','마음은 같았다.',{bond:.5}]]);
+Q('C','f8_oldphoto',{a:[30,70]},'home','궤 밑에서 어머니가 쓰던 비녀가 나왔다.',[['닦아서 간직한다','은빛이 돌아왔다.',{joy:2,bond:.5}],['한참 쥐고 있는다','손에 따뜻해질 때까지.',{joy:1}]]);
+// 벗
+Q('C','b8_drink',{a:[18,70]},'inn','벗이 술 한잔하자고 한다.',[['마신다','별 이야기 없이 좋았다.',{joy:3,g:-1}],['내가 산다','벗이 다음엔 자기가 산다고 했다. 늘 그런다.',{joy:3,g:-2}]]);
+Q('C','b8_help',{a:[16,65]},'village','벗이 이사한다.',[['짐을 나른다','궤짝이 왜 그리 많은지.',{hp:-1,bond:.5,joy:1}],['국수를 삶아 간다','다들 반겼다.',{g:-1,joy:2}]]);
+Q('C','b8_quarrel',{a:[16,60]},'inn','벗과 사소한 일로 언성이 높아졌다.',[['먼저 잔을 채워 준다','벗이 피식 웃었다.',{joy:2}],['자리를 뜬다','이튿날 벗이 먼저 찾아왔다.',{joy:1}]]);
+Q('C','b8_secret',{a:[16,60]},'river','벗이 아무에게도 못 한 이야기를 한다.',[['끝까지 듣는다','듣는 것만으로 벗의 어깨가 내려갔다.',{hy:.5,joy:1}],['내 이야기도 꺼낸다','둘 다 가벼워졌다.',{joy:2}]]);
+Q('C','b8_far',{a:[20,70]},'road','멀리 떠나는 벗을 배웅한다.',[['십 리를 같이 걷는다','버들가지를 꺾어 줬다.',{joy:1,bond:.5}],['노자를 보탠다','벗이 한참 손을 놓지 않았다.',{g:-2,hy:.5}]]);
+Q('C','b8_news',{a:[25,70]},'home','벗의 부고가 왔다.',[['문상을 간다','벗의 아이가 벗을 닮았다.',{joy:-2,hy:.5,g:-1}],['혼자 술을 붓는다','잔을 둘 놓았다.',{joy:-2}]]);
+Q('C','b8_wedding',{a:[18,45]},'wedding','벗이 장가든다. 함진아비를 맡았다.',[['오징어를 쓰고 소리친다','동네가 떠나갔다.',{joy:4}],['점잖게 한다','벗이 재미없다고 했다.',{joy:2}]]);
+// 원한과 화해
+Q('C','g8_grudge',{a:[16,65]},'village','예전에 나를 속인 자와 마주쳤다.',[['모른 척 지나간다','그쪽이 먼저 고개를 숙였다.',{joy:1}],['한마디 한다','속은 시원했다. 뒷맛은 썼다.',{}]]);
+Q('C','g8_apology',{a:[16,65]},'village','예전에 내가 잘못한 이를 길에서 봤다.',[['다가가 사과한다','"다 지난 일이오." 그 말에 묵은 것이 내려갔다.',{hy:.5,joy:2}],['못 본 척한다','밤에 잠이 안 왔다.',{joy:-1}]]);
+Q('C','g8_gossip',{a:[16,65]},'well','내 험담이 돈다.',[['그러라고 한다','사흘 뒤엔 다른 사람 험담으로 바뀌었다.',{}],['누가 냈는지 찾는다','찾고 보니 싱거웠다.',{joy:-1}]]);
+Q('C','g8_neighborfence',{a:[18,65]},'village','이웃이 담을 내 쪽으로 한 뼘 넘겨 쌓았다.',[['웃으며 말한다','이웃이 멋쩍어하며 고쳤다.',{joy:1}],['그냥 둔다','한 뼘 땅보다 이웃이 귀하다.',{bond:.3}]]);
+Q('C','g8_debtfriend',{a:[20,65]},'inn','돈 꿔 간 벗이 나를 피한다.',[['찾아가 술을 산다','벗이 울었다. 돈 이야기는 안 했다.',{g:-1,hy:.5}],['기다린다','가을에 쌀 한 섬이 왔다.',{g:2}]]);
+Q('C','g8_childfight',{kid:1,a:[24,60]},'village','아이끼리 싸워서 어른 싸움이 될 판이다.',[['상대 집에 떡을 들고 간다','어른들끼리는 웃고 말았다.',{g:-1,bond:.5}],['아이들끼리 풀게 둔다','이튿날 둘이 같이 놀고 있었다.',{joy:1}]]);
+
+/* ---------- B ---------- */
+Q('B','l8b_confess',{wed:0,a:[16,35]},'river','오래 마음에 둔 사람에게 말할 때가 왔다.',[['말한다',{p:[.5,'charm',.06],ok:['그 사람이 고개를 끄덕였다. 세상이 환했다.',{joy:10,st:{charm:1}}],no:['"좋은 사람인데…" 그다음 말은 듣지 못했다.',{joy:-5}]}],['시를 지어 건넨다',{p:[.4,'wit',.07],ok:['답시가 왔다.',{joy:10}],no:['무슨 뜻이냐는 답이 왔다.',{joy:-2}]}]]);
+Q('B','l8b_elopeask',{wed:0,a:[17,32]},'forest','집안이 반대한다. 그 사람이 밤에 찾아와 같이 떠나자고 한다.',[['집안을 설득해 보자고 한다',{p:[.4,'charm',.06],ok:['석 달을 빌었다. 어른들이 졌다.',{joy:8,bond:2,wed:1}],no:['그 사람은 다른 곳으로 시집갔다.',{joy:-8}]}],['고개를 젓는다','그 사람은 울며 돌아갔다.',{joy:-5}]]);
+Q('B','l8b_rescue',{wed:0,a:[16,35]},'road','건달들이 누군가를 둘러싸고 있다. 마음에 둔 그 사람이다.',[['끼어든다',{p:[.5,'body',.06],ok:['건달들이 물러났다. 그 사람이 내 소매를 잡았다.',{joy:8,hy:1.5,fame:.5}],no:['얻어맞았다. 그 사람이 상처에 약을 발라 줬다.',{hp:-6,joy:5}]}],['나졸을 부른다','건달들은 흩어졌다. 그 사람은 나졸에게 인사했다.',{hy:.5}]]);
+Q('B','l8b_gisaeng',{wed:0,a:[18,45],gold:10},'manor','기루의 가인이 내 술잔에만 오래 머문다.',[['마음을 준다',{p:[.4,'charm',.06],ok:['가인은 진심이었다. 떠날 때 향낭을 쥐여 줬다.',{it:['sachet'],joy:6,g:-8}],no:['전대가 빈 뒤에는 얼굴도 볼 수 없었다.',{g:-10,joy:-3}]}],['시 한 수만 주고 일어선다','가인이 오래 그 시를 불렀다고 들었다.',{fame:.8,joy:2}]]);
+Q('B','w8b_wedding',{wed:0,a:[17,38],gold:10},'wedding','중매가 들어왔다. 사람은 좋아 보인다.',[['혼례를 올린다','잔치는 조촐했다. 둘이 사는 집에 등이 켜졌다.',{g:-10,joy:8,bond:3,wed:1}],['조금 더 만나 본다','볼수록 괜찮았다. 혼사는 이듬해로 잡았다.',{joy:4}]]);
+Q('B','w8b_jealous',{wed:1,a:[20,55]},'market','배우자가 낯선 이와 웃으며 이야기한다.',[['다가가 인사한다','먼 친척이었다. 괜히 속을 끓였다.',{joy:2,bond:.5}],['집에 와서 캐묻는다','크게 다퉜다. 사흘 뒤에 풀었다.',{bond:-1,joy:-2}]]);
+Q('B','w8b_miscarry',{wed:1,a:[20,40]},'home','기다리던 아이를 잃었다.',[['곁을 떠나지 않는다','둘이 오래 울었다. 그 뒤로 더 단단해졌다.',{joy:-8,bond:4}],['일에 묻는다','서로 말이 줄었다.',{joy:-8,bond:-1}]]);
+Q('B','w8b_dream',{wed:1,a:[20,55],gold:15},'home','배우자가 오래 품은 꿈이 있다고 한다. 작은 가게다.',[['밑천을 댄다',{p:[.55,'luck',.04],ok:['가게가 자리를 잡았다. 얼굴이 폈다.',{g:[5,15],bond:3,joy:4}],no:['한 해 만에 접었다. 그래도 고맙다고 했다.',{g:-15,bond:2}]}],['때를 보자고 한다','고개는 끄덕였다. 눈은 아니었다.',{bond:-.5}]]);
+Q('B','w8b_reconcile',{wed:1,sex:'m',a:[22,65]},'home','크게 다투고 배우자가 친정에 갔다.',[['데리러 간다','장모가 눈을 흘겼다. 배우자는 보따리를 벌써 싸 놓고 있었다.',{bond:3,joy:3,g:-2}],['기다린다','열흘 만에 돌아왔다. 한동안 서먹했다.',{bond:.5}]]);
+Q('B','w8b_gift',{wed:1,a:[20,60],gold:12},'shop','옥 가락지 한 쌍이 눈에 든다.',[['산다','받는 손가락에 꼭 맞았다.',{g:-12,bond:4,joy:4}],['은으로 맞춘다','값은 반, 마음은 같았다.',{g:-6,bond:2.5,joy:3}]]);
+Q('B','c8b_born',{wed:1,sex:'m',a:[19,42],need:()=>m.kids<4},'home','산실에서 울음소리가 터졌다.',[['뛰어 들어간다','주먹만 한 얼굴이 나를 봤다. 다리에 힘이 풀렸다.',{joy:12,bond:3,kid:1}],['미역을 사러 뛴다','장터까지 한달음이었다. 미역 장수가 덤을 줬다.',{joy:10,bond:2,g:-1,kid:1}]]);
+Q('B','c8b_sickchild',{kid:1,a:[22,55]},'home','아이가 사흘째 열이 안 내린다.',[['명의를 찾아 업고 뛴다','삼십 리였다. 의원이 고비는 넘겼다고 했다.',{g:-8,hp:-4,bond:3}],['밤새 물수건을 간다',{p:[.6,'luck',.04],ok:['새벽에 열이 떨어졌다.',{bond:2,hp:-2}],no:['결국 의원을 불렀다. 약값이 곱절이었다.',{g:-12,hp:-2}]}]]);
+Q('B','c8b_runaway',{kid:1,a:[35,65]},'road','아이가 강호에 나가겠다며 집을 나섰다.',[['쫓아가 데려온다',{p:[.5,'charm',.05],ok:['한 해만 더 있다 가기로 했다.',{bond:1}],no:['아이는 고개를 저었다. 노자를 쥐여 보냈다.',{g:-6,joy:-3}]}],['검 한 자루를 쥐여 보낸다','아이가 깊이 절했다. 편지는 철마다 왔다.',{g:-8,bond:2,joy:2}]]);
+Q('B','c8b_marry',{kid:1,a:[40,70],gold:15},'wedding','아이 혼사다.',[['넉넉히 치른다','온 마을이 사흘을 먹었다.',{g:-20,joy:8,fame:1,bond:2}],['조촐히 치른다','웃음은 넉넉했다.',{g:-8,joy:6,bond:1.5}]]);
+Q('B','c8b_grandchild',{kid:1,a:[45,70]},'home','손주가 태어났다.',[['안아 본다','깃털 같았다. 눈물이 났다.',{joy:10,bond:2}],['이름을 지어 준다','사흘을 고민했다.',{joy:8,fame:.3}]]);
+Q('B','c8b_talent',{kid:1,mar:1,a:[30,65]},'yard','아이가 내 초식을 어깨너머로 보고 따라 한다. 제법이다.',[['제대로 가르친다','가르치며 내 버릇을 알았다. 아이는 나보다 빨랐다.',{exp:.25,bond:2,joy:4}],['문파에 보낸다','산문 앞에서 아이가 돌아보며 웃었다.',{g:-6,joy:3,fame:.5}]]);
+Q('B','f8b_parentdeath',{a:[25,60],par:1,rep:0},'grave','부모님 상을 치른다.',[['삼년상을 지킨다','무덤 곁에 움막을 지었다. 효자 소리를 들었다.',{joy:-6,fame:2,hy:2,bond:2}],['장례를 정성껏 치르고 일로 돌아간다','일하다 문득문득 손이 멈췄다.',{joy:-6,g:-5}]]);
+Q('B','f8b_inheritfight',{a:[25,60],need:()=>m.b.sib>0},'home','유산을 두고 형제 사이가 벌어진다.',[['내 몫을 덜어 준다','형제가 한참 말을 못 했다.',{g:-8,bond:3,hy:1.5}],['법대로 나눈다','나눔은 공평했다. 명절이 조용해졌다.',{g:[5,10],bond:-2}]]);
+Q('B','f8b_brotherdebt',{a:[22,60],need:()=>m.b.sib>0},'den','형제가 노름빚에 잡혀 있다.',[['갚아 준다','형제가 다시는 안 한다고 했다. 이번엔 믿기로 했다.',{g:-12,bond:2,hy:1}],['노름꾼들과 담판한다',{p:[.4,'charm',.06],ok:['반으로 깎았다.',{g:-6,bond:2,fame:.5}],no:['같이 얻어맞았다.',{hp:-5,g:-12}]}]]);
+Q('B','f8b_lostkin',{a:[20,65]},'road','어릴 때 잃어버린 형제를 닮은 사람을 봤다.',[['따라가 묻는다',{p:[.3,'luck',.06],ok:['맞았다. 팔뚝의 흉터가 같았다. 둘이 길에서 울었다.',{joy:12,bond:3}],no:['남이었다. 그래도 술 한잔을 나눴다.',{joy:1}]}],['멀리서 본다','아닐 것이다. 아닐 것이다.',{joy:-1}]]);
+Q('B','f8b_stepmother',{a:[10,20],par:'f',need:()=>m.b.mother.dead},'home','아버지가 새어머니를 들이셨다.',[['먼저 절한다','새어머니가 내 옷부터 지어 줬다.',{bond:2,joy:2}],['말을 안 한다','반년을 그랬다. 새어머니는 반년을 기다렸다.',{bond:.5}]]);
+Q('B','b8b_sworn',{a:[17,45]},'forest','뜻이 맞는 벗이 의형제를 맺자고 한다.',[['복숭아나무 아래서 맹세한다','같은 날 태어나지는 못했어도.',{joy:6,hy:1,bond:2}],['마음만 받는다','벗은 서운해했다. 그래도 벗이었다.',{joy:1}]]);
+Q('B','b8b_betray',{a:[20,60]},'inn','믿던 벗이 내 이름으로 빚을 냈다.',[['찾아가 따진다',{p:[.4,'charm',.05],ok:['벗이 무릎을 꿇었다. 어머니 약값이었다. 같이 갚기로 했다.',{g:-6,hy:1.5,bond:1}],no:['벗은 이미 떠났다.',{g:-12,joy:-4}]}],['조용히 갚는다','벗은 다시 볼 수 없었다.',{g:-12,joy:-3}]]);
+Q('B','b8b_savefriend',{a:[18,60]},'river','벗이 술에 취해 강에 빠졌다.',[['뛰어든다',{p:[.55,'body',.05],ok:['끌어냈다. 벗이 술을 끊었다. 석 달은.',{hy:2,bond:2}],no:['둘 다 떠내려가다 어살에 걸렸다.',{hp:-8,bond:2}]}],['장대를 찾는다','벗이 장대를 잡았다. 평생 놀림감이 됐다.',{joy:3,bond:1}]]);
+Q('B','b8b_sickfriend',{a:[25,70]},'home','오랜 벗이 병석에 누웠다.',[['날마다 들른다','벗은 한 철을 더 살았다. 마지막 날 내 손을 잡았다.',{hy:2,joy:-3,bond:1}],['좋은 약을 구해 간다','벗이 일어났다. 둘이 다시 술을 마셨다.',{g:-10,joy:5,hy:1.5}]]);
+Q('B','g8b_enemy',{a:[20,60]},'road','원수진 자가 길에 쓰러져 있다.',[['업고 의원에게 간다','깨어난 그가 한참 천장만 봤다. 원한은 거기서 끝났다.',{hy:4,joy:3}],['지나간다','밤에 그 얼굴이 떠올랐다.',{ak:1,joy:-2}]]);
+Q('B','g8b_slander',{a:[20,60]},'hall','누가 관아에 나를 무고했다.',[['맞고소한다',{p:[.45,'wit',.06],ok:['무고가 드러났다. 그자가 벌금을 물었다.',{g:[6,12],fame:1}],no:['둘 다 곤장을 맞았다.',{hp:-8}]}],['증인을 모은다','이웃들이 줄줄이 내 편을 섰다.',{fame:1,bond:1}]]);
+Q('B','g8b_feud',{a:[18,60]},'village','윗마을과 아랫마을이 물 때문에 대대로 싸운다.',[['양쪽 어른을 한자리에 앉힌다',{p:[.35,'charm',.07],ok:['물길을 날짜로 나눴다. 삼대의 싸움이 끝났다.',{fame:3,hy:3}],no:['술상이 엎어졌다.',{joy:-2}]}],['우리 마을 편에 선다','이겼다. 내년에 또 싸울 것이다.',{fame:.5,hp:-3}]]);
+Q('B','g8b_revengeask',{mar:1,a:[18,60]},'inn','아이가 내 앞에 무릎을 꿇는다. 원수를 갚아 달라며 엽전 꾸러미를 내민다.',[['사정을 듣는다','원수는 고을 왈패였다. 혼을 내고 다시는 얼씬 못 하게 했다.',{hy:3,fame:1}],['엽전을 돌려주고 밥을 먹인다','아이가 밥을 두 그릇 먹었다. 친척 집까지 데려다줬다.',{hy:2,g:-2}]]);
+Q('B','g8b_oldlove',{wed:1,a:[30,60]},'market','옛 정인을 장터에서 봤다. 아이 손을 잡고 있다.',[['눈인사만 한다','그쪽도 그랬다. 그걸로 됐다.',{joy:2}],['아이에게 엿을 쥐여 준다','아이가 꾸벅 절했다. 그 사람이 웃었다.',{joy:3,g:-1}]]);
+
+/* ---------- A ---------- */
+Q('A','l8a_fated',{wed:0,a:[17,35]},'pond','연못가에서 금을 타는 사람이 있다. 줄이 끊어지자 고개를 든다. 눈이 마주쳤다.',[['끊어진 줄을 이어 준다','그날부터 금 소리는 나를 위해 울렸다. 이듬해 혼례를 올렸다.',{joy:12,st:{charm:1},bond:4,wed:1}],['한 곡을 청한다','곡이 끝났을 때 해가 져 있었다. 헤어질 때 부채를 받았다.',{joy:8,it:['fan']}]]);
+Q('A','l8a_heroine',{wed:0,mar:1,a:[18,40]},'bamboo','대숲에서 검을 겨루던 상대의 복면이 벗겨졌다. 숨이 멎었다.',[['검을 거둔다','상대도 거두었다. 그 뒤로 강호를 둘이 걸었다.',{joy:12,exp:.3,bond:4,wed:1}],['끝까지 겨룬다',{duel:{n:'복면의 검객',pow:27,look:'whitesword'},ok:['상대가 웃었다. "이겼으니 책임지시오."',{joy:12,fame:2,bond:4,wed:1}],no:['졌다. "다음에 또 오시오." 그 말이 좋았다.',{joy:6,exp:.3}]}]]);
+Q('A','l8a_princess',{wed:0,sex:'m',a:[17,35]},'road','산적에게 쫓기는 가마를 구했다. 안에 든 이는 대갓집 규수다.',[['집까지 바래다준다','대감이 사위 삼자 했다. 규수가 발 뒤에서 웃었다.',{g:[40,70],fame:3,joy:8,wed:1}],['이름도 안 밝히고 떠난다','규수가 수놓은 향낭이 인편에 따라왔다. 은자도 함께였다.',{it:['sachet'],g:[25,40],hy:3}]]);
+Q('A','w8a_savespouse',{wed:1,a:[22,58]},'forest','배우자가 산에서 돌아오지 않는다. 날이 진다.',[['횃불을 들고 찾는다',{p:[.6,'body',.04],ok:['벼랑 밑에서 찾았다. 업고 내려왔다. 밤새 손을 놓지 않았다.',{bond:6,hp:-5,joy:5}],no:['새벽에야 찾았다. 다리가 부러져 있었다. 한 철을 간호했다.',{bond:6,hp:-8,g:-8}]}],['마을 사람을 모은다','다 같이 찾았다. 무사했다.',{bond:3,joy:3}]]);
+Q('A','w8a_secret',{wed:1,sex:'m',a:[22,60]},'home','배우자가 감춰 온 것이 있다고 한다. 무림 명가에서 달아난 몸이었다.',[['"그래서?" 한다','배우자가 울다 웃었다. 그날 밤 가문의 호흡법을 내게 일러 줬다.',{bond:5,ng:3,exp:.3}],['그 집안과 화해를 주선한다',{p:[.4,'charm',.07],ok:['장인이 처음으로 사위라 불렀다. 답례가 수레로 왔다.',{g:[40,70],fame:3,bond:4}],no:['문전박대를 당했다. 둘이 손잡고 돌아왔다.',{bond:4}]}]]);
+Q('A','c8a_prodigy',{kid:1,a:[28,65]},'school','아이가 고을 백일장에서 장원을 했다.',[['잔치를 연다','온 고을이 내 아이 이름을 불렀다.',{g:-10,joy:10,fame:3}],['도성 서원에 보낸다','훗날 아이가 보낸 첫 녹봉이 왔다.',{g:[20,50],joy:8,fame:2}]]);
+Q('A','c8a_kidnapped',{kid:1,a:[25,60]},'forest','아이가 사라졌다. 인신매매꾼이 지나갔다고 한다.',[['쫓는다',{p:[.55,'body',.05],ok:['나루에서 따라잡았다. 아이 말고도 셋을 더 풀어 줬다.',{hy:6,fame:3,bond:5}],no:['이틀을 쫓아 겨우 되찾았다. 몸이 성한 데가 없었다.',{hp:-18,bond:5,hy:3}]}],['관아와 표국에 다 알린다','사흘 만에 찾았다. 집이 팔릴 뻔한 값이 들었다.',{g:-30,bond:4}]]);
+Q('A','c8a_heir',{kid:1,mar:1,a:[40,68],lv:3},'yard','아이가 정식으로 무릎을 꿇는다. "아버지의 검을 잇겠습니다."',[['전부를 전한다','평생의 것을 한 해에 쏟았다. 쏟고 나니 내 것이 더 또렷해졌다.',{exp:.8,bond:5,joy:8,fame:2}],['더 나은 스승에게 보낸다','아이는 나를 넘었다. 그보다 좋은 일은 없었다.',{joy:10,fame:3}]]);
+Q('A','f8a_fatherhonor',{a:[18,45],par:'f'},'hall','아버지가 누명을 쓰고 옥에 갇혔다.',[['진범을 찾는다',{p:[.4,'wit',.07],ok:['석 달 만에 찾았다. 옥문이 열리던 날 아버지가 처음으로 우셨다.',{fame:4,bond:5,hy:3}],no:['끝내 못 찾았다. 아버지는 삼 년을 사셨다.',{joy:-6,bond:2}]}],['대신 갇히겠다고 청한다','수령이 감복해 재조사를 명했다. 누명이 벗겨졌다.',{fame:5,hy:4,bond:5,hp:-5}]]);
+Q('A','f8a_motherwish',{a:[25,55],par:'m'},'home','어머니가 죽기 전에 고향 바다를 한 번 보고 싶다 하신다.',[['업고 간다','한 달 길이었다. 어머니가 바다 앞에서 소녀처럼 웃으셨다.',{g:-15,hp:-5,bond:6,joy:8,hy:3}],['바닷물을 길어 온다','어머니가 물에 손을 담그고 한참 계셨다.',{g:-5,bond:3,joy:3}]]);
+Q('A','b8a_lifedebt',{a:[20,60]},'road','벗이 내 대신 칼을 맞았다. 길에서 만난 강도였다.',[['업고 의원까지 뛴다',{p:[.6,'body',.05],ok:['살았다. 둘은 피를 나눈 것보다 가까워졌다.',{hy:3,bond:5,hp:-4}],no:['늦었다. 벗의 식구를 평생 돌봤다.',{joy:-10,hy:5,g:-15}]}],['강도를 쫓는다','잡았다. 돌아왔을 때 벗은 이웃이 살려 놓았다.',{fame:2,bond:2}]]);
+Q('A','b8a_partner',{a:[20,58],gold:20},'market','오랜 벗과 동업을 한다.',[['장부는 벗에게 맡긴다',{p:[.6,'luck',.04],ok:['벗은 한 닢도 속이지 않았다. 둘 다 살림이 폈다.',{g:[40,70],bond:2}],no:['장사는 망했다. 벗은 남았다.',{g:-20,bond:2}]}],['장부를 같이 본다','이문은 조금 덜했다. 의심도 없었다.',{g:[30,50]}]]);
+Q('A','g8a_forgive',{a:[22,65],need:()=>m.b.father.dead},'grave','아버지를 죽게 한 자가 늙고 병들어 무릎을 꿇는다.',[['일으켜 세운다','그는 울었다. 나도 울었다. 무덤 앞에 둘이 절했다.',{hy:8,joy:5,fame:3}],['돌아선다','용서도 복수도 하지 않았다. 그것이 내 답이었다.',{hy:2,joy:1}]]);
+Q('A','g8a_vendetta',{mar:1,a:[20,58]},'bamboo','십 년 묵은 원한의 상대가 결투장을 보냈다.',[['나간다',{duel:{n:'십 년의 원수',pow:29,look:'swordsman',lethal:1,cause:'십 년 원한의 칼'},ok:['그가 쓰러졌다. 속은 비어 있었다.',{fame:3,joy:-2,exp:.4}],no:['졌다. 그는 죽이지 않았다. "이제 비겼다."',{hp:-15,joy:2}]}],['술병을 들고 간다',{p:[.45,'charm',.06],ok:['둘이 밤새 마셨다. 왜 싸웠는지 둘 다 기억이 흐렸다.',{hy:5,joy:6,fame:2}],no:['술병이 깨졌다. 칼은 뽑지 않았다.',{}]}]]);
+
+/* ---------- S ---------- */
+Q('S','l8s_immortalcouple',{wed:0,a:[18,38]},'peak','구름 위 암자에서 약초 캐는 사람을 만났다. 속세 사람 같지 않다.',[['한 철을 곁에 머문다','그 사람은 선문(仙門)의 마지막 제자였다. 산을 내려올 때 둘이었다. 호흡법은 혼수였다.',{joy:15,ng:8,bond:6,st:{charm:1},wed:1}],['산을 내려온다','그 사람이 품에 약 주머니를 넣어 줬다. "인연이면 또 보겠지요."',{it:['pill','pill'],hp:20,joy:5}]]);
+Q('S','w8s_lifeanddeath',{wed:1,a:[22,60]},'home','배우자가 깊은 병에 들었다. 의원은 설산의 약초 말고는 길이 없다고 한다.',[['설산에 오른다',{p:[.55,'body',.06],ok:['약초를 품고 돌아왔다. 배우자가 눈을 떴다.',{bond:10,joy:10,hp:-10,hy:3,st:{body:1}}],no:['동상으로 발가락을 잃었다. 약초는 구했다.',{bond:10,hp:-25,joy:8}]}],['전 재산으로 약초를 구한다','집이 비었다. 사람은 남았다.',{g:-150,bond:8,joy:8}]]);
+Q('S','c8s_genius',{kid:1,a:[30,65]},'yard','지나가던 기인이 아이를 보고 발을 멈춘다. "백 년에 하나 날 근골이오. 내게 맡기시겠소?"',[['맡긴다','십 년 뒤 아이는 강호에 이름을 떨쳤다. 기인은 답례로 영약을 보내왔다.',{it:['pill','pill'],fame:6,joy:10,g:[100,150]}],['곁에 두겠다고 한다','기인은 웃으며 석 달을 머물렀다. 아이와 내가 같이 배웠다.',{exp:1,ng:5,bond:5}]]);
+Q('S','f8s_familytreasure',{a:[20,65],par:'f'},'home','아버지가 임종에 이르러 마루 밑을 가리킨다.',[['파 본다','할아버지의 할아버지가 묻은 궤였다. 금과 함께 가문의 내력이 적힌 족자가 나왔다.',{g:[150,230],fame:2,bond:3}],['손을 잡고 곁을 지킨다','아버지는 웃으며 가셨다. 궤는 장례 뒤에 팠다. 금 위에 편지가 있었다. "네가 그럴 줄 알았다."',{g:[150,230],hy:4,joy:3,bond:5}]]);
+Q('S','b8s_swornbrothers',{mar:1,a:[18,50]},'battle','의형제 셋이 적에게 둘러싸였다. 한 사람이 남아 길을 막아야 둘이 산다.',[['내가 남는다',{duel:{n:'포위한 적의 수괴',pow:38,look:'chief',style:'brute',lethal:1,cause:'의형제를 지킨 싸움'},ok:['수괴를 베자 적이 흩어졌다. 셋이 다 살았다. 강호가 그 일을 이야기했다.',{fame:8,hy:8,bond:6}],no:['쓰러졌다. 눈을 떴을 때 두 형제가 나를 업고 있었다.',{hp:-25,hy:8,bond:6}]}],['셋이 함께 뚫는다',{p:[.5,'body',.05],ok:['등을 맞대고 뚫었다.',{fame:5,exp:.6,bond:5}],no:['셋 다 상처투성이였다. 그래도 셋이었다.',{hp:-18,bond:5}]}]]);
+Q('S','g8s_bloodfeud',{mar:1,a:[20,58]},'manor','두 가문의 삼대에 걸친 원한이다. 내가 이쪽의 마지막 검이고, 저쪽의 마지막 검이 문 앞에 섰다.',[['검을 뽑는다',{duel:{n:'원수 가문의 마지막 검',pow:38,look:'swordsman',lethal:1,cause:'삼대의 원한'},ok:['이겼다. 죽이지 않았다. 원한은 내 손에서 끝냈다.',{fame:8,hy:6,exp:.8}],no:['졌다. 그도 죽이지 않았다.',{hp:-20,hy:3}]}],['검을 땅에 꽂는다','그가 한참 서 있다가 제 검도 꽂았다. 두 검은 지금도 그 자리에 있다.',{fame:10,hy:10,joy:8}]]);
+Q('S','g8s_truelove_return',{a:[30,60]},'inn','스무 해 전에 죽은 줄 알았던 정인이 객잔 문을 연다. 머리가 희끗하다.',[['일어선다','말이 나오지 않았다. 스무 해가 한순간에 접혔다.',{joy:20,bond:8,hp:10}],['"늦었소" 한다','"미안하오." 둘이 마주 앉아 식은 차를 마셨다. 그가 품에서 낡은 향낭과, 그동안 모은 것을 꺼냈다.',{joy:12,it:['sachet'],g:[120,180]}]]);
+
+/* ---------- SS ---------- */
+Q('SS','l8ss_fairy',{wed:0,a:[18,40]},'pond','달밤의 못에서 누군가 목욕을 한다. 바위 위에 날개옷이 걸려 있다.',[['옷을 건드리지 않고 돌아선다','등 뒤에서 웃음소리가 났다. "속세에 이런 사람이 다 있네." 이튿날 문 앞에 비단옷 한 벌과 구슬이 놓여 있었다. 칼이 들어가지 않는 옷이었다.',{ar:3,it:['pearl'],st:{luck:2},joy:10}],['노래로 인기척을 낸다','그 사람은 놀라지 않았다. 달이 질 때까지 이야기했다. 떠나며 이마에 손을 얹었다. 몸 안의 탁한 것이 다 씻겼다.',{ng:20,hp:40,st:{charm:2},joy:15}]]);
+Q('SS','f8ss_bloodline',{a:[14,40]},'manor','낯선 노인이 찾아와 내 손바닥을 본다. "찾았다." 나는 멸문당한 무림 명가의 마지막 핏줄이라고 한다.',[['가문의 유산을 받는다','숨겨진 장원의 지하에 가문 삼백 년의 것이 그대로 있었다.',{g:[500,750],wt:2,ar:2,art:['가전심법',0,'내공',15],fame:6}],['이름만 받는다','유산은 원수들이 노릴 것이다. 노인은 가전의 눈 쓰는 법만 가르치고 떠났다. 그것이 가문의 진짜 보물이었다.',{art:['천안통',20,'안법'],exp:1.5,ng:8}]]);
+/* ==== murim:minor-9 — 등급 사건 아홉째 묶음 (기이한 일 · 괴담 · 꿈과 점 · 절과 도관 · 중년과 노년) ==== */
+/* ---------- C ---------- */
+// 기이한 일
+Q('C','y9_foxfire',{a:[8,70],sea:[1,2]},'grave','밤길에 무덤가에서 푸른 불이 떠다닌다.',[['멈춰서 본다','도깨비불은 한참 맴돌다 꺼졌다.',{joy:1}],['뛴다','집에 와서야 숨을 쉬었다.',{hp:-1}]]);
+Q('C','y9_knock',{a:[8,70]},'home','한밤에 문 두드리는 소리가 난다. 열어 보니 아무도 없다.',[['소금을 뿌린다','다시는 나지 않았다.',{}],['문고리를 살핀다','바람에 흔들리는 마른 가지였다.',{joy:1}]]);
+Q('C','y9_oldwell',{a:[8,70]},'well','폐가의 우물에서 소리가 울린다고 아이들이 무서워한다.',[['돌을 던져 본다','풍덩 소리가 한참 뒤에 났다. 깊었다.',{joy:1}],['들여다본다','내 얼굴이 나를 올려다봤다.',{joy:1}]]);
+Q('C','y9_shadow',{a:[8,70]},'road','달밤에 내 그림자가 둘이다.',[['뒤를 돌아본다','달 말고 등불 하나가 더 있었다.',{joy:1}],['걸음을 재촉한다','그림자 둘이 따라왔다.',{hp:-1}]]);
+Q('C','y9_crowd_crows',{a:[8,70]},'village','까마귀 떼가 지붕에 까맣게 앉았다.',[['쫓는다','한꺼번에 날아올랐다. 하늘이 잠깐 어두웠다.',{}],['둔다','저녁에 다 떠났다. 별일 없었다.',{}]]);
+Q('C','y9_strangekid',{a:[14,70]},'road','길에서 만난 아이가 내 이름을 안다.',[['어떻게 아느냐고 묻는다','"아까 누가 부르던데요." 그랬다.',{joy:1}],['사탕을 준다','아이는 받고 뛰어갔다.',{joy:1}]]);
+Q('C','y9_whitehair',{a:[14,70]},'forest','숲에서 머리가 하얀 노파가 나물을 캔다. 발소리가 없다.',[['인사한다','노파가 냉이 한 줌을 쥐여 줬다.',{hp:1}],['길을 돌아간다','돌아보니 아무도 없었다.',{}]]);
+Q('C','y9_stoneface',{a:[8,70]},'mountain','바위가 사람 얼굴을 닮았다.',[['절하고 간다','괜히 든든했다.',{joy:1}],['코를 만져 본다','이끼가 묻었다.',{joy:1}]]);
+Q('C','y9_ghostwedding',{a:[12,70]},'road','밤길에 초롱 든 행렬이 지나간다. 소리가 없다.',[['길가에 엎드린다','다 지나가고 고개를 드니 안개뿐이었다.',{joy:-1}],['따라가 본다','무덤 앞에서 사라졌다. 영혼 혼례였다.',{joy:1}]]);
+Q('C','y9_talkingbird',{a:[8,70]},'market','새장수의 구관조가 내 말을 따라 한다.',[['욕을 가르친다','새장수가 화를 냈다.',{joy:2}],['이름을 가르친다','지나갈 때마다 내 이름을 불렀다.',{joy:2}]]);
+// 꿈과 점
+Q('C','d9_dragon',{a:[8,70]},'home','용이 품으로 들어오는 꿈을 꿨다.',[['아무에게도 말하지 않는다','좋은 꿈은 사흘을 품으라 했다.',{joy:2}],['추첨 패를 산다',{p:[.2,'luck',.03],ok:['작은 것이 맞았다.',{g:[3,6]}],no:['꽝이었다.',{g:-1}]}]]);
+Q('C','d9_teeth',{a:[14,70]},'home','이가 빠지는 꿈을 꿨다.',[['식구들 안부를 묻는다','다들 무탈했다.',{bond:.3}],['개꿈이라 친다','아침밥이 맛있었다.',{}]]);
+Q('C','d9_deadparent',{a:[25,70],need:()=>m.b.father.dead||m.b.mother.dead},'home','돌아가신 부모님이 꿈에 나오셨다.',[['성묘를 간다','풀이 많이 자라 있었다.',{bond:.5,joy:1}],['밥 한 그릇을 떠 놓는다','아침에 보니 김이 서려 있었다.',{joy:1}]]);
+Q('C','d9_sticks',{a:[12,70]},'temple','절에서 점대를 뽑는다.',[['상상(上上)이 나온다고 믿고 뽑는다',{p:[.35,'luck',.04],ok:['상상이었다.',{joy:3}],no:['중평이었다. 나쁘진 않다.',{joy:1}]}],['뽑지 않는다','모르는 게 약이다.',{}]]);
+Q('C','d9_palm',{a:[12,70]},'market','손금쟁이가 손을 잡는다.',[['봐 달라고 한다','"명줄이 길고 재물선이 끊겼다 이어지오." 누구에게나 하는 말 같았다.',{g:-1,joy:1}],['내가 그쪽 손금을 봐 준다','손금쟁이가 웃었다.',{joy:2}]]);
+Q('C','d9_birthday',{a:[10,70]},'home','생일이다.',[['국수를 먹는다','길게 살라고 끊지 않고 먹었다.',{hp:1,joy:2}],['잊고 지나간다','저녁에야 생각났다.',{}]]);
+Q('C','d9_omen',{a:[12,70]},'road','길을 나서는데 신발 끈이 끊어진다.',[['하루 미룬다','그날 고개에서 산사태가 났다고 들었다.',{joy:1}],['고쳐 매고 간다','별일 없었다.',{}]]);
+// 절과 도관
+Q('C','t9_bell',{a:[8,70]},'temple','저녁 종소리가 산 아래까지 온다.',[['끝까지 듣는다','서른세 번이었다.',{joy:2}],['종소리에 맞춰 숨을 쉰다','마음이 가라앉았다.',{joy:1,exp:.01}]]);
+Q('C','t9_vegmeal',{a:[10,70]},'temple','절에서 공양을 얻어먹는다.',[['한 톨도 남기지 않는다','스님이 웃으며 한 그릇 더 줬다.',{hp:2}],['설거지를 돕는다','물이 찼다. 마음은 개운했다.',{hy:.3}]]);
+Q('C','t9_youngmonk',{a:[10,70]},'temple','동자승이 마당에서 졸다 목탁을 떨어뜨린다.',[['주워 준다','동자승이 씩 웃었다.',{joy:2}],['못 본 척한다','큰스님도 못 본 척했다.',{joy:1}]]);
+Q('C','t9_taoist',{a:[12,70]},'road','도사가 부적을 판다. 값은 "주는 대로"다.',[['엽전 한 닢을 낸다','부적 글씨가 닭 발자국 같았다.',{g:-1,joy:1}],['도사와 이야기한다','산속 생활이 생각보다 바쁘다고 했다.',{joy:2}]]);
+Q('C','t9_stonestack',{a:[8,70]},'mountain','산길에 돌탑이 서 있다.',[['돌 하나를 얹는다','무너지지 않았다. 소원을 빌었다.',{joy:2}],['지나간다','바람에도 서 있는 게 용했다.',{}]]);
+Q('C','t9_hermit',{a:[14,70]},'hermit','암자의 스님이 차를 내온다.',[['말없이 마신다','세 잔째에 스님이 물었다. "무얼 찾으시오?" 답을 못 했다.',{joy:2}],['이것저것 묻는다','스님은 웃기만 했다.',{joy:1}]]);
+Q('C','t9_release',{a:[10,70],sea:[0]},'river','방생 법회다. 자라를 강에 놓아준다.',[['한 마리를 사서 놓는다','자라는 돌아보지 않았다.',{g:-1,hy:.5}],['구경한다','하류에서 누가 도로 잡고 있었다.',{joy:1}]]);
+// 중년
+Q('C','m9_grayhair',{a:[35,55]},'home','흰 머리카락을 처음 봤다.',[['뽑는다','두 가닥이 난다고들 했다.',{}],['둔다','훈장 같은 것이다.',{joy:1}]]);
+Q('C','m9_belly',{a:[35,60]},'home','허리띠 구멍이 하나 늘었다.',[['아침마다 걷는다','한 달 만에 구멍이 돌아왔다.',{hp:2}],['허리띠를 새로 산다','편했다.',{g:-1}]]);
+Q('C','m9_youngtalk',{a:[38,65]},'inn','젊은이들 이야기가 반은 못 알아듣겠다.',[['물어본다','친절히 일러 줬다. 그래도 반은 몰랐다.',{joy:1}],['고개만 끄덕인다','아는 척이 늘었다.',{}]]);
+Q('C','m9_backache',{a:[38,65]},'field','허리를 삐끗했다.',[['사흘 눕는다','누워서 천장 무늬를 다 외웠다.',{hp:1}],['침을 맞는다','한 대에 풀렸다.',{g:-1,hp:2}]]);
+Q('C','m9_hometown',{a:[35,65]},'village','어릴 적 살던 집 앞을 지난다.',[['들여다본다','감나무가 그대로였다.',{joy:2}],['그냥 지나친다','발이 느려졌다.',{joy:1}]]);
+Q('C','m9_regret',{a:[40,65]},'river','가지 않은 길을 생각한다.',[['술 한 잔에 털어 넣는다','간 길도 나쁘지 않았다.',{joy:1}],['오래 앉아 있는다','강물은 돌아오지 않는다.',{}]]);
+Q('C','m9_teach',{a:[38,65]},'village','동네 젊은이가 일을 물으러 왔다.',[['아는 대로 일러 준다','젊은이가 술을 들고 다시 왔다.',{joy:2,hp:1}],['직접 해 보라고 한다','실수하며 배웠다. 그게 낫다.',{joy:1}]]);
+// 노년
+Q('C','o9_cane',{a:[58,70]},'road','지팡이를 장만할 때가 됐다.',[['대나무를 고른다','가볍고 곧았다.',{joy:1}],['아직 이르다','무릎 생각은 달랐다.',{hp:-1}]]);
+Q('C','o9_nap',{a:[55,70]},'yard','볕 좋은 마루에서 깜빡 졸았다.',[['마저 잔다','깨니 누가 담요를 덮어 놓았다.',{hp:2,joy:1}],['일어난다','할 일이 없었다. 도로 누웠다.',{hp:1}]]);
+Q('C','o9_names',{a:[60,70]},'village','아는 사람 이름이 입에서 맴돈다.',[['"자네" 한다','상대도 "어르신" 했다. 피차 잊은 모양이다.',{joy:1}],['솔직히 묻는다','상대가 웃으며 일러 줬다.',{joy:1}]]);
+Q('C','o9_teeth',{a:[58,70]},'home','이가 시원찮아 고기를 못 씹는다.',[['곱게 다져 먹는다','맛은 같았다.',{hp:1}],['죽을 먹는다','속이 편했다.',{hp:1}]]);
+Q('C','o9_friendgone',{a:[60,70]},'grave','또 하나가 갔다. 상여 뒤를 따른다.',[['만가를 따라 부른다','목이 메었다.',{joy:-2}],['다음은 누구일까 한다','옆의 노인도 같은 생각을 하는 얼굴이었다.',{joy:-1}]]);
+Q('C','o9_garden',{a:[55,70],sea:[0,1]},'yard','뜰에 국화를 심었다.',[['날마다 물을 준다','가을에 볼 것이 생겼다.',{joy:2}],['손주에게 맡긴다','물을 너무 줘서 반은 죽었다.',{joy:2}]]);
+Q('C','o9_oldsong',{a:[55,70]},'inn','젊을 적 유행하던 노래가 들린다.',[['따라 부른다','가사가 다 나왔다.',{joy:3}],['누가 부르나 본다','그때 그 가인은 아니었다.',{joy:1}]]);
+Q('C','o9_will',{a:[60,70]},'home','물려줄 것을 정리한다.',[['하나하나 적는다','적고 보니 많지 않았다. 홀가분했다.',{joy:1}],['아직은 미룬다','급할 것 없다.',{}]]);
+Q('C','o9_sunrise',{a:[58,70]},'peak','새벽잠이 없다. 해 뜨는 걸 본다.',[['끝까지 본다','날마다 같은 해인데 날마다 달랐다.',{joy:2}],['뒷짐 지고 한 바퀴 돈다','닭이 먼저 인사했다.',{hp:1}]]);
+Q('C','o9_swordrust',{mar:1,a:[58,70]},'home','오래 안 뽑은 검에 녹이 슬었다.',[['닦는다','날은 여전했다. 손이 예전 같지 않을 뿐.',{joy:1}],['그대로 둔다','검도 쉴 때가 됐다.',{}]]);
+Q('C','o9_story',{mar:1,a:[55,70]},'inn','젊은 낭인들이 옛 강호 이야기를 청한다.',[['들려준다','반은 보탰다. 다들 알면서 들었다.',{joy:3}],['"다 지난 일" 한다','그 말이 더 그럴듯했는지 술이 건너왔다.',{joy:2}]]);
+Q('C','o9_rainache',{a:[55,70],sea:[1]},'home','비가 오려나. 온 뼈마디가 안다.',[['미리 빨래를 걷는다','걷자마자 쏟아졌다. 식구들이 신통해했다.',{joy:2}],['아랫목에 눕는다','빗소리가 좋았다.',{hp:1}]]);
+Q('C','o9_chessold',{a:[55,70]},'village','정자에서 장기 두는 노인들 틈에 꼈다.',[['훈수를 둔다','쫓겨났다.',{joy:2}],['한 판 둔다',{p:[.5,'wit',.04],ok:['이겼다. 진 노인이 한 판 더 하자고 붙들었다.',{joy:3}],no:['졌다. 한 판 더 하자고 붙들었다.',{joy:2}]}]]);
+Q('C','o9_peace',{a:[60,70]},'yard','아무 일도 없는 하루다.',[['그게 좋다','차가 맛있었다.',{joy:2,hp:1}],['심심하다','심심한 것도 복이다.',{joy:1}]]);
+Q('C','o9_lastwalk',{a:[62,70]},'river','젊을 적 걷던 강둑을 다시 걷는다.',[['끝까지 간다','반나절이 걸렸다. 그때는 한 식경이었다.',{joy:2,hp:-1}],['중간에 앉는다','강은 그때 그 강이었다.',{joy:2}]]);
+
+/* ---------- B ---------- */
+Q('B','y9b_hauntedinn',{a:[16,65]},'innroom','이 방에서 묵은 손님은 아침에 머리가 센다고 한다. 방값은 공짜다.',[['묵는다',{p:[.6,'luck',.04],ok:['천장에 박쥐가 살았다. 주인이 사례했다.',{g:[6,12],fame:.5}],no:['밤새 무언가를 봤다. 흰 머리가 한 줌 났다.',{joy:-4,hp:-3}]}],['마구간에서 잔다','말 냄새는 났지만 꿈은 없었다.',{}]]);
+Q('B','y9b_ghostdebt',{a:[18,65]},'grave','꿈에 죽은 이웃이 나와 장독 밑을 가리킨다.',[['파 본다',{p:[.5,'luck',.05],ok:['이웃이 숨겨 둔 은자였다. 유족에게 전했다. 유족이 절반을 내밀었다.',{g:[8,14],hy:2}],no:['아무것도 없었다. 개꿈이었다.',{}]}],['유족에게 꿈 이야기를 한다','유족이 파 보았다. 편지 한 통이 나왔다고 했다.',{hy:1,bond:.5}]]);
+Q('B','y9b_foxwife',{a:[18,45]},'forest','숲에서 길을 잃었다. 곱게 차린 집에서 하룻밤 묵어 가라 한다.',[['묵는다',{p:[.5,'luck',.05],ok:['아침에 깨니 무덤가였다. 품에 구슬 하나가 들어 있었다.',{g:[10,18],joy:2}],no:['아침에 깨니 무덤가였다. 기운이 쭉 빠져 있었다.',{hp:-10}]}],['사양하고 나무 위에서 잔다','밤새 여우 우는 소리가 났다.',{hp:-1}]]);
+Q('B','y9b_riverghost',{a:[14,60],sea:[1]},'river','물귀신이 잡아당긴다는 소(沼)에서 아이가 허우적댄다.',[['뛰어든다',{p:[.55,'body',.05],ok:['아이를 끌어냈다. 발목을 잡은 건 수초였다.',{hy:3,fame:1}],no:['둘 다 한참 물을 먹었다. 겨우 나왔다.',{hp:-10,hy:2}]}],['줄을 던진다','아이가 잡았다. 온 마을이 달려와 당겼다.',{hy:2,fame:.5}]]);
+Q('B','y9b_shaman',{a:[14,65]},'village','큰무당이 굿판에서 나를 가리킨다. "저이 뒤에 누가 서 있다."',[['굿을 받는다','돈은 들었다. 어깨가 가벼워진 것은 사실이다.',{g:-6,hp:6,joy:2}],['웃고 만다',{p:[.6,'luck',.04],ok:['아무 일도 없었다.',{}],no:['그달에 유난히 넘어졌다.',{hp:-4}]}]]);
+Q('B','y9b_buriedbell',{a:[14,65]},'field','밭에서 흙 묻은 종이 나왔다. 치니 맑게 운다.',[['절에 바친다','절에서 잔치를 열었다. 스님이 호신부를 내렸다.',{it:['talis'],hy:2,fame:1}],['고물상에 판다','구리 값이 제법 됐다.',{g:[8,14]}]]);
+Q('B','y9b_stonecoffin',{a:[16,65]},'cave','동굴에 돌널이 있다. 뚜껑이 반쯤 열렸다.',[['들여다본다',{p:[.5,'luck',.05],ok:['부장품 구슬 몇 알이 남아 있었다.',{g:[10,18],ak:.5}],no:['박쥐 떼가 쏟아졌다. 넘어져 다쳤다.',{hp:-5}]}],['뚜껑을 덮어 준다','그날 밤 꿈에 누가 절을 했다. 이후 한동안 운이 따랐다.',{st:{luck:1},hy:1}]]);
+Q('B','y9b_doppel',{a:[18,60]},'market','나와 똑같이 생긴 사람이 장터를 지나간다.',[['쫓아가 말을 건다','이웃 고을 사람이었다. 사돈의 팔촌쯤 됐다. 술을 나눴다.',{joy:4,bond:.5}],['그 사람 외상을 내가 갚게 됐다','주모가 우겼다. 나중에 그 사람이 갚으러 왔다. 웃돈을 얹어서.',{g:[2,5],joy:2}]]);
+Q('B','y9b_raincharm',{a:[14,65],sea:[1]},'temple','떠돌이 도사가 비를 부르겠다며 단을 쌓는다. 품을 청한다.',[['돕는다',{p:[.3,'luck',.05],ok:['정말 비가 왔다. 도사가 부적 한 장을 줬다.',{it:['talis'],fame:.5}],no:['비는 안 왔다. 도사는 밤에 달아났다.',{hp:-2}]}],['구경한다','도사가 칼춤을 잘 췄다.',{joy:2}]]);
+Q('B','d9b_dreamnumber',{a:[16,65]},'home','꿈에 돌아가신 할머니가 숫자 셋을 불러 주셨다.',[['그 숫자로 패를 산다',{p:[.25,'luck',.04],ok:['맞았다.',{g:[15,30],joy:4}],no:['하나만 맞았다.',{g:-2}]}],['제사상을 차린다','할머니가 좋아하시던 것을 올렸다.',{bond:1,hy:.5,g:-2}]]);
+Q('B','d9b_fortune',{a:[16,60]},'market','용하다는 점쟁이가 "석 달 안에 물을 조심하라"고 한다.',[['석 달 동안 물가에 안 간다','나룻배 하나가 뒤집혔다는 소식을 들었다. 탈 뻔한 배였다.',{joy:2,st:{luck:1}}],['코웃음 친다',{p:[.7,'luck',.03],ok:['아무 일 없었다.',{}],no:['개울에서 미끄러져 다리를 삐었다.',{hp:-6}]}]]);
+Q('B','d9b_namechange',{a:[16,55]},'temple','작명가가 이름의 획수가 나쁘다고 한다.',[['자(字)를 새로 받는다','이름이 바뀌니 마음가짐이 달라졌다.',{g:-5,joy:3,st:{luck:1}}],['부모님이 주신 이름이다','작명가가 입맛을 다셨다.',{bond:.5}]]);
+Q('B','t9b_templework',{a:[14,60]},'temple','절에서 한 철 일손을 구한다. 삯 대신 밥과 방이다.',[['머문다','새벽 예불과 마당 쓸기. 몸과 마음이 다 가벼워졌다.',{hp:8,joy:3,hy:1}],['열흘만 있는다','열흘도 길었다. 그래도 좋았다.',{hp:4}]]);
+Q('B','t9b_sutra',{a:[14,65]},'temple','노스님이 경전 한 권을 베껴 달라 한다. 눈이 어둡다고.',[['베낀다','글자마다 뜻을 물었다. 스님이 기꺼이 풀어 줬다.',{st:{wit:1},hy:1}],['큰 글씨로 베낀다','스님이 손뼉을 쳤다. 염주를 벗어 줬다.',{it:['beads'],hy:1}]]);
+Q('B','t9b_taoistpill',{a:[18,65]},'hermit','도관의 도사가 단약 굽는 걸 도와 달란다. 불을 사흘 지켜야 한다.',[['지킨다',{p:[.5,'wit',.05],ok:['성공했다. 한 알을 얻었다.',{it:['pill']}],no:['솥이 터졌다. 눈썹이 탔다.',{hp:-5}]}],['장작만 패 준다','도사가 약초차를 줬다. 몸이 따뜻했다.',{hp:4}]]);
+Q('B','t9b_pilgrim',{a:[16,60]},'road','순례 행렬이 지난다. 같이 가자고 한다.',[['한 달을 걷는다','발은 부르텄다. 속은 비워졌다.',{hp:-2,joy:5,hy:1.5,st:{body:1}}],['노자를 보탠다','순례자가 내 이름으로 초를 켜겠다고 했다.',{g:-4,hy:1}]]);
+Q('B','t9b_relic',{a:[14,65]},'temple','절에 사리를 모신다고 사람이 구름처럼 모였다.',[['밤새 줄을 선다','친견했다. 좁쌀만 했다. 그래도 가슴이 뛰었다.',{joy:4,hp:-1}],['인파에서 소매치기를 잡는다','스님들이 고마워했다. 공양을 한 상 받았다.',{fame:.8,hp:3}]]);
+Q('B','m9b_midcrisis',{a:[38,55]},'inn','이대로 늙는가 싶다.',[['훌쩍 한 달을 떠난다','돌아오니 집이 좋았다.',{g:-6,joy:6}],['새 일을 배운다',{p:[.5,'wit',.05],ok:['늦게 배운 것이 재미있었다.',{joy:5,st:{wit:1}}],no:['사흘 하고 그만뒀다.',{joy:1}]}]]);
+Q('B','m9b_health',{a:[40,62]},'home','의원이 술을 끊으라고 한다.',[['끊는다','석 달 뒤 몸이 달라졌다.',{hp:10,joy:-2}],['줄인다','줄인 만큼은 좋아졌다.',{hp:4}]]);
+Q('B','m9b_apprentice',{a:[38,65]},'village','동네 청년이 제자로 받아 달라 한다. 내 일을 배우고 싶다고.',[['받는다','가르치는 보람이 있었다. 일손도 늘었다.',{joy:5,g:[4,8],fame:.5}],['한 해 지켜본다','한 해를 버텼다. 그때 받았다.',{joy:3,fame:.3}]]);
+Q('B','m9b_reunion',{a:[40,65]},'inn','서당 동무들이 스무 해 만에 모인다.',[['간다','다들 늙었다. 웃음소리는 그대로였다.',{joy:6,g:-2}],['잘나가는 동무에게 부탁을 한다',{p:[.4,'charm',.05],ok:['동무가 일자리를 알아봐 줬다.',{g:[8,15]}],no:['동무가 화제를 돌렸다.',{joy:-1}]}]]);
+Q('B','m9b_land',{mar:0,a:[38,62],gold:25},'field','평생 모은 돈으로 논 한 마지기를 살 수 있다.',[['산다','내 땅을 밟았다. 흙냄새가 달랐다.',{g:-25,joy:8,st:{luck:1}}],['자식 밑천으로 둔다','궤가 든든했다.',{joy:2}]]);
+Q('B','o9b_illness',{a:[55,70]},'home','한 철을 크게 앓았다.',[['마음을 편히 먹는다',{p:[.55,'luck',.04],ok:['봄에 털고 일어났다.',{hp:5,joy:2}],no:['일어나긴 했다. 전 같지는 않았다.',{hp:-8}]}],['좋다는 약을 다 쓴다','돈이 들었다. 낫긴 나았다.',{g:-10,hp:6}]]);
+Q('B','o9b_grandkidteach',{a:[55,70],kid:1},'yard','손주가 글을 가르쳐 달란다.',[['천자문부터 시작한다','손주가 "할아버지 최고"라 했다. 그 한마디면 됐다.',{joy:6,bond:2}],['옛날이야기에 글자를 섞는다','재미있어하며 배웠다.',{joy:5,bond:1.5,fame:.3}]]);
+Q('B','o9b_giveaway',{a:[58,70],gold:20},'village','쓸 데 없이 쌓인 것이 많다.',[['마을 서당에 내놓는다','아이들이 책을 얻었다. 서당 기둥에 내 이름이 적혔다.',{g:-15,fame:2,hy:3,joy:4}],['어려운 집에 나눈다','누가 준 건지 모르게 했다.',{g:-15,hy:4,joy:4}]]);
+Q('B','o9b_oldrival',{mar:1,a:[55,70]},'inn','젊을 적 맞수가 지팡이를 짚고 찾아왔다.',[['마지막으로 한 수 겨룬다','둘 다 세 합 만에 숨이 찼다. 한참 웃었다.',{joy:6,exp:.1,hp:-2}],['차를 낸다','지난 싸움을 하나하나 복기했다. 서로 다르게 기억했다.',{joy:5}]]);
+Q('B','o9b_lastjourney',{a:[58,70],gold:10},'road','죽기 전에 한 번 보고 싶은 곳이 있다.',[['떠난다','멀었다. 볼 만했다. 돌아오는 길은 가벼웠다.',{g:-10,joy:8,hp:-3}],['이야기로 듣는다','다녀온 이가 한참 이야기해 줬다.',{joy:3}]]);
+Q('B','o9b_tomb',{a:[60,70],gold:10},'grave','묏자리를 봐 둔다.',[['지관을 부른다','볕 잘 드는 언덕이었다. 마음이 편했다.',{g:-6,joy:3}],['부모님 곁으로 한다','그게 제일이다.',{joy:3,bond:1}]]);
+Q('B','o9b_eyesdim',{a:[55,70]},'home','눈이 침침하다. 글자가 번진다.',[['결명자를 달여 마신다','한결 나았다.',{hp:2,g:-1}],['눈을 감고 귀를 쓴다','보이지 않으니 들리는 것이 있었다. 발소리로 사람을 알게 됐다.',{st:{wit:1}}]]);
+Q('B','o9b_legacyskill',{a:[55,70]},'forge','평생 익힌 손재주를 누구에게 넘길까 한다.',[['동네 아이들을 모아 가르친다','셋이 남았다. 셋이면 됐다.',{joy:5,fame:1}],['글로 적어 남긴다','책 한 권이 됐다.',{joy:4,fame:.8}]]);
+
+/* ---------- A ---------- */
+Q('A','y9a_dragonpalace',{a:[14,60],sea:[1]},'river','물에 빠진 자라를 건져 놓아줬더니, 그날 밤 꿈에 푸른 옷 입은 이가 찾아와 절한다.',[['따라간다','물 밑의 누각에서 술을 받았다. 깨어 보니 머리맡에 구슬이 있었다.',{it:['pearl'],joy:5}],['사양한다','이튿날 강가에 큰 잉어 세 마리가 뛰어올라 있었다. 그해 고기잡이가 유난히 잘됐다.',{g:[25,40],st:{luck:1}}]]);
+Q('A','y9a_mountaingod',{a:[14,60]},'mountain','산신당이 허물어져 있다.',[['사흘 걸려 고친다','그 산에서는 길을 잃지 않았다. 약초가 눈에 잘 띄었다.',{hp:-3,st:{luck:1},g:[20,35],hy:2}],['돌 하나만 바로 놓는다','내려오는 길에 산삼 잎을 봤다.',{g:[25,45]}]]);
+Q('A','y9a_ghostmarket',{a:[16,60]},'den','그믐밤에만 선다는 귀시(鬼市)에 발을 들였다. 얼굴을 가린 이들이 등불 없이 물건을 판다.',[['하나를 산다',{p:[.5,'luck',.05],ok:['날이 밝아 보니 진짜 호심경이었다.',{g:-10,it:['mirror']}],no:['날이 밝아 보니 기왓장이었다.',{g:-10}]}],['구경만 한다','세상에 없는 물건이 많았다. 눈이 호강했다.',{joy:4,st:{wit:1}}]]);
+Q('A','y9a_plaguegod',{a:[16,65]},'village','역병이 도는 마을 어귀에서 남루한 노인이 물 한 모금을 청한다. 아무도 문을 안 연다.',[['집에 들여 밥을 먹인다','노인은 떠나며 문설주에 손바닥을 찍었다. 역병은 우리 골목을 건너뛰었다.',{hy:4,it:['talis'],fame:2}],['물만 떠다 준다','노인이 고개를 끄덕였다. 우리 집은 무사했다.',{hy:1.5,hp:5}]]);
+Q('A','y9a_swordspirit',{mar:1,a:[18,60]},'tomb','옛 전쟁터에서 밤마다 칼 부딪는 소리가 난다고 한다.',[['밤을 지샌다','보이지 않는 군사들이 싸웠다. 한 장수의 창술이 눈에 박혔다.',{exp:.8,joy:-2}],['술을 붓고 제를 올린다','소리가 멎었다. 마을에서 사례했다. 흙 속에서 녹슬지 않은 갑옷 조각이 나왔다.',{g:[20,35],ar:1,hy:3}]]);
+Q('A','d9a_prophecy',{a:[14,50]},'temple','떠돌이 승려가 나를 보더니 게송 넉 줄을 적어 준다. 뜻을 모르겠다.',[['품고 다닌다','몇 해 뒤 한 줄씩 들어맞았다. 마지막 줄대로 한 날, 큰 화를 피했다.',{st:{luck:2},joy:3}],['뜻을 풀어 달라고 쫓아간다','승려는 한 줄만 풀어 줬다. "눈으로 보지 말고 마음으로 보라."',{art:['응시안',8,'안법']}]]);
+Q('A','d9a_pastlife',{a:[16,60]},'temple','처음 온 절인데 낯이 익다. 발이 저절로 뒤뜰 석탑으로 간다.',[['탑 밑을 살핀다','틈에서 낡은 염주와 은자 주머니가 나왔다. 왜 거기 있는 줄 알았는지는 모른다.',{it:['beads'],g:[25,45]}],['스님에게 말한다','스님이 한참 나를 봤다. "돌아오셨군요." 그날 밤 설법이 뼈에 스몄다.',{st:{wit:1},joy:5,hy:2}]]);
+Q('A','t9a_abbot',{a:[16,65]},'temple','큰스님이 열반을 앞두고 마지막 설법을 한다.',[['맨 뒤에서 듣는다','한마디가 평생 남았다.',{joy:6,st:{wit:1},hy:2}],['다비식까지 지킨다','사리가 나왔다. 절에서 염주 한 벌을 내렸다.',{it:['beads'],hy:3,fame:1}]]);
+Q('A','t9a_wuxingcave',{mar:1,a:[18,58]},'cave','도관 뒤 동굴에 옛 도사들이 내단을 닦던 자리가 있다.',[['한 달 좌선한다','기가 순해졌다. 탁한 것이 빠져나갔다.',{ng:4,hp:8}],['벽의 도인도(導引圖)를 익힌다','몸 푸는 법이었다. 묵은 병이 사라졌다.',{hp:15,st:{body:1}}]]);
+Q('A','m9a_secondwind',{a:[40,60]},'peak','마흔 넘어 무언가 다시 끓는다.',[['젊을 적 꿈을 다시 잡는다',{p:[.45,'wit',.06],ok:['늦게 핀 꽃이 오래갔다.',{joy:10,fame:3,g:[20,40]}],no:['이루지는 못했다. 해 봤으니 됐다.',{joy:4}]}],['그 불을 자식에게 건넨다','아이가 내 못 간 길을 갔다.',{joy:8,bond:3}]]);
+Q('A','m9a_bigdebtpaid',{a:[38,62]},'home','이십 년 전 떼인 돈이 이자까지 붙어 돌아왔다. 갚은 이는 그 집 아들이다.',[['받는다','아들이 깊이 절했다. "아버지 유언이었습니다."',{g:[40,70],joy:4}],['원금만 받는다','아들이 눈시울을 붉혔다. 두 집이 다시 왕래했다.',{g:[20,35],hy:3,bond:2}]]);
+Q('A','o9a_longevity',{a:[60,70]},'village','회갑 잔치다. 온 마을이 모였다.',[['크게 연다','사흘을 먹고 마셨다. 한평생이 헛되지 않았다.',{g:-20,joy:12,fame:3,bond:3}],['조촐히 하고 남은 돈을 나눈다','굶는 집이 그 겨울엔 없었다.',{g:-20,hy:6,fame:3,joy:8}]]);
+Q('A','o9a_oldherb',{a:[58,70]},'mountain','평생 다니던 산에서 처음 보는 풀을 봤다. 잎이 일곱이다.',[['캐서 먹는다','무릎이 펴지고 눈이 밝아졌다. 십 년은 젊어진 듯했다.',{hp:25,st:{body:1}}],['캐서 판다','약방에서 큰돈을 냈다. 손주 밑천이 됐다.',{g:[50,90]}]]);
+Q('A','o9a_lastdisciple',{mar:1,a:[55,70],lv:3},'yard','비 오는 날 문 앞에 아이가 서 있다. 사흘째다.',[['들인다','마지막 제자였다. 가르치며 내 평생의 것이 정리됐다.',{exp:.8,joy:8,fame:2}],['다른 스승을 일러 준다','아이는 고개를 저었다. 나흘째에 문을 열었다.',{exp:.6,joy:6,hy:1}]]);
+
+/* ---------- S ---------- */
+Q('S','y9s_peachspring',{a:[14,60]},'cave','물길을 따라 동굴을 지나니 복사꽃 핀 마을이 나온다. 사람들이 옛 옷을 입고 있다. 바깥이 무슨 세상이냐고 묻는다.',[['사흘을 머문다','떠날 때 복숭아 한 광주리를 받았다. 다시 찾으려 했지만 동굴은 없었다. 복숭아를 먹은 뒤로 병을 몰랐다.',{hp:35,st:{body:1,luck:1},joy:10}],['눌러살까 한다','촌장이 웃었다. "그대는 돌아갈 사람이오." 호리병 하나를 쥐여 줬다. 마셔도 마셔도 줄지 않는 술이었고, 마실 때마다 기가 돌았다.',{ng:8,joy:12,hp:15}]]);
+Q('S','y9s_ghostgeneral',{a:[16,60]},'tomb','무덤을 옮기는 일을 거들다 관 속 백골이 쥔 편지를 봤다. 억울하게 죽은 장군의 유서다.',[['관아에 올린다','백 년 만에 누명이 벗겨졌다. 조정에서 상을 내리고, 후손이 가보를 들고 찾아왔다.',{g:[120,180],fame:6,ar:2,hy:4}],['후손을 찾아 전한다','후손은 몰락해 있었다. 편지를 읽고 통곡했다. 그가 가진 전부라며 조상의 병기를 내밀었다.',{wt:2,hy:6,fame:3}]]);
+Q('S','d9s_threedreams',{a:[16,60]},'temple','사흘 밤 같은 꿈을 꾼다. 흰 옷 입은 이가 무언가를 가르친다. 깨면 잊는다.',[['나흘째 밤, 깨자마자 적는다','호흡법이었다. 적은 대로 하니 단전이 열렸다.',{art:['몽중심법',0,'내공',12],exp:.5}],['꿈속에서 묻는다. "누구십니까?"','"네 눈이다." 깨어나니 세상이 느리게 보였다.',{art:['파사안',12,'안법'],st:{wit:1}}]]);
+Q('S','t9s_livingbuddha',{a:[16,65]},'temple','설산에서 내려온 활불이 고을에 머문다. 사람마다 한마디씩 해 준다고 한다. 내 차례다.',[['아무것도 묻지 않는다','활불이 이마에 손을 얹었다. 따뜻한 것이 정수리로 들어왔다.',{ng:10,hp:25,st:{luck:1}}],['"어떻게 살아야 합니까"','"지금처럼." 그 한마디에 십 년 근심이 풀렸다. 활불이 목에 건 구슬을 벗어 줬다.',{joy:20,it:['pearl'],hy:4}]]);
+Q('S','t9s_immortalchess',{a:[14,60]},'peak','산정 바위에 바둑판이 새겨져 있고 돌이 놓여 있다. 두다 만 판이다. 백이 한 수면 산다.',[['그 한 수를 놓는다',{p:[.4,'wit',.07],ok:['돌이 놓이자 바위가 갈라졌다. 틈에서 옥함이 나왔다. 단약 세 알이었다.',{it:['pill','pill','pill'],ng:5,st:{wit:1}}],no:['틀렸다. 바람이 돌을 다 쓸어 갔다. 그래도 판은 눈에 남았다.',{st:{wit:1}}]}],['판을 외워 내려온다','한 해를 들여다봤다. 수읽기가 사람 읽기와 같다는 걸 알았다.',{st:{wit:2},art:['관기안',6,'안법']}]]);
+Q('S','m9s_latebloom',{mar:1,a:[40,62],lv:2},'hermit','마흔 넘어 벽을 넘는 이는 드물다고들 한다. 오늘 새벽, 벽이 없었다.',[['그대로 나아간다','늦게 온 것은 깊게 왔다.',{exp:1.6,ng:6}],['멈추고 뒤를 돌아본다','지나온 길이 한눈에 들어왔다. 버릴 것과 남길 것이 갈렸다.',{exp:1.2,st:{wit:1},hp:10}]]);
+Q('S','o9s_returnyouth',{a:[60,70]},'pond','산중 샘에서 물을 마셨더니 이가 새로 난다.',[['한 달을 그 물만 마신다','흰 머리 사이로 검은 머리가 났다. 지팡이를 버렸다.',{hp:40,st:{body:2}}],['물을 떠다 마을에 나눈다','노인들이 허리를 폈다. 샘은 한 달 뒤 말랐다. 마을은 그 일을 비석에 새겼다.',{hp:20,fame:8,hy:8}]]);
+
+/* ---------- SS ---------- */
+Q('SS','y9ss_dragonpearl',{a:[14,60]},'river','가뭄에 마른 용소(龍沼) 바닥에서 비늘 덮인 것이 헐떡인다. 이무기다. 눈이 사람 눈이다.',[['물길을 터서 강으로 보낸다','이무기가 강에 닿자 비가 쏟아졌다. 구름 속으로 긴 것이 올랐다. 발밑에 여의주 조각이 떨어져 있었다.',{it:['pearl'],ng:15,st:{luck:3},fame:8,hp:20}],['물을 길어다 붓는다','사흘을 날랐다. 나흘째 비가 왔다. 이무기는 사라지고 그 자리에 비늘 한 장이 남았다. 옷 속에 대니 칼이 들어가지 않았다.',{ar:3,st:{luck:2,body:1},hy:6}]]);
+Q('SS','t9ss_scripture',{a:[16,60]},'library','허물어진 탑 속에서 금으로 쓴 경전이 나왔다. 글자 사이에 다른 글이 숨어 있다.',[['숨은 글을 읽는다','달마가 남겼다는 호흡이었다. 한 줄 읽을 때마다 몸이 달라졌다.',{art:['세수경',0,'내공',20],hp:25,st:{body:1}}],['절에 바친다','방장이 무릎을 꿇었다. 답례로 절의 보물을 내주고, 숨은 글의 첫 장을 풀어 줬다.',{ng:10,g:[300,450],fame:10,hy:8}]]);
+Q('SS','o9ss_ascendhint',{a:[58,70]},'peak','평생을 돌아보니 하나로 꿰어진다. 산정에 앉았는데 몸이 가볍다. 구름이 발밑에 있다.',[['눈을 감는다','사흘 뒤에 내려왔다. 무엇을 봤는지는 말로 못 한다. 병이 다 나았고 눈이 맑았다.',{hp:50,ng:20,st:{wit:2,luck:2},joy:20}],['내려가서 사람들과 밥을 먹는다','신선이 될 뻔했다. 밥이 더 좋았다. 그날부터 내가 앉은 자리가 편안하다고 사람들이 모였다.',{joy:25,fame:12,hy:10,hp:25}]]);
+
+/* ---------- SSR ---------- */
+Q('SSR','ssr_heavenbook',{a:[14,60]},'cave','번개가 절벽을 갈랐다. 갈라진 틈 안에 글자가 떠 있다. 돌에 새긴 것이 아니다. 허공에, 빛으로 쓰여 있다. 천서(天書)다. 한 장이 넘어갈 때마다 앞 장은 사라진다.',[['끝까지 읽는다','마지막 장이 사라졌을 때 머릿속에 다 들어 있었다. 천지의 이치가 호흡 하나에 담겼다. 틈 바닥에는 천서를 지키던 이의 유품이 남아 있었다.',{art:['천서심법',0,'내공',60],exp:5,st:{wit:3,body:1},wt:3,g:[1500,2500],hp:40}],['첫 장만 읽고 눈을 감는다','욕심내지 않았다. 첫 장은 "보는 법"이었다. 눈을 떴을 때 세상의 모든 것이 한 박자 먼저 움직였다. 운이, 사람이, 칼끝이.',{art:['천안통',20,'안법'],ng:40,st:{luck:3,wit:2},hp:40,fame:5}]]);
+/* ==== murim:minor-10 — 등급 사건 열째 묶음 (물건과 병기 · 도성과 포구 · 먼 길 · 먹고 마시는 일 · 눈과 기색) ==== */
+/* ---------- C ---------- */
+// 물건과 병기
+Q('C','z10_scabbard',{mar:1,a:[16,70],need:()=>!!m.inv.w},'forge','검집 끝이 닳았다.',[['구리로 덧댄다','걸을 때 소리가 달라졌다.',{g:-1,joy:1}],['가죽을 감는다','손수 한 것이라 정이 갔다.',{joy:1}]]);
+Q('C','z10_tassel',{mar:1,a:[16,70],need:()=>!!m.inv.w},'market','검에 달 수실을 고른다.',[['붉은 것을 단다','휘두를 때 눈이 따라갔다.',{g:-1,joy:2}],['안 단다','군더더기는 없는 편이 좋다.',{}]]);
+Q('C','z10_oil',{mar:1,a:[16,70],need:()=>!!m.inv.w},'innroom','날에 기름을 먹인다.',[['천천히 먹인다','등불에 날이 푸르게 섰다.',{joy:1,exp:.01}],['대충 바른다','며칠 뒤 녹점이 하나 났다.',{}]]);
+Q('C','z10_armorfit',{a:[16,65],need:()=>!!m.inv.a},'innroom','갑옷 끈이 헐거워졌다.',[['조여 맨다','몸에 붙으니 움직임이 가벼웠다.',{joy:1}],['살이 빠진 건가 한다','밥을 한 그릇 더 먹었다.',{hp:1}]]);
+Q('C','z10_charmworn',{a:[14,70],need:()=>!!m.inv.c},'home','지니고 다니는 장신구를 꺼내 닦는다.',[['오래 들여다본다','얻던 날이 떠올랐다.',{joy:2}],['끈을 새로 꿴다','든든했다.',{joy:1}]]);
+Q('C','z10_salvemake',{a:[14,70]},'kitchen','금창약 만드는 법을 주워들었다.',[['약초를 찧어 본다','색은 비슷했다. 효험은 모르겠다.',{joy:1}],['약방에서 산다','아는 것과 만드는 것은 다르다.',{g:-1}]]);
+Q('C','z10_packing',{a:[16,70]},'home','길 떠날 봇짐을 싼다.',[['덜어 낸다','가벼워야 멀리 간다.',{joy:1}],['이것저것 넣는다','사흘째에 어깨가 후회했다.',{hp:-1}]]);
+Q('C','z10_lostitem',{a:[14,70]},'road','주머니칼을 어디서 흘렸다.',[['온 길을 되짚는다','개울가 돌 위에 그대로 있었다.',{joy:2}],['잊는다','새것을 샀다. 손에 익는 데 한 달이 걸렸다.',{g:-1}]]);
+Q('C','z10_gifted',{a:[14,70]},'village','이웃이 손수 짠 짚신을 준다.',[['그 자리에서 신는다','발에 꼭 맞았다.',{joy:2,bond:.3}],['아껴 둔다','먼 길 갈 때 신기로 했다.',{joy:1}]]);
+Q('C','z10_broken',{a:[14,70]},'home','아끼던 찻잔이 깨졌다.',[['옻으로 붙인다','금 간 자리가 무늬가 됐다.',{joy:2}],['조각을 묻어 준다','오래 썼다.',{joy:1}]]);
+// 도성과 포구
+Q('C','z10_gate',{a:[14,70]},'road','도성 성문 앞에 줄이 길다. 수문장이 봇짐을 뒤진다.',[['차례를 기다린다','한 시진 만에 들어갔다.',{}],['수문장에게 말을 붙인다','고향 사람이었다. 먼저 들여보내 줬다.',{joy:2}]]);
+Q('C','z10_crowd',{a:[14,70]},'market','도성 저자는 사람에 떠밀려 다닌다.',[['떠밀리는 대로 간다','처음 보는 골목에 닿았다. 국숫집이 있었다.',{hp:1,joy:1}],['전대를 꽉 쥔다','그래도 무사했다.',{}]]);
+Q('C','z10_tower',{a:[14,70]},'peak','성루에 오르니 기와지붕이 바다 같다.',[['한참 내려다본다','저 지붕마다 사람이 산다.',{joy:2}],['궁궐 쪽을 본다','누런 기와가 햇빛에 탔다.',{joy:2}]]);
+Q('C','z10_foreigner',{a:[10,70]},'market','눈이 파란 서역 사람이 양탄자를 판다.',[['손짓으로 흥정한다','서로 무슨 말인지 몰랐다. 둘 다 웃었다.',{joy:3}],['구경한다','무늬가 눈을 어지럽혔다.',{joy:2}]]);
+Q('C','z10_nightmarket',{a:[14,70]},'market','야시장에 등이 줄줄이 걸렸다.',[['꼬치를 사 먹으며 돈다','배가 불러도 눈이 고팠다.',{g:-1,hp:1,joy:3}],['그림자극을 본다','손오공이 막 나올 참이었다.',{joy:3}]]);
+Q('C','z10_harbor',{a:[12,70]},'river','포구에 돛이 숲을 이뤘다.',[['짐 부리는 걸 구경한다','처음 보는 과일이 굴러떨어졌다. 주워 먹었다. 달았다.',{hp:1,joy:2}],['뱃사람 이야기를 듣는다','바다 밖에 바다가 또 있다고 했다.',{joy:3}]]);
+Q('C','z10_canal',{a:[12,70]},'river','운하에 배가 꼬리를 물었다.',[['다리 위에서 센다','백 척에서 그만뒀다.',{joy:2}],['짐배에 얻어 탄다','물길이 발보다 빨랐다.',{joy:2}]]);
+Q('C','z10_teahouse',{a:[16,70]},'inn','도성 다루(茶樓)에서는 차 한 잔에 한나절을 앉아 있다.',[['나도 그래 본다','오가는 이야기가 연극보다 재미있었다.',{g:-1,joy:3}],['창가에서 거리를 본다','가마, 낙타, 거지, 무사. 다 지나갔다.',{joy:2}]]);
+Q('C','z10_beggarking',{a:[14,70]},'market','도성 거지는 구역이 있다. 한 놈이 내 앞을 막는다.',[['엽전을 준다','거지가 다음 골목까지 길을 터 줬다.',{g:-1}],['돌아간다','돌아간 골목에도 거지가 있었다.',{}]]);
+Q('C','z10_execution',{a:[14,70]},'hall','저잣거리에서 죄인을 벤다고 사람이 몰린다.',[['보지 않는다','함성이 등 뒤에서 났다.',{}],['끝까지 본다','밤에 밥이 넘어가지 않았다.',{joy:-2}]]);
+// 먼 길
+Q('C','z10_milestone',{a:[14,70]},'road','이정표에 "도성 삼백 리"라 적혀 있다.',[['한숨을 쉰다','걸으면 닿는다.',{}],['누가 낙서한 걸 읽는다','"다리 아프다." 나도 한 줄 보탰다.',{joy:2}]]);
+Q('C','z10_fellow',{a:[14,70]},'road','같은 방향 길손과 말동무가 됐다.',[['사흘을 같이 걷는다','갈림길에서 헤어졌다. 이름도 안 물었다.',{joy:2}],['건량을 나눈다','그쪽 것이 더 맛있었다.',{hp:1,joy:1}]]);
+Q('C','z10_mountainpass',{a:[14,70]},'mountain','고갯마루에 서니 넘어온 길과 갈 길이 다 보인다.',[['땀을 식힌다','바람이 시원했다.',{hp:1,joy:1}],['돌 하나를 서낭당에 얹는다','무사히 넘게 해 달라고 빌었다.',{joy:1}]]);
+Q('C','z10_ferrywait',{a:[14,70]},'river','나룻배가 건너편에 가 있다.',[['기다린다','사공이 낮잠에서 깰 때까지 기다렸다.',{}],['소리쳐 부른다','메아리만 돌아왔다. 한참 뒤에 배가 왔다.',{joy:1}]]);
+Q('C','z10_inncheap',{a:[14,70]},'inn','싼 객잔과 비싼 객잔이 마주 보고 있다.',[['싼 데로 간다','이불이 얇았다.',{g:-1}],['비싼 데로 간다','더운물이 나왔다.',{g:-2,hp:2}]]);
+Q('C','z10_lostway',{a:[14,70]},'forest','숲에서 같은 나무를 세 번째 본다.',[['해를 보고 방향을 잡는다','한 시진 만에 길이 나왔다.',{}],['나무에 표시를 한다','표시한 나무를 또 만났다. 그래도 결국 나왔다.',{hp:-1}]]);
+Q('C','z10_border',{a:[16,70]},'fort','변경 관문에서 통행증을 보잔다.',[['내민다','군졸이 거꾸로 들고 봤다. 통과였다.',{joy:1}],['고향 이야기를 한다','군졸이 고향 생각에 눈이 멀어졌다. 통과였다.',{joy:1}]]);
+Q('C','z10_desertnight',{a:[16,70],reg:['gansu','xinjiang','mongol','qinghai']},'road','사막의 밤은 별이 땅까지 내려온다.',[['모래에 누워 본다','하늘이 무너지는 줄 알았다.',{joy:3}],['모닥불을 지킨다','낙타가 되새김질하는 소리뿐이었다.',{joy:1}]]);
+Q('C','z10_seafirst',{a:[10,70]},'river','바다를 처음 봤다.',[['맛을 본다','정말 짰다.',{joy:3}],['한참 서 있는다','끝이 없다는 게 이런 것이다.',{joy:3}]]);
+Q('C','z10_homeagain',{a:[18,70]},'village','오랜만에 고향 어귀에 섰다.',[['천천히 걷는다','개가 먼저 알아봤다.',{joy:3,bond:.5}],['뛴다','문 앞에서 숨을 골랐다.',{joy:3}]]);
+// 먹고 마시는 일
+Q('C','z10_dumpling',{a:[8,70],sea:[3]},'kitchen','섣달그믐, 온 식구가 만두를 빚는다.',[['엽전 넣은 만두를 숨긴다','내가 씹었다. 이가 아팠다.',{joy:3}],['모양 내기를 겨룬다','내 것은 터졌다.',{joy:3,bond:.3}]]);
+Q('C','z10_hotpot',{a:[14,70],sea:[3]},'inn','객잔에서 훠궈 솥이 끓는다.',[['매운 쪽에 담근다','땀이 비 오듯 했다. 젓가락은 멈추지 않았다.',{g:-1,hp:2,joy:2}],['맑은 쪽에 담근다','국물이 달았다.',{g:-1,hp:2}]]);
+Q('C','z10_streetfood',{a:[8,70]},'market','처음 보는 길거리 음식이다. 냄새가 고약하다.',[['먹어 본다','맛은 좋았다. 냄새는 종일 따라왔다.',{joy:2}],['옆 사람 먹는 걸 본다','맛있게도 먹었다.',{joy:1}]]);
+Q('C','z10_wineshop',{a:[16,70]},'inn','술도가에서 새 술을 거른다. 맛보라고 한다.',[['한 사발 받는다','목이 탔다. 좋았다.',{joy:2}],['한 병 사 간다','식구들과 나눴다.',{g:-1,bond:.5,joy:1}]]);
+Q('C','z10_fishfeast',{a:[10,70],reg:['zhejiang','fujian','guangdong','shandong','jiangnan','hainan']},'river','포구에 고깃배가 들어왔다.',[['갓 잡은 걸 회로 먹는다','입에서 녹았다.',{g:-1,hp:2,joy:2}],['말린 걸 사 간다','겨우내 반찬이 됐다.',{g:-1,hp:1}]]);
+Q('C','z10_mooncake',{a:[6,70],sea:[2]},'home','월병을 받았다. 속이 뭔지 모른다.',[['한 입 문다','연밥 소였다. 좋아하는 것이다.',{joy:2}],['반으로 갈라 본다','소금에 절인 노른자가 달처럼 들어 있었다.',{joy:2}]]);
+Q('C','z10_hunger',{a:[14,70],tier:[0,1]},'road','사흘째 제대로 못 먹었다.',[['나무뿌리를 캔다','칡이었다. 씹을수록 단맛이 났다.',{hp:1}],['허리띠를 조인다','배고픔도 지나간다.',{hp:-1}]]);
+Q('C','z10_tealeaf',{a:[14,70]},'inn','찻잔 속에 찻잎이 꼿꼿이 섰다.',[['길조라 여긴다','그날 하루가 좋았다.',{joy:2}],['후 불어 마신다','차 맛은 같았다.',{}]]);
+// 눈과 기색
+Q('C','z10_peoplewatch',{a:[14,70]},'market','저자 한구석에 앉아 사람 구경을 한다.',[['걸음걸이를 본다','바쁜 사람, 숨기는 사람, 아픈 사람. 걸음에 다 있었다.',{joy:1,exp:.02}],['얼굴을 본다','웃는 얼굴이 생각보다 많았다.',{joy:2}]]);
+Q('C','z10_liar',{a:[14,70]},'market','장사꾼이 물건을 권하며 눈을 깜빡인다.',[['안 산다','옆 사람이 사서 후회했다.',{joy:1}],['값을 반으로 부른다','장사꾼이 군말 없이 줬다. 그래도 남는 모양이다.',{g:-1}]]);
+Q('C','z10_catstare',{a:[8,70]},'yard','고양이가 참새를 노린다. 뛰기 직전에 엉덩이를 흔든다.',[['끝까지 본다','놓쳤다. 고양이는 아무 일 없다는 듯 세수를 했다.',{joy:2}],['뛰기 전에 손뼉을 친다','참새가 날았다. 고양이가 나를 노려봤다.',{joy:2}]]);
+Q('C','z10_gamblerface',{a:[16,70]},'den','노름판에서 패 좋은 놈은 콧구멍이 벌름거린다.',[['그걸 보고 접는다','본전은 지켰다.',{joy:1}],['그걸 보고도 간다','졌다. 알면서 왜 갔을까.',{g:-2}]]);
+Q('C','z10_eyerest',{a:[14,70]},'peak','먼 산을 오래 본다.',[['눈이 시원해질 때까지 본다','가까운 것이 또렷해졌다.',{hp:1}],['산의 겹을 센다','일곱 겹이었다.',{joy:1}]]);
+Q('C','z10_readmood',{a:[14,70]},'home','식구의 발소리만 듣고 기분을 안다.',[['말없이 차를 내준다','한참 뒤에 이야기가 나왔다.',{bond:.8}],['무슨 일이냐고 묻는다','"아무것도 아니야." 아무것도 아닌 게 아니었다.',{bond:.3}]]);
+Q('C','z10_duelgaze',{mar:1,a:[16,65]},'arena','비무대에서 상대와 눈이 마주친다.',[['피하지 않는다','상대가 먼저 침을 삼켰다.',{exp:.03}],['상대의 어깨를 본다','오른쪽이 살짝 올라가 있었다.',{exp:.04}]]);
+Q('C','z10_blinkgame',{a:[6,60]},'village','아이들과 눈싸움 놀이를 한다.',[['끝까지 버틴다','눈물이 났다. 이겼다.',{joy:2}],['웃겨서 진다','다 같이 웃었다.',{joy:3}]]);
+
+/* ---------- B ---------- */
+Q('B','z10b_swordsmith',{mar:1,a:[17,60],gold:15,need:()=>!!m.inv.w},'forge','솜씨 좋은 대장장이가 내 병기를 다시 벼려 주겠다고 한다.',[['맡긴다','돌아온 병기는 전과 같으면서 달랐다. 손에 붙었다.',{g:-12,exp:.25}],['곁에서 지켜본다','쇠가 접히는 걸 봤다. 병기를 다시 보게 됐다.',{exp:.12,joy:1}]]);
+Q('B','z10b_pawnfind',{a:[16,65],gold:10},'shop','전당포에 유질된 물건이 나왔다.',[['명안주를 고른다','지니니 남의 기색이 조금 먼저 보였다.',{g:-10,it:['eyebead']}],['염주를 고른다','알이 손에 따뜻했다.',{g:-8,it:['beads']}]]);
+Q('B','z10b_blackarmor',{a:[17,60],gold:12},'den','탈영병이 갑옷을 판다. 급하다.',[['산다','쇄자갑이었다. 핏자국은 닦았다.',{g:-12,ar:1,ak:.5}],['밥을 사 먹이고 보낸다','갑옷은 안 샀다. 탈영병은 고향으로 갔다.',{g:-2,hy:1.5}]]);
+Q('B','z10b_heirloomsell',{a:[18,65]},'shop','살림이 어려워 가보를 팔까 한다.',[['판다','쌀독이 찼다. 선반은 비었다.',{g:[12,20],joy:-3}],['버틴다','한 해를 죽으로 났다. 가보는 남았다.',{hp:-3,joy:2,bond:.5}]]);
+Q('B','z10b_fakesword',{mar:1,a:[17,60],gold:15},'market','명검이라며 헐값에 판다. 날 빛이 좋다.',[['산다',{p:[.3,'wit',.07],ok:['진짜였다. 훔친 물건이라 급히 판 것이었다.',{g:-15,wt:1}],no:['도금한 무쇠였다. 첫 대련에서 부러졌다.',{g:-15}]}],['날을 튕겨 본다','소리가 탁했다. 안 샀다.',{exp:.05}]]);
+Q('B','z10b_caravanguard',{a:[17,58]},'road','도성으로 가는 상단이 길동무를 구한다. 밥과 잠자리를 준다.',[['같이 간다','한 달 길이 편했다. 도성에서 품삯도 받았다.',{g:[8,14],hp:3}],['길잡이를 한다',{p:[.5,'wit',.05],ok:['지름길로 사흘을 줄였다. 웃돈을 받았다.',{g:[12,20]}],no:['길을 잘못 들었다. 품삯이 깎였다.',{g:[3,6]}]}]]);
+Q('B','z10b_capitalscam',{a:[16,60]},'market','도성에 처음 온 티가 났는지 사기꾼이 붙는다. 궁에 줄을 대 준다고 한다.',[['속는 척 따라간다',{p:[.45,'wit',.06],ok:['소굴을 알아내 포청에 넘겼다.',{g:[8,15],fame:.8}],no:['진짜 속았다.',{g:-10}]}],['웃으며 거절한다','사기꾼은 다음 촌뜨기를 찾았다.',{}]]);
+Q('B','z10b_capitalexam',{a:[16,45]},'hall','도성 포청에서 포졸을 뽑는다.',[['시험을 본다',{p:[.4,'body',.06],ok:['붙었다. 한 해 녹을 먹었다. 도성 골목을 다 알게 됐다.',{g:[12,20],fame:.8}],no:['떨어졌다.',{}]}],['구경한다','뛰고 구르고, 재미있었다.',{joy:2}]]);
+Q('B','z10b_dockwork',{a:[16,55]},'river','포구에서 하역 인부를 뽑는다. 삯은 세다.',[['한 철 일한다','어깨가 벌어졌다. 주머니도 찼다.',{g:[10,16],st:{body:1},hp:-3}],['장부 일을 청한다',{p:[.35,'wit',.07],ok:['셈이 빠르다고 뽑혔다.',{g:[12,18]}],no:['짐이나 지라고 했다.',{g:[8,12],hp:-3}]}]]);
+Q('B','z10b_smuggler',{a:[18,60]},'river','뱃사람이 궤짝 하나만 뭍으로 옮겨 달란다. 삯이 과하다.',[['옮긴다',{p:[.55,'luck',.04],ok:['아무 일 없었다.',{g:[12,20],ak:1}],no:['순검에 걸렸다. 벌금을 물었다.',{g:-12}]}],['안에 뭐가 들었냐고 묻는다','뱃사람이 얼굴을 굳히고 가 버렸다.',{}]]);
+Q('B','z10b_shiptrip',{a:[16,58],gold:8},'river','강남으로 가는 배가 뜬다.',[['탄다','물길 천 리였다. 볼 것을 다 봤다.',{g:-8,joy:8,st:{wit:1}}],['뱃일을 거들며 탄다','삯은 안 냈다. 손바닥이 벗겨졌다.',{joy:5,hp:-3,st:{body:1}}]]);
+Q('B','z10b_storm',{a:[16,60],sea:[1,2]},'river','배 위에서 폭풍을 만났다.',[['돛을 내린다',{p:[.55,'body',.05],ok:['배가 버텼다. 선장이 뱃삯을 돌려줬다.',{g:[4,8],fame:.5}],no:['밧줄에 쓸려 다쳤다. 배는 버텼다.',{hp:-8}]}],['선창에서 기도한다','배는 버텼다. 내 덕은 아니었다.',{hp:-2}]]);
+Q('B','z10b_mountainlodge',{a:[16,65],sea:[3]},'snow','눈에 갇힌 산장에 길손 여섯이 모였다. 양식은 사흘 치다.',[['사냥을 나간다',{p:[.45,'body',.06],ok:['노루를 잡았다. 열흘을 버텼다.',{fame:1,hy:1.5}],no:['빈손이었다. 동상만 얻었다.',{hp:-6}]}],['양식을 고르게 나눈다','다투는 이가 없었다. 눈이 그칠 때까지 다 살았다.',{hy:2,fame:.5}]]);
+Q('B','z10b_tollbridge',{a:[16,65]},'river','다리에 통행세가 붙었다. 받는 자는 관인이 아니다.',[['관아에 알린다','가짜 세리가 잡혔다. 포상이 나왔다.',{g:[6,10],fame:.8}],['내고 건넌다','다들 내고 건넜다.',{g:-2}]]);
+Q('B','z10b_guideold',{a:[16,65]},'mountain','산길에서 노인이 길을 잃었다. 도성 대갓집 어른이라고 한다.',[['업고 내려간다','정말 대갓집이었다. 문간에서 사례가 나왔다.',{g:[10,18],hy:1.5}],['길만 일러 준다','노인은 지팡이를 짚고 갔다.',{hy:.3}]]);
+Q('B','z10b_cookoff',{a:[16,60]},'kitchen','도성 주루에서 요리 솜씨를 겨룬다. 누구나 나올 수 있다.',[['나간다',{p:[.3,'wit',.07],ok:['고향 음식이 통했다. 주루 주인이 요리법을 샀다.',{g:[12,22],fame:1}],no:['짜다는 평이었다.',{joy:-1}]}],['먹는 쪽으로 간다','배가 터지게 먹었다.',{hp:4,joy:3}]]);
+Q('B','z10b_winecontest',{a:[18,60]},'inn','객잔에서 술 겨루기가 붙었다. 끝까지 서 있는 자가 판돈을 먹는다.',[['낀다',{p:[.35,'body',.07],ok:['마지막 한 사람이 됐다. 이튿날은 기억이 없다.',{g:[10,18],fame:.5,hp:-3}],no:['셋째 독에서 쓰러졌다.',{g:-4,hp:-4}]}],['심판을 본다','쓰러진 놈들 주머니에서 판돈을 세었다. 수고비를 받았다.',{g:[3,6]}]]);
+Q('B','z10b_teamaster',{a:[16,65]},'inn','다루의 노인이 차 한 잔으로 물 길어 온 샘을 맞힌다.',[['배우기를 청한다','한 철을 드나들었다. 혀가 섬세해지니 다른 감각도 따라왔다.',{g:-4,st:{wit:1},joy:2}],['내기를 건다',{p:[.2,'luck',.05],ok:['노인이 처음으로 틀렸다. 찻값을 평생 안 받겠다고 했다.',{joy:5,fame:.5}],no:['노인은 틀리는 법이 없었다.',{g:-3}]}]]);
+Q('B','z10b_poisonfood',{a:[16,65]},'inn','잔칫상 음식에서 쇠 냄새가 난다.',[['먹지 말라고 외친다',{p:[.6,'wit',.04],ok:['은수저가 검게 변했다. 온 잔치가 나를 살렸다고 했다.',{fame:2,hy:2,g:[6,12]}],no:['그냥 놋그릇 냄새였다. 민망했다.',{joy:-2}]}],['조용히 주인에게 말한다','주인이 음식을 물렸다. 부엌에서 누가 달아났다.',{fame:.8,hy:1,g:[4,8]}]]);
+Q('B','z10b_cardsharp',{a:[18,60]},'den','골패 판에서 한 놈이 계속 딴다. 손이 이상하다.',[['손목을 잡는다',{p:[.5,'wit',.06],ok:['소매에서 패가 쏟아졌다. 잃은 사람들이 한턱냈다.',{g:[6,12],fame:.8}],no:['아무것도 안 나왔다. 사과하고 술을 샀다.',{g:-3}]}],['그놈 옆에 건다','따는 쪽에 붙었다. 판이 깨지기 전에 일어났다.',{g:[5,10],ak:.5}]]);
+Q('B','z10b_readduel',{mar:1,a:[17,60]},'arena','비무에서 상대가 칼을 뽑기 전에 숨을 들이쉬는 버릇이 있다.',[['그 숨을 기다린다',{duel:{n:'숨이 먼저 가는 검객',pow:19,look:'swordsman'},ok:['숨소리에 맞춰 받아쳤다. 눈과 귀가 한 단계 트였다.',{exp:.25,fame:.8}],no:['알고도 못 막았다.',{exp:.15}]}],['끝나고 그 버릇을 일러 준다','상대가 깊이 절했다. 답례로 제 버릇 고치는 법을 내게 일러 줬다.',{exp:.2,hy:1}]]);
+Q('B','z10b_eyeteacher',{a:[16,60]},'market','야바위꾼의 손이 눈보다 빠르다. 구경꾼 중에 맞히는 사람이 하나 있다.',[['그 사람에게 비결을 묻는다','"손을 보면 진다. 눈을 봐라." 야바위꾼의 눈은 늘 구슬 있는 쪽을 피했다.',{art:['관기안',5,'안법'],g:[2,5]}],['내 눈을 믿고 건다',{p:[.3,'wit',.06],ok:['맞혔다.',{g:[4,8]}],no:['틀렸다.',{g:-4}]}]]);
+Q('B','z10b_archery',{a:[16,55]},'fort','활터에서 내기가 붙었다. 버들잎을 맞히면 은자다.',[['쏜다',{p:[.3,'body',.06],ok:['잎이 갈라졌다.',{g:[8,14],fame:.8}],no:['버드나무는 맞혔다.',{}]}],['명궁의 눈을 본다','과녁이 아니라 바람을 보고 있었다.',{exp:.1,joy:1}]]);
+Q('B','z10b_lostchildcity',{a:[16,65]},'market','도성 인파 속에서 아이가 운다.',[['목말을 태우고 돈다','아이가 제 어미를 먼저 찾았다. 비단전 안주인이었다.',{g:[8,14],hy:2}],['포청에 데려다준다','포졸이 떡을 쥐여 주며 받았다.',{hy:1}]]);
+Q('B','z10b_insomnia',{a:[25,70]},'home','잠이 안 온다. 벌써 열흘째다.',[['의원에게 간다','산조인을 달여 줬다. 사흘 만에 잤다.',{g:-4,hp:5}],['밤마다 걷는다',{p:[.5,'luck',.04],ok:['밤 풍경에 정이 들었다. 잠도 돌아왔다.',{hp:3,joy:3}],no:['감기만 들었다.',{hp:-4}]}]]);
+Q('B','z10b_toothache',{a:[20,70]},'home','이가 쑤셔 밤을 샜다.',[['뽑는다','대장간 집게였다. 눈물이 났다. 시원했다.',{hp:-2,joy:2}],['정향을 문다','며칠 버텼다. 결국 뽑았다.',{g:-2,hp:-3}]]);
+Q('B','z10b_hotspring',{a:[18,70],gold:6},'pond','온천 고을에 닿았다.',[['열흘 묵는다','묵은 병이 물에 녹았다.',{g:-6,hp:12,joy:4}],['하루만 담근다','그것만으로도 뼈가 풀렸다.',{g:-1,hp:4}]]);
+Q('B','z10b_festivaldragon',{a:[14,50],sea:[3,0]},'market','용춤 패에서 꼬리 잡을 사람이 빠졌다.',[['꼬리를 잡는다','꼬리가 제일 많이 뛴다는 걸 몰랐다. 박수는 머리가 받았다.',{hp:-2,joy:5,g:[2,4]}],['북을 친다','용이 내 박자에 춤췄다.',{joy:5,fame:.3}]]);
+Q('B','z10b_oldmap',{a:[16,65]},'shop','헌책 사이에 손으로 그린 지도가 끼어 있다. 샛길이 그려져 있다.',[['그 길로 가 본다',{p:[.5,'luck',.05],ok:['이틀을 줄였다. 길 끝에 버려진 약초밭이 있었다.',{g:[8,14]}],no:['길은 벼랑에서 끊겼다.',{hp:-3}]}],['표국에 판다','표국이 값을 쳐줬다.',{g:[6,10]}]]);
+Q('B','z10b_caravansick',{a:[16,65]},'road','길에서 상단 사람들이 배앓이로 쓰러져 있다.',[['물을 끓여 먹인다','하루 만에 일어났다. 상단주가 사례했다.',{g:[8,14],hy:1.5}],['약초를 찾는다',{p:[.45,'wit',.06],ok:['이질풀을 달였다. 금방 나았다.',{g:[10,18],hy:2,fame:.5}],no:['엉뚱한 풀이었다. 물이나 끓일걸.',{hy:.5}]}]]);
+
+/* ---------- A ---------- */
+Q('A','z10a_orecraft',{mar:1,a:[18,60],need:()=>(m.inv.mat||0)>0},'forge','품에 든 운철을 본 대장장이의 눈이 달라진다. "평생 이런 쇠를 기다렸소."',[['맡긴다','이레 밤낮 망치 소리가 났다. 날에서 별빛이 났다.',{wt:3,fame:2}],['곁에서 풀무를 잡는다','같이 벼렸다. 내 땀이 들어간 병기였다.',{wt:3,exp:.4,st:{body:1}}]]);
+Q('A','z10a_masterarmor',{a:[18,60],gold:50},'forge','갑옷 장인이 평생의 역작을 내놓았다. 값은 은자 쉰 냥이다.',[['산다','금실로 엮은 갑옷이었다. 가볍고 질겼다.',{g:-50,ar:2}],['값을 흥정한다',{p:[.35,'charm',.07],ok:['서른 냥에 가져왔다. 장인이 "임자를 만났다"고 했다.',{g:-30,ar:2}],no:['장인이 문을 닫았다.',{}]}]]);
+Q('A','z10a_auctionhouse',{a:[20,65],gold:60},'hall','도성 경매장에 강호의 물건이 나온다.',[['학우선에 값을 부른다',{p:[.55,'luck',.04],ok:['낙찰받았다. 부치면 기가 돌았다.',{g:-55,it:['fan']}],no:['큰손이 가로챘다.',{}]}],['응안석에 값을 부른다',{p:[.5,'luck',.04],ok:['낙찰받았다. 돌 속에서 눈이 나를 봤다.',{g:-60,it:['hawkeye']}],no:['큰손이 가로챘다.',{}]}]]);
+Q('A','z10a_capitalduel',{mar:1,a:[18,50]},'arena','도성 연무장에서 금군 교두가 강호인을 상대로 대련을 받는다.',[['나선다',{duel:{n:'금군 교두',pow:30,look:'soldier'},ok:['교두가 창을 거두고 예를 갖췄다. 금군의 호신갑을 상으로 받았다.',{ar:1,fame:4,g:[20,35]}],no:['군문의 창은 달랐다. 많이 배웠다.',{exp:.4}]}],['구경한다','전장의 무예는 강호의 것과 뿌리가 달랐다.',{exp:.25}]]);
+Q('A','z10a_palaceerrand',{a:[18,60]},'hall','궁에서 나온 환관이 길을 묻는다. 급한 얼굴이다. 가마꾼이 달아났다고 한다.',[['가마를 멘다','궁문까지 멨다. 환관이 금 한 닢과 패 하나를 줬다. "도성에서 곤란하면 보이시오."',{g:[35,55],it:['jadep'],fame:2}],['말을 구해다 준다','환관이 은자를 던져 주고 달렸다.',{g:[20,30]}]]);
+Q('A','z10a_seacaptain',{a:[18,55]},'river','남양 가는 배의 선장이 선원을 구한다. 한 해 뱃길이다.',[['탄다',{p:[.55,'body',.05],ok:['바다를 건너 이국의 항구를 봤다. 돌아왔을 때 주머니와 눈이 다 커져 있었다.',{g:[45,80],st:{body:1,wit:1}}],no:['열병으로 중간 항구에 내렸다. 반년 만에 돌아왔다.',{hp:-15,g:[10,20]}]}],['화물만 맡긴다',{p:[.5,'luck',.05],ok:['곱절이 돼 돌아왔다.',{g:[30,50]}],no:['배가 암초에 걸렸다.',{g:-20}]}]]);
+Q('A','z10a_pirateisland',{mar:1,a:[18,58]},'river','풍랑에 밀려 닿은 섬이 해적 소굴이다.',[['두령과 겨룬다',{duel:{n:'해적 두령',pow:28,look:'chief',style:'brute',lethal:1,cause:'해적의 칼'},ok:['두령이 배 한 척과 노획물 한 궤를 내줬다.',{g:[45,80],fame:3}],no:['노 젓는 신세가 됐다가 석 달 만에 달아났다.',{hp:-15,st:{body:1}}]}],['요리사로 눌러앉는다',{p:[.5,'wit',.05],ok:['해적들이 내 국에 반했다. 보름 뒤 뭍에 내려 주며 은자를 쥐여 줬다.',{g:[25,40],joy:4}],no:['국이 짰다. 노를 저었다.',{hp:-8}]}]]);
+Q('A','z10a_silkroadinn',{a:[18,60]},'inn','서역 길목 객잔에 온갖 나라 사람이 모였다. 한 노인이 낯선 약을 판다.',[['산다',{p:[.5,'luck',.05],ok:['먹으니 눈이 밝아지고 몸이 가벼웠다.',{g:-15,hp:15,st:{body:1}}],no:['사흘을 설사했다.',{g:-15,hp:-8}]}],['약 대신 이야기를 산다','천축의 요가라는 몸 쓰는 법을 들었다. 숨이 깊어졌다.',{g:-5,ng:2,hp:6}]]);
+Q('A','z10a_mountainmonastery',{a:[16,60]},'snow','설산 사원에서 눈보라를 피한다. 승려들이 얇은 옷 한 벌로 눈밭에 앉아 있다.',[['같이 앉는다',{p:[.45,'body',.06],ok:['배꼽 아래에서 불이 일었다. 추위가 물러갔다.',{ng:4,hp:10}],no:['반 식경 만에 들어왔다. 버터차가 살렸다.',{hp:-5}]}],['경전 필사를 돕는다','달포를 머물렀다. 떠날 때 주지가 염주를 걸어 줬다.',{it:['beads'],st:{wit:1},hy:2}]]);
+Q('A','z10a_imperialchef',{a:[18,60]},'kitchen','도성 제일루의 숙수가 쓰러졌다. 오늘 밤 손님은 친왕이다.',[['칼을 잡는다',{p:[.35,'wit',.07],ok:['친왕이 젓가락을 놓지 않았다. 상이 내려왔다.',{g:[40,70],fame:4}],no:['간이 안 맞았다. 주루 주인이 대신 빌었다.',{fame:-.5}]}],['아는 숙수를 불러온다','옆 주루의 숙수가 달려왔다. 두 주루에서 다 사례했다.',{g:[20,35],fame:1}]]);
+Q('A','z10a_gamblersecret',{a:[18,60]},'den','평생 진 적 없다는 노름꾼이 은퇴한다. 비결을 은자 서른 냥에 판다고 한다.',[['산다','"패를 보지 말고 사람을 보라." 그게 다였다. 그게 다였는데, 정말 달랐다.',{g:-30,art:['응시안',8,'안법'],st:{wit:1}}],['안 산다','다른 이가 사서 사흘 만에 집을 날렸다고 한다. 비결도 사람을 탄다.',{}]]);
+Q('A','z10a_hawkmaster',{a:[16,58]},'mountain','매 사냥꾼이 절벽 둥지에서 새끼 매를 내리다 다쳤다.',[['대신 올라간다',{p:[.5,'body',.06],ok:['새끼 둘을 내렸다. 한 마리를 받았다. 매의 눈으로 보는 법도 같이 배웠다.',{art:['응시안',8,'안법'],g:[10,20]}],no:['어미 매에게 쪼였다.',{hp:-10}]}],['사냥꾼을 업고 내려온다','그가 아끼던 돌을 줬다. 매 눈알 같은 돌이었다.',{it:['eyebead'],hy:2}]]);
+Q('A','z10a_bigfeast',{a:[18,65],gold:25},'village','한 번쯤 온 마을을 먹이고 싶다.',[['소를 잡는다','사흘을 먹었다. 그 잔치는 십 년을 이야기됐다.',{g:-25,joy:10,fame:3,bond:3}],['굶는 집에만 쌀을 돌린다','떠들썩하진 않았다. 문 앞에 푸성귀가 쌓였다.',{g:-25,hy:6,fame:2,joy:6}]]);
+Q('A','z10a_duelpoet',{a:[18,60]},'inn','도성 문인들이 시회를 연다. 장원에게 은자와 이름이 간다.',[['나선다',{p:[.25,'wit',.08],ok:['내 시가 벽에 걸렸다. 도성이 한 달을 읊었다.',{g:[30,50],fame:5}],no:['운은 맞았다. 그뿐이었다.',{joy:1}]}],['검무를 춘다',{p:[.35,'body',.07],ok:['문인들이 시를 멈췄다. 내 춤이 시가 됐다.',{fame:4,g:[20,35]}],no:['술상을 엎었다.',{joy:-2,g:-3}]}]]);
+Q('A','z10a_blindbet',{mar:1,a:[18,58]},'arena','눈을 가리고 겨루는 비무다. 판돈이 크다.',[['나선다',{duel:{n:'눈을 가린 검객',pow:26,look:'swordsman'},ok:['소리와 바람으로 이겼다. 눈을 풀었을 때 세상이 달랐다.',{g:[30,50],exp:.5,fame:2}],no:['어둠 속에서 길을 잃었다.',{exp:.3}]}],['구경하며 눈을 감아 본다','발소리만으로 누가 이길지 알았다.',{exp:.3,st:{wit:1}}]]);
+
+/* ---------- S ---------- */
+Q('S','z10s_legendforge',{mar:1,a:[18,60],gold:80},'forge','전설의 장인이 은퇴 전에 마지막 한 자루를 벼린다고 한다. 받을 사람은 그가 고른다.',[['찾아가 사흘을 기다린다',{p:[.5,'charm',.06],ok:['"당신 손이군." 그는 값도 다 받지 않았다.',{g:-50,wt:2,fame:3}],no:['다른 이가 골랐다. 장인은 미안하다며 예전 것 한 자루를 싸게 내줬다.',{g:-40,wt:1}]}],['풀무꾼으로 들어간다','석 달을 불 앞에 섰다. 마지막 병기는 다른 이에게 갔다. 내게는 쇠 보는 눈과 불을 견디는 몸이 남았다.',{st:{body:2,wit:1},exp:.5}]]);
+Q('S','z10s_treasureship',{a:[18,60]},'river','썰물이 유난히 깊던 날, 개펄에 돛대 끝이 드러났다. 전조의 보선(寶船)이다.',[['들어간다',{p:[.55,'body',.05],ok:['선창에 도자기와 금괴가 그대로였다.',{g:[170,260]}],no:['물이 들어찼다. 금괴 하나만 쥐고 나왔다.',{g:[50,80],hp:-12}]}],['관에 알린다','조정에서 인양했다. 발견한 공으로 상과 이름을 받았다.',{g:[110,160],fame:7}]]);
+Q('S','z10s_emperorgame',{a:[18,60]},'inn','도성 다루에서 바둑 두던 중년 사내가 한 판 청한다. 뒤에 선 이들의 눈매가 예사롭지 않다.',[['봐주지 않고 둔다',{p:[.35,'wit',.07],ok:['이겼다. 사내가 크게 웃었다. 미복 나온 황제였다. 이튿날 금이 수레로 왔다.',{g:[180,260],fame:8}],no:['졌다. "봐주지 않아 좋았소." 사내는 부채를 주고 갔다. 낙관이 옥새였다.',{it:['fan'],fame:5}]}],['일부러 져 준다','사내가 눈살을 찌푸렸다. "재미없군." 그래도 찻값은 그가 냈다.',{g:[20,30]}]]);
+Q('S','z10s_eyeoftiger',{mar:1,a:[18,58]},'forest','범과 마주쳤다. 십 보다. 범이 뛰기 전, 어깨의 털이 선다.',[['그 순간을 본다',{p:[.5,'wit',.06],ok:['범이 뛰는 것보다 내가 먼저 움직였다. 범은 허공을 덮쳤다. 그날 이후 무엇이든 움직이기 전이 보였다.',{art:['파사안',12,'안법'],exp:.6,fame:3}],no:['보긴 봤다. 몸이 늦었다. 어깨를 내주고 살았다.',{hp:-20,art:['관기안',6,'안법']}]}],['눈을 피하지 않고 뒷걸음질한다','한 식경을 그렇게 물러났다. 범이 먼저 고개를 돌렸다.',{st:{luck:1,body:1},fame:2}]]);
+Q('S','z10s_oldgeneral',{a:[16,58]},'fort','변방 주막에서 외팔이 노인이 젓가락으로 탁자에 진을 그린다. 한때 십만을 부리던 장군이라고 한다.',[['진법을 청해 듣는다','사람 하나하나가 아니라 전체의 숨을 보라고 했다. 싸움을 보는 눈이 넓어졌다.',{st:{wit:2},exp:.6}],['술을 사며 전장 이야기를 듣는다','노인은 울다 웃었다. 떠날 때 품에서 낡은 호심경을 꺼냈다. "이게 나를 세 번 살렸소."',{it:['mirror'],g:[100,150],hy:3}]]);
+Q('S','z10s_absinthe2',{mar:1,a:[20,60]},'cave','서역 수도승의 동굴에 초록빛 술독이 줄지어 있다. 수도승은 양쪽 귀가 없다. "마시겠나? 나는 두 번 설계했네."',[['두 병을 얻어 나온다','수도승이 웃었다. "한 병은 벗에게 주게. 귀는 두 짝뿐이니."',{it:['absinthe','absinthe']}],['빚는 법을 묻는다','쑥과 회향과 서른 가지 풀이라 했다. 냄새만으로 기가 돌았다. 한 병을 받았다.',{it:['absinthe'],ng:3,st:{wit:1}}]]);
+
+/* ---------- SS ---------- */
+Q('SS','z10ss_armory',{mar:1,a:[20,58]},'tomb','무너진 왕릉의 측실이 병기고다. 천 년 묵은 것들 가운데 단 한 벌, 먼지가 앉지 않은 갑주와 병기가 있다.',[['둘 다 든다','갑주는 몸에 맞게 줄어들었다. 병기는 손에서 울었다. 능을 나서자 뒤에서 돌문이 닫혔다.',{wt:3,ar:3,fame:6}],['절하고 병기만 든다','갑주는 주인 곁에 두었다. 능을 나서는 길에 벽화가 눈에 들어왔다. 옛 왕의 검무였다. 그것이 진짜 부장품이었다.',{wt:3,exp:2.5,hy:5}]]);
+Q('SS','z10ss_merchantking',{a:[20,58],gold:100},'hall','천하 제일 거상이 후계자를 찾는다. 시험은 하나다. 은자 백 냥으로 한 달 안에 무엇을 하는가.',[['장사를 한다',{p:[.45,'wit',.07],ok:['백 냥이 천 냥이 됐다. 거상이 고개를 끄덕였다. 상단의 한 축이 내 것이 됐다.',{g:[650,950],fame:10}],no:['본전이었다. 거상은 "잃지 않는 것도 재주"라며 밑천을 얹어 줬다.',{g:[150,220],fame:3}]}],['굶는 고을에 쌀을 푼다','한 달 뒤 빈손으로 갔다. 거상이 한참 보더니 웃었다. "돈은 내가 벌 줄 아네. 쓸 줄 아는 사람이 필요했지."',{g:[500,750],fame:12,hy:10}]]);
 /* ==== murim:train — 삼 년 수련기: 두 달마다 할 일, 동문, 일과 에피소드 ==== */
 const SEASONS=['정월','삼월','오월','칠월','구월','동짓달'], TSEAS=[3,0,1,1,2,3];
 const trainPlace=()=>m.sect?SECTS[m.sect].n:m.f.master?'은사의 초막':'마을 무관';
@@ -6722,7 +7565,7 @@ function mapActs(){ const s=MSPOT, a=m.age, o=m.b.o, M=MAPV.M, id=M.indoor?'home
   if(id==='apoth'&&m.hp<80&&m.gold>=12) add('진맥을 받는다','12냥 · 건강 +18',()=>{ gold(-12); m.hp=cl(m.hp+18); sfx('ok'); vfx(()=>heroFloat('건강 +18','good')); render(); save(); },1);
   return acts; }
 const SHOPS={market:['salve','antidote','sachet','talis','lvest'],apoth:['salve','antidote','pill'],smithy:null};
-function shopList(id){ let ids=SHOPS[id]; if(id==='city'){ const k=myKind(); ids=['salve','antidote','pill','talis',wOf(1,k),wOf(2,k),'chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } if(!ids){ const k=myKind(); ids=[wOf(0,k),wOf(1,k),'lvest','chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
+function shopList(id){ let ids=SHOPS[id]; if(id==='city'){ const k=myKind(); ids=['salve','antidote','pill','talis','eyebead',wOf(1,k),wOf(2,k),'chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } if(!ids){ const k=myKind(); ids=[wOf(0,k),wOf(1,k),'lvest','chain'].filter((x,i,a)=>x&&a.indexOf(x)===i); } return ids.filter(x=>ITEMS[x]).map(x=>({id:x,pr:Math.max(2,Math.round(ITEMS[x].v*1.25))})); }
 const PLACEHINT={home:'식구들이 있는 곳. 쉬거나 가족과 지낼 수 있다.',dojo:'기합 소리가 담을 넘는다.',fall:'물소리가 크다. 수련하기 좋은 자리다.',market:'사람과 물건이 모인다.',smithy:'쇠 두드리는 소리가 난다.',apoth:'약 달이는 냄새가 난다.',inn:'나그네와 소문이 드나든다.',school:'글 읽는 소리가 들린다.',shrine:'향 냄새가 은은하다.',office:'문 앞이 조용하다.',field:'흙냄새가 난다.',forest:'키 큰 수풀이 우거졌다. 헤치고 걷다 보면 뭔가 튀어나올 때가 있다.',gate:'여기서부터 관도다. 아직은 마을을 떠날 수 없다.',well:'아낙들의 이야기가 오간다.',bridge:'개울 물소리가 맑다.'};
 function renderMapCard(card,eye){ if(m.train) return renderSectCard(card,eye); const M=MAPV.M, s=MSPOT, acts=mapActs(), id=M.indoor?'home':(s?s.id:null), busy=m.auto&&!paused;
   const seas=`<div class="mh-seas" aria-label="올해의 철">${SEAN.map((n,i)=>`<span class="${i===m.sea?'on':i<m.sea?'done':''}">${n}</span>`).join('')}<label class="mh-rep"><input type="checkbox" id="mhRep" ${m.repOn?'checked':''}> 고른 일을 연말까지 되풀이</label></div>`;
@@ -7158,18 +8001,19 @@ function renderRec(){
       ${m.wins||m.losses?`<dt>싸움</dt><dd class="mh-num">${m.wins||0}승 ${m.losses||0}패${m.kills?` · 벤 사람 ${m.kills}`:''}</dd>`:''}
       <dt>가족</dt><dd>아버지 ${fa.dead?'<s>':''}${esc(fa.name)}${fa.dead?'</s>':''} · 어머니 ${mo.dead?'<s>':''}${esc(mo.name)}${mo.dead?'</s>':''}${m.sib?` · 형제 ${m.sib}`:''}${m.spouse&&!m.spouse.dead?` · 배우자 ${esc(m.spouse.name)}`:''}${kids?` · 자식 ${kids}`:''}</dd>
     </dl>
-    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
+    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.k==='안법'?` · 낌새 읽기 +${a.p}%`:a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
     ${others.length?`<div><h4>인연</h4><div class="mh-rels">${others.map(r=>`<span class="mh-relc${r.role==='원수'?' m':''}">${ptImg(relLook(r))}<span><small>${esc(r.role)}</small>${esc(r.name)}</span></span>`).join('')}</div></div>`:''}
-    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}</dd></dl>`;
+    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd></dl>`;
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
   const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' t'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` · ${TIER[it.t]}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
-  const b=inv.bag, cons=[['salve','쓰기'],['pill','쓰기'],['antidote',null]].filter(x=>b[x[0]]>0).map(([k,u])=>`<span class="mh-con">${icImg(itIcon(k),'sm')}${esc(ITEMS[k].n)} ×${b[k]}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${k}">${u}</button>`:''}</span>`).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const b=inv.bag, cons=[['salve','쓰기'],['pill','쓰기'],['antidote',null]].filter(x=>b[x[0]]>0&&!ITEMS[x[0]].lore).map(([k,u])=>`<span class="mh-con">${icImg(itIcon(k),'sm')}${esc(ITEMS[k].n)} ×${b[k]}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${k}">${u}</button>`:''}</span>`).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare t${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${TIER[it.t]} · ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
     <div class="mh-eq">${slot('w','무기')}${slot('a','갑옷')}${slot('c','장신구')}</div>
     ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti t${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
-    ${cons?`<div class="mh-cons">${cons}</div>`:''}`;
+    ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}`;
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
   el.querySelectorAll('[data-use]').forEach(x=>x.onclick=()=>{ useBag(x.dataset.use); render(); save(); });

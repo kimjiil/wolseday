@@ -28,7 +28,7 @@ function markSite(group){ const x=m.map&&m.map.id==='cathay'?m.map.x:homeTile().
 function cathGo(id){ const s=site(id); if(!s||!mapMode()) return false; const p=roadPath([m.map.x,m.map.y],[s.x,s.y]); if(!p||!p.length) return false; CT={to:id,path:p,i:0,f:0,n:0,ticks:0}; CSEL=null; MSHOP=null; sfx('ok'); render(); return true; }
 function travelTick(t){ t.ticks++; questTick(); const was=m.sea; m.hp=cl(m.hp-(m.age>=60?1.5:.5)); if(m.gold>=1) gold(-1); m.wldN=(m.wldN||0)+1; m.sea++; if(m.sea>3){ m.sea=0; yearTurn(); }
   if(!m.headless) toast(`길 위에서 ${SEAN[was]}이 갔다`,'',1500);
-  if(!m.dead&&!m.pending&&!m.train&&R()<.12){ const bgs=WPOOL.pass, pool=Object.values(EV).filter(e=>!e.wld&&e.min!==e.max&&evOK(e)&&evFresh(e)&&markable(e)&&!(m.mark&&m.mark.id===e.id)&&bgs.includes(evBg(e))); if(pool.length&&startEv(wpick(pool,x=>x.w||1))) m.wevN=(m.wevN||0)+1; }
+  if(!m.dead&&!m.pending&&!m.train&&R()<.12){ const bgs=WPOOL.pass, pool=Object.values(EV).filter(e=>!e.wld&&e.min!==e.max&&evOK(e)&&evFresh(e)&&markable(e)&&!(m.mark&&m.mark.id===e.id)&&bgs.includes(evBg(e))); const e=pickGraded(pool); if(e&&startEv(e)) m.wevN=(m.wevN||0)+1; }
   render(); save(); }
 function cathArrive(){ const s=curSite(); if(s&&m.mark&&m.mark.w===s.id){ const ev=EV[m.mark.id]; m.mark=null; startEv(ev); } sfx('ok'); render(); save(); }
 function cathayLoop(dt){ CFR+=dt; if(CT&&!paused){ CT.f+=dt*(m.auto?SPD[spd]:1)*.011;

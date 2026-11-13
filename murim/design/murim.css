@@ -339,3 +339,8 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-notes>b{display:block;margin-bottom:4px}
 .mh-note{margin-top:8px}.mh-note span{color:var(--m-muted);font-size:13px}
 .mh-note ul{margin:2px 0 0;padding-left:18px}
+
+/* 사연이 있는 물건(행낭) */
+.mh-rare{grid-template-columns:auto minmax(0,1fr) auto;align-items:start;margin:6px 0;padding:8px 8px 8px 8px;background:var(--m-panel2)}
+.mh-rare em{display:block;font-style:normal;font-size:12px;line-height:1.5;color:var(--m-ink);margin-top:4px;border-top:1px dashed var(--m-line);padding-top:4px}
+.mh-rare b{font-size:14px}

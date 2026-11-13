@@ -17,6 +17,7 @@ const gradeBadge=ev=>{ const g=ev&&gradeOf(ev); return g?`<span class="mh-gr g-$
 /* ---- 한 줄 사건: Q(등급, 이름표, 조건, 배경, 글, 선택지) ----
    조건  a:[몇 살부터, 몇 살까지] · mar:1 무림인만/0 아닌 사람만 · sect:1 문파에 든 사람만 · sea:[철] · rep:되풀이 간격 · w:비중
          par:'m' 어머니/'f' 아버지가 살아 있을 때, 1 고아가 아닐 때 · tier:[집안 형편 낮게, 높게] · org:[출신] · reg:[고향] · wed:1 혼인한 사람/0 안 한 사람 · kid:1 자식이 있을 때 · gold·fame·lv:그 이상일 때
+         sc:[문파] 그 문파 사람만 · side:'정사마중' 가운데 그쪽 문파 사람만 · free:1 문파가 없는 사람만 · need:함수
    선택지 [글, 결과, 얻는 것]  또는  [글, {p:[기본 확률, 능력, 능력 1당], ok:[결과, 얻는 것], no:[결과, 얻는 것]}]  또는  [글, {duel:{n,pow,look,lethal}, ok:[..], no:[..]}]
    얻는 것  g 은자(수 또는 [최소,최대]) · hp · joy · bond · fame · hy 협 · ak 악 · exp 수련(배수) · ng 내공(해) · st:{능력:+n} · it:[물건] · wt:무기 등급 · ar:방어구 등급 · art:[이름,위력,종류,내공] */
 const ARMS=['lvest','chain','gvest','silk'];
@@ -29,5 +30,5 @@ function mkCh(x){ const t=x[0]; if(typeof x[1]==='string') return {t,go:()=>{ ap
   return {t,p:()=>Math.max(.05,Math.min(.95,o.p[0]+(o.p[1]?ST(o.p[1])*(o.p[2]||.05):0))),go:ok=>{ const r=ok?o.ok:o.no; applyFx(r[1]); return {t:r[0],tone:ok?'good':'bad'}; }}; }
 let QN=0;
 function Q(g,id,c,bg,text,chs){ c=c||{}; QN++; const rep=c.rep!=null?c.rep:GREP[g];
-  E(id,Object.assign({min:c.a?c.a[0]:13,max:c.a?c.a[1]:70,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!m.spouse===!!c.wed)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.need||c.need()),
+  E(id,Object.assign({min:c.a?c.a[0]:13,max:c.a?c.a[1]:70,grade:g,minor:1,w:c.w||1,when:()=>(c.mar==null||!!m.f.martial===!!c.mar)&&(!c.sect||!!m.sect)&&(!c.sea||c.sea.includes(m.sea||0))&&(!c.par||(c.par==='m'?!m.b.mother.dead:c.par==='f'?!m.b.father.dead:!OR(m.b.o).orphan))&&(!c.tier||((FAMTIER[m.b.o]||0)>=c.tier[0]&&(FAMTIER[m.b.o]||0)<=c.tier[1]))&&(!c.org||c.org.includes(m.b.o))&&(c.wed==null||!!m.spouse===!!c.wed)&&(!c.kid||m.kids>0)&&(!c.gold||m.gold>=c.gold)&&(!c.fame||m.fame>=c.fame)&&(!c.lv||m.lv>=c.lv)&&(!c.reg||c.reg.includes(m.b.reg))&&(!c.sc||c.sc.includes(m.sect))&&(!c.side||(m.sect&&SECTS[m.sect]&&c.side.includes(SECTS[m.sect].side)))&&(!c.free||!m.sect)&&(!c.need||c.need()),
     st:()=>Sg(bg,{}),text:()=>typeof text==='function'?text():text,ch:chs.map(mkCh)},rep?{rep}:{once:1},g==='SS'||g==='SSR'?{gi:1}:{})); }

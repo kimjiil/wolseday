@@ -20,18 +20,19 @@ function renderRec(){
       ${m.wins||m.losses?`<dt>싸움</dt><dd class="mh-num">${m.wins||0}승 ${m.losses||0}패${m.kills?` · 벤 사람 ${m.kills}`:''}</dd>`:''}
       <dt>가족</dt><dd>아버지 ${fa.dead?'<s>':''}${esc(fa.name)}${fa.dead?'</s>':''} · 어머니 ${mo.dead?'<s>':''}${esc(mo.name)}${mo.dead?'</s>':''}${m.sib?` · 형제 ${m.sib}`:''}${m.spouse&&!m.spouse.dead?` · 배우자 ${esc(m.spouse.name)}`:''}${kids?` · 자식 ${kids}`:''}</dd>
     </dl>
-    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
+    ${m.arts.length?`<div><h4>무공<small>${m.arts.length}가지</small></h4><div class="mh-tagl">${m.arts.map(a=>`<span class="${a.k==='마공'?'m':''}" title="${esc(a.k)}${a.k==='안법'?` · 낌새 읽기 +${a.p}%`:a.p?` · 위력 ${a.p}`:''}">${esc(a.n)}</span>`).join('')}</div></div>`:''}
     ${others.length?`<div><h4>인연</h4><div class="mh-rels">${others.map(r=>`<span class="mh-relc${r.role==='원수'?' m':''}">${ptImg(relLook(r))}<span><small>${esc(r.role)}</small>${esc(r.name)}</span></span>`).join('')}</div></div>`:''}
-    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}</dd></dl>`;
+    <dl class="mh-kv"><dt>성격</dt><dd>${perTags().join(' · ')||'아직 뚜렷하지 않다'}</dd><dt>타고난 것</dt><dd>근골 ${ST('body')} · 오성 ${ST('wit')} · 기연 ${ST('luck')} · 매력 ${ST('charm')}${m.b.trait?` · <span class="mh-red">${TR(m.b.trait).n}</span>`:''}${m.f.deaf?' · <span class="mh-red">한쪽 귀를 잃음</span>':''}</dd></dl>`;
   $m('mhChron').innerHTML=m.log.slice().reverse().slice(0,160).map(x=>`<li class="${x.big?'big':''}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
   const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' t'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` · ${TIER[it.t]}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
-  const b=inv.bag, cons=[['salve','쓰기'],['pill','쓰기'],['antidote',null]].filter(x=>b[x[0]]>0).map(([k,u])=>`<span class="mh-con">${icImg(itIcon(k),'sm')}${esc(ITEMS[k].n)} ×${b[k]}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${k}">${u}</button>`:''}</span>`).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const b=inv.bag, cons=[['salve','쓰기'],['pill','쓰기'],['antidote',null]].filter(x=>b[x[0]]>0&&!ITEMS[x[0]].lore).map(([k,u])=>`<span class="mh-con">${icImg(itIcon(k),'sm')}${esc(ITEMS[k].n)} ×${b[k]}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${k}">${u}</button>`:''}</span>`).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
+  const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare t${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${TIER[it.t]} · ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>무위 ${Math.round(power())}</small></h4>
     <div class="mh-eq">${slot('w','무기')}${slot('a','갑옷')}${slot('c','장신구')}</div>
     ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti t${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
-    ${cons?`<div class="mh-cons">${cons}</div>`:''}`;
+    ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}`;
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });
   el.querySelectorAll('[data-sell]').forEach(x=>x.onclick=()=>{ sellAt(+x.dataset.sell); render(); save(); });
   el.querySelectorAll('[data-use]').forEach(x=>x.onclick=()=>{ useBag(x.dataset.use); render(); save(); });

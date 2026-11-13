@@ -130,7 +130,7 @@ E('smithy',{min:14,max:70,rep:6,w:1.1,when:()=>m.gold>=14&&(m.f.martial||m.b.o==
     if(m.f.smith) out.push({t:'화로를 빌려 내 손으로 벼린다',s:'10냥 · 수련기에 익힌 솜씨',when:()=>m.gold>=10&&better(wOf(1,k),m.inv.w),go:()=>{ gold(-10); give(wOf(1,k)); return {t:'사흘 밤을 두드렸다. 대장장이가 날을 만져 보고 고개를 끄덕였다.',tone:'good'}; }});
     out.push({t:'구경만 한다',go:()=>'날 선 것들을 한참 구경하다 나왔다.'}); return out.slice(-5); }});
 E('peddler',{min:12,max:75,rep:7,w:1,when:()=>m.gold>=12,st:()=>Sg('village',{cast:[N('pd',LOOK.peddler(),112,{tag:'방물장수',pose:'point'})]}),
-  text:()=>'등짐 진 방물장수가 마을에 들어왔다. 보따리에서 별것이 다 나온다.',ch:()=>{ const out=[], cs=['sachet','talis','jadep','beads','mirror'].filter(id=>m.inv.c!==id&&!m.inv.stash.includes(id)).sort(()=>R()-.5).slice(0,2);
+  text:()=>'등짐 진 방물장수가 마을에 들어왔다. 보따리에서 별것이 다 나온다.',ch:()=>{ const out=[], cs=['sachet','talis','jadep','beads','mirror','eyebead'].filter(id=>m.inv.c!==id&&!m.inv.stash.includes(id)).sort(()=>R()-.5).slice(0,2);
     cs.forEach(id=>out.push(buy(id,ITEMS[id].v))); out.push(buy('salve',16,2)); if(R()<.5) out.push(buy('antidote',20)); else if(R()<.4) out.push(buy('pill',120));
     out.push({t:'구경만 한다',go:()=>'방물장수는 다음 고을로 떠났다.'}); return out; }});
 

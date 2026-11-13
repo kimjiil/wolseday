@@ -200,7 +200,7 @@ function fresh(b){
 const ST=k=>m.b.st[k]+(k==='charm'&&hasFx('charm')?1:0);
 const bump=(k,n)=>{ m.b.st[k]=cl(m.b.st[k]+(n||1),1,10); };
 const hasT=t=>m.b.trait===t;
-const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||null;
+const bestArt=()=>m.arts.filter(a=>a.k!=='내공'&&a.k!=='보법'&&a.k!=='안법').reduce((a,b)=>b.p>(a?a.p:-1)?b:a,null)||m.arts.filter(a=>a.k==='보법')[0]||m.arts.filter(a=>a.k==='안법')[0]||null;
 const ngStr=n=>{n=Math.round(n); if(n<60) return `${n}년`; const g=Math.floor(n/60), r=n%60; return `${g}갑자${r?` ${r}년`:''}`;};
 function log(t,big){ m.log.push({a:m.age,t,big:!!big}); }
 function addExp(n){ if(!m.f.martial) return; m.exp=Math.max(0,m.exp+n); }
@@ -222,7 +222,7 @@ function makeAlias(){
   const a=bestArt(), k=a?a.k:'권';
   const evil=m.ak>m.hy+10, hi=m.lv>=6;
   const Pf=evil?['혈영','흑풍','귀면','독안','적혈','음풍']:['청풍','일월','백운','태산','신룡','유성','설화','현천'];
-  const S=({검:hi?'검성':'검협',도:hi?'도왕':'도객',권:hi?'권왕':'신권',장:hi?'장왕':'신장',암기:'비영',보법:'신투',마공:hi?'마존':'마두'})[k]||'협객';
+  const S=({검:hi?'검성':'검협',도:hi?'도왕':'도객',권:hi?'권왕':'신권',장:hi?'장왕':'신장',암기:'비영',보법:'신투',안법:'신안',마공:hi?'마존':'마두'})[k]||'협객';
   const pre=m.alias?m.alias.slice(0,2):pick(Pf);
   return pre+(evil&&!/마/.test(S)?'마'+S.slice(-1):S);
 }

@@ -65,7 +65,7 @@ function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx
 function foePick(D){ const f=D.foe, l=D.me.last; if(f.qi>=60&&R()<.55) return 'U';
   const w=Object.assign({},STYLE[f.style]||STYLE.even); const n=l.length; if(n>=2&&l[n-1]===l[n-2]&&l[n-1]!=='U') w[BEATS[l[n-1]]]+=.4;
   return wpick(['A','G','F'],k=>w[k]); }
-function mkTell(D){ const f=D.foe; D.next=foePick(D); const acc=cl(.38+ST('wit')*.035+(m.lv-f.lv)*.03,.4,.9);
+function mkTell(D){ const f=D.foe; D.next=foePick(D); const acc=cl(.38+ST('wit')*.035+(m.lv-f.lv)*.03+readBonus(),.4,.95);
   const shown=R()<acc?D.next:pick(['A','G','F','U'].filter(k=>k!==D.next&&(k!=='U'||f.qi>=60))); D.tell={s:shown,acc,txt:pick(TELLS[shown])}; }
 function autoPick(D){ const me=D.me, t=D.tell.s; if(D.lethal&&me.hp<me.hpMax*.28&&m.inv.bag.salve>0) return 'salve';
   if(me.qi>=60&&t!=='G'&&R()<.8) return 'U'; if(R()<.15) return pick(['A','G','F']); return BEATS[t]||'A'; }

@@ -537,3 +537,5 @@ img.mh-ic{object-fit:contain}
 .mh-helptip{margin:0;font-size:12px;color:var(--m-muted)}
 .mh-kv dd small{color:var(--m-muted);font-size:12px}
 @media (pointer:coarse),(max-width:560px){.mh-hb{padding:5px 0}.mh-meter .mh-hb{padding:7px 0}}
+
+.mh-hold{color:var(--m-gold);font-size:13.5px}

@@ -10,10 +10,14 @@ const TACT=[
   {id:'rest',n:'쉰다',s:'체력을 회복한다'},
   {id:'sneak',n:'몰래 하산한다',s:'행복이 오른다. 들키면 신망이 깎인다'}
 ];
+// 수련기 선택지 밑의 숫자(trainAct 와 같은 값)
+function tactSub(a){ const T=m.train||{};
+  switch(a.id){ case 'form': return `수련 ${sgnN(gain()*.4)} · 건강 −5`; case 'qi': return `내공 ${sgnN(.5+ST('wit')/14)}년`; case 'chore': return '은자 +4냥 · 신망 +4'; case 'craft': return `기예 ${T.craft||0}/4 · 은자 +2냥 · 신망 +1 · 넷이 차면 평생 쓸 손재주가 된다`; case 'rest': return '건강 +18'; case 'sneak': return '행복 +8 · 주사위에 걸리면 신망 −10'; }
+  return a.s||''; }
 const mt=i=>m.mates[i];
 const alive=i=>m.mates&&m.mates[i]&&!m.mates[i].dead;
 function mateLook(i,o){ const x=m.mates[i]; return npcLook(Object.assign({name:x.name,sex:x.sx,age:m.age+(i===0?3:i===1?-1:0),sect:m.sect,weapon:i===1?null:'sword',blush:i===1&&x.love?1:0,hair:m.sect==='shaolin'?'bald':null},o||{})); }
-function masterLook(o){ const r=m.rels.find(x=>x.role==='사부'); return npcLook(Object.assign({name:r?r.name:'사부',sex:m.sect&&SECTS[m.sect].female?'f':'m',age:58,sect:m.sect,robe:m.sect?null:'#5a5a64',weapon:m.sect==='shaolin'||m.sect==='beggar'?'staff':'sword',hair:m.sect==='shaolin'?'bald':null,beard:'long'},o||{})); }
+function masterLook(o){ const r=m.rels.find(x=>x.role==='사부'); return npcLook(Object.assign({name:r?r.name:'사부',sex:(m.sect&&masterSex(m.sect))||(r&&r.sx)||'m',age:58,sect:m.sect,robe:m.sect?null:'#5a5a64',weapon:m.sect==='shaolin'||m.sect==='beggar'?'staff':'sword',hair:m.sect==='shaolin'?'bald':null,beard:'long'},o||{})); }
 const mateN=(i,x,o)=>N('m'+i,mateLook(i),x,Object.assign({tag:mt(i).name},o||{}));
 function startTrain(){
   m.f.trainDone=1; const S=m.sect&&SECTS[m.sect], mo=S&&S.male, fo=S&&S.female, f=fo||(!mo&&m.sex==='f');
@@ -157,7 +161,7 @@ function renderTrain(card,eye){
   const e=m.tev;
   const body=e?`<div class="mh-dec${e.gi?' gi':''}"><p class="mh-qa">${e.final?'시험':e.ep?`${esc(EPI_T[e.ep].n)} · ${e.bi+1}/${EPI_T[e.ep].beats.length}`:'일'}</p><p class="mh-text">${esc(m.tevText)}</p><div class="mh-chs">${tevChoices(e).map(chBtn).join('')}</div></div>`
     :resWait()?`<button class="mh-go" type="button" id="mhNext" ${m.wait?'disabled':''}>계속</button>`
-    :`<div class="mh-acts">${TACT.map((a,i)=>`<button class="mh-ch" type="button" data-t="${a.id}" ${m.auto?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(a.id==='craft'?craftName():a.n)}<small>${esc(a.s)}</small></span></span></button>`).join('')}</div>`;
+    :`<div class="mh-acts">${TACT.map((a,i)=>`<button class="mh-ch" type="button" data-t="${a.id}" ${m.auto?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(a.id==='craft'?craftName():a.n)}<small>${esc(tactSub(a))}</small></span></span></button>`).join('')}</div>`;
   card.innerHTML=`${eye}${head}${last}${body}${stats}${mates}`;
   card.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ resolveT(+b.dataset.i); afterTrain(); });
   const nx=$m('mhNext'); if(nx) nx.onclick=()=>{ if(m.wait) return; if(m.lastRes) m.lastRes.seen=1; afterTrain(); };

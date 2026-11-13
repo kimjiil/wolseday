@@ -6,7 +6,8 @@ function loop(t){
   if(!$m('murimApp').hidden){
     if(m&&m.phase==='play'){
       const busy=!!DUEL||!!m.wait, Y=PACE[m.pace]||3000;
-      if(CUTQ.length) cutTick(dt);
+      if(t<HOLDT){ /* 무공 획득 연출이 끝날 때까지 장면과 시간을 멈춘다 */ }
+      else if(CUTQ.length) cutTick(dt);
       else if(m.train){ if(m.tev){ if(m.auto&&!paused&&!m.milestone&&!m.dead&&!busy){ acc+=dt; if(acc>=evMs()){ acc=0; autoTrainStep(); if(!DUEL) afterTrain(); } } } else if(!busy&&!m.dead) mapLoop(dt); }
       else if(m.pending){ if(m.auto&&!paused&&!m.milestone&&!busy){ acc+=dt; if(acc>=evMs()){ acc=0; autoResolve(); if(!DUEL){ checkTrain(); render(); save(); } } } }
       else if(m.age>=MAPAGE){ if(!busy&&!m.dead) mapLoop(dt); }
@@ -19,10 +20,13 @@ function loop(t){
 document.addEventListener('keydown',e=>{
   if($m('murimApp').hidden||e.ctrlKey||e.metaKey||e.altKey) return;
   if(e.target&&e.target.closest&&e.target.closest('textarea,input')) return;
+  if(afxOpen()){ if(e.key==='Enter'||e.key===' '||e.key==='Escape'){ afxClose(); e.preventDefault(); } return; }
   if(/^[1-9]$/.test(e.key)){ const b=$m('mhCard').querySelectorAll('.mh-ch')[+e.key-1]; if(b&&!b.disabled){ b.click(); e.preventDefault(); } }
   else if(e.key==='Enter'&&$m('mhNext')&&!$m('mhNext').disabled&&!(e.target&&e.target.closest&&e.target.closest('button,a,select'))){ $m('mhNext').click(); e.preventDefault(); }
   else if(e.key===' '&&m&&m.phase==='play'&&(!document.activeElement||document.activeElement===document.body)){ paused=!paused; render(); e.preventDefault(); }
 });
+// 연출이 떠 있을 때 화면의 다른 곳을 눌러도 닫힌다(누른 것은 그대로 처리된다)
+$m('murimApp').addEventListener('click',e=>{ if(afxOpen()&&!(e.target.closest&&e.target.closest('.mh-artfx'))) afxClose(); },true);
 $m('mhHub').onclick=()=>{ paused=true; if(m&&m.phase==='play') renderCtl(); location.hash=''; window.__route&&window.__route(); };
 $m('mhVer').textContent='v'+MVER;
 $m('mhNotes').innerHTML=`<b>바뀐 점</b>`+NOTES.map(n=>`<div class="mh-note"><span>v${n[0]} · ${n[1]}</span><ul>${n[2].map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');

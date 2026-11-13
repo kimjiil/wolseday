@@ -65,19 +65,24 @@ const eq=k=>{ let v=0; if(m&&m.inv) for(const s of SLOTS){ const it=m.inv[s]&&IT
 const eqSt=k=>{ let v=0; if(m&&m.inv) for(const s of SLOTS){ const it=m.inv[s]&&ITEMS[m.inv[s]]; if(it&&it.st&&it.st[k]) v+=it.st[k]; } return v; };
 // 자리·등급·갈래로 물건을 뽑는다. 그 등급에 없으면 한 단계씩 내린다
 const POOL={};
-function pool(s,t,k){ const key=s+'|'+(k||'')+'|'+t; return POOL[key]||(POOL[key]=Object.values(ITEMS).filter(it=>it.s===s&&it.t===t&&(!k||it.k===k)&&!it.lore&&it.id!=='wsword').map(it=>it.id)); }
+// 's' 가 'b' 면 비급(무공서)만, 'u' 면 비급을 뺀 소모품만 뽑는다
+function pool(s,t,k){ const key=s+'|'+(k||'')+'|'+t; return POOL[key]||(POOL[key]=Object.values(ITEMS).filter(it=>(s==='b'?!!it.book:it.s===s&&!it.book)&&it.t===t&&(!k||it.k===k)&&!it.lore&&it.id!=='wsword').map(it=>it.id)); }
 function rndItem(s,t,k,rf){ rf=rf||R; for(let g=Math.min(5,t);g>=0;g--){ const p=pool(s,g,k); if(p.length) return p[Math.floor(rf()*p.length)]; } return null; }
 function seeded(seed){ let x=(seed>>>0)||1; return ()=>{ x^=x<<13; x>>>=0; x^=x>>>17; x^=x<<5; x>>>=0; return x/4294967296; }; }
 const TG=[0,2,3,4];   // 사건에서 쓰던 옛 등급(0~3)이 가리키는 새 등급. 0은 C나 B
 const tgOf=(tier,rf)=>tier<=0?((rf||R)()<.6?0:1):TG[Math.min(3,tier)];
 // 싸움에서 이기거나 사건이 잘 풀렸을 때 덤으로 떨어지는 물건
-function dropItem(t,o){ o=o||{}; const s=o.s||(m.age<13?pick(['u','c']):pick(['w','w','a','h','f','c','u'])), id=rndItem(s,t,s==='w'?myKind():null); if(id) give(id,{}); return id; }
+function dropItem(t,o){ o=o||{}; const s=o.s||(m.age<13?pick(['u','c']):pick(['w','w','a','h','f','c','u','b'])), id=rndItem(s,t,s==='w'?myKind():s==='b'?bookKind():null); if(id) give(id,{}); return id; }
+// 떨어지는 비급의 갈래: 절반은 내가 쓰는 무기에 맞는 것, 나머지는 아무 갈래
+const bookKind=()=>R()<.5?({검:'검',도:'도',권:R()<.5?'권':'장',암기:'암기'})[myKind()]:null;
 // 예전부터 있던 물건의 등급 순서(옛 0~3)
 const WKIND={검:['isword','gsword','psword','hsword'],도:['bsaber','asaber','dsaber','rsaber'],권:['lglove','sglove','cglove','tglove'],암기:['ldart','gdart','ndart','sdart']};
 const ARMORS=['lvest','chain','gvest','silk'];
-const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[]};
+const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[],외공:[]};
 // 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
-const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법';
+const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법'||k==='외공';
+// 외공: 위력이 곧 방어에 더해진다(가장 높은 것 하나)
+const bodyArt=()=>m.arts.reduce((v,a)=>a.k==='외공'&&a.p>v?a.p:v,0);
 const eyeArt=()=>m.arts.reduce((v,a)=>a.k==='안법'&&a.p>v?a.p:v,0);
 const readBonus=()=>eyeArt()/100+eq('rd')-(m.f.deaf?.1:0)+(hasT('star')?.1:0);
 // 보법은 위력이 높을수록 잘 피한다(가장 높은 것 하나)
@@ -128,7 +133,7 @@ function useBag(k){ const b=m.inv.bag; if(!(b[k]>0)) return false;
       vfx(()=>{ callout('走火入魔','gi',1800); flashA=.6; flashC='#8fe07a'; toast(ear?'<span><small>주화입마</small><b>귀를 잃었다</b><em>건강 −25 · 낌새 읽기 −10%</em></span>':'<span><small>주화입마</small><b>기가 거꾸로 돌았다</b><em>건강 −25</em></span>','tm',4600); }); }
     else log('압생투강주를 마셨다. 초록빛 불이 단전에 내려앉았다',true);
     lvCheck(); return true; }
-  const it=ITEMS[k], u=it&&it.use; if(!u) return false; if(u.hp&&!u.ng&&!u.joy&&!u.ex&&!u.st&&m.hp>=100) return false;
+  const it=ITEMS[k], u=it&&it.use; if(!u) return false; if(u.art!=null) return readManual(k); if(u.hp&&!u.ng&&!u.joy&&!u.ex&&!u.st&&m.hp>=100) return false;
   b[k]--; let got=0; if(u.hp) m.hp=cl(m.hp+u.hp); if(u.ng){ got=ngMed(u.ng); if(!m.f.martial) learn('토납법',0,'내공',got); else m.ng+=got; } if(u.joy) m.joy=cl(m.joy+u.joy); if(u.ex) addExp(gain()*u.ex/100); if(u.st) for(const s in u.st) m.b.st[s]=Math.min(12,(m.b.st[s]||0)+u.st[s]);
   if(it.t>=3) log(`${eul(it.n)} 썼다`,true); vfx(()=>{ healFx(); heroFloat(u.ng?`내공 +${got}년`:useText(u).split(' · ')[0],u.ng?'jade':'good'); }); lvCheck(); return true; }
 // 건강이 바닥일 때 저절로 쓰는 약: 건강만 올리는 것 가운데 등급이 낮은 것부터
@@ -142,7 +147,7 @@ const CIC=[[/반지|가락지|지환|환$/,'ring'],[/염주|구슬|주$|단주/,
 function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); let kind;
   if(it.s==='w') kind=ICK[it.k]; else if(it.s==='a') kind='armor'; else if(it.s==='h') kind='hat'; else if(it.s==='f') kind='boot';
   else if(it.s==='c'){ kind=ICK[it.fx]; if(!kind){ const c=CIC.find(x=>x[0].test(it.n)); kind=c?c[1]:'jade'; } }
-  else if(it.s==='u'){ kind=ICK[id]; if(!kind){ const u=it.use||{}; kind=u.st?'pill':u.ng?'pill':u.ex?'scroll':u.joy&&!u.hp?'gourd':/술|주$|차$|탕$/.test(it.n)?'gourd':/단$|환$/.test(it.n)?'pill':'jar'; } }
+  else if(it.s==='u'){ kind=ICK[id]; if(!kind){ const u=it.use||{}; kind=u.art!=null?'scroll':u.st?'pill':u.ng?'pill':u.ex?'scroll':u.joy&&!u.hp?'gourd':/술|주$|차$|탕$/.test(it.n)?'gourd':/단$|환$/.test(it.n)?'pill':'jar'; } }
   else kind=ICK[id];
   // 이미지 스킨: icon/<물건 이름> → icon/<모양>_<등급> → icon/<모양>
   return skinUrl('icon/'+it.n,'icon/'+id,'icon/'+kind+'_'+TIER[it.t],'icon/'+kind)||iconUrl(kind,it.t); }
@@ -150,5 +155,8 @@ const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width=
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
 function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
   const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
-function artToast(n,p,k,ng){ sfx('get'); toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(k)}</small><b>${esc(n)}</b><em>${k==='내공'?`내공 +${ng||0}년`:k==='안법'?`낌새 읽기 +${p}%`:k==='보법'?`회피 +${Math.round(stepEv(p)*100)}%`:`위력 ${p}`}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'t1',4200);
-  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':'#bfe8ff',12); }
+// 새 무공 알림. S 이상이면 장면 위에 획득 연출이 뜬다(design 의 artFx)
+function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); if(g<3) sfx('get');
+  const tip=()=>toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(artSub(a))} ${grTag(g)}</small><b>${esc(n)}</b><em>${artStat(a)}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'gr'+g,g>=3?4600:4200);
+  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,k==='마공'?'#ff8a70':g>=4?'#ffe9a0':'#bfe8ff',g>=3?22:12);
+  if(g>=3) artFx(n,g,artSub(a),k==='마공',tip); else tip(); }   // 연출이 닫힌 뒤에 알림이 뜬다

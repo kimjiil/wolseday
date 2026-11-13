@@ -471,3 +471,110 @@ img.mh-ic{object-fit:contain}
   .mh-cathay{max-height:none}
   #mhRec{scroll-margin-top:8px}
 }
+
+/* ---- 무공 등급 ---- */
+.mh-arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:5px}
+.mh-art{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 7px;align-items:center;border:1px solid var(--m-line);border-left-width:3px;padding:4px 7px;background:var(--m-panel2);min-width:0}
+.mh-art .mh-gr{grid-row:1/span 2;margin:0;font-size:11px;padding:0 4px;min-width:1.5em}
+.mh-art b{font-family:var(--m-f-disp);font-weight:400;font-size:15px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh-art small{font-size:12px;color:var(--m-muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh-art.gr1{border-left-color:#6f9a66}.mh-art.gr2{border-left-color:#7f95a3}.mh-art.gr3{border-left-color:#8a5ad0}.mh-art.gr4{border-left-color:var(--m-gold)}.mh-art.gr5{border-left-color:#e0589f}
+.mh-art.gr3 b{color:#8a5ad0}.mh-art.gr4 b{color:var(--m-gold)}.mh-art.gr5 b{color:#c9418a}
+.mh-art.m b{color:var(--m-seal)}
+.mh-art.on{border-color:var(--m-ink);box-shadow:inset 0 0 0 1px var(--m-ink)}
+.mh-artmore{margin-top:5px}.mh-artmore summary{cursor:pointer;font-size:13px;color:var(--m-muted);padding:6px 0}
+.mh-artmore[open] summary{margin-bottom:2px}
+#mhToast{z-index:6}
+/* 높은 등급 무공을 얻었을 때의 연출(artFx) */
+.mh-artfx{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;display:grid;place-items:center;line-height:1.15;--c:#b89cf0;--c2:#efe6ff;--cr:rgba(184,156,240,.55);pointer-events:auto;cursor:pointer;animation:mhAfxIn .9s ease-out both}
+.mh-artfx.out{animation:mhAfxOut .3s ease-in forwards;pointer-events:none}
+.mh-artfx:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+.mh-artfx.g4{--c:#f2c14e;--c2:#fff3c0;--cr:rgba(242,193,78,.62)}.mh-artfx.g5{--c:#ffd76a;--c2:#ffffff;--cr:rgba(255,236,160,.75)}.mh-artfx.dark{--c:#e2503a;--c2:#ffd0c4;--cr:rgba(226,80,58,.6)}
+.mh-artfx i{position:absolute;display:block}
+.mh-artfx .veil{inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(23,22,28,.3) 0%,rgba(10,9,14,.9) 78%)}
+.mh-artfx .rays{left:50%;top:50%;width:170%;aspect-ratio:1;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,transparent 0 9deg,var(--cr) 9deg 12deg,transparent 12deg 20deg);-webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.75) 20%,transparent 60%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.75) 20%,transparent 60%);animation:mhAfxSpin 10s linear infinite}
+.mh-artfx.g4 .rays{animation-duration:7s}
+.mh-artfx.g5 .rays{background:repeating-conic-gradient(from 0deg,transparent 0 6deg,rgba(255,236,160,.8) 6deg 9deg,transparent 9deg 14deg,rgba(240,140,200,.6) 14deg 16deg,transparent 16deg 22deg,rgba(150,190,255,.55) 22deg 24deg,transparent 24deg 30deg);animation-duration:5s}
+.mh-artfx.g5 .rays.r2{width:120%;animation-direction:reverse;animation-duration:8s;opacity:.6}
+.mh-artfx .ring{left:50%;top:50%;width:16%;aspect-ratio:1;border-radius:50%;border:3px solid var(--c2);box-shadow:0 0 16px var(--c),inset 0 0 12px var(--c);transform:translate(-50%,-50%) scale(.2);opacity:0;animation:mhAfxRing 2s ease-out .5s forwards}
+.mh-artfx .ring.r2{animation-delay:1.3s}.mh-artfx .ring.r3{animation-delay:2.1s}
+.mh-artfx .bolt{inset:0;background:#fff;opacity:0;animation:mhAfxBolt 4.2s linear forwards}
+.mh-artfx .pt{position:absolute;bottom:-3%;width:4px;height:4px;background:var(--c2);box-shadow:0 0 6px 1px var(--c);opacity:0;animation:mhAfxPt 1.4s ease-out infinite}
+.mh-artfx.g5 .pt:nth-of-type(3n){background:#ffc0e0;box-shadow:0 0 6px 1px #f08cc8}.mh-artfx.g5 .pt:nth-of-type(3n+1){background:#cfe4ff;box-shadow:0 0 6px 1px #7fb4ff}
+.mh-artfx .tx{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:0 8px;max-width:100%;animation:mhAfxTx 2s cubic-bezier(.2,.9,.3,1) .35s both}
+.mh-artfx .tx::before{content:'';position:absolute;left:-18%;right:-18%;top:-30%;bottom:-30%;background:radial-gradient(ellipse at 50% 50%,rgba(10,9,14,.82) 0%,rgba(10,9,14,.55) 45%,transparent 72%);z-index:-1}
+.mh-artfx .tx b{position:relative}
+.mh-artfx .tx em{font-style:normal;font-family:var(--m-f-disp);font-size:clamp(11px,2.3vw,16px);letter-spacing:.34em;padding:2px 6px 2px 11px;color:var(--c2);border:2px solid var(--c);background:rgba(23,22,28,.6)}
+.mh-artfx .tx b{font-family:var(--m-f-disp);font-weight:400;font-size:clamp(25px,7.2vw,58px);white-space:nowrap;color:#fff;text-shadow:0 0 12px var(--c),0 0 30px var(--c),0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c}
+.mh-artfx.g5 .tx b{color:#fffdf2;text-shadow:0 0 10px #ffd76a,0 0 26px #f08cc8,0 0 48px #7fb4ff,0 2px 0 #17161c,2px 0 0 #17161c,-2px 0 0 #17161c,0 -2px 0 #17161c,2px 2px 0 #17161c,-2px 2px 0 #17161c;animation:mhAfxHue 1.6s linear infinite}
+.mh-artfx .tx small{font-size:clamp(11px,2.1vw,15px);color:var(--c2);letter-spacing:.08em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c}
+@keyframes mhAfxIn{from{opacity:0}to{opacity:1}}
+@keyframes mhAfxOut{from{opacity:1}to{opacity:0}}
+@keyframes mhAfxGo{0%{opacity:0}100%{opacity:.95}}
+@keyframes mhAfxBlink{0%,100%{opacity:.95}50%{opacity:.45}}
+@keyframes mhAfxSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes mhAfxRing{0%{opacity:.95;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(8)}}
+@keyframes mhAfxPt{0%{opacity:0;bottom:-3%}12%{opacity:1}100%{opacity:0;bottom:104%}}
+@keyframes mhAfxTx{0%{opacity:0;transform:scale(3)}55%{opacity:1;transform:scale(.94)}75%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+@keyframes mhAfxHue{0%,100%{filter:none}50%{filter:brightness(1.25) saturate(1.4)}}
+@keyframes mhAfxBolt{0%{opacity:.9}7%{opacity:0}35%{opacity:0}37%{opacity:.7}43%{opacity:0}63%{opacity:0}65%{opacity:.45}70%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.mh-artfx .rays,.mh-artfx .pt,.mh-artfx .ring,.mh-artfx .bolt{display:none}.mh-artfx .tx,.mh-artfx.g5 .tx b{animation:none}}
+
+/* ---- 인생 등급과 인물 카드 ---- */
+.mh-lg{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px}
+.mh-lg .mh-gr{font-size:30px;line-height:1.3;padding:2px 16px;margin:0;letter-spacing:.06em;border-width:2.5px}
+.mh-lg b{font-family:var(--m-f-disp);font-weight:400;font-size:20px;color:var(--m-ink)}
+.mh-lg small{font-size:13px;color:var(--m-muted)}
+.mh-cardbox{display:flex;flex-direction:column;align-items:center;gap:10px}
+#murimApp img.mh-cardimg{display:block;width:min(100%,360px);max-width:100%;height:auto;border:1px solid var(--m-line);box-shadow:0 4px 18px rgba(0,0,0,.2);-webkit-touch-callout:default}
+.mh-cardbox .mh-row{justify-content:center}
+.mh-cardbox .mh-hint{text-align:center;font-size:13px}
+.mh-lgd{width:100%}.mh-lgd summary{cursor:pointer;font-size:13px;color:var(--m-muted);padding:6px 0}
+.mh-lgd div{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--m-muted);margin:2px 0 6px}.mh-lgd div b{color:var(--m-ink);font-family:var(--m-f-num);font-weight:500}
+.mh-past .mh-gr{font-size:11px;padding:0 4px;margin-right:6px}
+
+/* ---- 낱말 설명 ---- */
+.mh-hb{all:unset;cursor:help;text-decoration:underline dotted;text-underline-offset:4px;text-decoration-thickness:1px;line-height:1.3}
+.mh-hb[aria-expanded="true"]{color:var(--m-jade);text-decoration-style:solid}
+.mh-hb:focus-visible{outline:2px solid var(--m-seal);outline-offset:2px}
+.mh-helpbox{margin:0;font-size:13.5px;line-height:1.65;color:var(--m-ink);background:var(--m-panel2);border:1px solid var(--m-line);border-left:3px solid var(--m-jade);padding:8px 10px}
+.mh-kv .mh-helpbox{grid-column:1/-1}
+.mh-helptip{margin:0;font-size:12px;color:var(--m-muted)}
+.mh-kv dd small{color:var(--m-muted);font-size:12px}
+@media (pointer:coarse),(max-width:560px){.mh-hb{padding:5px 0}.mh-meter .mh-hb{padding:7px 0}}
+
+
+.mh-artfx .go{position:absolute;left:0;right:0;bottom:7%;text-align:center;font-family:var(--m-f-body);font-size:clamp(11px,2.2vw,14px);line-height:1.2;color:#f4f1e4;letter-spacing:.12em;text-shadow:0 1px 0 #17161c,1px 0 0 #17161c,-1px 0 0 #17161c,0 -1px 0 #17161c;opacity:0;animation:mhAfxGo .6s ease-out 2.6s forwards,mhAfxBlink 1.8s ease-in-out 3.2s infinite}
+@media (prefers-reduced-motion:reduce){.mh-artfx .go{animation:none;opacity:.95}}
+
+/* ---- 천하 지도: 일이 있는 곳(!)과 임무가 걸린 곳(◆)이 눈에 띄게 ---- */
+.mh-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.mh-cs.mk,.mh-cs.qt{z-index:3}
+.mh-cs.mk span{color:#fff;background:rgba(178,40,26,.95);padding:2px 6px;text-shadow:none;font-size:1.1em;box-shadow:0 0 0 1px #fff}
+.mh-cs.qt span{color:#fff;background:rgba(138,95,14,.96);padding:2px 6px;text-shadow:none;font-size:1.1em;box-shadow:0 0 0 1px #fff}
+.mh-cs.mk i,.mh-cs.qt i{position:relative;overflow:visible}
+.mh-cs.mk i::after,.mh-cs.qt i::after{content:'';position:absolute;inset:-9px;border-radius:50%;border:2.5px solid #ff4a30;animation:mhCping 1.4s ease-out infinite;pointer-events:none}
+.mh-cs.qt i::after{border-color:#ffd84a}
+.mh-cbang{position:absolute;left:50%;bottom:calc(100% - 3px);min-width:22px;height:24px;padding:0 5px;box-sizing:border-box;display:grid;place-items:center;font:700 17px/1 var(--m-f-disp,serif);font-style:normal;color:#fff;background:#d2331f;border:2px solid #fff;box-shadow:0 0 0 2px #22202a,0 3px 6px rgba(0,0,0,.4);transform:translate(-50%,-2px);animation:mhCbob .7s ease-in-out infinite alternate;pointer-events:none}
+.mh-cbang::after{content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#fff}
+.mh-cbang.q{background:#b27a12;font-size:13px}
+@keyframes mhCbob{from{transform:translate(-50%,-2px)}to{transform:translate(-50%,-9px)}}
+@keyframes mhCping{0%{transform:scale(.55);opacity:1}100%{transform:scale(2.3);opacity:0}}
+/* 지도를 밀어도 왼쪽 위에 붙어 있는 알림. 누르면 그곳으로 지도가 옮겨 가고 갈 곳으로 골라진다 */
+.mh-cnote{position:sticky;left:0;top:0;z-index:6;width:100%;height:0;pointer-events:none}
+.mh-cnote>div{position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.mh-cnb{all:unset;box-sizing:border-box;pointer-events:auto;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--m-f-body);font-weight:600;font-size:13px;line-height:1.2;color:#fff;background:rgba(178,40,26,.95);border:1px solid #fff;padding:5px 9px 5px 5px;box-shadow:0 2px 6px rgba(0,0,0,.4);animation:mhCnb 1.6s ease-in-out infinite}
+.mh-cnb b{display:grid;place-items:center;width:18px;height:18px;background:#fff;color:#b8321f;font:700 13px/1 var(--m-f-disp,serif)}
+.mh-cnb.q{background:rgba(138,95,14,.96);animation:none}.mh-cnb.q b{color:#8a5f0e;font-size:11px}
+.mh-cnb small{font-weight:400;opacity:.92;font-size:12px}
+.mh-cnb:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@keyframes mhCnb{0%,100%{box-shadow:0 2px 6px rgba(0,0,0,.4),0 0 0 0 rgba(255,90,64,.7)}50%{box-shadow:0 2px 6px rgba(0,0,0,.4),0 0 0 6px rgba(255,90,64,0)}}
+/* 카드 맨 위의 알림 줄 */
+.mh-cnrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:1px solid var(--m-seal);border-left-width:4px;background:var(--m-panel2);font-family:var(--m-f-body);font-size:15px;line-height:1.35;color:var(--m-ink)}
+.mh-cnrow b{flex:none;display:grid;place-items:center;width:22px;height:22px;background:var(--m-seal);color:#fff;font:700 15px/1 var(--m-f-disp,serif)}
+.mh-cnrow span{flex:1;min-width:0}.mh-cnrow small{display:block;font-size:12.5px;color:var(--m-muted)}
+.mh-cnrow em{flex:none;font-style:normal;font-size:13px;color:var(--m-seal);border:1px solid currentColor;padding:3px 8px}
+.mh-cnrow.q{border-color:var(--m-gold)}.mh-cnrow.q b{background:var(--m-gold);font-size:12px}.mh-cnrow.q em{color:var(--m-gold)}
+.mh-cnrow[disabled]{opacity:.5;cursor:default}
+.mh-cnrow:focus-visible{outline:2px solid var(--m-seal);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.mh-cbang,.mh-cnb,.mh-cs.mk i::after,.mh-cs.qt i::after{animation:none}}

@@ -394,4 +394,4 @@ const LOOK={
 function npcLook(p){ p=p||{}; const s=seedOf(p.name||p.role||'x'), sex=p.sex||(s%2?'m':'f'), age=p.age==null?28:p.age, old=age>=58, kid=age<13;
   const base=p.robe||(p.sect&&SECTS[p.sect]?SECTS[p.sect].robe:['#8f8a78','#7a8a9a','#9a7a6a','#6f8a72','#8a7a9a'][s%5]);
   const hair=p.hair||(kid?(sex==='f'?'buns':'tuft'):sex==='f'?(s%3?'bun':'long'):(['top','pony','top','pony'][s%4]));
-  return mkLook({sex,size:kid?'kid':(p.size||'adult'),hair,hairC:old?'#e2dfd6':HAIRC[s%5],skin:SKIN[s%4],robe:p.tint?mix(base,p.tint,.3):base,weapon:p.weapon||null,beard:old&&sex==='m'?'long':(p.beard||null),blush:p.blush?1:0,extra:p.extra||null,item:p.item||null}); }
+  return mkLook({sex,size:kid?'kid':(p.size||'adult'),hair,hairC:old?'#e2dfd6':age>=46?'#6e686c':HAIRC[s%5],skin:SKIN[s%4],robe:p.tint?mix(base,p.tint,.3):base,weapon:p.weapon||null,beard:old&&sex==='m'?'long':(p.beard||(sex==='m'&&age>=38&&!p.hair?'short':null)),blush:p.blush?1:0,extra:p.extra||null,item:p.item||null}); }

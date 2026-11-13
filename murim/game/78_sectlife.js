@@ -1,10 +1,14 @@
 /* ==== murim:sectlife — 문파 생활: 임무, 공헌과 서열, 침공 ==== */
 const SRANK=[[0,'삼대제자'],[12,'이대제자'],[30,'일대제자'],[60,'장로']];
 const srank=()=>{ const c=m.sc||0; let r=SRANK[0][1]; for(const x of SRANK) if(c>=x[0]) r=x[1]; return r; };
+// 다음 서열까지 남은 공헌(신상 칸에 보인다)
+const scNext=()=>{ const c=m.sc||0, n=SRANK.find(x=>x[0]>c); return n?` <small>(${n[1]}까지 ${Math.ceil(n[0]-c)})</small>`:''; };
 const mySite=()=>m.sect?cath().spots.find(s=>s.sect===m.sect)||null:null;
 const foeSide=()=>m.sect&&SECTS[m.sect]&&SECTS[m.sect].side==='마'?'무림맹':'마교';
 // 공헌이 쌓이면 서열이 오르고, 오를 때마다 사문의 무공이 깊어진다
-function addSc(n){ if(!m.sect||!SECTS[m.sect]) return; const b=srank(); m.sc=Math.max(0,(m.sc||0)+n); const a=srank(); if(n<=0||a===b) return;
+// 인연이 60 이상이면 임무로 얻는 공헌이 1.25배
+const scGain=n=>n>0&&m.bond>=60?Math.round(n*12.5)/10:n;
+function addSc(n){ if(!m.sect||!SECTS[m.sect]) return; n=scGain(n); const b=srank(); m.sc=Math.max(0,(m.sc||0)+n); const a=srank(); if(n<=0||a===b) return;
   const S=SECTS[m.sect], art=m.arts.find(x=>x.n===S.art[0]); if(art) art.p+=a==='장로'?3:2; addExp(gain()*.6); m.fame+=a==='장로'?8:3; log(`${S.n}의 ${a}가 되었다`,true);
   if(!m.headless) vfx(()=>toast(`<b>${a}</b> ${esc(S.n)}에서 서열이 올랐다${art?` · ${esc(S.art[0])}의 깊은 뜻을 전수받았다`:''}`,'t1',3400)); }
 /* ---- 사문 임무: 받아서, 천하 지도의 그곳에 가서 하고, 돌아와 보고한다 ---- */
@@ -22,10 +26,10 @@ function questTake(){ if(!m.sect||m.quest||!mapMode()) return; const me=mySite()
   m.quest={k,to:pick(c).id,step:0,due:m.age+2}; log(`사문의 임무를 받았다: ${QT[k].n(m.quest)}`); sfx('ok'); if(!m.headless) toast(`<b>임무</b> ${esc(QT[k].n(m.quest))}`,'t1',3000); render(); save(); }
 function questReport(){ const q=m.quest; if(!q||!q.step||!mapMode()) return; const T=QT[q.k]; m.quest=null; m.qn=(m.qn||0)+1;
   if(q.fail){ m.joy=cl(m.joy-2); log(`임무에 실패했다고 고했다: ${T.n(q)}`); if(!m.headless) toast('<b>임무 실패</b> 사부는 말없이 고개만 끄덕였다','t1',2800); addSc(-1); }
-  else { const g=ri(T.g[0],T.g[1]); gold(g); addExp(gain()*.25); m.bond+=1.5; log(`임무를 마치고 돌아왔다: ${T.n(q)}`); if(!m.headless) toast(`<b>임무 완수</b> 공헌 +${T.sc} · 은자 +${g}냥`,'t1',3000); addSc(T.sc); }
+  else { const g=ri(T.g[0],T.g[1]); gold(g); addExp(gain()*.25); m.bond+=1.5; log(`임무를 마치고 돌아왔다: ${T.n(q)}`); if(!m.headless) toast(`<b>임무 완수</b> 공헌 +${scGain(T.sc)} · 은자 +${g}냥`,'t1',3000); addSc(T.sc); }
   sfx('ok'); render(); save(); }
 function questTick(){ const q=m.quest; if(!q) return; if(!m.sect){ m.quest=null; return; } if(m.age>q.due){ m.quest=null; addSc(-3); log('임무 기한을 넘겼다. 사문의 눈초리가 차갑다.'); } }
-WSEAS.quest=()=>{ const q=m.quest; if(!q) return '하릴없이 한 철이 갔다.'; const T=QT[q.k]; if(T.duel){ m.wq='wQuest'; return T.go; } q.step=1; if(R()<T.risk) m.wq='wAmbush'; return T.done(q); };
+WSEAS.quest=()=>{ const q=m.quest; if(!q) return '하릴없이 한 계절이 갔다.'; const T=QT[q.k]; if(T.duel){ m.wq='wQuest'; return T.go; } q.step=1; if(R()<T.risk) m.wq='wAmbush'; return T.done(q); };
 WSTAGE.quest=()=>Sg((m.quest&&QT[m.quest.k].bg)||'road',{hero:{x:70,act:'wander',xmin:40,xmax:120}});
 E('wQuest',{min:8,max:95,wld:1,when:()=>WGO&&!!m.quest,
   st:()=>{ const k=(m.quest||{}).k; return k==='spar'?Sg('arena',{cast:[N('c1',LOOK.swordsman(),124,{pose:'guard',tag:'상대'})]}):k==='spy'?Sg('inn',{time:'night',cast:[N('sp',LOOK.blackclad(),124,{pose:'guard',tag:'첩자'})]}):Sg('road',{cast:[N('chief',LOOK.chief(),122,{tag:'두목',pose:'guard'})].concat(mob('bd',()=>LOOK.bandit(),[142,156],{pose:'guard'}))}); },

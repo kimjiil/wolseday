@@ -30,8 +30,9 @@ body.is-murim::before{background:var(--m-bg)}
 .mh-col{display:flex;flex-direction:column;gap:14px;min-width:0}
 /* the stage */
 .mh-scene{position:relative;border:2px solid var(--m-ink);background:#17161c;overflow:hidden;line-height:0}
-@media (max-width:880px) and (orientation:portrait){.mh-scene{position:sticky;top:0;z-index:6}}
-@media (min-width:881px) and (min-height:760px){.mh-scene{position:sticky;top:8px;z-index:6}}
+.mh-stick{min-width:0}
+@media (max-width:880px) and (orientation:portrait){.mh-stick{position:sticky;top:0;z-index:6}}
+@media (min-width:881px) and (min-height:760px){.mh-stick{position:sticky;top:8px;z-index:6}}
 #mhScene{display:block;width:100%;aspect-ratio:192/108;image-rendering:pixelated;image-rendering:crisp-edges}
 #mhTags,#mhFl{position:absolute;inset:0;pointer-events:none;line-height:1.4}
 .mh-tag{position:absolute;transform:translate(-50%,-100%);font-family:var(--m-f-body);font-size:clamp(9px,1.45vw,12px);color:#f7f7ef;background:rgba(23,22,28,.72);padding:0 5px;white-space:nowrap}
@@ -384,3 +385,89 @@ img.mh-ic{object-fit:contain}
 .mh-wnote{font-size:12px;color:var(--m-muted);margin:8px 0}
 .mh-wres{font-size:15px;margin:10px 0;line-height:1.6}.mh-wres.good{color:var(--m-jade)}.mh-wres.bad{color:var(--m-seal)}
 .mh-word small{display:block;font-size:12px;color:var(--m-muted);font-weight:400}
+
+
+/* ---- 휴대폰 ---- */
+/* 장면 바로 밑에 붙어 다니는 한 줄 신상. 좁은 화면에서는 신상 칸이 한참 아래에 있어서 따로 보여 준다 */
+.mh-mini{all:unset;box-sizing:border-box;display:none;width:100%;align-items:center;gap:4px 10px;padding:5px 8px;background:var(--m-panel);border:2px solid var(--m-ink);border-top:0;font-family:var(--m-f-body);font-size:13px;line-height:1.3;color:var(--m-ink);cursor:pointer;white-space:nowrap;overflow:hidden}
+.mh-mini span{display:inline-flex;align-items:baseline;gap:4px;min-width:0}
+.mh-mini i{font-style:normal;color:var(--m-muted);font-size:12px}
+.mh-mini b{font-family:var(--m-f-num);font-weight:500;font-variant-numeric:tabular-nums}
+.mh-mini .low b{color:var(--m-seal);font-weight:700}
+.mh-mini .go{margin-left:auto;color:var(--m-muted);font-size:12px;flex:none}
+.mh-mini:focus-visible{outline:2px solid var(--m-seal);outline-offset:-2px}
+#mhRec{scroll-margin-top:calc(56.25vw + 40px)}
+.mh-howd>summary{cursor:pointer;font-size:15px;padding:9px 12px;border:1px solid var(--m-line);background:var(--m-panel2);list-style-position:inside}
+.mh-howd[open]>summary{margin-bottom:8px}
+@media (max-width:880px) and (orientation:portrait){.mh-mini:not([hidden]){display:flex}}
+@media (max-width:560px){
+  /* 글씨: 12px 밑으로는 쓰지 않는다 */
+  .mh-tag{font-size:11.5px;padding:0 4px}.mh-tag.pl{font-size:12px}
+  .mh-relc small,.mh-slot small,.mh-sti small,.mh-con small,.mh-wfoe small,.mh-wempty{font-size:12px}
+  .mh-slot em{font-family:var(--m-f-body);font-size:12.5px;line-height:1.45}
+  .mh-slot small .mh-gr,.mh-sti small .mh-gr,.mh-con .mh-gr,.mh-toastc .mh-gr{font-size:11px}
+  .mh-sti,.mh-cons{font-size:14px}
+  .mh-rare em{font-size:13px}
+  .mh-tol,.mh-wnote{font-size:13px}
+  .mh-chron li .a,.mh-feed li .a{font-size:12.5px}
+  .mh-chip{font-size:12.5px}
+  .mh-cs{font-size:11.5px}
+  .mh-rec .p span{font-size:12px}
+  .mh-dacts .mh-hint,.mh-tell small{font-size:12.5px}
+  /* 줄 간격을 조금 조여 한 화면에 더 담는다 */
+  .mh-card p{line-height:1.68}
+  .mh-card h2{font-size:24px}
+  .mh-seas{margin:2px 0 4px}
+  .mh-age{font-size:21px}.mh-eye{gap:6px;font-size:13.5px}
+  .mh-ch{padding:10px 12px}.mh-ch small{font-size:13.5px;margin-top:1px}
+  .mh-places{margin:8px 0 2px}
+  .mh-how li{line-height:1.55;padding:7px 9px}
+  .mh-seg{width:100%}.mh-seg button{flex:1 1 auto;text-align:center;padding:10px 6px;font-size:14.5px}
+  .mh-ctl{flex-wrap:nowrap;gap:5px}.mh-ctl .mh-btn{padding:6px 8px;white-space:nowrap}.mh-auto{padding:6px 2px;font-size:13.5px;white-space:nowrap}
+  /* 알림은 인물을 가리지 않게 위쪽에 작게 */
+  #mhToast{top:6px;bottom:auto;right:6px;max-width:74%;gap:4px}
+  #mhHud:not([hidden])~#mhToast{top:48px}
+  .mh-toastc{padding:3px 8px 3px 5px;gap:6px}
+  #mhToast .mh-toastc:nth-last-child(n+3){display:none}
+  .mh-toastc .mh-ic{width:22px;height:22px}
+  .mh-toastc small{font-size:11.5px}
+  .mh-toastc b{font-size:14px}
+  .mh-toastc em{font-family:var(--m-f-body);font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  /* 천하 지도: 고른 곳과 떠나는 단추가 늘 화면 아래에 보이게 */
+  .mh-cgo{position:sticky;bottom:8px;z-index:5;margin:8px 0;box-shadow:0 2px 12px rgba(0,0,0,.28);border-color:var(--m-ink)}
+  .mh-cgo .mh-go{padding:11px 14px;font-size:16px}
+  /* 지휘전 */
+  .mh-wgrid{gap:4px}.mh-wcol{padding:5px}
+  .mh-wu b{font-size:13px}.mh-wu small{font-size:11.5px;white-space:normal;line-height:1.25}
+  .mh-wfoe b{font-size:14px}
+  .mh-wlog{font-size:14px}
+}
+/* 손가락으로 누르는 화면(좁은 화면 포함): 단추를 넉넉하게, 자판 표시는 감춘다 */
+@media (pointer:coarse),(max-width:560px){
+  .mh-ch .k,.mh-ch>.k:first-child{display:none}
+  .mh-btn.sm{min-height:36px;padding:6px 11px;font-size:13.5px}
+  .mh-ctl .mh-btn{min-height:40px}
+  .mh-places .mh-btn{min-height:40px;padding:7px 12px;font-size:14.5px}
+  .mh-mate .mh-btn{min-height:38px}
+  .mh-wbtn .mh-btn{min-height:40px;font-size:13px;justify-content:center;text-align:center}
+  .mh-wu{min-height:46px}
+  .mh-rep{min-height:36px}.mh-rep input{width:18px;height:18px}
+  .mh-auto{min-height:40px}.mh-auto input{width:20px;height:20px}
+  .mh-ver{padding:9px 8px}
+  .mh-cs{padding:8px 6px;transform:translate(-50%,-13px)}
+  .mh-howd>summary{padding:12px}
+}
+/* 휴대폰을 가로로 눕혔을 때: 장면이 화면을 다 차지하지 않게 왼쪽에 두고, 카드를 오른쪽에 둔다 */
+@media (orientation:landscape) and (max-height:560px){
+  #murimApp{gap:8px}
+  .mh-brand b{font-size:22px}.mh-brand small{display:none}.mh-seal{font-size:14px}
+  .mh-grid,.mh-grid.solo{grid-template-columns:minmax(0,1fr);max-width:none}
+  #mhGrid>.mh-col:first-child{display:grid;grid-template-columns:minmax(0,46%) minmax(0,1fr);gap:8px 10px;align-items:start}
+  .mh-stick{grid-column:1;grid-row:1/span 2;position:sticky;top:4px;z-index:6}
+  .mh-ctl,.mh-card{grid-column:2}
+  .mh-mini:not([hidden]){display:flex}
+  .mh-card{padding:12px;gap:10px;min-height:0}
+  .mh-card p{line-height:1.65}
+  .mh-cathay{max-height:none}
+  #mhRec{scroll-margin-top:8px}
+}

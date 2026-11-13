@@ -42,6 +42,10 @@ function chBtn(c,i){ let odds='';
   else if(c.duel){ const h=duelHint(c); odds=`<span class="odds duel ${h.cls}">${icImg(iconUrl('sword',h.lethal?2:1),'sm')}${h.lethal?'생사결':'비무'} · ${h.lab}</span>`; }
   else if(c.p){ const need=diceNeed(cl(c.p(),.03,.97)), b=perBonus(c.t).b+(hasFx('dice')?1:0); odds=`<span class="odds">${icImg(iconUrl('dice',0),'sm')}${need}+${b?` · 보정 +${b}`:''}${hasT('star')?` · 천운 ${DICELO()}~20`:''}</span>`; }
   return `<button class="mh-ch" type="button" data-i="${i}" ${m.wait||(m.auto&&!paused)?'disabled':''}><span><span class="k" aria-hidden="true">${i+1}</span><span>${esc(c.t)}${c.s?`<small>${esc(c.s)}</small>`:''}</span></span>${odds}</button>`; }
+// 좁은 화면에서 장면 밑에 붙어 다니는 한 줄 신상. 누르면 신상 칸으로 내려간다
+function renderMini(playing){ const el=$m('mhMini'); if(!el) return; const show=playing&&m.phase==='play'; el.hidden=!show; if(!show) return;
+  el.innerHTML=`<span class="${m.hp<30?'low':''}"><i>건강</i><b>${Math.round(m.hp)}</b></span><span><i>행복</i><b>${Math.round(m.joy)}</b></span><span><b>${fmt(m.gold)}</b><i>냥</i></span>${m.f.martial?`<span><i>내공</i><b>${esc(ngStr(m.ng))}</b></span>`:''}<span class="go">신상 ▾</span>`;
+  el.setAttribute('aria-label','신상과 행낭으로 내려가기'); el.onclick=()=>{ const r=$m('mhRec'); if(r) r.scrollIntoView({behavior:'smooth',block:'start'}); }; }
 function renderCtl(){
   const el=$m('mhCtl'), show=m&&m.phase==='play'&&!DUEL; el.hidden=!show; if(!show) return;
   el.innerHTML=`<button class="mh-btn" type="button" id="mhPause">${paused?'▶ 계속':'❚❚ 멈춤'}</button>
@@ -93,14 +97,14 @@ function renderTitle(card){
   card.innerHTML=`${skinUrl('title')?`<img class="mh-titleimg" src="${esc(skinUrl('title'))}" alt="">`:''}<div class="mh-eye"><span>武林初出</span></div>
     <h2>강호의 어느 해, 누군가로 태어난다.</h2>
     <p>어디서 누구의 아이로 태어날지는 고를 수 없다. 강호 사람 대부분은 무공을 모르는 농사꾼으로 태어나 농사꾼으로 죽는다. 다섯 살부터는 고향 마을을 직접 걸어 다닌다. 걷는 데는 시간이 들지 않고, 무엇을 할 때마다 한 철이 간다. 네 철이면 한 해다.</p>
-    <ul class="mh-how">
+    <details class="mh-howd" ${isNarrow()?'':'open'}><summary>어떻게 하나</summary><ul class="mh-how">
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>마을</b> 집, 일터, 무관, 뒷산 폭포, 장터를 오간다. 어딘가에 느낌표가 뜨면 거기 일이 생긴 것이다. 짙은 수풀을 밟고 지나가면 가끔 무언가를 만난다.</span></li>
       <li>${icImg(iconUrl('dice',0),'sm')}<span><b>천하</b> 열다섯이 넘으면 마을 어귀에서 천하 지도로 나간다. 갈 곳을 누르고 길을 떠나면, 가는 동안 철이 간다. 문파에 들었다면 사문에서 임무를 받아 공헌을 쌓을 수 있고, 가끔은 산문이 습격당한다.</span></li>
       <li>${icImg(iconUrl('sword',1),'sm')}<span><b>결투</b> 강공·수비·변초·절초. 상대의 낌새를 읽고 수를 낸다. 생사결에서 지면 죽을 수 있다.</span></li>
       <li>${icImg(iconUrl('armor',2),'sm')}<span><b>장비</b> 무기·갑옷·머리·신발·장신구. 등급은 C에서 SSR까지. 싸워서 빼앗고, 장터에서 사고, 무덤에서 줍는다.</span></li>
       <li>${icImg(iconUrl('scroll',2),'sm')}<span><b>기연</b> 절벽 아래 동굴, 별똥 쇳덩이, 죽어 가는 노승. 드물게 온다.</span></li>
       <li>${icImg(iconUrl('jade',1),'sm')}<span><b>수련기</b> 무공을 배우면 사문 경내를 걸으며 삼 년을 보낸다. 동문과 정을 쌓고, 때로는 잃는다.</span></li>
-    </ul>
+    </ul></details>
     ${optGroup('era','태어날 시대',[['peace','태평성대'],['chaos','정사대전기'],['demon','마교 천하'],['any','아무 시대나']])}
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
     ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
@@ -187,7 +191,10 @@ let RKEY='';
 // 좁은 화면에서는 장면이 위에 붙어 있어서, 사건이나 결과가 새로 뜨면 카드 머리가 가려지지 않게 끌어온다
 function render(){ render0(); try{ const card=$m('mhCard'), on=m&&m.phase==='play'; if(!card) return;
     const rk=!on?'':m.pending?'e:'+m.pending.id:m.tev?'t:'+String(m.tevText||'').slice(0,12):resWait()?'r:'+String(m.lastRes.t||'').slice(0,12):m.milestone?'m:'+m.milestone:'';
-    if(rk&&rk!==RKEY&&matchMedia('(max-width:880px) and (orientation:portrait)').matches){ const a=cv.parentNode.getBoundingClientRect(), b=card.getBoundingClientRect(); if(a.top<=2&&b.top<a.bottom-2) window.scrollBy({top:b.top-a.bottom-6,behavior:'smooth'}); }
+    if(rk&&rk!==RKEY&&isNarrow()){ const a=$m('mhMini').parentNode.getBoundingClientRect(), b=card.getBoundingClientRect();
+      if(a.top<=2){ if(b.top<a.bottom-2) window.scrollBy({top:b.top-a.bottom-6,behavior:'smooth'}); }
+      else { // 아직 맨 위에 있을 때: 고를 것이 화면 밖으로 넘치면 장면을 화면 맨 위에 붙이고 카드를 바로 밑에 댄다
+        const bs=[...card.querySelectorAll('.mh-ch,.mh-go,#mhNext')].filter(x=>x.offsetHeight), l=bs[bs.length-1]; if(l&&l.getBoundingClientRect().bottom>innerHeight-4) window.scrollBy({top:b.top-a.height-6,behavior:'smooth'}); } }
     RKEY=rk; }catch(e){} }
 function render0(){
   const card=$m('mhCard'); if(!card) return;
@@ -195,7 +202,7 @@ function render0(){
   $m('mhSide').hidden=!playing; $m('mhGrid').classList.toggle('solo',!playing);
   applyStage(stageFor()); postStage();
   $m('mhCapL').textContent=playing?`${m.name} · ${m.age}세`:m&&m.phase==='birth'?'응애':'무림초출';
-  renderCtl(); renderHud();
+  renderCtl(); renderHud(); renderMini(playing);
   if(playing){ renderRec(); renderBag(); }
   if(!m||!m.phase||m.phase==='title') renderTitle(card);
   else if(m.phase==='birth') renderBirth(card);

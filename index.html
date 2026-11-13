@@ -5725,6 +5725,8 @@ const GIKEEP=.12;   // 큰 사건 가운데 기연이 차지하던 몫
 const minorPool=()=>Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep));
 function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e; }
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
+// 돈이 모자라서 못 고르는 선택지: 숨기지 않고 흐리게 보여 준다(무엇이 있었는지는 알 수 있게)
+function lockedOf(ev){ const all=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch, out=[]; for(const x of all){ if(!x.when||x.when()) continue; const g=/m\.gold>=(\d+)/.exec(String(x.when)); if(g&&m.gold<+g[1]) out.push({t:x.t,need:+g[1]}); } return out; }
 function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
 // 맡겨 두었을 때의 승률을 재서 맞춘 어림식: 힘의 비, 지금 건강, 버티기·조력·연전을 본다
@@ -8500,7 +8502,7 @@ function renderPlay(card){
   if(mapMode()) return inCathay()?renderCathayCard(card,eye):renderMapCard(card,eye);
   if(m.train) return renderTrain(card,eye);
   const ev=m.pending, mp=m.age>=MAPAGE;
-  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p>${evArt(ev)}<p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}</div></div>`:'';
+  const dec=ev?`<div class="mh-dec${ev.gi?' gi':''}">${ev.gi?'<span class="mh-gi" aria-hidden="true">奇緣</span>':''}<p class="mh-qa">${gradeBadge(ev)}${ev.epn?`${esc(ev.epn)} · ${ev.epi}`:ev.minor?GNAME[ev.grade]:ev.gi?'기연':'갈림길'}</p>${evArt(ev)}<p class="mh-text">${esc(m.evText)}</p><div class="mh-chs">${choicesOf(ev).map(chBtn).join('')}${lockedOf(ev).map(x=>`<button class="mh-ch lock" type="button" disabled><span><span class="k" aria-hidden="true">×</span><span>${esc(x.t)}<small>은자 ${x.need}냥이 있어야 한다 · 지금 ${fmt(m.gold)}냥</small></span></span></button>`).join('')}</div></div>`:'';
   const last=m.lastRes&&m.lastRes.age===m.age&&!ev?resHtml(m.lastRes):'';
   const feed=m.log.slice(-5).reverse().map(x=>`<li class="${x.big?'big':''}${x.a===m.age?'':' old'}"><span class="a">${x.a}세</span><span>${esc(x.t)}</span></li>`).join('');
   const seg=`<div class="mh-focus"><span class="mh-lab">올해의 중심</span><div class="mh-seg" role="radiogroup" aria-label="올해의 중심">${FOCUS.map(f=>`<button type="button" role="radio" aria-checked="${m.focus===f.id&&m.age>=6}" data-focus="${f.id}" ${m.age<6?'disabled':''}>${f.n}</button>`).join('')}</div><span class="mh-hint">${m.age<6?'아직 어리다. 하루하루가 그냥 흘러간다.':esc((FOCUS.find(f=>f.id===m.focus)||FOCUS[1]).h)}</span></div>`;

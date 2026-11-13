@@ -125,6 +125,8 @@ const GIKEEP=.12;   // 큰 사건 가운데 기연이 차지하던 몫
 const minorPool=()=>Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep));
 function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const e=pickGraded(minorPool()); if(e) m.used[e.id]=m.age; return e; }
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
+// 돈이 모자라서 못 고르는 선택지: 숨기지 않고 흐리게 보여 준다(무엇이 있었는지는 알 수 있게)
+function lockedOf(ev){ const all=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch, out=[]; for(const x of all){ if(!x.when||x.when()) continue; const g=/m\.gold>=(\d+)/.exec(String(x.when)); if(g&&m.gold<+g[1]) out.push({t:x.t,need:+g[1]}); } return out; }
 function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
 // 맡겨 두었을 때의 승률을 재서 맞춘 어림식: 힘의 비, 지금 건강, 버티기·조력·연전을 본다

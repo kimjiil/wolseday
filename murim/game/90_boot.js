@@ -24,5 +24,8 @@ document.addEventListener('keydown',e=>{
   else if(e.key===' '&&m&&m.phase==='play'&&(!document.activeElement||document.activeElement===document.body)){ paused=!paused; render(); e.preventDefault(); }
 });
 $m('mhHub').onclick=()=>{ paused=true; if(m&&m.phase==='play') renderCtl(); location.hash=''; window.__route&&window.__route(); };
+$m('mhVer').textContent='v'+MVER;
+$m('mhNotes').innerHTML=`<b>바뀐 점</b>`+NOTES.map(n=>`<div class="mh-note"><span>v${n[0]} · ${n[1]}</span><ul>${n[2].map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');
+$m('mhVer').onclick=()=>{ const n=$m('mhNotes'); n.hidden=!n.hidden; $m('mhVer').setAttribute('aria-expanded',String(!n.hidden)); };
 window.__murimRender=()=>{ render(); };
 render(); requestAnimationFrame(frame); requestAnimationFrame(loop);

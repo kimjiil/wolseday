@@ -132,7 +132,7 @@ function yearTurn(){ const g0=m.gold, qn=m.q.length; m.rep=null; m.ai=null; m.wq
   sectYear(); mapMarks(); const d=Math.round(m.gold-g0), age=m.age; vfx(()=>toast(`<b>${age}세</b> 새해가 밝았다${d?` · 한 해 살림 ${d>0?'+':'−'}${fmt(Math.abs(d))}냥`:''}`,'t1',2600));
   if(m.yst){ const s=yearStage(), last=m.log[m.log.length-1]; if(s) CUTQ.push({spec:s,ms:1700,txt:last?last.t:'',sea:0,t:0}); } }
 function triggerMark(){ const ev=EV[m.mark.id]; m.mark=null; m.ai=null; mapMarks();
-  if(ev&&m.age>=ev.min&&m.age<=ev.max&&(!ev.when||ev.when())){ m.used[ev.id]=m.age; m.lastRes=null; m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi) vfx(()=>{ callout('奇緣','gi',1500); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; }); }
+  if(ev&&m.age>=ev.min&&m.age<=ev.max&&(!ev.when||ev.when())){ m.used[ev.id]=m.age; m.lastRes=null; m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi||gradeOf(ev)) vfx(()=>evIntro(ev)); }
   acc=0; render(); save(); }
 /* ---- 맡기기: 알아서 걸어가서 한다 ---- */
 function autoMap(){ const V=MAPV; if(!V) return; const h=V.hero; if(h.moving||(h.path&&h.path.length)) return;
@@ -205,8 +205,8 @@ const GFIND=[
 // 철마다 수풀을 꽉 채워 걸어도 사건은 한 해 열에 한 번 남짓, 기연은 쉰 해에 한 번꼴이다
 function grassStep(){ if(!mapMode()||m.train) return false; const k=m.age+':'+m.sea; if(!m.enc||m.enc.k!==k) m.enc={k,n:0,f:0,ya:m.enc?m.enc.ya:-1}; const E0=m.enc; if(E0.n++>=40) return false;
   const r=R(), ok=e=>!e.wld&&e.min!==e.max&&evOK(e)&&evFresh(e)&&markable(e)&&!(m.mark&&m.mark.id===e.id)&&GRASSBG.includes(evBg(e));
-  if(r<.0001*(1+ST('luck')*.1)){ const pool=Object.values(EV).filter(e=>e.gi&&ok(e)); if(pool.length&&startEv(pick(pool))){ m.encN=(m.encN||0)+1; sfx('ok'); render(); save(); return true; } }
-  if(r<.0009&&E0.ya!==m.age){ const pool=Object.values(EV).filter(e=>!e.gi&&ok(e)); if(pool.length&&startEv(wpick(pool,x=>x.w||1))){ E0.ya=m.age; m.encN=(m.encN||0)+1; heroFloat('!','bad'); sfx('ok'); render(); save(); return true; } }
+  if(r<.0001*(1+ST('luck')*.1)){ const e=pickGraded(Object.values(EV).filter(ok),3); if(e&&startEv(e)){ m.encN=(m.encN||0)+1; sfx('ok'); render(); save(); return true; } }
+  if(r<.0009&&E0.ya!==m.age){ const pool=Object.values(EV).filter(e=>ok(e)&&GRADES.indexOf(gradeOf(e)||'B')<3), e=pickGraded(pool); if(e&&startEv(e)){ E0.ya=m.age; m.encN=(m.encN||0)+1; heroFloat('!','bad'); sfx('ok'); render(); save(); return true; } }
   if(r<.07&&E0.f<2){ const f=wpick(GFIND.filter(x=>!x.when||x.when()),x=>x.w); E0.f++; f.fn(); m.findN=(m.findN||0)+1; if(!m.headless){ heroFloat(f.t,f.c); sfx(f.c==='bad'?'tick':'ok'); } save(); }
   return false; }
 /* ---- 사문: 수련기 ---- */

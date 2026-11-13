@@ -17,7 +17,7 @@ const markSpotId=M=>!m.mark?null:m.mark.w?'gate':m.mark.spot;
 const markHere=(M,s)=>!!(m.mark&&s&&!M.indoor&&!M.sect&&!m.mark.w&&m.mark.spot===s.id);
 const evFresh=e=>!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)&&!(!e.once&&!e.rep&&m.used[e.id]!=null);
 function startEv(ev){ if(!ev||m.dead||m.pending||m.train) return false; WGO=true; let ok=false; try{ ok=m.age>=ev.min&&m.age<=ev.max&&(!ev.when||ev.when()); } finally{ WGO=false; } if(!ok) return false;
-  if(!ev.wld) m.used[ev.id]=m.age; m.lastRes=null; m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi) vfx(()=>{ callout('奇緣','gi',1500); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; }); return true; }
+  if(!ev.wld) m.used[ev.id]=m.age; m.lastRes=null; m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi||gradeOf(ev)) vfx(()=>evIntro(ev)); return true; }
 /* ---- 강호에서 철마다 하는 일 ---- */
 const WFOUND={city:'저잣거리를 돌다 발이 멈췄다.',deep:'산을 헤매다 낯선 곳에 닿았다.',pass:'고갯길을 살피는데 인기척이 났다.',tomb:'무덤가를 살피다 이상한 것을 보았다.'};
 const WNONE={city:['저잣거리를 한 바퀴 돌았다. 별일은 없었다.','찻집에 앉아 오가는 사람을 구경했다.','읍성 담벼락의 방을 읽었다. 현상금 붙은 얼굴이 낯설었다.'],deep:['산을 헤맸지만 산새 소리뿐이었다.','골짜기 끝까지 갔다가 해가 져서 돌아왔다.','이름 모를 봉우리에서 구름을 내려다보았다.'],pass:['고갯길은 조용했다. 까마귀만 울었다.','산채 쪽에서 연기가 올랐지만 아무도 내려오지 않았다.','길가에서 부러진 화살 하나를 주웠다.'],tomb:['무덤은 말이 없었다. 향 한 대를 피우고 돌아섰다.','비석의 글자는 닳아 읽을 수 없었다.','도굴꾼이 파다 만 구덩이만 보고 돌아왔다.']};
@@ -26,7 +26,7 @@ const WSEAS={
   herb:()=>{ gold(3+ST('luck')*.5+ri(0,5)); if(R()<.18){ hurt(7,'벼랑에서 구름'); return '약초를 캐다 벼랑에서 미끄러졌다. 망태기는 건졌다.'; } if(m.f.med) m.hp+=2; return pick(['이슬 젖은 산비탈에서 약초를 캤다.','심마니 뒤를 밟아 좋은 자리를 알아냈다.','더덕과 하수오를 한 망태기 캤다.']); },
   wvisit:()=>{ m.bond+=2.5; m.joy+=1.5; addExp(gain()*.12); return pick(['사문에 들러 사부께 절을 올렸다.','후배들의 초식을 봐 주었다.','사문 장경각에서 한 철을 보냈다.']); },
   explore:o=>{ const bgs=WPOOL[o.pl]||[]; WGO=false; const pool=Object.values(EV).filter(e=>!e.wld&&e.min!==e.max&&evOK(e)&&evFresh(e)&&markable(e)&&!(m.mark&&m.mark.id===e.id)&&bgs.includes(evBg(e)));
-    if(pool.length&&R()<.6){ const e=wpick(pool,x=>(x.w||1)*(x.gi?.3+ST('luck')*.07:1)); m.wq=e.id; return WFOUND[o.pl]||'낯선 곳에 닿았다.'; }
+    const e=pool.length&&R()<.6?pickGraded(pool):null; if(e){ m.wq=e.id; return WFOUND[o.pl]||'낯선 곳에 닿았다.'; }
     if(o.pl==='deep'){ m.hp+=1.5; if(m.f.martial) m.ng+=.05; } else if(o.pl==='city') m.joy+=1; else if(o.pl==='pass'){ if(R()<.3) gold(ri(1,4)); } else if(R()<.2) gold(ri(1,6));
     return pick(WNONE[o.pl]||['하릴없이 한 철이 갔다.']); },
   wev:o=>{ m.wq=o.ev; return {wBandit:'칼을 고쳐 메고 소굴로 올라갔다.',wSpar:'읍성 비무대 앞에 섰다.',wExam:'산문 앞 돌계단을 올랐다.'}[o.ev]||'길을 나섰다.'; }

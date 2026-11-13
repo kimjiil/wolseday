@@ -1,5 +1,11 @@
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
+// 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
+const MVER='1.1';
+const NOTES=[
+  ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
+  ['1.0','2026-11-13',['천하 지도: 스물여섯 지역, 쉰두 곳을 오간다','출신 55가지, 출신마다 다른 고향 마을','풀숲에서 우연히 만나는 일과 기연','문파 임무와 마교 침공','맡기기(자동 진행), 결과는 단추를 눌러 넘긴다']]
+];
 const R=()=>Math.random(), ri=(a,b)=>a+Math.floor(R()*(b-a+1)), pick=a=>a[Math.floor(R()*a.length)], cl=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
 const jo=(w,a,b)=>{w=String(w||'');const c=w.charCodeAt(w.length-1)-0xAC00;return (c>=0&&c<11172&&c%28)?a:b;};
 const eul=w=>w+jo(w,'을','를'), iga=w=>w+jo(w,'이','가'), eun=w=>w+jo(w,'은','는'), wa=w=>w+jo(w,'과','와'), ro=w=>w+jo(w,'으로','로');

@@ -104,12 +104,14 @@ function pickBig(){
   const forced=Object.values(EV).find(e=>e.w>=9&&evOK(e)&&!m.used[e.id]);
   if(forced&&R()<.7){ m.used[forced.id]=m.age; return forced; }
   const chance=m.age<10?.14:m.age<15?.25:(m.f.martial?.44:.32);
-  if(R()>chance) return null;
-  const pool=Object.values(EV).filter(e=>e.min!==e.max&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)&&!(!e.once&&!e.rep&&m.used[e.id]!=null));
+  if(R()>chance) return pickMinor();
+  const pool=Object.values(EV).filter(e=>!e.minor&&e.min!==e.max&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)&&!(!e.once&&!e.rep&&m.used[e.id]!=null));
   if(!pool.length) return null;
   const lk=.3+ST('luck')*.07;
   const e=wpick(pool,x=>(x.w||1)*(x.once?1.2:1)*(x.gi?lk:1)); m.used[e.id]=m.age; return e;
 }
+// 등급 사건: 큰 사건이 없는 해에 따로 굴린다. 등급부터 정하고 그 안에서 고른다
+function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const pool=Object.values(EV).filter(e=>e.minor&&evOK(e)&&!(e.once&&m.used[e.id]!=null)&&!(e.rep&&m.used[e.id]!=null&&m.age-m.used[e.id]<e.rep)); const e=pickGraded(pool); if(e) m.used[e.id]=m.age; return e; }
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
 function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
@@ -135,7 +137,7 @@ function tick(mp){
   if(hasT('cold')&&!m.f.coldCured&&m.age>=20) return die('천음절맥');
   const dc=hazard(); if(dc) return die(dc);
   const ev=pickBig();
-  if(ev){ m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi) vfx(()=>{ callout('奇緣','gi',1500); sfx('giyeon'); flashA=.5; flashC='#ffe9a0'; }); }
+  if(ev){ m.pending=ev; m.evCh=null; m.evSt=null; m.evDuel=null; m.evText=typeof ev.text==='function'?ev.text():ev.text; if(ev.gi||gradeOf(ev)) vfx(()=>evIntro(ev)); }
   if(!m.headless&&MILES[m.age]) m.milestone=m.age;
 }
 function resolve(i,auto){

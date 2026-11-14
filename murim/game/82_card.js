@@ -39,7 +39,7 @@ function drawLifeCard(){ const L=lifeScore(), c=document.createElement('canvas')
   k.fillStyle='#fff'; k.textAlign='center'; k.font=`700 ${L.g.length>=3?44:L.g.length===2?54:62}px ${DISP}`; k.fillText(L.g,0,-6); k.font=`17px ${BODY}`; k.fillText(L.title,0,26); k.restore();
   // 인물
   k.fillStyle='#17161c'; k.fillRect(px-6,py-6,ps+12,ps+12); k.fillStyle=frame(); k.fillRect(px-3,py-3,ps+6,ps+6); k.fillStyle='#dfe3d2'; k.fillRect(px,py,ps,ps);
-  try{ const Lk=heroLook(), s=charSprite(Lk,'idle',0), top=Lk.size==='kid'?OY*2-41:OY*2-47; k.imageSmoothingEnabled=false; k.drawImage(s,OX*2-15,top,30,30,px+4,py+4,ps-8,ps-8); k.imageSmoothingEnabled=true; }catch(e){}
+  try{ const Lk=heroLook(), s=charSprite(Lk,'idle',0), dl=typeof DOLL!=='undefined'&&DOLL&&DOLL.on&&DOLL.ready&&Lk.size!=='kid', top=dl?OY*2-53:Lk.size==='kid'?OY*2-41:OY*2-47, cw=dl?34:30; k.imageSmoothingEnabled=false; k.drawImage(s,OX*2-(dl?17:15),top,cw,cw,px+4,py+4,ps-8,ps-8); k.imageSmoothingEnabled=true; }catch(e){}
   // 이름
   const tx=px+ps+34, tw=CARDW-tx-46; k.textAlign='left'; k.textBaseline='alphabetic'; let y=py+34;
   if(m.alias){ k.fillStyle=SEAL; k.font=`34px ${DISP}`; let a=m.alias; while(k.measureText(a).width>tw&&a.length>2) a=a.slice(0,-1); k.fillText(a,tx,y); y+=62; } else y+=26;

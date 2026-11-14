@@ -4,6 +4,7 @@ function heroLook(o){ const a=bodyAge(), s=seedOf(m.name), kid=a<13, old=a>=58, 
   const wi=m.inv&&m.inv.w?ITEMS[m.inv.w]:null, w=wi&&a>=10&&(m.f.martial||wi.atk>=5)?WVIS[wi.k]:null;
   const hair=kid?(m.sex==='f'?'buns':'tuft'):m.sect==='shaolin'?'bald':m.sex==='f'?(a>=30?'bun':'long'):(m.f.leader||m.f.head?'crown':a>=40?'top':'pony');
   const L={sex:m.sex,size:kid?'kid':(hasT('might')?'big':'adult'),hair,hairC:old?'#e2dfd6':a>=46?'#6e686c':HAIRC[s%5],skin:SKIN[s%4],robe,weapon:w,beard:m.sex==='m'&&a>=60?'long':m.sex==='m'&&a>=38?'short':null};
+  L.body=dollBody(m.inv&&m.inv.a?ITEMS[m.inv.a]:null); L.dw=w?dollWeapon(wi):null; L.eye=s%20;      // 그림 부품: 입은 옷과 든 무기
   if(m.f.magong){ L.trim='#7a1e1e'; L.ol='#5a1414'; }
   if(wi&&wi.t>=5) L.wc='#ffd0f0'; else if(wi&&wi.t===4) L.wc='#fff1c0'; else if(wi&&wi.t===3) L.wc='#e0ccff';
   if(m.inv&&m.inv.a&&ITEMS[m.inv.a].t>=3) L.sash='#d9a441';

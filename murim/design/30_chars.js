@@ -344,6 +344,7 @@ function outline(c,col){ const k=c.getContext('2d'), w=c.width, h=c.height, im=k
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=(y*w+x)*4; if(d[i+3]) continue; if((x>0&&d[i-1])||(x<w-1&&d[i+7])||(y>0&&d[i-w*4+3])||(y<h-1&&d[i+w*4+3])) mk.push(i); }
   const v=hx(col); for(const i of mk){ d[i]=v[0]; d[i+1]=v[1]; d[i+2]=v[2]; d[i+3]=255; } k.putImageData(im,0,0); }
 function charSprite(L,pose,f,dir){
+  if(typeof DOLL!=='undefined'&&DOLL&&DOLL.on&&DOLL.ready&&!L.animal&&L.size!=='kid'){ const d=dollSprite(L,pose,f,dir); if(d) return d; }   // 그림 부품이 있으면 그것으로
   f=f|0; if(dir&&(L.animal||(dir!=='d'&&dir!=='u'))) dir=''; if(dir&&pose!=='walk') pose='idle';
   const key=L.key+'/'+pose+'/'+f+(dir?'/'+dir:''); let c=SPR.get(key); if(c) return c;
   const W2=SW*2, H2=SH*2; c=document.createElement('canvas'); c.width=W2; c.height=H2; const k=c.getContext('2d'); k.imageSmoothingEnabled=false;
@@ -355,7 +356,7 @@ function charSprite(L,pose,f,dir){
 function whiteSprite(s){ let w=s._w; if(w) return w; w=document.createElement('canvas'); w.width=s.width; w.height=s.height; const k=w.getContext('2d'); k.drawImage(s,0,0); k.globalCompositeOperation='source-in'; k.fillStyle='#ffffff'; k.fillRect(0,0,w.width,w.height); return s._w=w; }
 const _pt=new Map();
 function portrait(L){ let u=_pt.get(L.key); if(u) return u; const s=charSprite(L,'idle',0), c=document.createElement('canvas'); c.width=56; c.height=56; const k=c.getContext('2d'); k.imageSmoothingEnabled=false;
-  if(L.animal) k.drawImage(s,(OX-12)*2,(OY-24)*2,56,56,0,0,56,56); else { const top=L.size==='kid'?OY*2-41:OY*2-47; k.drawImage(s,OX*2-15,top,30,30,0,0,56,56); }
+  if(L.animal) k.drawImage(s,(OX-12)*2,(OY-24)*2,56,56,0,0,56,56); else if(typeof DOLL!=='undefined'&&DOLL&&DOLL.on&&DOLL.ready&&L.size!=='kid') k.drawImage(s,OX*2-17,OY*2-53,34,34,0,0,56,56); else { const top=L.size==='kid'?OY*2-41:OY*2-47; k.drawImage(s,OX*2-15,top,30,30,0,0,56,56); }
   u=c.toDataURL(); _pt.set(L.key,u); return u; }
 
 const SKIN=['#f6cfa6','#f0c298','#fbdcba','#e6b086'];
@@ -380,7 +381,7 @@ const LOOK={
   merchant:LK({hair:'cap',robe:'#4f6f8f',size:'big'}),
   doctor:LK({hair:'cap',robe:'#7f9a8a',beard:'short',beardC:'#8a8a8a'}),
   matchmaker:LK({sex:'f',hair:'bun',robe:'#b8324a',trim:'#e0a83c'}),
-  soldier:LK({hair:'cap',robe:'#6a3a3a',trim:'#3a3a44',weapon:'staff'}),
+  soldier:LK({hair:'cap',robe:'#6a3a3a',trim:'#3a3a44',weapon:'staff',body:'armor'}),
   villager:LK({hair:'top',robe:'#9a917a'}),
   woman:LK({sex:'f',hair:'bun',robe:'#9a7a8a'}),
   child:LK({size:'kid',hair:'tuft',robe:'#a88a5a'}),

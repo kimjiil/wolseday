@@ -51,6 +51,8 @@ const STN={A:'강공',G:'수비',F:'변초',U:'절초'};
 const STH={A:'변초를 깬다',G:'강공을 되받는다',F:'수비를 뚫는다',U:'기 60 · 큰 일격'};
 // 상성 설명은 그 싸움에서 쓰는 수 이름으로 적는다(아이 싸움이면 "발 걸기를 깬다")
 const sthOf=(k,stn)=>k==='U'?STH.U:k==='A'?`${eul(stn.F)} 깬다`:k==='G'?`${eul(stn.A)} 되받는다`:`${eul(stn.G)} 뚫는다`;
+/* 사투 끝에 깨달음이 올 확률: 오성이 가장 크고, 기연이 조금 보탠다. 무골이면 +10%p. 상대가 셀수록, 남은 기력이 적을수록 오른다(10%~90%) */
+function epiChance(ratio,left){ return cl(.05+ST('wit')*.055+ST('luck')*.02+(hasT('bone')?.1:0)+cl((ratio-.95)*.8,0,.16)+cl((.25-left)*.6,0,.15),.1,.9); }
 /* 경지가 오르면 이름 없는 상대도 내 무위의 여섯 할은 된다(일류부터). 두 대에 끝나는 싸움만 이어지지 않게 */
 function duelFloor(sp){ if(!sp||sp._fl||!m||!m.f||!m.f.martial||m.lv<3||sp.noScale||sp.survive) return sp; const fl=Math.round(power()*.6); (sp.chain||[sp.foe]).forEach(f=>{ if(f&&f.pow<fl) f.pow=fl+ri(0,4); }); sp._fl=1; return sp; }
 // DM[내 수][상대 수] = [내가 주는 배율, 내가 받는 배율]
@@ -109,8 +111,8 @@ function settle(D,state){ const me=D.me, sp=D.spec, f=D.foe;
     else { const left=me.hp/me.hpMax*100; m.hp=cl(Math.round(D.hp0-Math.max(0,D.hp0-left)*.6),1,100); }
   } else { const loss=D.taken>0?Math.max(3,Math.round(D.taken/me.hpMax*100*.25)):0; m.hp=Math.max(1,Math.round(D.hp0-loss)); }
   if(res.win){ m.wins=(m.wins||0)+1; m.fame+=f.pow>=me.pow?2:1; } else m.losses=(m.losses||0)+1;
-  // 사투 끝의 깨달음: 나와 비슷하거나 더 센 상대를 기력 넷에 하나도 안 남기고 이기면 한 꺼풀을 벗는다(한 해에 한 번)
-  if(res.win&&m.f.martial&&!sp.survive&&f.pow>=me.pow*.95&&me.hp<=me.hpMax*.25&&m.f.epiA!==m.age){ m.f.epiA=m.age; m.f.epiN=(m.f.epiN||0)+1;
+  // 사투 끝의 깨달음: 나와 비슷하거나 더 센 상대를 기력 넷에 하나도 안 남기고 이기면 한 꺼풀을 벗을 수 있다(한 해에 한 번 굴린다)
+  if(res.win&&m.f.martial&&!sp.survive&&f.pow>=me.pow*.95&&me.hp<=me.hpMax*.25&&m.f.epiA!==m.age&&(m.f.epiA=m.age,R()<epiChance(f.pow/me.pow,me.hp/me.hpMax))){ m.f.epiN=(m.f.epiN||0)+1;
     const g=Math.round(Math.max(gain()*1.5,(LVX[Math.min(8,m.lv+1)]-LVX[m.lv])*.08)); addExp(g); m.ng+=1; res.epi=g; log(`${f.name}${jo(f.name,'과','와')}의 사투 끝에 깨달음을 얻었다 (수련 +${g})`,true);
     if(!m.headless) vfx(()=>{ gradeFx({g:3,han:'頓悟',title:'깨달음',sub:`사투 끝에 한 꺼풀을 벗었다 · 수련 +${g}`,sfx:'art3'}); const h=A('hero'); if(h){ h.pose='sit'; h.act='meditate'; h.auraC='#bff4ff'; } }); }
   return res; }

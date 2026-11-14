@@ -37,6 +37,42 @@ def keyed_body(lo):
             mm=m&(lo[...,:3]==cols[i]).all(-1); o[mm,:3]=keys[k]
     return despeckle(o)
 def is_skin(c): r,g,b=[c[...,i].astype(int) for i in range(3)]; return (c[...,3]>0)&(r>190)&(g>140)&(b>95)&(r>b+30)&(g<r)
+# 원래 그림 눈 모양을 본뜬 도장: d 눈동자 · W 눈빛 · b 아래쪽 밝은 눈동자 · . 살
+EYE_FRONT=['ddd','Wdd','ddd','ddd','dbd','bbb']
+EYE_SIDE=['dd','Wd','dd','dd','bd','bb']
+def clean_eyes(lo,p,comps):
+    """줄이면서 좌우가 달라진 눈을 같은 모양으로 다시 찍는다(정면·옆). 싸우는 자세의 성난 눈은 그대로"""
+    if p not in (0,1,4,5) or not comps: return lo
+    if p in (0,1) and len(comps)!=2: return lo
+    o=lo.copy(); sk=lo[is_skin(lo)]; skin=np.median(sk[:,:3],axis=0).astype(np.uint8) if len(sk) else np.array([240,200,160],np.uint8)
+    allp=np.concatenate(comps); px=lo[allp[:,0],allp[:,1],:3].astype(int); L=px[:,0]*.3+px[:,1]*.55+px[:,2]*.15
+    d=px[L<=np.percentile(L,25)].mean(0).astype(np.uint8); mid=px[(L>np.percentile(L,40))&(L<170)]
+    b=mid.mean(0).astype(np.uint8) if len(mid) else np.array([120,80,56],np.uint8)
+    if b.astype(int)[0]*.3+b.astype(int)[1]*.55+b.astype(int)[2]*.15<75: b=((d.astype(int)+np.array([150,96,62]))//2).astype(np.uint8)      # 아래쪽 눈동자는 조금 밝게
+    C={'d':d,'W':np.array([255,255,255],np.uint8),'b':b}
+    boxes=[]
+    for c in comps:
+        y0,x0=c.min(0); y1,x1=c.max(0)
+        for yy in range(y0-1,y1+2):
+            for xx in range(x0-1,x1+2):
+                if 0<=yy<o.shape[0] and 0<=xx<o.shape[1] and o[yy,xx,3]>0:
+                    v=o[yy,xx,:3].astype(int); lv=v[0]*.3+v[1]*.55+v[2]*.15
+                    if lv<175 or v.min()>225: o[yy,xx,:3]=skin
+        boxes.append((y0,y1,x0,x1))
+    st=EYE_FRONT if p in (0,1) else EYE_SIDE; w=len(st[0]); h=len(st)
+    if p in (0,1):
+        (a0,a1,ax0,ax1),(b0,b1,bx0,bx1)=sorted(boxes,key=lambda t:t[2]); cl=(ax0+ax1)/2; cr=(bx0+bx1)/2; mid_=(cl+cr)/2; half=round((cr-cl)/2)
+        bot=max(a1,b1); xs=[int(round(mid_-half-(w-1)/2)),int(round(mid_+half-(w-1)/2))]
+    else:
+        (a0,a1,ax0,ax1)=boxes[0]; bot=a1; xs=[int(round((ax0+ax1)/2-(w-1)/2))]
+    for x0 in xs:
+        for j in range(h):
+            for i in range(w):
+                ch=st[j][i]
+                if ch=='.': continue
+                yy=bot-h+1+j; xx=x0+i
+                if 0<=yy<o.shape[0] and 0<=xx<o.shape[1] and o[yy,xx,3]>0: o[yy,xx,:3]=C[ch]
+    return o
 def eyes_of(lo,p):
     """얼굴 안쪽의 어두운 덩어리(높이 2 이상)를 눈으로 본다. 지우고 자리만 남긴다"""
     if p in (2,3): return lo,[]
@@ -62,7 +98,7 @@ def eyes_of(lo,p):
         if c[:,0].max()-c[:,0].min()+1>6: c=c[c[:,0]>=y1-5]
         fixed.append(c)
     comps=sorted(fixed,key=lambda c:-len(c))[:2 if p in (0,1,6,7) else 1]
-    if KEEP_EYES: return lo,[[float((c[:,1].min()+c[:,1].max())/2),int(c[:,0].min()),int(c[:,0].max()-c[:,0].min()+1)] for c in comps]
+    if KEEP_EYES: return clean_eyes(lo,p,comps),[[float((c[:,1].min()+c[:,1].max())/2),int(c[:,0].min()),int(c[:,0].max()-c[:,0].min()+1)] for c in comps]
     o=lo.copy(); sk=lo[is_skin(lo)]; skin=tuple(np.median(sk[:,:3],axis=0).astype(int)) if len(sk) else (240,200,160)
     boxes=[]
     for c in comps:

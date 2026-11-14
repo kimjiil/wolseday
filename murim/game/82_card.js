@@ -7,7 +7,7 @@ const LGCOL={C:'#8a8a80',B:'#4f8a5a',A:'#3f6f9a',S:'#8a5ad0',SS:'#c9862a',SSR:'#
 function lifeScore(){ const P=[], add=(l,v)=>{ v=Math.round(v*10)/10; if(v>0) P.push([l,v]); }, kids=m.rels.filter(r=>r.role==='자식').length;
   add('경지',m.f.martial?[0,4,8,14,22,30,40,52,65][m.lv]||0:0);
   add('이름',Math.min(12,(m.fame||0)*.1)+(m.alias?4:0));
-  let seat=(m.f.leader?8:0)+(m.f.champ?6:0); try{ if(m.sect&&srank()==='장로') seat+=3; if(m.f.ally&&!m.f.leader) seat+=({맹원:0,당주:1,장로:2,부맹주:4})[arank()]||0; }catch(e){} add('자리',seat);
+  let seat=(m.f.leader?8:0)+(m.f.champ?6:0)+(m.f.nemDone?10:0)+(m.f.best?8:0)+Math.min(5,(m.f.top||0)); try{ if(m.sect&&srank()==='장로') seat+=3; if(m.f.ally&&!m.f.leader) seat+=({맹원:0,당주:1,장로:2,부맹주:4})[arank()]||0; }catch(e){} add('자리',seat);
   add('싸움',Math.min(8,(m.wins||0)*.4));
   add('기연',Math.min(8,(m.giN||0)*1.5));
   add('재산',cl((pctNow()-50)/50*8,0,8));

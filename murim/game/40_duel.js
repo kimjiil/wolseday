@@ -109,7 +109,7 @@ function settle(D,state){ const me=D.me, sp=D.spec, f=D.foe;
 function mercyApply(D,res,k){ const f=D.foe;
   if(k==='kill'){ res.killed=true; m.kills=(m.kills||0)+1; m.per.담=cl((m.per.담||0)+4,-100,100); m.per.정=cl((m.per.정||0)-5,-100,100); m.ak+=D.spec.good?12:2;
     if(!D.spec.noReturn&&R()<.3&&!m.q.some(q=>q.id==='kinRevenge')){ m.f.kinOf=f.name; m.q.push({age:m.age+ri(5,10),id:'kinRevenge'}); } }
-  else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&m.spared.length<3) m.spared.push({n:f.name,a:m.age,pow:f.pow,lk:f.look}); } }
+  else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&!f.beast&&m.spared.length<3) m.spared.push({n:f.title?f.name:rname(),was:f.title||f.name,a:m.age,pow:f.pow,lk:f.look}); } }      // 직함만 있던 상대도 이름을 얻는다: 훗날 같은 직함의 다른 사람과 섞이지 않게
 function lootOf(D,res){ const L=D.spec.loot; if(!L) return; if(L.g){ const g=Math.round(ri(L.g[0],L.g[1])*(res.killed?1.5:1)); gold(g); res.gold=g; }
   (L.it||[]).forEach(x=>{ if(R()<x[1]){ give(x[0]); (res.items=res.items||[]).push(x[0]); } }); }
 // 이긴 싸움에서 덤으로 떨어지는 물건. 상대가 셀수록 등급이 높다

@@ -78,7 +78,7 @@ const bookKind=()=>R()<.5?({검:'검',도:'도',권:R()<.5?'권':'장',암기:'�
 // 예전부터 있던 물건의 등급 순서(옛 0~3)
 const WKIND={검:['isword','gsword','psword','hsword'],도:['bsaber','asaber','dsaber','rsaber'],권:['lglove','sglove','cglove','tglove'],암기:['ldart','gdart','ndart','sdart']};
 const ARMORS=['lvest','chain','gvest','silk'];
-const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[],외공:[]};
+const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['검','도','권','암기'],보법:[],안법:[],외공:[]};
 // 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
 const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법'||k==='외공';
 // 외공: 위력이 곧 방어에 더해진다(가장 높은 것 하나)
@@ -108,6 +108,9 @@ const wOf=(tier,kind)=>{ const rf=seeded(strHash((m&&m.name)||'x')+(m?m.age:0)*1
 const aOf=tier=>{ const rf=seeded(strHash((m&&m.name)||'x')+(m?m.age:0)*137+tier*19+3); return rndItem('a',tgOf(tier,rf),null,rf)||ARMORS[cl(tier,0,3)]; };
 // 저절로 바꿔 차는 기준: 무기는 지금 무공으로 더 센 것, 갑옷은 방어가 높은 것, 머리·신발은 등급이 높은 것. 장신구는 빈 자리일 때만
 function better(id,cur){ if(!cur) return true; const a=ITEMS[id], b=ITEMS[cur]; if(a.s==='w'){ const d=combat(id).pw-combat(cur).pw; return d>.01||(Math.abs(d)<=.01&&a.t>b.t); } if(a.s==='a') return (a.def||0)>(b.def||0)||((a.def||0)===(b.def||0)&&a.t>b.t); if(a.s==='h'||a.s==='f') return a.t>b.t; return false; }
+// 그 물건을 차면 무위가 얼마나 달라지는가(무기는 무공과의 궁합까지 친 값, 갑옷은 방어). 화면에 보여 줄 때 쓴다
+function eqDelta(id){ const it=ITEMS[id], cur=m.inv[it.s]; if(it.s==='w') return {k:'무위',v:combat(id).pw-combat(cur||null).pw,art:combat(id).art}; if(it.s==='a') return {k:'방어',v:(it.def||0)-(cur&&ITEMS[cur]?ITEMS[cur].def||0:0)}; return null; }
+const wMatch=()=>{ const c=combat(), w=m.inv.w&&ITEMS[m.inv.w]; if(!w||!c.art) return ''; return (WMATCH[c.art.k]||[]).includes(w.k)?`${c.art.n}과 맞는다`:`${c.art.n}과 갈래가 달라 공격이 절반만 든다`; };
 function stashPut(id){ const st=m.inv.stash; st.push(id); while(st.length>STASHMAX){ let ci=0; st.forEach((x,i)=>{ if(ITEMS[x].v<ITEMS[st[ci]].v) ci=i; }); const x=st.splice(ci,1)[0]; gold(ITEMS[x].v*.5); } }
 function give(id,o){ o=o||{}; const it=ITEMS[id]; if(!it||!m.inv) return false; const inv=m.inv;
   if(it.s==='u') inv.bag[id]=(inv.bag[id]||0)+(o.n||1);
@@ -153,8 +156,11 @@ function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); let 
   return skinUrl('icon/'+it.n,'icon/'+id,'icon/'+kind+'_'+TIER[it.t],'icon/'+kind)||iconUrl(kind,it.t); }
 const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width="28" height="28">`;
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
-function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
-  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
+const ITHAN={w:'神兵',a:'寶甲',h:'寶冠',f:'寶履',c:'寶物',u:'靈藥',m:'奇珍'};
+function itemToast(id,n){ const it=ITEMS[id]; if(it.t<3) sfx('get'); const tip=()=>toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
+  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8);
+  // S 이상은 무공처럼 연출이 뜬 채 멈춘다. 닫으면 알림이 뜬다
+  if(it.t>=3) gradeFx({g:it.t,han:it.book?'秘笈':ITHAN[it.s]||'寶物',title:it.n,sub:`${it.s==='u'?(it.book?'비급':'소모품'):it.s==='m'?'재료':SLOTN[it.s]} · ${TIER[it.t]}등급`,sfx:'art'+it.t,onClose:tip}); else tip(); }
 // 새 무공 알림. S 이상이면 장면 위에 획득 연출이 뜬다(design 의 artFx)
 function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); if(g<3) sfx('get');
   const tip=()=>toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(artSub(a))} ${grTag(g)}</small><b>${esc(n)}</b><em>${artStat(a)}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'gr'+g,g>=3?4600:4200);

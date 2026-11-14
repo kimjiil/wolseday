@@ -3479,6 +3479,9 @@ img.mh-ic{object-fit:contain}
 .mh-cnrow[disabled]{opacity:.5;cursor:default}
 .mh-cnrow:focus-visible{outline:2px solid var(--m-seal);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.mh-cbang,.mh-cnb,.mh-cs.mk i::after,.mh-cs.qt i::after{animation:none}}
+
+.mh-wm{font-style:normal;color:var(--m-jade)}
+.mh-dl{font-weight:600;white-space:nowrap}.mh-dl.up{color:var(--m-jade)}.mh-dl.dn{color:var(--m-seal)}
 </style>
 
 <div id="murimApp" hidden>
@@ -3518,8 +3521,9 @@ const SKF={};
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
-const MVER='1.3';
+const MVER='1.4';
 const NOTES=[
+  ['1.4','2026-11-14',['갑자기 죽지 않는다: 난리·역병·흉년·병은 그 자리에서 목숨을 가져가지 않고 건강을 크게 깎는다. 건강이 30 이상이면 한 번의 화로는 죽지 않는다(다섯 살 전의 아이와 몸 나이 예순부터의 노환은 그대로)','화를 입으면 장면 위에 무엇 때문에 건강이 얼마 깎였는지 뜨고 기록에 남는다','다친 몸은 쉬면 곱절로 낫는다(건강 50 아래)','마공은 검·도·권·암기 어느 무기를 들어도 쓰인다(전에는 맨손일 때만 쓰였다)','보관한 무기·갑옷에 "차면 무위 +N"이 보이고, 찬 무기에 어느 무공과 맞는지 적힌다','S 이상 물건을 얻으면 무공처럼 획득 연출이 뜨고 누를 때까지 멈춘다','혈마체로 태어나면 열다섯 넘어 마공을 익힐 길이 반드시 한 번 찾아온다']],
   ['1.3','2026-11-13',['무공 823가지: 무협에 두루 나오는 무공을 모아 C~SSR 등급을 매겼다(검 183 · 장 163 · 권 116 · 내공 115 · 도 82 · 보법 80 · 암기 38 · 외공 21 · 안법 13 · 마공 12)','문파 장경각: 사문에 가면 서열과 경지에 맞는 사문의 무공을 한 계절에 하나씩 익힌다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS)','비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다. 가게에서 팔고, 싸움과 사건에서 떨어진다','외공: 방어를 올려 주는 새 갈래','이름난 무공을 얻는 기연 17가지(독고구검, 능파미보, 구양진경 등)','신상 칸의 무공에 등급과 위력이 보이고, 지금 쓰이는 무공에 테가 둘린다','S 이상 무공을 얻으면 획득 연출이 뜬다(S 絶技, SS 神功, SSR 絶世神功)','걸리는 시간을 "철" 대신 석 달·반년·1년 반처럼 적는다','인생 등급: 한 생이 끝나면 살아온 것을 점수로 매겨 C~SSR 등급을 준다','인물 카드: 끝 화면에서 등급이 찍힌 카드 그림을 카카오톡 등으로 보내거나 저장한다','낱말 설명: 신상 칸에서 건강·행복·인연·무공·내공·사문·타고난 것·무위를 누르면 어디에 쓰이는지 나온다','행복과 인연에 쓰임새가 생겼다(행복은 수련과 병, 인연은 가게 값과 공헌)','마을의 맞수·친구도 나이를 먹는다. 여인 문파의 사부는 여인이다(보타문 사부도)','선택지 밑에 숫자가 보인다: 쉬면 건강이 얼마 오르는지, 일하면 은자를 얼마 버는지, 수련하면 수련과 내공이 얼마 느는지','S 이상 연출은 천천히 나타나서, 화면을 누를 때까지 그대로 멈춰 있는다. 맡기기 중에 S 이상 사건이 열릴 때도 연출이 뜬 채 멈춘다','천하 지도에서 일이 있는 곳과 임무가 걸린 곳이 눈에 띈다: 통통 튀는 느낌표, 지도 왼쪽 위의 알림, 카드 맨 위의 "그곳을 고른다"']],
   ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','이름값을 못 하던 것을 고쳤다: 천운(주사위 8~20), 만독불침·피독주·해독단(독), 혈마체(마공), 염주(주화입마), 보법(위력만큼 회피)','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다','휴대폰 화면 정리: 장면 밑에 건강·행복·돈·내공 한 줄, 작은 글씨와 단추 키움, 알림은 위쪽에 작게, 천하 지도에서 떠나는 단추가 화면 아래에 붙음, 가로로 눕히면 장면 왼쪽·카드 오른쪽']],
   ['1.1','2026-11-13',['사건에 등급이 붙었다: C · B · A · S · SS · SSR','등급 사건 299개 추가(일상 133, 작은 일 90, 쓸 만한 일 45, 큰일 21, 기연 8, 천운 2)','큰 사건이 없는 해에도 소소한 사건이 자주 나온다','출신, 고향, 혼인과 자식, 나이에 따라 다른 사건이 나온다','S 이상의 사건은 열릴 때 화면이 번쩍인다']],
@@ -5346,7 +5350,7 @@ const bookKind=()=>R()<.5?({검:'검',도:'도',권:R()<.5?'권':'장',암기:'�
 // 예전부터 있던 물건의 등급 순서(옛 0~3)
 const WKIND={검:['isword','gsword','psword','hsword'],도:['bsaber','asaber','dsaber','rsaber'],권:['lglove','sglove','cglove','tglove'],암기:['ldart','gdart','ndart','sdart']};
 const ARMORS=['lvest','chain','gvest','silk'];
-const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['권','도'],보법:[],안법:[],외공:[]};
+const WMATCH={검:['검'],도:['도'],권:['권'],장:['권'],암기:['암기'],마공:['검','도','권','암기'],보법:[],안법:[],외공:[]};
 // 안법: 무기와 무관하고, 위력(p)이 곧 낌새를 읽을 확률에 더해지는 퍼센트다. 가장 높은 것 하나만 친다
 const PASSIVE=k=>k==='내공'||k==='보법'||k==='안법'||k==='외공';
 // 외공: 위력이 곧 방어에 더해진다(가장 높은 것 하나)
@@ -5376,6 +5380,9 @@ const wOf=(tier,kind)=>{ const rf=seeded(strHash((m&&m.name)||'x')+(m?m.age:0)*1
 const aOf=tier=>{ const rf=seeded(strHash((m&&m.name)||'x')+(m?m.age:0)*137+tier*19+3); return rndItem('a',tgOf(tier,rf),null,rf)||ARMORS[cl(tier,0,3)]; };
 // 저절로 바꿔 차는 기준: 무기는 지금 무공으로 더 센 것, 갑옷은 방어가 높은 것, 머리·신발은 등급이 높은 것. 장신구는 빈 자리일 때만
 function better(id,cur){ if(!cur) return true; const a=ITEMS[id], b=ITEMS[cur]; if(a.s==='w'){ const d=combat(id).pw-combat(cur).pw; return d>.01||(Math.abs(d)<=.01&&a.t>b.t); } if(a.s==='a') return (a.def||0)>(b.def||0)||((a.def||0)===(b.def||0)&&a.t>b.t); if(a.s==='h'||a.s==='f') return a.t>b.t; return false; }
+// 그 물건을 차면 무위가 얼마나 달라지는가(무기는 무공과의 궁합까지 친 값, 갑옷은 방어). 화면에 보여 줄 때 쓴다
+function eqDelta(id){ const it=ITEMS[id], cur=m.inv[it.s]; if(it.s==='w') return {k:'무위',v:combat(id).pw-combat(cur||null).pw,art:combat(id).art}; if(it.s==='a') return {k:'방어',v:(it.def||0)-(cur&&ITEMS[cur]?ITEMS[cur].def||0:0)}; return null; }
+const wMatch=()=>{ const c=combat(), w=m.inv.w&&ITEMS[m.inv.w]; if(!w||!c.art) return ''; return (WMATCH[c.art.k]||[]).includes(w.k)?`${c.art.n}과 맞는다`:`${c.art.n}과 갈래가 달라 공격이 절반만 든다`; };
 function stashPut(id){ const st=m.inv.stash; st.push(id); while(st.length>STASHMAX){ let ci=0; st.forEach((x,i)=>{ if(ITEMS[x].v<ITEMS[st[ci]].v) ci=i; }); const x=st.splice(ci,1)[0]; gold(ITEMS[x].v*.5); } }
 function give(id,o){ o=o||{}; const it=ITEMS[id]; if(!it||!m.inv) return false; const inv=m.inv;
   if(it.s==='u') inv.bag[id]=(inv.bag[id]||0)+(o.n||1);
@@ -5421,8 +5428,11 @@ function itIcon(id){ const it=ITEMS[id]; if(!it) return iconUrl('empty',0); let 
   return skinUrl('icon/'+it.n,'icon/'+id,'icon/'+kind+'_'+TIER[it.t],'icon/'+kind)||iconUrl(kind,it.t); }
 const icImg=(url,cls)=>`<img class="mh-ic ${cls||''}" src="${url}" alt="" width="28" height="28">`;
 const grTag=t=>`<span class="mh-gr g-${TIER[t]}">${TIER[t]}</span>`;
-function itemToast(id,n){ const it=ITEMS[id]; sfx(it.t>=3?'giyeon':'get'); toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
-  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8); }
+const ITHAN={w:'神兵',a:'寶甲',h:'寶冠',f:'寶履',c:'寶物',u:'靈藥',m:'奇珍'};
+function itemToast(id,n){ const it=ITEMS[id]; if(it.t<3) sfx('get'); const tip=()=>toast(`${icImg(itIcon(id))}<span><small>획득 · ${it.s==='u'?'소모품':it.s==='m'?'재료':SLOTN[it.s]} ${grTag(it.t)}</small><b>${esc(it.n)}${n>1?` ×${n}`:''}</b><em>${esc(itDesc(it))}</em></span>`,'gr'+it.t,it.t>=3?4600:3400);
+  const h=actorOf('hero'); if(h) fxSpark(h.x,h.y-10,it.t>=3?'#ffe9a0':'#ffffff',it.t>=3?16:8);
+  // S 이상은 무공처럼 연출이 뜬 채 멈춘다. 닫으면 알림이 뜬다
+  if(it.t>=3) gradeFx({g:it.t,han:it.book?'秘笈':ITHAN[it.s]||'寶物',title:it.n,sub:`${it.s==='u'?(it.book?'비급':'소모품'):it.s==='m'?'재료':SLOTN[it.s]} · ${TIER[it.t]}등급`,sfx:'art'+it.t,onClose:tip}); else tip(); }
 // 새 무공 알림. S 이상이면 장면 위에 획득 연출이 뜬다(design 의 artFx)
 function artToast(n,p,k,ng){ const a={n,p,k,ng}, g=artG(a); if(g<3) sfx('get');
   const tip=()=>toast(`${icImg(iconUrl('scroll',k==='마공'?2:k==='내공'?1:0))}<span><small>새 무공 · ${esc(artSub(a))} ${grTag(g)}</small><b>${esc(n)}</b><em>${artStat(a)}${ng&&k!=='내공'?` · 내공 +${ng}년`:''}</em></span>`,k==='마공'?'tm':'gr'+g,g>=3?4600:4200);
@@ -6077,16 +6087,27 @@ function ambient(){
 }
 // 내공이 수명을 늘려 주는 것은 열 갑자까지다
 const NGLIFE=600;
+/* 한 해의 화(禍). 다섯 살부터는 난리·돌림병·흉년·병으로 그 자리에서 죽지 않는다. 건강을 크게 잃을 뿐이고, 건강이 서른 아래일 때 또 화를 입어야 죽는다.
+   그 자리에서 죽는 것은 다섯 살 전의 아이(영아 사망)와, 몸 나이 예순부터의 노환·천수뿐이다 */
+function harm(dmg,cause,txt){ const h0=m.hp; dmg=Math.max(1,Math.round(dmg));
+  let close=false; if(h0>=30&&dmg>=h0){ dmg=Math.max(1,Math.round(h0-ri(2,8))); close=true; }      // 건강이 서른을 넘으면 한 번의 화로는 죽지 않는다
+  hurt(dmg,cause); if(m.hp<=0) return cause;
+  const t=close?txt+'. 겨우 목숨만 건졌다':txt, left=Math.round(m.hp), age=m.age; log(`${t} (건강 −${dmg})`,true);
+  if(!m.headless) vfx(()=>{ toast(`<span><small>${age}세의 화</small><b>${esc(t)}</b><em>건강 −${dmg} · 남은 건강 ${left}${left<30?' · 위태롭다. 쉬거나 약을 써야 한다':''}</em></span>`,'tm',left<30?7000:5200); sfx('hit'); shake=7; flashA=.4; flashC='#c0392b'; });
+  return null; }
 function hazard(){
-  const E0=ERAS[m.era], a=m.age, p=pctNow(), poor=p<30?1.4:p>80?.6:1;
+  const E0=ERAS[m.era], a=m.age, p=pctNow(), poor=p<30?1.4:p>80?.6:1, grown=a>=5;
   if(m.hp<=0) return m.deathCause||'병';
-  if(a>=15&&E0.war&&!m.f.migrated&&R()<E0.war*(m.f.martial?1.2:.5)) return m.f.martial?(m.era==='chaos'?'정사대전에서 전사':'마교와의 싸움에서 전사'):'전란';
-  if(R()<E0.plague*.3*(a<10||a>60?1.6:1)*poor*(hasFx('plague')?.25:1)) return '역병';
-  if(p<25&&R()<E0.famine*.15) return '기근';
+  if(a>=15&&E0.war&&!m.f.migrated&&R()<E0.war*(m.f.martial?1.2:.5)){ const c=m.f.martial?(m.era==='chaos'?'정사대전에서 전사':'마교와의 싸움에서 전사'):'전란';
+    return harm(m.f.martial?ri(26,44)*Math.max(.45,1-m.lv*.08):ri(30,50),c,m.f.martial?(m.era==='chaos'?'정사대전의 싸움터에 휘말려 크게 다쳤다':'마교와의 싸움에 휘말려 크게 다쳤다'):'전란에 휩쓸려 크게 다쳤다'); }
+  if(R()<E0.plague*.3*(a<10||a>60?1.6:1)*poor*(hasFx('plague')?.25:1)){ if(!grown) return '역병'; return harm(ri(30,50)*(a<10||a>60?1.25:1)*(hasFx('plague')?.5:1),'역병','역병이 돌아 앓아누웠다'); }
+  if(p<25&&R()<E0.famine*.15){ if(!grown) return '기근'; return harm(ri(18,32),'기근','흉년에 굶주려 몸이 상했다'); }
   let h;
   if(a<10) h=E0.child*(a<=1?.3:a<=5?.06:.02)*poor*(hasT('weak')?1.5:1);
   else { h=.004+.0025*Math.pow(2,(bodyAge()-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); if(hasT('weak')) h*=1.3; if(m.joy<30) h*=1.25; }
-  if(R()<h) return a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(['폐병','열병','이질','종기','학질','중풍']);
+  if(R()<h){ const c=a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(a>=40?['폐병','열병','이질','종기','학질','중풍']:['폐병','열병','이질','종기','학질']);
+    if(!grown||bodyAge()>=60) return c;                          // 아주 어린 아이와 노인은 그대로 간다
+    return harm(ri(25,45),c,`${eul(c)} 크게 앓았다`); }
   return null;
 }
 const evOK=e=>e.min!=null&&m.age>=e.min&&m.age<=e.max&&(!e.when||e.when());
@@ -7948,6 +7969,17 @@ E('rejuv',{min:60,max:150,once:1,w:9,gi:1,when:()=>m.f.martial&&m.lv>=6&&m.ng>=2
   text:()=>'운기를 마치고 눈을 뜨니 손등의 검버섯이 없다. 물에 비친 얼굴에서 주름이 걷히고 있다. 늙음이 극에 이르면 되돌아간다고 했다. 반로환동(返老還童)이다.',ch:[
   {t:'흐름에 몸을 맡긴다',go:()=>{ m.f.rejuv=m.age; m.hp=100; m.ng+=20; m.b.st.body=Math.min(12,m.b.st.body+2); m.fame+=20; log('반로환동을 이루었다. 몸이 서른 해 젊어졌다',true); return {t:'흰 머리가 검어지고 이가 새로 났다. 사흘 뒤 거울 속에는 서른 해 전의 얼굴이 있었다. 사람들은 한동안 나를 알아보지 못했다.',tone:'good',big:'반로환동',cut:()=>{ callout('返老還童','gi gssr',2800); flashA=.95; flashC='#e8fbff'; spark('hero','#bff4ff',26); }}; }},
   {t:'"늙은 대로가 좋다" 한다',go:()=>{ m.hp=100; m.ng+=30; m.hy+=5; m.joy=cl(m.joy+10); log('반로환동의 기회를 내려놓았다',true); return {t:'기운은 돌려 단전에 쌓고, 얼굴은 그대로 두었다. 주름은 내가 산 날들이다.',tone:'good'}; }}]});
+
+/* ---- 혈마체로 태어났는데 마공을 못 만나는 일이 없게: 열다섯 넘어 한 번, 피가 먼저 알아본다 ---- */
+E('bloodCall',{min:15,max:60,once:1,w:9,gi:1,when:()=>m.f.bloodBody&&!m.f.magong,st:()=>Sg('cave',{time:'night',hero:{x:76,face:1},cast:[N('el',LOOK.elder({robe:'#5a1f1f'}),124,{face:-1,tag:'붉은 눈의 노인'})]}),
+  text:()=>'밤길에 붉은 눈의 노인이 앞을 막는다. 내 손목을 잡아 맥을 짚더니 웃는다. "백 년에 하나 나는 몸이다. 혈마체. 네 피는 벌써 알고 있다."',ch:[
+  {t:'손을 내준다',s:'마공을 익힌다',go:()=>{ learn('혈옥수',22,'마공',10); m.ak+=6; log('혈마체가 깨어났다. 혈옥수를 익혔다',true); return {t:'노인이 손바닥을 맞대자 온몸의 피가 한 방향으로 돌기 시작했다. 남들이 십 년 걸릴 것을 하룻밤에 익혔다. 손바닥이 붉게 물들었다.',tone:'good',big:'혈마체 각성',cut:()=>{ if(SC) SC.tint='red'; spark('hero','#ff6a50',22); }}; }},
+  {t:'구결만 받아 적는다',s:'익히지는 않는다. 비급으로 남는다',go:()=>{ m.f.bloodNote=1; m.q.push({id:'bloodCall2',age:m.age+ri(3,6)}); m.hy+=2; return {t:'노인은 혀를 찼지만 구결을 일러 주었다. "피는 기다려 주지 않는다. 몇 해 안에 다시 끓을 거다."',tone:'neutral'}; }},
+  {t:'손을 뿌리친다',s:'마공과는 엮이지 않는다',go:()=>{ m.hy+=6; m.joy=cl(m.joy+3); log('혈마체의 부름을 뿌리쳤다'); return {t:'노인은 붙잡지 않았다. "네 뜻이 그렇다면." 그날 밤 꿈에 붉은 강을 보았지만, 아침에는 잊었다.',tone:'good'}; }}]});
+E('bloodCall2',{min:15,max:70,once:1,when:()=>m.f.bloodBody&&!m.f.magong&&m.f.bloodNote,st:()=>Sg('room',{time:'night',hero:{x:80,pose:'sit',act:'meditate',auraC:'#ff8a70'}}),
+  text:()=>'크게 다친 날 밤, 피가 저절로 그 구결대로 돌기 시작한다. 받아 적어 둔 종이가 품에서 뜨겁다.',ch:[
+  {t:'구결대로 피를 돌린다',go:()=>{ learn('혈옥수',22,'마공',10); m.hp=cl(m.hp+30); m.ak+=4; log('받아 둔 구결로 혈옥수를 익혔다',true); return {t:'상처가 아물고 손바닥이 붉어졌다. 몸은 이 길을 처음부터 알고 있었다.',tone:'good',big:'혈마체 각성',cut:()=>{ if(SC) SC.tint='red'; spark('hero','#ff6a50',22); }}; }},
+  {t:'종이를 태운다',go:()=>{ m.f.bloodNote=0; m.hy+=8; log('혈마의 구결을 불태웠다',true); return {t:'불꽃이 붉었다. 피는 한참 뒤에야 가라앉았다. 다시는 끓지 않았다.',tone:'good'}; }}]});
 /* ==== murim:events-arts — 이름난 무공과 비급을 얻는 사건 ==== */
 Q('SSR','ar_ssr_ninesword',{a:[18,70],mar:1},'cave','폭포 뒤 석벽에 검흔 아홉 줄이 깊게 패어 있다. 줄마다 방향이 다르고, 초식의 이름은 어디에도 없다.',[
   ['아홉 줄을 손끝으로 따라 그린다','초식이 아니었다. 초식을 깨는 법이었다. 검, 도, 창, 채찍, 장법, 암기. 아홉 줄이 끝나자 세상 무공의 빈틈이 보였다.',{art:AF('독고구검'),exp:1,fame:5}],
@@ -8377,7 +8409,7 @@ function actFx(fid,o){ o=o||{}; const a=m.age, O=OR(m.b.o), work=a<10?0:a<16?.5:
     case 'train': return m.f.martial?{exp:gain()*q*(o.fall?.85:1.05),ng:(.3+ST('wit')/30)*q*(o.fall?1.6:1),hp:-q}:{joy:a>=8?.5:1};
     case 'work': return {g:O.inc*work*.3*((m.f.lit||0)>=4?1.1:1)+(a>=10?(m.f.smith?2.5:0)+(m.f.martial&&m.lv>=2?m.lv*1.5:0)+(m.f.med?2:0):0),joy:-q};
     case 'family': return {joy:4*q,bond:7*q};
-    case 'rest': return {hp:9*q*(o.fall?1.15:1),joy:2*q};
+    case 'rest': return {hp:9*q*(o.fall?1.15:1)*(m.hp<50?2:1),joy:2*q};      // 다친 몸은 쉬면 곱절로 낫는다
     case 'study': return {joy:.5};
     case 'rumor': return {g:-3,joy:1};
     case 'wwork': return m.f.martial&&m.lv>=2?{g:[5+m.lv*2.2,9+m.lv*2.2],exp:gain()*.08,fame:.3,joy:-.25}:{g:3+ST('body')*.3,joy:-.25};
@@ -8928,14 +8960,14 @@ function artList(){ const use=combat().art, eye=eyeArt(), st=stepArt(), bd=bodyA
   const rows=m.arts.map(a=>({a,g:artG(a)})).sort((x,y)=>y.g-x.g||artVal(y.a)-artVal(x.a));
   const one=({a,g})=>`<span class="mh-art gr${g}${a.k==='마공'?' m':''}${on(a)?' on':''}">${grTag(g)}<b>${esc(a.n)}</b><small>${esc(artSub(a))} · ${artStat(a)}</small></span>`;
   const top=rows.slice(0,8), rest=rows.slice(8);
-  return `<div class="mh-arts">${top.map(one).join('')}</div>${rest.length?`<details class="mh-artmore" id="mhArtMore" ${ARTOPEN?'open':''}><summary>나머지 ${rest.length}가지</summary><div class="mh-arts">${rest.map(one).join('')}</div></details>`:''}`; }
+  return `<div class="mh-arts">${top.map(one).join('')}</div><p class="mh-helptip">테가 둘린 것이 지금 쓰이는 무공이다. 공격 무공은 든 무기와 합쳐 가장 센 것 하나가 쓰인다.</p>${rest.length?`<details class="mh-artmore" id="mhArtMore" ${ARTOPEN?'open':''}><summary>나머지 ${rest.length}가지</summary><div class="mh-arts">${rest.map(one).join('')}</div></details>`:''}`; }
 /* ---- 낱말 설명: 신상 칸에서 점선 밑줄이 그어진 낱말을 누르면 바로 밑에 설명이 펼쳐진다 ---- */
 let HELPK=null;
 const hb=(k,lab)=>`<button type="button" class="mh-hb" data-help="${k}" aria-expanded="${HELPK===k}">${lab}</button>`;
 const helpBox=(k,tag)=>HELPK===k?`<${tag||'p'} class="mh-helpbox">${HELP[k]()}</${tag||'p'}>`:'';
 const HELP={
-  hp:()=>'0이 되면 죽는다. 60 아래면 병으로 죽을 확률이 1.3배, 35 아래면 2.2배다. 40 아래면 수련이 0.6배로 더디다. 결투에서 버티는 체력은 건강에 비례한다. 마흔다섯 전에는 해마다 3씩 돌아오고 그 뒤로는 해마다 조금씩 깎인다. 쉬거나 약을 쓰면 오른다.',
-  joy:()=>'70 이상이면 수련이 1.1배다. 30 아래면 수련이 0.85배가 되고 병으로 죽을 확률이 1.25배다. 가만두면 해마다 55 쪽으로 조금씩 돌아간다. 한 생이 끝날 때 인생 등급 점수에도 든다.',
+  hp:()=>'0이 되면 죽는다. 난리·역병·흉년·병은 그 자리에서 목숨을 가져가지 않고 건강을 크게 깎는다. 건강이 30 이상이면 한 번의 화로는 죽지 않고, 30 아래에서 또 화를 입으면 죽는다. 몸 나이 예순부터는 노환으로 갈 수 있다. 60 아래면 병이 들 확률이 1.3배, 35 아래면 2.2배다. 40 아래면 수련이 0.6배로 더디다. 결투에서 버티는 체력은 건강에 비례한다. 마흔다섯 전에는 해마다 3씩 돌아오고 그 뒤로는 해마다 조금씩 깎인다. 쉬거나 약을 쓰면 오르고, 50 아래에서는 쉬는 효과가 두 배다.',
+  joy:()=>'70 이상이면 수련이 1.1배다. 30 아래면 수련이 0.85배가 되고 병이 들 확률이 1.25배다. 가만두면 해마다 55 쪽으로 조금씩 돌아간다. 한 생이 끝날 때 인생 등급 점수에도 든다.',
   bond:()=>'사람들과 쌓은 정이다. 60 이상이면 가게 값이 1할 싸지고, 사문 임무로 얻는 공헌이 1.25배다. 가족이나 사문 사람들과 지내면 오르고, 가만두면 해마다 40 쪽으로 조금씩 돌아간다.',
   lv:()=>{ if(!m.f.martial) return '아직 무공을 모른다. 무관에 입문하거나 문파에 들거나 비급을 읽으면 무림인이 된다.'; const cur=Math.floor(m.exp+m.ng*.3), nx=LVX[m.lv+1];
     return `경지는 수련과 내공이 함께 올린다. "무공이 는다"는 수련이 쌓인다는 뜻이고, 수련 + 내공 햇수 × 0.3이 문턱을 넘으면 한 단계 오른다. 지금 ${cur}${nx?`, 다음 경지(${LV[m.lv+1]})는 ${nx}부터`:''}다. 경지가 오르면 무위가 크게 오르고 늙어 죽을 확률이 준다.`; },
@@ -8972,12 +9004,13 @@ function renderRec(){
   const am=$m('mhArtMore'); if(am) am.ontoggle=()=>{ ARTOPEN=am.open; };
 }
 function renderBag(){ const el=$m('mhBag'); if(!el) return; if(!m||!m.inv||m.phase==='end'){ el.hidden=true; return; } el.hidden=false;
-  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}</em>`:''}</span></div>`; };
+  const dl=id=>{ const d=eqDelta(id); if(!d) return ''; const v=Math.round(d.v*10)/10; return ` <b class="mh-dl ${v>0?'up':v<0?'dn':''}">차면 ${d.k} ${v>0?'+':v<0?'−':'±'}${Math.abs(v)}${d.art&&v!==0?` (${esc(d.art.n)})`:''}</b>`; };
+  const inv=m.inv, lock=!!DUEL||m.dead, slot=(s,lab)=>{ const id=inv[s], it=id&&ITEMS[id]; return `<div class="mh-slot${it?' gr'+it.t:''}">${icImg(it?itIcon(id):iconUrl('empty',0))}<span><small>${lab}${it?` ${grTag(it.t)}`:''}</small><b>${it?esc(it.n):'없음'}</b>${it?`<em>${esc(itDesc(it))}${s==='w'&&wMatch()?` · <i class="mh-wm">${esc(wMatch())}</i>`:''}</em>`:''}</span></div>`; };
   const b=inv.bag, cons=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&!ITEMS[k].lore).sort((x,y)=>ITEMS[y].t-ITEMS[x].t).map(k=>{ const it=ITEMS[k], u=k==='salve'||k==='pill'||it.use; return `<span class="mh-con" title="${esc(itDesc(it))}">${icImg(itIcon(k),'sm')}${esc(it.n)} ×${b[k]}${it.t>=1?` ${grTag(it.t)}`:''}${it.use?` <small>${esc(it.book?it.d:useText(it.use))}</small>`:''}${u&&!lock&&(k!=='salve'||m.hp<100)?` <button class="mh-btn sm" type="button" data-use="${esc(k)}">${it.book?'읽기':'쓰기'}</button>`:''}</span>`; }).join('')+(inv.mat>0?`<span class="mh-con">${icImg(itIcon('ore'),'sm')}천외운철 ×${inv.mat}</span>`:'');
   const rare=Object.keys(b).filter(k=>b[k]>0&&ITEMS[k]&&ITEMS[k].lore).map(k=>{ const it=ITEMS[k]; return `<div class="mh-sti mh-rare gr${it.t}">${icImg(itIcon(k))}<span><b>${esc(it.n)} ×${b[k]}</b><small>${grTag(it.t)} ${esc(it.d)}</small><em>${esc(it.lore)}</em></span>${lock?'':`<button class="mh-btn sm" type="button" data-use="${k}">마시기</button>`}</div>`; }).join('');
   el.innerHTML=`<h4>행낭<small>${hb('pw','무위')} ${Math.round(power())}</small></h4>${helpBox('pw')}
     <div class="mh-eq">${SLOTS.map(s=>slot(s,SLOTN[s])).join('')}</div>
-    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
+    ${inv.stash.length?`<div class="mh-stash">${inv.stash.map((id,i)=>{ const it=ITEMS[id]; return `<div class="mh-sti gr${it.t}">${icImg(itIcon(id),'sm')}<span><b>${esc(it.n)}</b><small>${SLOTN[it.s]} ${grTag(it.t)} ${esc(itDesc(it))}${dl(id)}</small></span>${lock?'':`<button class="mh-btn sm" type="button" data-eq="${i}">차기</button><button class="mh-btn sm" type="button" data-sell="${i}">${Math.round(it.v*.5)}냥에 팔기</button>`}</div>`; }).join('')}</div>`:''}
     ${rare}${cons?`<div class="mh-cons">${cons}</div>`:''}${(m.f.medN||0)>=1?`<p class="mh-tol">내공 약을 여러 번 먹어 약효가 ${Math.round(medTol()*100)}%만 듣는다. 건강 회복은 그대로다.</p>`:''}`;
   wireHelp(el);
   el.querySelectorAll('[data-eq]').forEach(x=>x.onclick=()=>{ equipAt(+x.dataset.eq); render(); save(); });

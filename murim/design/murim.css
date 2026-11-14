@@ -578,3 +578,6 @@ img.mh-ic{object-fit:contain}
 .mh-cnrow[disabled]{opacity:.5;cursor:default}
 .mh-cnrow:focus-visible{outline:2px solid var(--m-seal);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.mh-cbang,.mh-cnb,.mh-cs.mk i::after,.mh-cs.qt i::after{animation:none}}
+
+.mh-wm{font-style:normal;color:var(--m-jade)}
+.mh-dl{font-weight:600;white-space:nowrap}.mh-dl.up{color:var(--m-jade)}.mh-dl.dn{color:var(--m-seal)}

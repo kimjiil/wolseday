@@ -16,6 +16,7 @@ function tactSub(a){ const T=m.train||{};
   return a.s||''; }
 const mt=i=>m.mates[i];
 const alive=i=>m.mates&&m.mates[i]&&!m.mates[i].dead;
+const fit=i=>alive(i)&&!m.mates[i].lost;      // 살아 있고 무공도 그대로인 동문(주화입마로 무공을 잃은 사람은 검을 들지 못한다)
 function mateLook(i,o){ const x=m.mates[i]; return npcLook(Object.assign({name:x.name,sex:x.sx,age:m.age+(i===0?3:i===1?-1:0),sect:m.sect,weapon:i===1?null:'sword',blush:i===1&&x.love?1:0,hair:m.sect==='shaolin'?'bald':null},o||{})); }
 function masterLook(o){ const r=m.rels.find(x=>x.role==='사부'); return npcLook(Object.assign({name:r?r.name:'사부',sex:(m.sect&&masterSex(m.sect))||(r&&r.sx)||'m',age:58,sect:m.sect,robe:m.sect?null:'#5a5a64',weapon:m.sect==='shaolin'||m.sect==='beggar'?'staff':'sword',hair:m.sect==='shaolin'?'bald':null,beard:'long'},o||{})); }
 const mateN=(i,x,o)=>N('m'+i,mateLook(i),x,Object.assign({tag:mt(i).name},o||{}));
@@ -89,11 +90,11 @@ const TEV=[
     {t:'대신 패 준다',go:()=>{ hurt(3); m.joy+=3; return {t:'그 뒤로 내 밥그릇에만 고기가 한 점 더 올라왔다.',tone:'good',cut:()=>{ const h=A('hero'); if(h){ h.L=heroLook({tool:'axe'}); h.goto=92; h.act='tool'; } emo('gr','heart'); }}; }},
     {t:'수련이 먼저다',go:()=>{ addExp(1); return '할멈은 아무 말도 하지 않았다.'; }}]}
 ];
-const TEV_FINAL={final:1,st:()=>Sg('arena',{name:'비무 시험',cast:(alive(2)?[mateN(2,126,{pose:'guard'})]:[N('m2',LOOK.youth(),126,{pose:'guard'})])}),
-  text:()=>`수련기의 끝. ${m.train.place}의 비무 시험 날이다. 상대는 ${alive(2)?`${mt(2).rival?'맞수':'지기'} ${mt(2).name}`:'이름난 사형'}.`,ch:[
+const TEV_FINAL={final:1,st:()=>Sg('arena',{name:'비무 시험',cast:(fit(2)?[mateN(2,126,{pose:'guard'})]:[N('m2',LOOK.youth(),126,{pose:'guard'})])}),
+  text:()=>`수련기의 끝. ${m.train.place}의 비무 시험 날이다. 상대는 ${fit(2)?`${mt(2).rival?'맞수':'지기'} ${mt(2).name}`:'이름난 사형'}.`,ch:[
   {t:'정면으로 승부한다',s:'신망이 높을수록 기가 차서 오른다',duel:()=>finalDuel(0),go:ok=>finishTrain(ok,true)},
   {t:'버티며 판정을 노린다',s:'다섯 합을 버티면 통과. 수석은 못 한다',duel:()=>finalDuel(5),go:ok=>finishTrain(ok,false)}]};
-function finalDuel(sv){ const x=alive(2)?mt(2):null, T=m.train; const sp={foe:{name:x?x.name:'사형',title:'비무 시험',look:x?mateLook(2):LOOK.youth(),pow:m.sect?50:38,style:'sword'},qi:Math.round(cl(T.rep)*.4),extras:watchers([0,1].filter(alive).map(i=>mateLook(i)))}; if(sv) sp.survive=sv; return sp; }
+function finalDuel(sv){ const x=fit(2)?mt(2):null, T=m.train; const sp={foe:{name:x?x.name:'사형',title:'비무 시험',look:x?mateLook(2):LOOK.youth(),pow:m.sect?50:38,style:'sword'},qi:Math.round(cl(T.rep)*.4),extras:watchers([0,1].filter(alive).map(i=>mateLook(i)))}; if(sv) sp.survive=sv; return sp; }
 function finishTrain(ok,front){
   const T=m.train, top=ok&&front&&T.rep>=60; let extra='';
   m.f.standing=(m.f.standing||0)+(top?4:ok?2:0);
@@ -101,7 +102,7 @@ function finishTrain(ok,front){
   else if(ok){ addExp(3); log(`${T.place}의 수련기를 마쳤다`,true); }
   else { m.joy-=8; log(`${T.place}의 비무 시험에서 떨어졌다`,true); }
   if(T.craft>=4){ if(m.sect==='tang') m.f.poisonwise=1; else if(m.sect==='shaolin'||m.f.med) m.f.med=1; else m.f.smith=1; log('평생 쓸 손재주가 붙었다',true); }
-  m.mates.forEach(x=>{ if(x.dead) return; rel(x.rival?(x.v<=25?'원수':'맞수'):x.role,x.name,x.v,{sx:x.sx}); if(x.love&&x.v>=70&&!m.spouse){ m.f.loveName=x.name; m.q.push({age:m.age+ri(1,4),id:'mateLove'}); } });
+  m.mates.forEach(x=>{ if(x.dead) return; rel(x.rival?(x.v<=25?'원수':'맞수'):x.role,x.name,x.v,x.lost?{sx:x.sx,lost:1}:{sx:x.sx}); if(x.love&&x.v>=70&&!m.spouse){ m.f.loveName=x.name; m.q.push({age:m.age+ri(1,4),id:'mateLove'}); } });
   m.train=null; m.mates=null; placeAfterTrain();
   return {t:(top?'시험관들이 일어서서 박수를 쳤다. 수석이다.':ok?'통과했다. 내문 제자로 올라갔다.':'졌다. 한동안 외문에 남게 되었다.')+extra,tone:ok?'good':'bad'};
 }
@@ -132,7 +133,7 @@ function afterTrain(){ acc=0; render(); save(); }
 /* ---- 수련장 장면: 고른 일에 따라 주인공이 움직인다 ---- */
 function trainStage(){ const T=m.train, cast=[];
   if(alive(0)) cast.push(mateN(0,86,{face:1,act:'train'}));
-  if(alive(2)) cast.push(mateN(2,112,{act:alive(0)?'train':'wander',xmin:100,xmax:126}));
+  if(alive(2)) cast.push(mateN(2,112,{act:alive(0)&&!mt(2).lost?'train':'wander',xmin:100,xmax:126}));
   if(alive(1)) cast.push(mateN(1,138,{act:'wander',xmin:128,xmax:152}));
   cast.push(N('sa',m.f.master&&!m.sect?LOOK.master():masterLook(),168,{tag:'사부'}));
   return {key:'train:'+T.place+':'+m.mates.map(x=>x.dead?1:0).join(''),bg:m.sect?'dojo':m.f.master?'hermit':'dojo',name:T.place,season:TSEAS[T.turn%6],cast,hero:{look:heroLook(),x:46,face:-1,tag:m.name,tagc:'me'}}; }
@@ -156,7 +157,7 @@ function renderTrain(card,eye){
   const T=m.train, yr=Math.min(3,Math.floor(T.turn/6)+1), se=SEASONS[T.turn%6];
   const head=`<div class="mh-tr"><span class="mh-qa">${esc(T.place)} 수련기</span><b>${T.turn>=18?'비무 시험':`${yr}년차 ${se}`}</b><span class="mh-trbar" aria-label="수련기 진행 ${T.turn}/18"><i style="width:${T.turn/18*100}%"></i></span></div>`;
   const stats=`<div class="mh-meters">${meter('체력',m.hp,'hp')}${meter('신망',T.rep,'')}${meter('기예',Math.min(100,T.craft*25),'joy')}</div>`;
-  const mates=`<div class="mh-mates"><span class="mh-lab">동문</span>${m.mates.map((x,i)=>`<div class="mh-mate${x.dead?' dead':''}"><span class="mh-who"><img class="mh-pt" src="${portrait(mateLook(i))}" alt="" width="28" height="28"><span><b>${esc(x.name)}</b><small>${esc(x.dead?'고인':x.role)}</small></span></span><span class="mh-bar bond"><i style="width:${x.dead?0:cl(x.v)}%"></i></span><button type="button" class="mh-btn" data-mate="${i}" ${m.tev||x.dead||m.auto?'disabled':''}>어울리기</button></div>`).join('')}</div>`;
+  const mates=`<div class="mh-mates"><span class="mh-lab">동문</span>${m.mates.map((x,i)=>`<div class="mh-mate${x.dead?' dead':''}"><span class="mh-who"><img class="mh-pt" src="${portrait(mateLook(i))}" alt="" width="28" height="28"><span><b>${esc(x.name)}</b><small>${esc(x.dead?'고인':x.lost?x.role+' · 무공을 잃음':x.role)}</small></span></span><span class="mh-bar bond"><i style="width:${x.dead?0:cl(x.v)}%"></i></span><button type="button" class="mh-btn" data-mate="${i}" ${m.tev||x.dead||m.auto?'disabled':''}>어울리기</button></div>`).join('')}</div>`;
   const last=m.lastRes&&(m.lastRes.train||resWait())?resHtml(m.lastRes):'';
   const e=m.tev;
   const body=e?`<div class="mh-dec${e.gi?' gi':''}"><p class="mh-qa">${e.final?'시험':e.ep?`${esc(EPI_T[e.ep].n)} · ${e.bi+1}/${EPI_T[e.ep].beats.length}`:'일'}</p><p class="mh-text">${esc(m.tevText)}</p><div class="mh-chs">${tevChoices(e).map(chBtn).join('')}</div></div>`

@@ -59,3 +59,14 @@ E('rejuv',{min:60,max:150,once:1,w:9,gi:1,when:()=>m.f.martial&&m.lv>=6&&m.ng>=2
   text:()=>'운기를 마치고 눈을 뜨니 손등의 검버섯이 없다. 물에 비친 얼굴에서 주름이 걷히고 있다. 늙음이 극에 이르면 되돌아간다고 했다. 반로환동(返老還童)이다.',ch:[
   {t:'흐름에 몸을 맡긴다',go:()=>{ m.f.rejuv=m.age; m.hp=100; m.ng+=20; m.b.st.body=Math.min(12,m.b.st.body+2); m.fame+=20; log('반로환동을 이루었다. 몸이 서른 해 젊어졌다',true); return {t:'흰 머리가 검어지고 이가 새로 났다. 사흘 뒤 거울 속에는 서른 해 전의 얼굴이 있었다. 사람들은 한동안 나를 알아보지 못했다.',tone:'good',big:'반로환동',cut:()=>{ callout('返老還童','gi gssr',2800); flashA=.95; flashC='#e8fbff'; spark('hero','#bff4ff',26); }}; }},
   {t:'"늙은 대로가 좋다" 한다',go:()=>{ m.hp=100; m.ng+=30; m.hy+=5; m.joy=cl(m.joy+10); log('반로환동의 기회를 내려놓았다',true); return {t:'기운은 돌려 단전에 쌓고, 얼굴은 그대로 두었다. 주름은 내가 산 날들이다.',tone:'good'}; }}]});
+
+/* ---- 혈마체로 태어났는데 마공을 못 만나는 일이 없게: 열다섯 넘어 한 번, 피가 먼저 알아본다 ---- */
+E('bloodCall',{min:15,max:60,once:1,w:9,gi:1,when:()=>m.f.bloodBody&&!m.f.magong,st:()=>Sg('cave',{time:'night',hero:{x:76,face:1},cast:[N('el',LOOK.elder({robe:'#5a1f1f'}),124,{face:-1,tag:'붉은 눈의 노인'})]}),
+  text:()=>'밤길에 붉은 눈의 노인이 앞을 막는다. 내 손목을 잡아 맥을 짚더니 웃는다. "백 년에 하나 나는 몸이다. 혈마체. 네 피는 벌써 알고 있다."',ch:[
+  {t:'손을 내준다',s:'마공을 익힌다',go:()=>{ learn('혈옥수',22,'마공',10); m.ak+=6; log('혈마체가 깨어났다. 혈옥수를 익혔다',true); return {t:'노인이 손바닥을 맞대자 온몸의 피가 한 방향으로 돌기 시작했다. 남들이 십 년 걸릴 것을 하룻밤에 익혔다. 손바닥이 붉게 물들었다.',tone:'good',big:'혈마체 각성',cut:()=>{ if(SC) SC.tint='red'; spark('hero','#ff6a50',22); }}; }},
+  {t:'구결만 받아 적는다',s:'익히지는 않는다. 비급으로 남는다',go:()=>{ m.f.bloodNote=1; m.q.push({id:'bloodCall2',age:m.age+ri(3,6)}); m.hy+=2; return {t:'노인은 혀를 찼지만 구결을 일러 주었다. "피는 기다려 주지 않는다. 몇 해 안에 다시 끓을 거다."',tone:'neutral'}; }},
+  {t:'손을 뿌리친다',s:'마공과는 엮이지 않는다',go:()=>{ m.hy+=6; m.joy=cl(m.joy+3); log('혈마체의 부름을 뿌리쳤다'); return {t:'노인은 붙잡지 않았다. "네 뜻이 그렇다면." 그날 밤 꿈에 붉은 강을 보았지만, 아침에는 잊었다.',tone:'good'}; }}]});
+E('bloodCall2',{min:15,max:70,once:1,when:()=>m.f.bloodBody&&!m.f.magong&&m.f.bloodNote,st:()=>Sg('room',{time:'night',hero:{x:80,pose:'sit',act:'meditate',auraC:'#ff8a70'}}),
+  text:()=>'크게 다친 날 밤, 피가 저절로 그 구결대로 돌기 시작한다. 받아 적어 둔 종이가 품에서 뜨겁다.',ch:[
+  {t:'구결대로 피를 돌린다',go:()=>{ learn('혈옥수',22,'마공',10); m.hp=cl(m.hp+30); m.ak+=4; log('받아 둔 구결로 혈옥수를 익혔다',true); return {t:'상처가 아물고 손바닥이 붉어졌다. 몸은 이 길을 처음부터 알고 있었다.',tone:'good',big:'혈마체 각성',cut:()=>{ if(SC) SC.tint='red'; spark('hero','#ff6a50',22); }}; }},
+  {t:'종이를 태운다',go:()=>{ m.f.bloodNote=0; m.hy+=8; log('혈마의 구결을 불태웠다',true); return {t:'불꽃이 붉었다. 피는 한참 뒤에야 가라앉았다. 다시는 끓지 않았다.',tone:'good'}; }}]});

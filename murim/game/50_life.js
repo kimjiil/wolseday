@@ -92,16 +92,27 @@ function ambient(){
 }
 // 내공이 수명을 늘려 주는 것은 열 갑자까지다
 const NGLIFE=600;
+/* 한 해의 화(禍). 다섯 살부터는 난리·돌림병·흉년·병으로 그 자리에서 죽지 않는다. 건강을 크게 잃을 뿐이고, 건강이 서른 아래일 때 또 화를 입어야 죽는다.
+   그 자리에서 죽는 것은 다섯 살 전의 아이(영아 사망)와, 몸 나이 예순부터의 노환·천수뿐이다 */
+function harm(dmg,cause,txt){ const h0=m.hp; dmg=Math.max(1,Math.round(dmg));
+  let close=false; if(h0>=30&&dmg>=h0){ dmg=Math.max(1,Math.round(h0-ri(2,8))); close=true; }      // 건강이 서른을 넘으면 한 번의 화로는 죽지 않는다
+  hurt(dmg,cause); if(m.hp<=0) return cause;
+  const t=close?txt+'. 겨우 목숨만 건졌다':txt, left=Math.round(m.hp), age=m.age; log(`${t} (건강 −${dmg})`,true);
+  if(!m.headless) vfx(()=>{ toast(`<span><small>${age}세의 화</small><b>${esc(t)}</b><em>건강 −${dmg} · 남은 건강 ${left}${left<30?' · 위태롭다. 쉬거나 약을 써야 한다':''}</em></span>`,'tm',left<30?7000:5200); sfx('hit'); shake=7; flashA=.4; flashC='#c0392b'; });
+  return null; }
 function hazard(){
-  const E0=ERAS[m.era], a=m.age, p=pctNow(), poor=p<30?1.4:p>80?.6:1;
+  const E0=ERAS[m.era], a=m.age, p=pctNow(), poor=p<30?1.4:p>80?.6:1, grown=a>=5;
   if(m.hp<=0) return m.deathCause||'병';
-  if(a>=15&&E0.war&&!m.f.migrated&&R()<E0.war*(m.f.martial?1.2:.5)) return m.f.martial?(m.era==='chaos'?'정사대전에서 전사':'마교와의 싸움에서 전사'):'전란';
-  if(R()<E0.plague*.3*(a<10||a>60?1.6:1)*poor*(hasFx('plague')?.25:1)) return '역병';
-  if(p<25&&R()<E0.famine*.15) return '기근';
+  if(a>=15&&E0.war&&!m.f.migrated&&R()<E0.war*(m.f.martial?1.2:.5)){ const c=m.f.martial?(m.era==='chaos'?'정사대전에서 전사':'마교와의 싸움에서 전사'):'전란';
+    return harm(m.f.martial?ri(26,44)*Math.max(.45,1-m.lv*.08):ri(30,50),c,m.f.martial?(m.era==='chaos'?'정사대전의 싸움터에 휘말려 크게 다쳤다':'마교와의 싸움에 휘말려 크게 다쳤다'):'전란에 휩쓸려 크게 다쳤다'); }
+  if(R()<E0.plague*.3*(a<10||a>60?1.6:1)*poor*(hasFx('plague')?.25:1)){ if(!grown) return '역병'; return harm(ri(30,50)*(a<10||a>60?1.25:1)*(hasFx('plague')?.5:1),'역병','역병이 돌아 앓아누웠다'); }
+  if(p<25&&R()<E0.famine*.15){ if(!grown) return '기근'; return harm(ri(18,32),'기근','흉년에 굶주려 몸이 상했다'); }
   let h;
   if(a<10) h=E0.child*(a<=1?.3:a<=5?.06:.02)*poor*(hasT('weak')?1.5:1);
   else { h=.004+.0025*Math.pow(2,(bodyAge()-30)/8.5); h*=m.hp<35?2.2:m.hp<60?1.3:1; h*=Math.max(.35,1-m.lv*.08)/(1+Math.min(m.ng,NGLIFE)/80); if(hasT('weak')) h*=1.3; if(m.joy<30) h*=1.25; }
-  if(R()<h) return a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(['폐병','열병','이질','종기','학질','중풍']);
+  if(R()<h){ const c=a<15?pick(['열병','홍역','천연두','이질','경기']):a>=70?'천수를 누림':a>=60?pick(['노환','중풍','해소병']):pick(a>=40?['폐병','열병','이질','종기','학질','중풍']:['폐병','열병','이질','종기','학질']);
+    if(!grown||bodyAge()>=60) return c;                          // 아주 어린 아이와 노인은 그대로 간다
+    return harm(ri(25,45),c,`${eul(c)} 크게 앓았다`); }
   return null;
 }
 const evOK=e=>e.min!=null&&m.age>=e.min&&m.age<=e.max&&(!e.when||e.when());

@@ -97,7 +97,7 @@ function actFx(fid,o){ o=o||{}; const a=m.age, O=OR(m.b.o), work=a<10?0:a<16?.5:
     case 'train': return m.f.martial?{exp:gain()*q*(o.fall?.85:1.05),ng:(.3+ST('wit')/30)*q*(o.fall?1.6:1),hp:-q}:{joy:a>=8?.5:1};
     case 'work': return {g:O.inc*work*.3*((m.f.lit||0)>=4?1.1:1)+(a>=10?(m.f.smith?2.5:0)+(m.f.martial&&m.lv>=2?m.lv*1.5:0)+(m.f.med?2:0):0),joy:-q};
     case 'family': return {joy:4*q,bond:7*q};
-    case 'rest': return {hp:9*q*(o.fall?1.15:1),joy:2*q};
+    case 'rest': return {hp:9*q*(o.fall?1.15:1)*(m.hp<50?2:1),joy:2*q};      // 다친 몸은 쉬면 곱절로 낫는다
     case 'study': return {joy:.5};
     case 'rumor': return {g:-3,joy:1};
     case 'wwork': return m.f.martial&&m.lv>=2?{g:[5+m.lv*2.2,9+m.lv*2.2],exp:gain()*.08,fame:.3,joy:-.25}:{g:3+ST('body')*.3,joy:-.25};

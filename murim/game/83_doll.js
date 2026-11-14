@@ -29,8 +29,13 @@ function dollSpec(L){ if(L.doll) return L.doll; const s=seedOf(L.key), f=L.sex==
   const hs=HM[L.hair]||(f?['longhalf','twin','lowbun','bob']:['topknot','pony','short','messy']);
   const body=L.body||(L.extra==='vest'||L.extra==='apron'?'vest':'plain');
   const weapon=L.dw!==undefined?L.dw:L.weapon==='sword'?['sword',[1,2,4,5][s%4]]:L.weapon==='saber'?['saber',[0,1,2,4][s%4]]:null;
-  return {sex:f?'f':'m',body,hair:hs[s%hs.length],hairC:L.hairC||'#231e24',robe:L.robe||'#8f8a78',trim:L.trim||dk(L.robe||'#8f8a78',.35),eye:L.eye!=null?L.eye:s%DEYES.length,eyeC:L.eyeC||'#68402a',weapon,glow:L.wc||null};
+  return {sex:f?'f':'m',body,hair:hs[s%hs.length],hairC:L.hairC||'#231e24',robe:L.robe||'#8f8a78',trim:L.trim||dk(L.robe||'#8f8a78',.35),eye:L.eye!=null?L.eye:dollEye(L,s),eyeC:L.eyeC||'#68402a',weapon,glow:L.wc||null};
 }
+/* 눈 20가지: 1 반짝 · 2 서늘 · 3 웃는 · 4 졸린 · 5 사나운 · 6 점 · 7 처진 · 8 고양이 · 9 흉터 · 10 놀란 · 11 고요한 · 12 능글 · 13 흰 눈썹 · 14 해맑은 · 15 차가운 · 16 붉은 마안 · 17 지친 · 18 굳센 · 19 먼 눈 · 20 순한
+   0 은 몸 그림의 원래 눈. 흔한 눈에서 고르고, 흰 눈썹은 늙은이, 붉은 마안은 마공, 흉터·먼 눈은 드물게 */
+const DEYE_COMMON=[0,0,0,1,2,3,4,5,6,7,8,10,11,12,14,15,17,18,20];
+function dollEye(L,s){ if(L.ol==='#5a1414'||L.ol==='#7a1e1e') return 16; const old=/^#(e|d|c|b)/.test(L.hairC||'')&&L.sex!=='f'; if(old) return 13;
+  const r=(s>>7)%97; if(r===0) return 19; if(r<3) return 9; return DEYE_COMMON[(s>>3)%DEYE_COMMON.length]; }
 function dollPose(pose,f,dir){
   f=f|0;
   if(pose==='walk'){ const k=f&3; if(dir==='d') return [k&1?1:0,k===3]; if(dir==='u') return [k&1?3:2,k===3]; return [k&1?5:4,false]; }
@@ -46,8 +51,8 @@ function dollSprite(L,pose,f,dir){
   const S=dollSpec(L), p=pp[0], sx=S.sex, foot=DOLLD.M.foot[sx+p]; if(!foot) return null;
   const W=SW*2, H=SH*2, buf=new ImageData(W,H), D=buf.data, bx=OX*2-Math.round(foot[0]), by=OY*2-foot[1];
   const robe=tones(vivid(S.robe,.3)), sash=tones(vivid(S.trim,.3)), hair=tones(S.hairC);
-  const put=(part,x0,y0)=>{ if(!part) return; const {d,w,h}=part;
-    for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const s=(j*w+i)*4; if(d[s+3]<128) continue; const X=x0+i, Y=y0+j; if(X<0||Y<0||X>=W||Y>=H) continue;
+  const put=(part,x0,y0,flip)=>{ if(!part) return; const {d,w,h}=part;
+    for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const s=(j*w+(flip?w-1-i:i))*4; if(d[s+3]<128) continue; const X=x0+i, Y=y0+j; if(X<0||Y<0||X>=W||Y>=H) continue;
       let r=d[s],g=d[s+1],b=d[s+2];
       if(r===0&&g===0&&(b===250||b===200||b===150)){ [r,g,b]=robe[b===250?0:b===200?1:2]; }
       else if(g===0&&b===0&&(r===250||r===200||r===150)){ [r,g,b]=sash[r===250?0:r===200?1:2]; }
@@ -65,10 +70,14 @@ function dollSprite(L,pose,f,dir){
   L2('h'+sx+S.hair+p+'b');
   const body=dollPart('b'+sx+S.body+p)?S.body:'plain'; L2('b'+sx+body+p);
   // 눈
-  const eyes=S.eye>=0&&S.stamp?(DOLLD.M.eyes[sx+body+p]||DOLLD.M.eyes[sx+'plain'+p]||[]):[], E=DEYES[Math.max(0,S.eye)%DEYES.length], ic=hexRgb(S.eyeC);      // 기본은 원래 그림의 눈. 찍은 눈은 stamp 일 때만
+  const eyes=S.stamp?(DOLLD.M.eyes[sx+body+p]||DOLLD.M.eyes[sx+'plain'+p]||[]):[], E=DEYES[Math.max(0,S.eye)%DEYES.length], ic=hexRgb(S.eyeC||'#68402a');      // 기본은 원래 그림의 눈. 찍은 눈은 stamp 일 때만
   eyes.forEach((e,n)=>{ const th=Math.max(3,Math.min(6,e[2])), rows=E.keep?E.r:Array.from({length:th},(_,j)=>E.r[Math.min(E.r.length-1,Math.floor(j*E.r.length/th))]), h=rows.length, w=rows[0].length, mir=E.mir&&p<=1&&n===0&&eyes.length>1;      // 눈 높이에 맞춰 늘인다(가는 눈은 그대로)
     const x0=bx+Math.round(e[0]-(w-1)/2), y0=by+Math.round(e[1]+e[2]/2-h/2);
     for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const ch=rows[j][mir?w-1-i:i]; if(ch==='.') continue; const c3=ch==='i'?ic:DEYEC[ch], o=((y0+j)*W+x0+i)*4; if(o<0||o>=D.length) continue; D[o]=c3[0]; D[o+1]=c3[1]; D[o+2]=c3[2]; D[o+3]=255; } });
+  // 눈 20가지(정면·옆만. 싸우는 자세는 원래 성난 눈)
+  if(S.eye>0&&(p<=1||p===4||p===5)){ const ebox=DOLLD.M.eyes[sx+body+p]||DOLLD.M.eyes[sx+'plain'+p]||[], side=p>=4;
+    ebox.slice().sort((a,b)=>a[0]-b[0]).forEach((e,n,arr)=>{ const left=!side&&arr.length>1&&n===0, q=dollPart('e'+S.eye+(side?'s':left&&DOLLD.R['e'+S.eye+'fl']?'fl':'f')); if(!q) return;
+      const bot=e[1]+e[2]-1; put(q,bx+Math.floor(e[0]-q.w/2+.5),by+bot-9,left&&!DOLLD.R['e'+S.eye+'fl']); }); }
   L2('h'+sx+S.hair+p+'f');
   if(wFront) put(wFront.q,wFront.x,wFront.y);
   if(S.glow&&wFront){ /* 높은 등급 무기는 테두리에 빛을 두른다 */ }

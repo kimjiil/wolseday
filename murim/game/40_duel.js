@@ -49,6 +49,12 @@ function npcFight(aId,bId,o,done){ o=o||{}; const a=A(aId), b=A(bId); if(!a||!b)
 /* ---- 결투 규칙 ---- */
 const STN={A:'강공',G:'수비',F:'변초',U:'절초'};
 const STH={A:'변초를 깬다',G:'강공을 되받는다',F:'수비를 뚫는다',U:'기 60 · 큰 일격'};
+// 상성 설명은 그 싸움에서 쓰는 수 이름으로 적는다(아이 싸움이면 "발 걸기를 깬다")
+const sthOf=(k,stn)=>k==='U'?STH.U:k==='A'?`${eul(stn.F)} 깬다`:k==='G'?`${eul(stn.A)} 되받는다`:`${eul(stn.G)} 뚫는다`;
+/* 사투 끝에 깨달음이 올 확률: 오성이 가장 크고, 기연이 조금 보탠다. 무골이면 +10%p. 상대가 셀수록, 남은 기력이 적을수록 오른다(10%~90%) */
+function epiChance(ratio,left){ return cl(.05+ST('wit')*.055+ST('luck')*.02+(hasT('bone')?.1:0)+cl((ratio-.95)*.8,0,.16)+cl((.25-left)*.6,0,.15),.1,.9); }
+/* 경지가 오르면 이름 없는 상대도 내 무위의 여섯 할은 된다(일류부터). 두 대에 끝나는 싸움만 이어지지 않게 */
+function duelFloor(sp){ if(!sp||sp._fl||!m||!m.f||!m.f.martial||m.lv<3||sp.noScale||sp.survive) return sp; const fl=Math.round(power()*.6); (sp.chain||[sp.foe]).forEach(f=>{ if(f&&f.pow<fl) f.pow=fl+ri(0,4); }); sp._fl=1; return sp; }
 // DM[내 수][상대 수] = [내가 주는 배율, 내가 받는 배율]
 const DM={A:{A:[.6,.6],G:[.15,.7],F:[1,0],U:[.3,1.7]},G:{A:[.7,.15],G:[0,0],F:[0,.9],U:[0,.8]},F:{A:[0,1],G:[.9,0],F:[.4,.4],U:[0,1.7]},U:{A:[1.7,.3],G:[.8,0],F:[1.7,0],U:[1.2,1.2]}};
 const STYLE={brute:{A:.55,G:.15,F:.3},bandit:{A:.45,G:.2,F:.35},sword:{A:.34,G:.33,F:.33},monk:{A:.25,G:.5,F:.25},assassin:{A:.3,G:.1,F:.6},even:{A:.34,G:.33,F:.33},beast:{A:.7,G:.05,F:.25}};
@@ -60,7 +66,7 @@ function mkFoe(s){ const pow=Math.max(3,Math.round(s.pow)), hp=Math.round(34+pow
 // 내 기력도 상대와 같은 식으로 잰다. 지금 건강이 그 몇 할을 채우고 들어가는지를 정한다.
 function mkMe(){ const c=combat(), ar=eq('def')+bodyArt(), pw=power(), mx=Math.round(34+pw*1.1)+eq('hp');
   return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:Math.min(.4,stepArt()+eq('ev')),art:c.art?c.art.n:'',crit:Math.min(.5,.05+ST('luck')*.01+eq('cr')),last:[]}; }
-function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
+function mkDuel(spec){ duelFloor(spec); const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
   if(spec.qi) D.me.qi=Math.min(100,D.me.qi+spec.qi); D.qi0=D.me.qi; mkTell(D); return D; }
 function foePick(D){ const f=D.foe, l=D.me.last; if(f.qi>=60&&R()<.55) return 'U';
   const w=Object.assign({},STYLE[f.style]||STYLE.even); const n=l.length; if(n>=2&&l[n-1]===l[n-2]&&l[n-1]!=='U') w[BEATS[l[n-1]]]+=.4;
@@ -105,11 +111,15 @@ function settle(D,state){ const me=D.me, sp=D.spec, f=D.foe;
     else { const left=me.hp/me.hpMax*100; m.hp=cl(Math.round(D.hp0-Math.max(0,D.hp0-left)*.6),1,100); }
   } else { const loss=D.taken>0?Math.max(3,Math.round(D.taken/me.hpMax*100*.25)):0; m.hp=Math.max(1,Math.round(D.hp0-loss)); }
   if(res.win){ m.wins=(m.wins||0)+1; m.fame+=f.pow>=me.pow?2:1; } else m.losses=(m.losses||0)+1;
+  // 사투 끝의 깨달음: 나와 비슷하거나 더 센 상대를 기력 넷에 하나도 안 남기고 이기면 한 꺼풀을 벗을 수 있다(한 해에 한 번 굴린다)
+  if(res.win&&m.f.martial&&!sp.survive&&f.pow>=me.pow*.95&&me.hp<=me.hpMax*.25&&m.f.epiA!==m.age&&(m.f.epiA=m.age,R()<epiChance(f.pow/me.pow,me.hp/me.hpMax))){ m.f.epiN=(m.f.epiN||0)+1;
+    const g=Math.round(Math.max(gain()*1.5,(LVX[Math.min(8,m.lv+1)]-LVX[m.lv])*.08)); addExp(g); m.ng+=1; res.epi=g; log(`${f.name}${jo(f.name,'과','와')}의 사투 끝에 깨달음을 얻었다 (수련 +${g})`,true);
+    if(!m.headless) vfx(()=>{ gradeFx({g:3,han:'頓悟',title:'깨달음',sub:`사투 끝에 한 꺼풀을 벗었다 · 수련 +${g}`,sfx:'art3'}); const h=A('hero'); if(h){ h.pose='sit'; h.act='meditate'; h.auraC='#bff4ff'; } }); }
   return res; }
 function mercyApply(D,res,k){ const f=D.foe;
   if(k==='kill'){ res.killed=true; m.kills=(m.kills||0)+1; m.per.담=cl((m.per.담||0)+4,-100,100); m.per.정=cl((m.per.정||0)-5,-100,100); m.ak+=D.spec.good?12:2;
     if(!D.spec.noReturn&&R()<.3&&!m.q.some(q=>q.id==='kinRevenge')){ m.f.kinOf=f.name; m.q.push({age:m.age+ri(5,10),id:'kinRevenge'}); } }
-  else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&m.spared.length<3) m.spared.push({n:f.name,a:m.age,pow:f.pow,lk:f.look}); } }
+  else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&!f.beast&&m.spared.length<3) m.spared.push({n:f.title?f.name:rname(),was:f.title||f.name,a:m.age,pow:f.pow,lk:f.look}); } }      // 직함만 있던 상대도 이름을 얻는다: 훗날 같은 직함의 다른 사람과 섞이지 않게
 function lootOf(D,res){ const L=D.spec.loot; if(!L) return; if(L.g){ const g=Math.round(ri(L.g[0],L.g[1])*(res.killed?1.5:1)); gold(g); res.gold=g; }
   (L.it||[]).forEach(x=>{ if(R()<x[1]){ give(x[0]); (res.items=res.items||[]).push(x[0]); } }); }
 // 이긴 싸움에서 덤으로 떨어지는 물건. 상대가 셀수록 등급이 높다
@@ -222,7 +232,7 @@ function renderDuel(card,eye){ if(DUEL.war) return renderWar(card);
   else if(D.phase==='end') body=`<p class="mh-res ${D.res.win?'good':'bad'}">${esc(duelSummary(D))}</p><button class="mh-go" type="button" id="mhDgo">${D.res.dead?'눈앞이 어두워진다':'계속'}</button>`;
   else { const t=D.tell;
     body=`<p class="mh-tell"><span class="mh-lab">낌새</span> <span>${esc(t.txt)}. <b class="mh-st ${t.s}">${esc(stn[t.s])}</b>의 기미</span> <small>읽을 확률 ${Math.round(t.acc*100)}%</small></p>
-    <div class="mh-stances">${['A','G','F','U'].map((k,i)=>`<button class="mh-ch mh-stance ${k}" type="button" data-st="${k}" ${!can||(k==='U'&&me.qi<60)?'disabled':''}><span class="k" aria-hidden="true">${i+1}</span><b>${esc(k==='U'&&me.art&&!sp.stn?me.art:stn[k])}</b><small>${STH[k]}</small></button>`).join('')}</div>
+    <div class="mh-stances">${['A','G','F','U'].map((k,i)=>`<button class="mh-ch mh-stance ${k}" type="button" data-st="${k}" ${!can||(k==='U'&&me.qi<60)?'disabled':''}><span class="k" aria-hidden="true">${i+1}</span><b>${esc(k==='U'&&me.art&&!sp.stn?me.art:stn[k])}</b><small>${sthOf(k,stn)}</small></button>`).join('')}</div>
     <div class="mh-row mh-dacts">${m.inv.bag.salve>0?`<button class="mh-btn" type="button" data-st="salve" ${can&&me.hp<me.hpMax?'':'disabled'}>${icImg(itIcon('salve'),'sm')} 금창약 ×${m.inv.bag.salve}</button>`:''}<button class="mh-btn" type="button" data-st="flee" ${can?'':'disabled'}>${D.lethal?'몸을 뺀다':'졌다고 한다'}</button>${m.auto?'':`<button class="mh-btn" type="button" id="mhDauto" ${D.autoRest?'aria-pressed="true"':''}>남은 합을 맡긴다</button>`}<span class="mh-hint">강공 › 변초 › 수비 › 강공</span></div>`; }
   const lines=D.lines.length?`<ol class="mh-dlog">${D.lines.slice().reverse().map((x,i)=>`<li class="${i?'old':''}">${esc(x)}</li>`).join('')}</ol>`:'';
   card.innerHTML=`${eye}<div class="mh-duel${D.lethal?' lethal':''}">${head}${body}${lines}</div>`;

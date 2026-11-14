@@ -37,7 +37,7 @@ function cathayLoop(dt){ CFR+=dt; if(CT&&!paused){ CT.f+=dt*(m.auto?SPD[spd]:1)*
       if(CT.n%14===0){ travelTick(CT); if(m.dead||!mapMode()) break; } } }
   cathHero(); if(!CT&&m.auto&&!paused&&mapMode()) cathayAuto(); }
 /* ---- 닿은 곳에서 하는 일 ---- */
-const CHINT={home:'나고 자란 마을이다.',capital:'황궁이 있는 도성이다. 사람도, 눈도 많다.',city:'장터와 객잔, 표국이 모여 있는 큰 고을이다.',sect:'산문 너머로 기합 소리가 들린다.',clan:'높은 담장 안에 한 가문이 대를 이어 산다.',den:'관의 손이 닿지 않는 소굴이다. 조심해야 한다.',demon:'검붉은 깃발이 걸려 있다. 오래 머물 곳이 아니다.',camp:'천막과 말 떼가 보인다.'};
+const CHINT={home:'나고 자란 마을이다.',capital:'황궁이 있는 도성이다. 사람도, 눈도 많다.',city:'장터와 객잔, 표국이 모여 있는 큰 고을이다.',sect:'산문 너머로 기합 소리가 들린다.',clan:'높은 담장 안에 한 가문이 대를 이어 산다.',den:'관의 손이 닿지 않는 소굴이다. 조심해야 한다.',demon:'검붉은 깃발이 걸려 있다. 협행으로 이름난 사람에게는 문이 열리지 않는다.',camp:'천막과 말 떼가 보인다.'};
 function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const add=(t,sub,fn,free,w)=>acts.push({t,s:sub,fn,free,w:w==null?1:w}), S=(fid,opt)=>()=>doSeason(fid,opt), mar=m.f.martial, t=s.type;
   if(m.quest&&!m.quest.step&&s.id===m.quest.to) add('임무: '+QT[m.quest.k].act,QT[m.quest.k].n(m.quest),S('quest'),0,9);
   if(t==='home'){ add('마을로 들어간다','',enterVillage,1); return acts; }
@@ -48,6 +48,8 @@ function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const a
     add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다',actSub('wvisit'),S('wvisit'),0,1); add('연무장에서 수련한다',actSub('train'),S('train'),0,2);
     const na=sectArtNext(); if(na) add(`장경각에서 ${eul(na.n)} 익힌다`,`${TIER[na.g]}등급 ${artSub(na)} · ${artStat(na)} · ${actSub('sectart')}`,S('sectart'),0,4); }
   else if(t==='sect'&&joinable(s)&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
+  else if(t==='demon'&&!m.sect&&m.age<45&&s.sect&&SECTS[s.sect]&&side()!=='정') add('입교를 청한다',m.f.bloodBody?'혈마체다 · 시험 없이 받아 준다':'피로 시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wCult'}),0,0);
+  if(!own&&s.sect&&wsOpen(s.sect)&&WSRANK[t]) add('비무를 청한다',`${SECTS[s.sect].n}의 ${WSRANK[t][Math.min(2,(m.f.sd||{})[s.sect]||0)]}${jo(WSRANK[t][Math.min(2,(m.f.sd||{})[s.sect]||0)],'과','와')} 겨룬다 · 비무 · 이기면 이름이 난다`,S('wev',{ev:'wSect'}),0,m.lv>=3&&m.hp>60?.4:0);
   if(t==='den'&&!own) add('소굴로 쳐들어간다','생사결이 될 수 있다 · 이기면 전리품',S('wev',{ev:'wBandit'}),0,mar&&m.lv>=3&&m.hp>70?.4:0);
   if(mar) add('근처 산에서 수련한다',actSub('train',{fall:1}),S('train',{fall:1}),0,2);
   add('약초를 캔다',actSub('herb',null,'18%로 다친다(건강 −7)'),S('herb'),0,mar?.3:1);

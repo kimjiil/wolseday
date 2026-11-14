@@ -17,7 +17,7 @@ const EPI_T={
     {st:()=>Sg('library',{cast:[N('el',LOOK.elder(),96,{tag:'장로',emote:'anger',pose:'point'})],hero:{x:62}}),text:()=>'비급각에서 비급 한 권이 사라졌다. 그날 밤 근처에 있었던 사람은 나뿐이다.',ch:[
       {t:'결백을 주장한다',p:()=>.35+cl(m.train.rep)/200,go:ok=>{ if(ok) return '장로가 일단은 믿어 주었다. 대신 사흘 안에 범인을 찾으라 했다.'; m.train.rep-=12; return {t:'아무도 믿어 주지 않았다. 등 뒤에서 수군거렸다.',tone:'bad'}; }},
       {t:'직접 찾아내겠다고 나선다',go:()=>'장로가 사흘을 주었다.'}]},
-    {when:()=>alive(2),st:()=>Sg('library',{cast:[mateN(2,150,{emote:'...'}),N('sv',LOOK.blackclad({weapon:null}),170,{alpha:.7})],hero:{x:40}}),text:()=>`밤중에 ${iga(mt(2).name)} 비급각 뒤에서 누군가와 속삭이는 것을 보았다.`,ch:[
+    {when:()=>fit(2),st:()=>Sg('library',{cast:[mateN(2,150,{emote:'...'}),N('sv',LOOK.blackclad({weapon:null}),170,{alpha:.7})],hero:{x:40}}),text:()=>`밤중에 ${iga(mt(2).name)} 비급각 뒤에서 누군가와 속삭이는 것을 보았다.`,ch:[
       {t:'그 자리에서 추궁한다',duel:()=>({foe:{name:mt(2).name,title:'맞수',look:mateLook(2),pow:Math.round(power()*.95),style:'sword'}}),go:ok=>{ if(ok){ EP('book').clue=1; return {t:'검을 쳐내고 보니 맞수는 결백했다. 그도 낯선 잡역부를 쫓고 있었다.',tone:'good'}; } mt(2).v-=12; return {t:'오해였다. 맞수와 주먹다짐만 했다.',tone:'bad'}; }},
       {t:'조용히 미행한다',p:()=>.4+ST('wit')*.04,go:ok=>{ if(ok){ EP('book').clue=1; mt(2).v+=8; return {t:'맞수도 범인을 쫓고 있었다. 새로 들어온 잡역부였다.',tone:'good'}; } return '놓쳤다.'; }}]},
     {st:()=>Sg('temple',{time:'night',cast:[N('spy',LOOK.blackclad({item:'book',weapon:null}),146,{pose:'carry',emote:'!',tag:'잡역부'})]}),text:()=>EP('book').clue?'잡역부가 비급을 품고 담을 넘으려 한다. 녹림의 첩자였다.':'사흘째 밤, 담을 넘으려는 그림자가 보인다.',ch:[
@@ -68,8 +68,9 @@ const EPI_T={
       {t:'비밀을 지켜 준다',go:()=>{ mt(2).v+=10; return {t:'맞수가 처음으로 고맙다는 말을 했다.',tone:'good'}; }},
       {t:'사부에게 알린다',go:()=>{ mt(2).v-=25; m.train.rep+=6; return {t:'맞수는 근신 처분을 받았다. 나를 보는 눈빛이 얼음 같았다.',tone:'bad'}; }}]},
     {when:()=>alive(2),st:()=>yard({time:'night',tint:'red',cast:[mateN(2,104,{pose:'kneel',act:'shiver',emote:'skull',auraC:'#ff5a3a'})]}),text:()=>`${mt(2).name}의 기혈이 거꾸로 돌기 시작했다. 주화입마 직전이다.`,ch:[
-      {t:'내공을 불어넣어 막는다',p:()=>.3+m.ng/80,go:ok=>{ if(ok){ const x=mt(2); x.v=Math.max(x.v,80); x.rival=0; x.role='지기'; m.ng*=.85; return {t:'밤새 손바닥을 맞댔다. 새벽에 맞수가 눈을 떴다. 그날부터 맞수가 아니라 지기가 되었다.',tone:'good',big:`맞수 ${eul(x.name)} 주화입마에서 구했다`,cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.emote='heart'; } }}; } hurt(25,'역류한 내공'); return {t:'둘 다 피를 토하고 쓰러졌다. 맞수는 살았지만 무공을 잃었다.',tone:'bad'}; }},
-      {t:'사람을 부르러 뛴다',go:()=>{ mt(2).v+=5; return '장로들이 달려와 겨우 살렸다.'; }}]}]},
+      {t:'내공을 불어넣어 막는다',p:()=>.3+m.ng/80,go:ok=>{ if(ok){ const x=mt(2); x.v=Math.max(x.v,80); x.rival=0; x.role='지기'; m.ng*=.85; return {t:'밤새 손바닥을 맞댔다. 새벽에 맞수가 눈을 떴다. 그날부터 맞수가 아니라 지기가 되었다.',tone:'good',big:`맞수 ${eul(x.name)} 주화입마에서 구했다`,cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.emote='heart'; } }}; } hurt(25,'역류한 내공'); const x=mt(2); x.lost=1; x.rival=0; x.role='옛 맞수'; x.v=Math.max(x.v,45);      // 무공을 잃었다: 더는 비무 상대로 나오지 않는다
+        return {t:'둘 다 피를 토하고 쓰러졌다. 맞수는 살았지만 무공을 잃었다. 다시는 검을 들지 못한다.',tone:'bad',big:`맞수 ${iga(x.name)} 주화입마로 무공을 잃었다`,cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.pose='lie'; a.emote=null; } }}; }},
+      {t:'사람을 부르러 뛴다',go:()=>{ mt(2).v+=5; return {t:'장로들이 달려와 기혈을 눌러 겨우 살렸다. 금지된 심법은 그 자리에서 폐해졌다. 맞수는 석 달을 누워 지낸 뒤 다시 검을 잡았다.',cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.emote=null; } }}; }}]}]},
   raid:{n:'습격의 밤',beats:[
     {st:()=>Sg('temple',{time:'dawn',wx:'fog',hero:{x:120,emote:'?',pose:'kneel'}}),text:()=>'새벽에 담장 밖에서 낯선 발자국을 봤다. 여럿이고, 말발굽도 섞여 있다.',ch:[
       {t:'사부에게 알린다',go:()=>{ EP('raid').warn=1; m.train.rep+=4; return '사부는 그날부터 밤 순찰을 두 배로 늘렸다.'; }},

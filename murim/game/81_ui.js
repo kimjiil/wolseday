@@ -25,7 +25,7 @@ const HELP={
   ng:()=>'기력이 아니라 쌓은 공력의 햇수다(60년이 1갑자). 햇수 × 0.35만큼 무위에 더해지고, 경지를 올릴 때 햇수의 3할이 쳐진다. 결투를 시작할 때 기가 더 차 있고(햇수 × 0.5, 많아야 +40), 늙어 죽을 확률을 낮춘다(10갑자까지). 폭포나 산에서 수련하면 더 빨리 쌓이고, 심법·영약·기연으로도 는다.',
   gold:()=>'가진 은자와, 강호 사람 가운데 몇째쯤인지. 열다섯 살까지는 집안의 살림으로 친다.',
   sect:()=>`사문의 임무를 마치면 공헌이 쌓인다(임무마다 4~10, 실패하면 −1, 기한을 넘기면 −3). 공헌 12에 이대제자, 30에 일대제자, 60에 장로가 된다. 서열이 오르면 사문 기본 무공의 위력이 2~3 오르고, 장경각에서 익힐 수 있는 무공이 한 등급 높아진다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS). 장로는 대전에서 지휘를 맡는다.`,
-  st:()=>'근골은 무위(1당 +1.2)와 수련, 품삯에 든다. 오성은 수련(근골보다 조금 더 크게), 내공이 쌓이는 빠르기, 결투에서 낌새를 읽을 확률(1당 +3.5%)에 든다. 기연은 회심(1당 +1%)과 높은 등급 사건이 나올 확률에 든다. 매력은 사람을 상대하는 선택지에 든다. 네 가지 모두 사건 선택지의 성공 확률에 더해진다.',
+  st:()=>'근골은 무위(1당 +1.2)와 수련, 품삯에 든다. 오성은 수련(근골보다 조금 더 크게), 내공이 쌓이는 빠르기, 결투에서 낌새를 읽을 확률(1당 +3.5%)에 든다. 기연은 회심(1당 +1%)과 높은 등급 사건이 나올 확률에 든다. 매력은 사람을 상대하는 선택지에 든다. 비슷하거나 더 센 상대를 아슬아슬하게 이겼을 때 깨달음이 올 확률은 오성(1당 +5.5%)과 기연(1당 +2%)을 따른다. 네 가지 모두 사건 선택지의 성공 확률에 더해진다.',
   pw:()=>'무위 = 경지에 따른 바탕 + 가장 센 무공(위력 + 든 무기의 공격) + 내공 햇수 × 0.35 + 근골 × 1.2. 무기는 무공과 갈래가 맞아야 공격이 다 들어가고, 안 맞으면 절반만 든다. 결투의 체력과 이길 확률이 여기서 나온다.'
 };
 function wireHelp(el){ el.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>{ HELPK=HELPK===b.dataset.help?null:b.dataset.help; renderRec(); renderBag(); }); }
@@ -140,12 +140,17 @@ function renderTitle(card){
     ${optGroup('era','태어날 시대',[['peace','태평성대'],['chaos','정사대전기'],['demon','마교 천하'],['any','아무 시대나']])}
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
     ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
+    <details class="mh-cheat" ${cheatOn()?'open':''}><summary>암호</summary>${cheatOn()
+      ?`<div class="mh-cheatrow"><label>출신 <select id="mhCFam"><option value="">무작위</option>${FAM.map(f=>`<option value="${f.id}" ${setup.fam===f.id?'selected':''}>${esc(f.n)}${f.hidden?' (숨은 핏줄)':''}</option>`).join('')}</select></label><label>체질 <select id="mhCTr"><option value="">무작위</option><option value="none" ${setup.tr==='none'?'selected':''}>없음</option>${TRAITS.map(t=>`<option value="${t.id}" ${setup.tr===t.id?'selected':''}>${esc(t.n)}</option>`).join('')}</select></label></div><p class="mh-hint">고른 출신과 체질로 태어난다. 태어날 확률 표시는 원래 값 그대로다.</p>`
+      :`<div class="mh-cheatrow"><input id="mhCode" type="text" placeholder="암호를 넣는다" autocomplete="off" aria-label="암호"><button class="mh-btn" id="mhCodeOk" type="button">확인</button></div><p class="mh-hint" id="mhCodeMsg"></p>`}</details>
     <div class="mh-row">${saved?`<button class="mh-btn" type="button" id="mhResume">이어 살기 · ${esc(saved.name)} ${saved.age}세</button>`:''}<button class="mh-go seal" type="button" id="mhStart">태어나기</button></div>
     ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${p.g?`<span class="mh-gr g-${esc(p.g)}">${esc(p.g)}</span>`:''}${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
   const hint=()=>['era','basis','pace'].forEach(k=>{ $m('mhHint-'+k).textContent=HINTS[k][setup[k]]; });
   card.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ setup[b.dataset.k]=b.dataset.v; card.querySelectorAll(`[data-k="${b.dataset.k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b)); hint(); });
   hint();
-  $m('mhStart').onclick=()=>{ const era=setup.era==='any'?pick(['peace','chaos','demon']):setup.era; roll=makeBirth(era,setup.basis); m={phase:'birth'}; sfx('gong'); render(); };
+  $m('mhStart').onclick=()=>{ const era=setup.era==='any'?pick(['peace','chaos','demon']):setup.era, ch=cheatOn(); roll=makeBirth(era,setup.basis,ch&&setup.fam||undefined,ch&&setup.tr||undefined); if(ch&&(setup.fam||setup.tr)) roll.cheat=1; m={phase:'birth'}; sfx('gong'); render(); };
+  if($m('mhCFam')){ $m('mhCFam').onchange=e=>{ setup.fam=e.target.value; }; $m('mhCTr').onchange=e=>{ setup.tr=e.target.value; }; }
+  if($m('mhCodeOk')){ const go=()=>{ if(CODES.includes($m('mhCode').value.trim())){ lsSet('murim_cheat',1); sfx('ok'); renderTitle(card); } else $m('mhCodeMsg').textContent='그런 암호는 없다.'; }; $m('mhCodeOk').onclick=go; $m('mhCode').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); go(); } }; }
   if(saved) $m('mhResume').onclick=()=>{ rehydrate(saved); render(); };
 }
 function renderBirth(card){
@@ -171,7 +176,7 @@ function renderBirth(card){
     <p class="mh-note">같은 순간, 강호 어딘가에서 다른 아이 넷도 태어났다. 그들의 삶은 끝에서 보게 된다.</p>`;
   $m('mhLive').onclick=()=>{
     const others=[0,1,2,3].map(()=>simulate(makeBirth(b.era,setup.basis)));
-    m=fresh(roll); m.others=others; m.pace=setup.pace; m.basis=setup.basis;
+    m=fresh(roll); m.others=others; m.pace=setup.pace; m.basis=setup.basis; if(roll.cheat) m.f.cheat=1;
     log(`${r.n}의 ${famAs(o)}에서 태어났다`,true);
     if(b.father.dead) log('아버지 얼굴을 모른다',true);
     if(b.mother.dead) log('어머니가 낳다가 세상을 떠났다',true);

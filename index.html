@@ -3482,6 +3482,13 @@ img.mh-ic{object-fit:contain}
 
 .mh-wm{font-style:normal;color:var(--m-jade)}
 .mh-dl{font-weight:600;white-space:nowrap}.mh-dl.up{color:var(--m-jade)}.mh-dl.dn{color:var(--m-seal)}
+
+/* 암호(출신·체질 고르기) */
+#murimApp .mh-cheat{margin:10px 0 2px;font-size:14px}
+#murimApp .mh-cheat>summary{cursor:pointer;color:var(--mute,#7a7466);width:max-content;padding:4px 0}
+#murimApp .mh-cheatrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:8px 0 4px}
+#murimApp .mh-cheatrow label{display:flex;gap:6px;align-items:center}
+#murimApp .mh-cheatrow select,#murimApp .mh-cheatrow input{font:inherit;padding:8px 10px;border:2px solid #c9c6b4;background:#fbfaf2;color:inherit;border-radius:0;min-height:40px;max-width:100%}
 </style>
 
 <div id="murimApp" hidden>
@@ -3521,8 +3528,9 @@ const SKF={};
 /* ==== murim:core — 도구, 강호의 기본값, 태어나는 세상, 상태 ==== */
 const $m=id=>document.getElementById(id);
 // 버전과 바뀐 점. 새 버전을 낼 때 맨 위에 한 묶음을 더하고 MVER 를 올린다(murim/CHANGELOG.md 도 함께)
-const MVER='1.4';
+const MVER='1.5';
 const NOTES=[
+  ['1.5','2026-11-14',['큰 적: 경지가 오르면 더 높은 자가 온다. 천마신교(마도에게는 무림맹)가 대주 → 호법 → 대장로 → 부교주 순으로 사람을 보내고, 하나를 꺾으면 몇 해 뒤 윗사람이 찾아온다','교주(맹주)가 직접 온다: 부교주까지 꺾은 초절정 이상에게. 이기면 강호가 한 세대 조용해지고 침공이 멎는다','상대의 힘이 내 무위를 따라온다(서열에 따라 0.85~1.25배). 초절정이 되어도 두 대에 쓰러지는 대주만 오지 않는다','침공의 우두머리에게 이름이 생겼다. 꺾은 사람은 다시 쳐들어오지 않는다','살려 준 상대는 이름을 얻는다. 제자로 받은 사람과 같은 직함의 다른 사람이 섞이지 않는다','천하의 고수: 초절정부터 검성·도제·권왕·독왕·창신이 차례로 비무첩을 보낸다. 다 넘으면 천하제일인과 겨룬다','인생 등급 점수에 교주(맹주)를 꺾은 것 10점, 천하제일 8점, 고수 한 사람마다 1점이 든다','고침: 수련기에 맞수의 주화입마를 못 막으면 맞수가 정말로 무공을 잃는다(전에는 글만 그렇고 멀쩡히 비무에 나왔다)','마도 입교: 천마신교와 혈교 산문에서 입교를 청할 수 있다(생사 시험, 은자 100냥, 혈마체는 시험 없이). 협행으로 이름난 사람에게는 문이 열리지 않는다','비무를 청한다: 남의 문파·세가 산문에서 일대제자 → 장로 → 장문인(가주) 순으로 겨룬다. 문파는 이기면 가끔 한 수를 얻고, 세가는 무공 대신 노자를 준다','사투 끝의 깨달음: 나와 비슷하거나 더 센 상대를 기력이 넷에 하나도 안 남은 채 이기면 깨달음이 올 수 있다. 오성이 높을수록 잘 오고, 기연과 무골이 보탠다(한 해에 한 번)','일류부터는 이름 없는 상대도 내 무위의 여섯 할은 된다','천하 지도에 개방 총타(하남)와 하오문(호북)이 생겼다. 입문할 수 있다','아이 싸움의 상성 설명이 아이 싸움 수 이름으로 나온다(주먹질은 발 걸기를 깬다)','첫 화면에 암호 칸이 생겼다']],
   ['1.4','2026-11-14',['갑자기 죽지 않는다: 난리·역병·흉년·병은 그 자리에서 목숨을 가져가지 않고 건강을 크게 깎는다. 건강이 30 이상이면 한 번의 화로는 죽지 않는다(다섯 살 전의 아이와 몸 나이 예순부터의 노환은 그대로)','화를 입으면 장면 위에 무엇 때문에 건강이 얼마 깎였는지 뜨고 기록에 남는다','다친 몸은 쉬면 곱절로 낫는다(건강 50 아래)','마공은 검·도·권·암기 어느 무기를 들어도 쓰인다(전에는 맨손일 때만 쓰였다)','보관한 무기·갑옷에 "차면 무위 +N"이 보이고, 찬 무기에 어느 무공과 맞는지 적힌다','S 이상 물건을 얻으면 무공처럼 획득 연출이 뜨고 누를 때까지 멈춘다','혈마체로 태어나면 열다섯 넘어 마공을 익힐 길이 반드시 한 번 찾아온다']],
   ['1.3','2026-11-13',['무공 823가지: 무협에 두루 나오는 무공을 모아 C~SSR 등급을 매겼다(검 183 · 장 163 · 권 116 · 내공 115 · 도 82 · 보법 80 · 암기 38 · 외공 21 · 안법 13 · 마공 12)','문파 장경각: 사문에 가면 서열과 경지에 맞는 사문의 무공을 한 계절에 하나씩 익힌다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS)','비급: 읽으면 그 갈래·등급의 무공 하나를 익힌다. 가게에서 팔고, 싸움과 사건에서 떨어진다','외공: 방어를 올려 주는 새 갈래','이름난 무공을 얻는 기연 17가지(독고구검, 능파미보, 구양진경 등)','신상 칸의 무공에 등급과 위력이 보이고, 지금 쓰이는 무공에 테가 둘린다','S 이상 무공을 얻으면 획득 연출이 뜬다(S 絶技, SS 神功, SSR 絶世神功)','걸리는 시간을 "철" 대신 석 달·반년·1년 반처럼 적는다','인생 등급: 한 생이 끝나면 살아온 것을 점수로 매겨 C~SSR 등급을 준다','인물 카드: 끝 화면에서 등급이 찍힌 카드 그림을 카카오톡 등으로 보내거나 저장한다','낱말 설명: 신상 칸에서 건강·행복·인연·무공·내공·사문·타고난 것·무위를 누르면 어디에 쓰이는지 나온다','행복과 인연에 쓰임새가 생겼다(행복은 수련과 병, 인연은 가게 값과 공헌)','마을의 맞수·친구도 나이를 먹는다. 여인 문파의 사부는 여인이다(보타문 사부도)','선택지 밑에 숫자가 보인다: 쉬면 건강이 얼마 오르는지, 일하면 은자를 얼마 버는지, 수련하면 수련과 내공이 얼마 느는지','S 이상 연출은 천천히 나타나서, 화면을 누를 때까지 그대로 멈춰 있는다. 맡기기 중에 S 이상 사건이 열릴 때도 연출이 뜬 채 멈춘다','천하 지도에서 일이 있는 곳과 임무가 걸린 곳이 눈에 띈다: 통통 튀는 느낌표, 지도 왼쪽 위의 알림, 카드 맨 위의 "그곳을 고른다"']],
   ['1.2','2026-11-13',['지휘전: 나이가 들거나 자리가 오르면 대전에서 칼 대신 깃발을 든다. 세 갈래에 사람을 배치하고 영을 내린다','무림맹(가입·회합·임무·직책)과 십 년에 한 번 열리는 천하제일 비무대회','반로환동: 화경에 네 갑자를 쌓은 예순 이후, 몸이 서른 해 젊어진다','등급 사건이 1040개가 됐다(C 470, B 312, A 157, S 71, SS 25, SSR 5)','늙어도 한 해에 생기는 일과 기연의 수가 젊을 때와 같다. 노년 사건을 따로 넣었다','내공이 수명을 늘려 주는 것은 열 갑자까지. 내공 약은 먹을수록 덜 듣는다','소림 제자는 혼인하지 못한다. 환속하면 풀린다','새 무공 갈래 안법: 결투에서 낌새를 읽을 확률이 오른다','새 장신구 명안주(읽기 +8%)와 응안석(읽기 +15%)','물건이 1000가지가 됐다. 등급은 사건과 같은 C~SSR','머리와 신발 자리가 생겼다. 물건마다 회심·회피·읽기·기력 같은 힘이 붙는다','싸움에서 이기거나 사건이 잘 풀리면 물건이 떨어진다. 가게 물건은 철마다 바뀐다','새 물건 압생투강주: 내공 +10년, 열에 셋은 주화입마','이름값을 못 하던 것을 고쳤다: 천운(주사위 8~20), 만독불침·피독주·해독단(독), 혈마체(마공), 염주(주화입마), 보법(위력만큼 회피)','문파·출신·고향·혼인·나이에 따라 나오는 사건이 더 갈린다','휴대폰 화면 정리: 장면 밑에 건강·행복·돈·내공 한 줄, 작은 글씨와 단추 키움, 알림은 위쪽에 작게, 천하 지도에서 떠나는 단추가 화면 아래에 붙음, 가로로 눕히면 장면 왼쪽·카드 오른쪽']],
@@ -3691,12 +3699,15 @@ const TRAITS=[
 
 /* ---------- 상태 ---------- */
 let m=null, roll=null, paused=false, spd=0, acc=0, DUEL=null;
-const setup={era:'any',basis:'births',pace:'normal'};
+const setup={era:'any',basis:'births',pace:'normal',fam:'',tr:''};
+// 암호: 맞게 넣으면 첫 화면에서 출신과 체질을 고를 수 있다(이 기기에 기억된다)
+const CODES=['남병규병신'];
+const cheatOn=()=>!!lsGet('murim_cheat');
 const PACE={fast:1500,normal:3000,slow:6000}, SPD=[1,2,4];
 function stat3(){return cl(ri(1,4)+ri(1,4)+ri(0,2),1,10);}
 function wpick(arr,wf){ const t=arr.reduce((a,x)=>a+wf(x),0); let r=R()*t; for(const x of arr){ r-=wf(x); if(r<=0) return x; } return arr[arr.length-1]; }
 const regOf=id=>REGIONS.find(r=>r.id===id);
-function makeBirth(era,basis,fid){
+function makeBirth(era,basis,fid,tid){
   const bi=basis==='births'?0:1;
   const fam=(fid&&FAM.find(f=>f.id===fid))||wpick(FAM,f=>f.w[bi]);
   const pool=fam.region?[regOf(fam.region)]:fam.regions?fam.regions.map(regOf):REGIONS, reg=wpick(pool,r=>r.w);
@@ -3704,7 +3715,7 @@ function makeBirth(era,basis,fid){
   const P0=(fam.w[bi]/sumF)*(reg.w/sumR), S0=fam.sect&&SECTS[fam.sect];
   const sex=fam.sex||(S0&&S0.male?'m':S0&&S0.female?'f':R()<.5?'m':'f'), st={body:stat3(),wit:stat3(),luck:stat3(),charm:stat3()};
   for(const k in (fam.st||{})) st[k]=cl(st[k]+fam.st[k],1,10);
-  let trait=null; if(R()<.15){ trait=pick(TRAITS); for(const k in (trait.st||{})) st[k]=cl(st[k]+trait.st[k],1,10); }
+  let trait=null; if(tid?tid!=='none':R()<.15){ trait=(tid&&TRAITS.find(t=>t.id===tid))||pick(TRAITS); for(const k in (trait.st||{})) st[k]=cl(st[k]+trait.st[k],1,10); }
   const sur=fam.sur||pick(SURN), sib=ri(0,4);
   return {o:fam.id, reg:reg.id, era, sex, sur, given:gname(), st, trait:trait&&trait.id, P:P0,
     pct:+(fam.pct[0]+R()*(fam.pct[1]-fam.pct[0])).toFixed(1),
@@ -5216,12 +5227,12 @@ const CREG=[['henan','하남',56,29],['shaanxi','섬서',43,29],['shanxi','산�
   ['mongol','몽골',45,5],['liaodong','요동',84,8],['beihai','북해',62,1]];
 // 장소: [id, 이름, x, y, 종류, 지역, 문파]   종류: capital 도성 · city 성 · sect 문파 · clan 세가 · den 소굴 · demon 마도 · camp 천막
 const CSITE=[
-  ['luoyang','낙양',52,31,'city','henan'],['kaifeng','개봉',60,30,'city','henan'],['shaolin','소림사',56,33,'sect','henan','shaolin'],
+  ['luoyang','낙양',52,31,'city','henan'],['kaifeng','개봉',60,30,'city','henan'],['gaebang','개방 총타',64,31,'sect','henan','beggar'],['shaolin','소림사',56,33,'sect','henan','shaolin'],
   ['xian','서안',43,32,'city','shaanxi'],['huashan','화산파',47,30,'sect','shaanxi','huashan'],['zhongnan','종남파',41,35,'sect','shaanxi','zhongnan'],
   ['taiyuan','태원',51,21,'city','shanxi'],['hengshan_n','항산파',54,16,'sect','shanxi','hengshan_n'],['nokrim','녹림 총채',57,25,'den','shanxi','nokrim'],
   ['beijing','북경',64,15,'capital','hebei'],['paeng','하북팽가',62,20,'clan','hebei','paeng'],
   ['jinan','제남',70,24,'city','shandong'],['taishan','태산파',73,27,'sect','shandong','taishan'],
-  ['wuhan','무한',58,40,'city','hubei'],['zhuge','제갈세가',52,38,'clan','hubei','zhuge'],['wudang','무당파',48,37,'sect','hubei','wudang'],
+  ['wuhan','무한',58,40,'city','hubei'],['haomun','하오문',60,44,'sect','hubei','haomun'],['zhuge','제갈세가',52,38,'clan','hubei','zhuge'],['wudang','무당파',48,37,'sect','hubei','wudang'],
   ['changsha','장사',55,48,'city','hunan'],['hengshan_s','형산파',53,52,'sect','hunan','hengshan_s'],['suchae','동정호 수채',51,44,'den','hunan','suchae'],
   ['hefei','합비',67,37,'city','anhui'],['namgung','남궁세가',69,41,'clan','anhui','namgung'],
   ['nanjing','남경',73,36,'city','jiangsu'],['moyong','모용세가',77,40,'clan','jiangsu','moyong'],
@@ -5239,7 +5250,7 @@ const CSITE=[
   ['yasu','남만야수궁',30,67,'sect','nanman','yasu'],['horde','초원 부족',44,8,'camp','mongol'],
   ['shenyang','심양',82,11,'city','liaodong'],['jangbaek','장백파',89,6,'sect','liaodong','jangbaek'],['binggung','북해빙궁',60,3,'sect','beihai','binggung']];
 const CROAD=[['beijing','taiyuan'],['beijing','jinan'],['beijing','shenyang'],['beijing','horde'],['horde','binggung'],['beijing','paeng'],['taiyuan','hengshan_n'],['taiyuan','luoyang'],['taiyuan','nokrim'],
-  ['luoyang','kaifeng'],['luoyang','shaolin'],['kaifeng','jinan'],['jinan','taishan'],['luoyang','xian'],['xian','huashan'],['xian','zhongnan'],['xian','lanzhou'],['lanzhou','gongdong'],['lanzhou','oasis'],['oasis','tianshan'],['lanzhou','kunlun'],
+  ['luoyang','kaifeng'],['kaifeng','gaebang'],['wuhan','haomun'],['luoyang','shaolin'],['kaifeng','jinan'],['jinan','taishan'],['luoyang','xian'],['xian','huashan'],['xian','zhongnan'],['xian','lanzhou'],['lanzhou','gongdong'],['lanzhou','oasis'],['oasis','tianshan'],['lanzhou','kunlun'],
   ['xian','chengdu'],['chengdu','tang'],['chengdu','emei'],['chengdu','qingcheng'],['chengdu','dali'],['dali','jeomchang'],['dali','yasu'],['chengdu','hyeol'],['hyeol','potala'],
   ['luoyang','zhuge'],['zhuge','wudang'],['zhuge','wuhan'],['wuhan','changsha'],['changsha','suchae'],['changsha','hengshan_s'],['wuhan','hefei'],['kaifeng','hefei'],['hefei','namgung'],['hefei','nanjing'],['nanjing','moyong'],['moyong','hangzhou'],['hangzhou','botao'],
   ['changsha','nanchang'],['nanchang','yongho'],['nanchang','hangzhou'],['hangzhou','fuzhou'],['fuzhou','namsorim'],['fuzhou','guangzhou'],['guangzhou','guilin'],['guilin','changsha'],['guilin','cheonma'],['guilin','odok'],['odok','dali'],['shenyang','jangbaek']];
@@ -5702,6 +5713,12 @@ function npcFight(aId,bId,o,done){ o=o||{}; const a=A(aId), b=A(bId); if(!a||!b)
 /* ---- 결투 규칙 ---- */
 const STN={A:'강공',G:'수비',F:'변초',U:'절초'};
 const STH={A:'변초를 깬다',G:'강공을 되받는다',F:'수비를 뚫는다',U:'기 60 · 큰 일격'};
+// 상성 설명은 그 싸움에서 쓰는 수 이름으로 적는다(아이 싸움이면 "발 걸기를 깬다")
+const sthOf=(k,stn)=>k==='U'?STH.U:k==='A'?`${eul(stn.F)} 깬다`:k==='G'?`${eul(stn.A)} 되받는다`:`${eul(stn.G)} 뚫는다`;
+/* 사투 끝에 깨달음이 올 확률: 오성이 가장 크고, 기연이 조금 보탠다. 무골이면 +10%p. 상대가 셀수록, 남은 기력이 적을수록 오른다(10%~90%) */
+function epiChance(ratio,left){ return cl(.05+ST('wit')*.055+ST('luck')*.02+(hasT('bone')?.1:0)+cl((ratio-.95)*.8,0,.16)+cl((.25-left)*.6,0,.15),.1,.9); }
+/* 경지가 오르면 이름 없는 상대도 내 무위의 여섯 할은 된다(일류부터). 두 대에 끝나는 싸움만 이어지지 않게 */
+function duelFloor(sp){ if(!sp||sp._fl||!m||!m.f||!m.f.martial||m.lv<3||sp.noScale||sp.survive) return sp; const fl=Math.round(power()*.6); (sp.chain||[sp.foe]).forEach(f=>{ if(f&&f.pow<fl) f.pow=fl+ri(0,4); }); sp._fl=1; return sp; }
 // DM[내 수][상대 수] = [내가 주는 배율, 내가 받는 배율]
 const DM={A:{A:[.6,.6],G:[.15,.7],F:[1,0],U:[.3,1.7]},G:{A:[.7,.15],G:[0,0],F:[0,.9],U:[0,.8]},F:{A:[0,1],G:[.9,0],F:[.4,.4],U:[0,1.7]},U:{A:[1.7,.3],G:[.8,0],F:[1.7,0],U:[1.2,1.2]}};
 const STYLE={brute:{A:.55,G:.15,F:.3},bandit:{A:.45,G:.2,F:.35},sword:{A:.34,G:.33,F:.33},monk:{A:.25,G:.5,F:.25},assassin:{A:.3,G:.1,F:.6},even:{A:.34,G:.33,F:.33},beast:{A:.7,G:.05,F:.25}};
@@ -5713,7 +5730,7 @@ function mkFoe(s){ const pow=Math.max(3,Math.round(s.pow)), hp=Math.round(34+pow
 // 내 기력도 상대와 같은 식으로 잰다. 지금 건강이 그 몇 할을 채우고 들어가는지를 정한다.
 function mkMe(){ const c=combat(), ar=eq('def')+bodyArt(), pw=power(), mx=Math.round(34+pw*1.1)+eq('hp');
   return {name:m.name,pow:pw,hpMax:mx,hp:Math.max(1,Math.round(mx*cl(m.hp)/100)),qi:Math.round(20+Math.min(40,m.ng*.5)),def:100/(100+ar*4+m.lv*6),evade:Math.min(.4,stepArt()+eq('ev')),art:c.art?c.art.n:'',crit:Math.min(.5,.05+ST('luck')*.01+eq('cr')),last:[]}; }
-function mkDuel(spec){ const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
+function mkDuel(spec){ duelFloor(spec); const foes=spec.chain||[spec.foe]; const D={spec,foes,idx:0,won:0,round:0,total:0,lethal:!!spec.lethal,me:mkMe(),foe:mkFoe(foes[0]),taken:0,lines:[],phase:'pick',mirror:false,hp0:m.hp};
   if(spec.qi) D.me.qi=Math.min(100,D.me.qi+spec.qi); D.qi0=D.me.qi; mkTell(D); return D; }
 function foePick(D){ const f=D.foe, l=D.me.last; if(f.qi>=60&&R()<.55) return 'U';
   const w=Object.assign({},STYLE[f.style]||STYLE.even); const n=l.length; if(n>=2&&l[n-1]===l[n-2]&&l[n-1]!=='U') w[BEATS[l[n-1]]]+=.4;
@@ -5758,11 +5775,15 @@ function settle(D,state){ const me=D.me, sp=D.spec, f=D.foe;
     else { const left=me.hp/me.hpMax*100; m.hp=cl(Math.round(D.hp0-Math.max(0,D.hp0-left)*.6),1,100); }
   } else { const loss=D.taken>0?Math.max(3,Math.round(D.taken/me.hpMax*100*.25)):0; m.hp=Math.max(1,Math.round(D.hp0-loss)); }
   if(res.win){ m.wins=(m.wins||0)+1; m.fame+=f.pow>=me.pow?2:1; } else m.losses=(m.losses||0)+1;
+  // 사투 끝의 깨달음: 나와 비슷하거나 더 센 상대를 기력 넷에 하나도 안 남기고 이기면 한 꺼풀을 벗을 수 있다(한 해에 한 번 굴린다)
+  if(res.win&&m.f.martial&&!sp.survive&&f.pow>=me.pow*.95&&me.hp<=me.hpMax*.25&&m.f.epiA!==m.age&&(m.f.epiA=m.age,R()<epiChance(f.pow/me.pow,me.hp/me.hpMax))){ m.f.epiN=(m.f.epiN||0)+1;
+    const g=Math.round(Math.max(gain()*1.5,(LVX[Math.min(8,m.lv+1)]-LVX[m.lv])*.08)); addExp(g); m.ng+=1; res.epi=g; log(`${f.name}${jo(f.name,'과','와')}의 사투 끝에 깨달음을 얻었다 (수련 +${g})`,true);
+    if(!m.headless) vfx(()=>{ gradeFx({g:3,han:'頓悟',title:'깨달음',sub:`사투 끝에 한 꺼풀을 벗었다 · 수련 +${g}`,sfx:'art3'}); const h=A('hero'); if(h){ h.pose='sit'; h.act='meditate'; h.auraC='#bff4ff'; } }); }
   return res; }
 function mercyApply(D,res,k){ const f=D.foe;
   if(k==='kill'){ res.killed=true; m.kills=(m.kills||0)+1; m.per.담=cl((m.per.담||0)+4,-100,100); m.per.정=cl((m.per.정||0)-5,-100,100); m.ak+=D.spec.good?12:2;
     if(!D.spec.noReturn&&R()<.3&&!m.q.some(q=>q.id==='kinRevenge')){ m.f.kinOf=f.name; m.q.push({age:m.age+ri(5,10),id:'kinRevenge'}); } }
-  else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&m.spared.length<3) m.spared.push({n:f.name,a:m.age,pow:f.pow,lk:f.look}); } }
+  else { res.spared=true; m.hy+=3; m.per.정=cl((m.per.정||0)+5,-100,100); m.spared=m.spared||[]; if(!D.spec.noReturn&&!f.beast&&m.spared.length<3) m.spared.push({n:f.title?f.name:rname(),was:f.title||f.name,a:m.age,pow:f.pow,lk:f.look}); } }      // 직함만 있던 상대도 이름을 얻는다: 훗날 같은 직함의 다른 사람과 섞이지 않게
 function lootOf(D,res){ const L=D.spec.loot; if(!L) return; if(L.g){ const g=Math.round(ri(L.g[0],L.g[1])*(res.killed?1.5:1)); gold(g); res.gold=g; }
   (L.it||[]).forEach(x=>{ if(R()<x[1]){ give(x[0]); (res.items=res.items||[]).push(x[0]); } }); }
 // 이긴 싸움에서 덤으로 떨어지는 물건. 상대가 셀수록 등급이 높다
@@ -5875,7 +5896,7 @@ function renderDuel(card,eye){ if(DUEL.war) return renderWar(card);
   else if(D.phase==='end') body=`<p class="mh-res ${D.res.win?'good':'bad'}">${esc(duelSummary(D))}</p><button class="mh-go" type="button" id="mhDgo">${D.res.dead?'눈앞이 어두워진다':'계속'}</button>`;
   else { const t=D.tell;
     body=`<p class="mh-tell"><span class="mh-lab">낌새</span> <span>${esc(t.txt)}. <b class="mh-st ${t.s}">${esc(stn[t.s])}</b>의 기미</span> <small>읽을 확률 ${Math.round(t.acc*100)}%</small></p>
-    <div class="mh-stances">${['A','G','F','U'].map((k,i)=>`<button class="mh-ch mh-stance ${k}" type="button" data-st="${k}" ${!can||(k==='U'&&me.qi<60)?'disabled':''}><span class="k" aria-hidden="true">${i+1}</span><b>${esc(k==='U'&&me.art&&!sp.stn?me.art:stn[k])}</b><small>${STH[k]}</small></button>`).join('')}</div>
+    <div class="mh-stances">${['A','G','F','U'].map((k,i)=>`<button class="mh-ch mh-stance ${k}" type="button" data-st="${k}" ${!can||(k==='U'&&me.qi<60)?'disabled':''}><span class="k" aria-hidden="true">${i+1}</span><b>${esc(k==='U'&&me.art&&!sp.stn?me.art:stn[k])}</b><small>${sthOf(k,stn)}</small></button>`).join('')}</div>
     <div class="mh-row mh-dacts">${m.inv.bag.salve>0?`<button class="mh-btn" type="button" data-st="salve" ${can&&me.hp<me.hpMax?'':'disabled'}>${icImg(itIcon('salve'),'sm')} 금창약 ×${m.inv.bag.salve}</button>`:''}<button class="mh-btn" type="button" data-st="flee" ${can?'':'disabled'}>${D.lethal?'몸을 뺀다':'졌다고 한다'}</button>${m.auto?'':`<button class="mh-btn" type="button" id="mhDauto" ${D.autoRest?'aria-pressed="true"':''}>남은 합을 맡긴다</button>`}<span class="mh-hint">강공 › 변초 › 수비 › 강공</span></div>`; }
   const lines=D.lines.length?`<ol class="mh-dlog">${D.lines.slice().reverse().map((x,i)=>`<li class="${i?'old':''}">${esc(x)}</li>`).join('')}</ol>`:'';
   card.innerHTML=`${eye}<div class="mh-duel${D.lethal?' lethal':''}">${head}${body}${lines}</div>`;
@@ -6033,7 +6054,7 @@ const Sg=(bg,o)=>Object.assign({bg},o||{});
 const N=(id,look,x,o)=>Object.assign({id,look,x,face:-1},o||{});
 // 그 문파 사부의 성별: 여인 문파와 사부가 여인인 문파(fmaster)는 여자, 사내 문파는 남자, 나머지는 정해져 있지 않다
 const masterSex=k=>{ const S=SECTS[k]; return !S?null:S.female||S.fmaster?'f':S.male?'m':null; };
-function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(k==='demon'){ m.f.magong=1; m.ak+=20; } addExp(3); if(!relOf('사부')) rel('사부',null,65,masterSex(k)?{sx:masterSex(k)}:{});
+function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(S.side==='마'){ m.f.magong=1; m.ak+=20; } addExp(3); if(!relOf('사부')) rel('사부',null,65,masterSex(k)?{sx:masterSex(k)}:{});
   if(S.w0&&!m.inv.w) give(S.w0,{quiet:1}); log(`${S.n}에 입문했다`,true); }
 // 출가 문파(소림사)는 혼인한 사람을 받지 않고, 문도는 혼인하지 못한다. 환속하면 풀린다
 const isMonk=()=>!!(m&&m.sect&&SECTS[m.sect]&&SECTS[m.sect].monk);
@@ -6135,7 +6156,7 @@ function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const 
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
 // 돈이 모자라서 못 고르는 선택지: 숨기지 않고 흐리게 보여 준다(무엇이 있었는지는 알 수 있게)
 function lockedOf(ev){ const all=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch, out=[]; for(const x of all){ if(!x.when||x.when()) continue; const g=/m\.gold>=(\d+)/.exec(String(x.when)); if(g&&m.gold<+g[1]) out.push({t:x.t,need:+g[1]}); } return out; }
-function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
+function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=duelFloor(c.duel())); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
 // 맡겨 두었을 때의 승률을 재서 맞춘 어림식: 힘의 비, 지금 건강, 버티기·조력·연전을 본다
 function duelOdds(sp){ let r=foePow(sp)/Math.max(1,power())*(1.62-.0072*cl(m.hp)); if(sp.ally) r*=.82; if(sp.survive) r*=sp.survive<=3?.62:.86; if(sp.qi) r*=1-sp.qi/400; let p=1/(1+Math.exp(7.5*(r-1.13))); if(sp.chain) p*=.8; return p; }
@@ -6617,7 +6638,7 @@ E('rivalReturn',{min:24,max:62,once:1,w:1.3,when:()=>m.f.martial&&!!oldRival(),s
   {t:'술로 대신하자고 한다',p:()=>.35+ST('charm')*.05,go:ok=>{ const r=oldRival(); if(ok){ r.role='지기'; r.v=70; return {t:'한참 노려보더니 검을 거두었다. 그날 밤 술이 모자랐다.',tone:'good',cut:()=>{ setPose('rv','drink'); setPose('hero','drink'); }}; } hurt(15); return {t:'대답 대신 검이 날아왔다. 소매가 잘렸다.',tone:'bad'}; }}]});
 E('sparedReturn',{min:16,max:88,rep:4,w:1.5,when:()=>(m.spared||[]).some(s=>m.age-s.a>=3),
   st:()=>{ const s=m.f.sp; return Sg('road',{cast:[N('sp',s.lk||LOOK.bandit(),112,{tag:s.n,pose:s.foe?'guard':'kneel',emote:s.foe?'anger':'tear'})]}); },
-  text:()=>{ const i=m.spared.findIndex(s=>m.age-s.a>=3), s=m.spared.splice(i,1)[0]; s.foe=R()<.4; m.f.sp=s; return s.foe?`${iga(s.n)} 길을 막았다. 그날 살려 준 목숨이다. "그 수모를 하루도 잊은 적 없다."`:`${iga(s.n)} 찾아와 무릎을 꿇었다. 그날 살려 준 목숨이다. "덕분에 사람 노릇 하며 삽니다."`; },
+  text:()=>{ const i=m.spared.findIndex(s=>m.age-s.a>=3), s=m.spared.splice(i,1)[0]; s.foe=R()<.4; m.f.sp=s; const w=s.was&&s.was!==s.n?`${s.was}${jo(s.was,'이었던','였던')} `:''; return s.foe?`${w}${iga(s.n)} 길을 막았다. 그날 살려 준 목숨이다. "그 수모를 하루도 잊은 적 없다."`:`${w}${iga(s.n)} 찾아와 무릎을 꿇었다. 그날 살려 준 목숨이다. "덕분에 사람 노릇 하며 삽니다."`; },
   ch:()=>{ const s=m.f.sp; if(s.foe) return [
     {t:'칼을 받는다',duel:()=>({foe:{name:s.n,look:s.lk||LOOK.bandit(),pow:Math.max(s.pow+14,Math.round(power()*.9)),style:'bandit',mercy:.2},lethal:1,cause:`${s.n}의 칼`,noReturn:1,loot:{g:[10,50]}}),go:(ok,res)=>{ if(ok) return {t:res.killed?'두 번 살려 주지는 않았다.':'또 살려 주었다. 이번에는 그가 먼저 눈을 피했다.',tone:'good'}; return {t:res.dead?'은혜를 원수로 받았다.':'쓰러진 내 얼굴에 침을 뱉고 떠났다.',tone:'bad'}; }},
     {t:'말로 달랜다',p:()=>.3+ST('charm')*.05,go:ok=>{ if(ok){ m.hy+=4; return {t:'한참 노려보다 칼을 떨어뜨렸다.',tone:'good',cut:()=>{ setPose('sp','cry'); }}; } hurt(20,`${s.n}의 칼`); return {t:'말이 끝나기 전에 칼이 먼저 왔다.',tone:'bad'}; }}];
@@ -8033,6 +8054,105 @@ Q('C','ar_c_usedbook',{a:[8,60],gold:2},'market','헌책 좌판에 표지 떨어
 Q('C','ar_c_breathbook',{a:[8,60],gold:3},'market','떠돌이 도사가 "무병장수 양생법"이라는 책을 판다. 석 냥이다.',[
   ['속는 셈 치고 산다','반은 허풍이었는데, 숨 쉬는 법만은 진짜였다.',{g:-3,it:['낡은 심법서']}],
   ['지나친다','도사는 다음 사람을 붙잡았다.',{}]]);
+/* ==== 강호의 큰 적과 천하의 고수: 경지가 오른 뒤에 찾아오는 일 ====
+   큰 적: 정파·무소속에게는 천마신교가, 마도에게는 무림맹이 서열대로 사람을 보낸다. 하나를 꺾으면 몇 해 뒤 그 윗사람이 오고, 끝에는 교주(맹주)가 직접 온다.
+   상대의 힘은 내 무위에 비례한다(서열이 오를수록 0.85배 → 1.25배). 그래서 초절정이 되어도 두 대에 쓰러지는 대주만 오는 일은 없다.
+   사람마다 이름이 있다. 꺾은 사람은 다시 쳐들어오지 않는다. 경지가 낮아 같은 서열이 다시 올 때도 다른 사람이 온다(살려 준 사람이 훗날 제자가 되어도 같은 얼굴이 산문을 넘지 않는다) */
+const NEMLAD={
+  마교:{org:'천마신교',r:[['마교 혈검대주','cultist',.85,'brute','혈영검'],['마교 흑풍대주','blackclad',.92,'assassin','흑풍장'],['마교 귀면호법','cultist',.98,'brute','귀면도'],['천마신교 좌호법','cultist',1.04,'assassin','혈영참'],['천마신교 대장로','cultist',1.1,'monk','혈하장'],['천마신교 부교주','cultist',1.16,'sword','흡성대법'],['천마신교 교주','cultist',1.25,'brute','천마신공']]},
+  무림맹:{org:'무림맹',r:[['무림맹 선봉장','whitesword',.85,'sword','정의검'],['화산 검수대주','swordsman',.92,'sword','매화검'],['개방 장로','oldbeggar',.98,'brute','타구봉'],['무당 장로','whitesword',1.04,'sword','태극검'],['소림 나한당주','monk',1.1,'monk','나한권'],['무림맹 부맹주','whitesword',1.16,'sword','창궁검'],['무림맹주','master',1.25,'sword','천지검']]}};
+const NEMFLOOR=[0,0,0,1,2,3,4,5,5];          // 경지마다 처음 오는 사람의 서열
+const NEMCAP=[1,1,2,3,4,6,6,6,6];            // 경지마다 올 수 있는 가장 높은 서열. 교주(맹주)는 초절정부터
+// 사문이 있으면 사문의 편을 따른다. 없으면 걸어온 길(마교 편에서 싸웠거나 악명이 높은 사파)을 본다
+const nemSide=()=>m.sect&&SECTS[m.sect]?(SECTS[m.sect].side==='마'?'무림맹':'마교'):(m.f.demonHero||(side()==='사'&&m.ak>=60)?'무림맹':'마교');
+function nem(){ return m.nem||(m.nem={t:0,nm:{},won:0}); }
+const nemWant=()=>Math.max(nem().t,NEMFLOOR[m.lv]||0);          // 다음에 올 차례인 서열
+function nemTier(){ return Math.min(6,NEMCAP[m.lv]||1,nemWant()); }
+// 지금 서열의 상대. cap 을 주면 그 서열까지만(침공에는 교주가 직접 오지 않는다)
+function nemFoe(cap){ const sd=nemSide(), L=NEMLAD[sd], t=Math.min(nemTier(),cap==null?6:cap), r=L.r[t], N=nem(), key=sd+t+':'+(N.won||0), name=N.nm[key]||(N.nm[key]=rname());
+  const lk=(LOOK[r[1]]||LOOK.cultist)(t>=4?{beard:'long',hairC:'#bdb9b0'}:t>=2?{size:'big',beard:'short'}:{size:'big'});
+  return {t,sd,title:r[0],name,foe:{name,title:r[0],look:lk,pow:Math.max(32+m.lv*8+ri(0,10),Math.round(power()*r[2])+ri(0,6)),style:r[3],mercy:t>=6?.3:.5,art:r[4]}}; }
+function nemBeat(t){ const N=nem(); N.t=Math.max(N.t,t+1); N.won=(N.won||0)+1; N.last=m.age; }
+function nemQueue(lo,hi){ if(m.f.nemDone||m.q.some(q=>q.id==='nemCome')) return; if(nemWant()>Math.min(5,NEMCAP[m.lv]||1)) return; m.q.push({id:'nemCome',age:m.age+ri(lo,hi)}); }
+// 한 사건 동안 같은 상대를 쓴다
+function nemCur(cap){ const c=m.nemC; if(c&&c.a===m.age&&c.cap===cap&&c.sd===nemSide()) return c; return m.nemC=Object.assign({a:m.age,cap},nemFoe(cap)); }
+const nemPrize=t=>rndItem(pick(['w','a','h','f','c']),t>=6?5:t>=4?4:3);
+
+E('nemCome',{min:18,max:95,rep:3,w:3,when:()=>m.f.martial&&m.lv>=4&&!m.f.nemDone&&nemWant()<=Math.min(5,NEMCAP[m.lv]||1)&&!m.train,
+  st:()=>{ const c=nemCur(5); return Sg('road',{time:'dusk',cast:[N('nm',c.foe.look,128,{face:-1,pose:'guard',tag:c.title})].concat(mob('nf',()=>c.sd==='마교'?LOOK.cultist():LOOK.swordsman(),[156,172],{pose:'guard'})),hero:{x:74}}); },
+  text:()=>{ const c=nemCur(5), N=nem(), first=!N.won;
+    return c.sd==='마교'
+      ?`${c.title} ${iga(c.name)} 직접 길을 막았다. ${first?'"요즘 강호에 네 이름이 시끄럽더구나. 교에서는 시끄러운 이름을 오래 두지 않는다."':'"아랫것들을 꺾었다는 자가 너냐. 교주께서 네 목을 궁금해하신다."'}`
+      :`${c.title} ${iga(c.name)} 직접 찾아왔다. ${first?'"마도의 이름이 너무 높아졌다. 맹에서 더는 두고 볼 수 없다 하신다."':'"앞서 온 이들을 꺾었다 들었다. 이번에는 내가 왔다."'}`; },
+  ch:()=>{ const c=nemCur(5); return [
+    {t:'받아친다',s:`${c.title} · 지금까지 온 자들보다 세다`,duel:()=>({foe:c.foe,lethal:1,cause:`${c.title}의 손`}),
+      go:(ok,res)=>{ if(ok){ nemBeat(c.t); m.fame+=6+c.t*2; if(c.sd==='마교') m.hy+=4; else m.ak+=4; addExp(gain()*.5); const it=nemPrize(c.t); if(it) give(it); nemQueue(2,4);
+          const nx=nem().t>=6?(c.sd==='마교'?'다음에는 교주가 직접 온다는 소문이 돌았다.':'다음에는 맹주가 직접 온다는 소문이 돌았다.'):'윗사람이 가만있지 않을 것이다.';
+          return {t:`${res.rounds}합 끝에 ${eul(c.name)} 꺾었다.${res.killed?' 칼을 거두지 않았다.':' 목숨은 살려 보냈다.'}${it?` 그가 지니고 있던 ${eul(ITEMS[it].n)} 얻었다.`:''} ${nx}`,big:`${c.title} ${eul(c.name)} 꺾었다`,tone:'good'}; }
+        if(res.dead) return {t:`${c.name}의 일 초가 먼저 닿았다.`,tone:'bad'};
+        m.fame-=3; nemQueue(3,5); return {t:res.fled?'틈을 보아 몸을 뺐다. 그는 쫓지 않았다. 다시 온다는 뜻이다.':`쓰러진 나를 내려다보고 ${c.name}${jo(c.name,'은','는')} 돌아섰다. "몇 해 더 익혀 두어라."`,tone:'bad'}; }},
+    {t:'자리를 피한다',go:()=>{ m.fame-=4; nemQueue(2,3); return {t:'뒷길로 빠져나갔다. 그는 객잔 기둥에 칼자국 하나를 남기고 갔다. 다시 온다는 뜻이다.'}; }}]; }});
+
+E('nemLord',{min:20,max:110,rep:6,w:9,grade:'SS',when:()=>m.f.martial&&m.lv>=5&&!m.f.nemDone&&nem().t>=6&&!m.train,
+  st:()=>{ const c=nemCur(); return Sg('peak',{time:'dusk',wx:'ember',tint:c.sd==='마교'?'red':null,cast:[N('lord',c.foe.look,134,{face:-1,pose:'guard',tag:c.title})],hero:{x:78}}); },
+  text:()=>{ const c=nemCur(); return c.sd==='마교'
+    ?`하늘이 붉게 물든 저녁, 검은 가마 하나가 산을 올라왔다. 가마에서 내린 사람은 ${c.title} ${c.name}이었다. "내 호법과 장로들을 꺾은 자가 너구나. 천마가 직접 왔다. 영광으로 알아라."`
+    :`해 질 녘, 흰 옷의 노인 하나가 홀로 산을 올라왔다. ${c.title} ${c.name}이었다. "맹의 기둥들이 그대 손에 꺾였다. 내가 마지막이다. 뽑아라."`; },
+  ch:()=>{ const c=nemCur(); return [
+    {t:c.sd==='마교'?'천마와 겨룬다':'맹주와 겨룬다',s:'여기서 이기면 강호가 한 세대 조용해진다',duel:()=>({foe:c.foe,lethal:1,cause:c.sd==='마교'?'천마의 장력':'맹주의 검',noReturn:1}),
+      go:(ok,res)=>{ if(ok){ nemBeat(c.t); m.f.nemDone=m.age; m.f.nemSide=c.sd; m.fame+=50; if(c.sd==='마교') m.hy+=20; else m.ak+=20; addExp(gain()*2); const it=nemPrize(6); if(it) give(it);
+          return {t:(c.sd==='마교'?`사흘 낮밤을 싸웠다. 마지막 일 초에 천마의 장력이 먼저 흩어졌다. ${res.killed?'천마는 선 채로 숨을 거두었다.':'천마는 무릎을 꿇지 않았다. 다만 등을 보이고 걸어 내려갔다.'} 검은 깃발들이 십만대산 쪽으로 물러갔다.`:`해가 지고 달이 질 때까지 싸웠다. 마지막 일 초에 맹주의 검이 부러졌다. ${res.killed?'맹주는 검 자루를 쥔 채 눈을 감았다.':'맹주는 부러진 검을 내려놓고 산을 내려갔다.'} 정파의 깃발이 강 건너로 물러갔다.`)+(it?` ${eul(ITEMS[it].n)} 얻었다.`:''),
+            big:c.sd==='마교'?`천마신교 교주 ${eul(c.name)} 꺾었다. 강호가 한 세대 조용해졌다`:`무림맹주 ${eul(c.name)} 꺾었다. 정파가 한 세대 숨을 죽였다`,tone:'good'}; }
+        if(res.dead) return {t:c.sd==='마교'?'천마의 장력이 하늘을 덮었다. 그 아래에 내가 있었다.':'맹주의 검이 한 번 울었다. 그것이 마지막으로 들은 소리였다.',tone:'bad'};
+        m.fame-=5; return {t:c.sd==='마교'?'천마는 쓰러진 나를 내려다보았다. "몇 해를 주마. 그때도 이 정도면 죽이겠다."':'맹주는 검을 거두었다. "몇 해 뒤에 다시 오겠다. 그때는 거두지 않는다."',tone:'bad'}; }},
+    {t:'몸을 숨긴다',go:()=>{ m.fame-=10; return {t:'산 뒤로 내려가 석 달을 숨었다. 강호가 수군거렸다. 그는 몇 해 뒤 다시 올 것이다.'}; }}]; }});
+
+/* ---- 천하의 고수: 초절정부터, 이름난 고수들이 차례로 비무첩을 보낸다. 지지 않는 한 한 사람씩 넘어간다. 다 넘으면 천하제일 ---- */
+const TOPS=[['검성','whitesword','sword','무극검',1.02],['도제','chief','brute','패왕도',1.07],['권왕','monk','monk','백보신권',1.12],['독왕','blackclad','assassin','만독수',1.16],['창신','soldier','brute','양가창',1.2],['천하제일인','master','sword','무상검',1.27]];
+function topCur(){ const i=m.f.top||0, T=TOPS[i]; const c=m.topC; if(c&&c.i===i) return c; return m.topC={i,al:T[0],name:rname(),lk:(LOOK[T[1]]||LOOK.swordsman)(i>=3?{hairC:'#bdb9b0',beard:'long'}:{})}; }
+E('topDuel',{min:22,max:110,rep:3,w:4,when:()=>m.f.martial&&m.lv>=5&&(m.f.top||0)<TOPS.length&&!m.train,
+  st:()=>{ const c=topCur(); return Sg('peak',{time:'dawn',cast:[N('tp',c.lk,130,{face:-1,pose:'guard',tag:c.al+' '+c.name})],hero:{x:78}}); },
+  text:()=>{ const c=topCur(), last=c.i===TOPS.length-1; return last
+    ?`강호가 천하제일인이라 부르는 ${iga(c.name)} 비무첩을 보냈다. "검성도 도제도 그대에게 졌다 들었다. 이제 내 차례다. 산정에서 기다리겠다."`
+    :`천하에 이름난 고수, ${c.al} ${iga(c.name)} 비무첩을 보냈다. "요즘 ${m.alias||m.name}의 이름이 내 귀에까지 온다. 한 수 겨뤄 보자."`; },
+  ch:()=>{ const c=topCur(), T=TOPS[c.i], last=c.i===TOPS.length-1; return [
+    {t:'비무를 받는다',s:'목숨을 걸지 않는 비무다',duel:()=>({foe:{name:c.name,title:c.al,look:c.lk,pow:Math.round(power()*T[4])+ri(0,6),style:T[2],mercy:1,art:T[3]}}),
+      go:ok=>{ if(ok){ m.f.top=(m.f.top||0)+1; m.topC=null; m.fame+=8+c.i*2; addExp(gain()*(.6+c.i*.1)); if(last){ m.f.best=m.age; m.fame+=20; } else if(!m.q.some(q=>q.id==='topDuel')) m.q.push({id:'topDuel',age:m.age+ri(2,3)});      // 이기면 두세 해 뒤 다음 고수가 소문을 듣고 온다
+          return {t:last?'천 합을 넘겼다. 마지막에 그가 먼저 검을 내렸다. "이제 그 이름은 그대 것이다." 강호가 나를 천하제일이라 부르기 시작했다.':`${c.al}의 ${eul(T[3])} 받아 냈다. 그는 웃으며 포권했다. "소문이 헛되지 않았군."`,big:last?'천하제일인을 꺾고 천하제일이 되었다':`${c.al} ${eul(c.name)} 비무에서 꺾었다`,tone:'good'}; }
+        addExp(gain()*.3); return {t:`${c.al}의 벽은 높았다. 졌지만 그의 일 초 일 초가 눈에 남았다.`,tone:'bad'}; }},
+    {t:'정중히 사양한다',go:()=>({t:'답장을 써 보냈다. 그는 "기다리겠다"고만 적어 보냈다.'})}]; }});
+
+/* ---- 마도 입교: 천마신교와 혈교는 산문에서 피로 값을 치르고 들어간다(협행으로 이름난 사람에게는 문이 열리지 않는다) ---- */
+function cultJoin(pre){ const k=worldSect(), S=SECTS[k]; joinSect(k); return {t:pre,big:`${S.n}에 입교했다`,tone:'good'}; }
+E('wCult',{min:15,max:44,wld:1,when:()=>WGO&&!m.sect&&!!SECTS[worldSect()]&&SECTS[worldSect()].side==='마',
+  st:()=>{ const S=SECTS[worldSect()]; return Sg('hall',{time:'night',tint:'red',name:S.n,cast:[N('gd',LOOK.cultist({size:'big',beard:'short'}),126,{face:-1,pose:'guard',tag:'수문 호법'})],hero:{x:70}}); },
+  text:()=>{ const S=SECTS[worldSect()]; return `${S.n}의 문 앞에 섰다. 귀면을 쓴 호법이 내려다보았다. "제 발로 온 자는 둘 중 하나다. 미쳤거나, 갈 곳이 없거나. 교는 둘 다 받는다. 다만 값은 피로 치른다."`; },
+  ch:()=>[
+    {t:'소매를 걷어 핏줄을 보인다',s:'혈마체 · 시험 없이 받아 준다',when:()=>!!m.f.bloodBody,go:()=>cultJoin('호법의 눈이 커졌다. "혈마체… 백 년에 하나 나는 몸이다." 시험은 없었다. 그날로 교주 앞에 불려 갔다.')},
+    {t:'피로 값을 치른다',s:'함께 온 지원자와 생사를 겨룬다',duel:()=>({foe:{name:rname(),title:'입교 지원자',look:LOOK.blackclad(),pow:Math.round(power()*.9)+ri(2,8),style:'assassin',mercy:.3,art:'무영자'},lethal:1,cause:'입교 시험',noReturn:1}),
+      go:(ok,res)=>{ if(ok) return cultJoin(res.killed?'쓰러진 자의 피가 돌바닥에 번졌다. 호법이 문을 열었다. "들어오너라. 오늘부터 네 이름은 교의 것이다."':'칼끝을 거두자 호법이 웃었다. "무르구나. 그래도 이긴 것은 이긴 것이다." 문이 열렸다.');
+        if(res.dead) return {t:'교의 문턱은 생각보다 높았다.',tone:'bad'}; return {t:'쓰러진 나를 호법이 문밖으로 끌어냈다. "살아 있거든 다음에 다시 오너라."',tone:'bad'}; }},
+    {t:'은자 100냥을 바친다',when:()=>m.gold>=100,p:()=>.45+ST('charm')*.04,go:ok=>{ gold(-100); if(ok) return cultJoin('호법은 은자 주머니의 무게를 달아 보고 문을 열었다. "교는 쓸모 있는 자를 내치지 않는다."'); return {t:'은자는 받고 문은 열지 않았다. "값이 모자라다."',tone:'bad'}; }},
+    {t:'돌아선다',go:()=>'등 뒤에서 낮은 웃음소리가 났다.'}]});
+
+/* ---- 남의 산문에 비무를 청한다: 문파와 세가의 고수들과 겨룬다. 한 곳에서 세 번(제자 → 장로 → 장문인·가주) ---- */
+const WSRANK={sect:['일대제자','장로','장문인'],clan:['방계 검수','장로','가주'],den:['부채주','채주의 오른팔','채주'],demon:['향주','호법','장로']};
+function wsCur(){ const k=worldSect(), s=inCathay()?curSite():null, ty=(s&&WSRANK[s.type])?s.type:'sect', n=Math.min(2,(m.f.sd||{})[k]||0), c=m.wsC; if(c&&c.a===m.age&&c.k===k&&c.n===n) return c;
+  const S=SECTS[k]; return m.wsC={a:m.age,k,n,ty,rank:WSRANK[ty][n],name:rname(),lk:npcLook({name:'ws'+k+n,sex:S.female?'f':'m',age:[32,55,62][n],sect:k,weapon:S.art[2]==='검'||S.art[2]==='도'?'sword':null,hair:k==='shaolin'?'bald':null})}; }
+const wsOpen=k=>!!(m.f.martial&&m.lv>=2&&SECTS[k]&&((m.f.sd||{})[k]||0)<3&&((m.f.sdA||{})[k]==null||m.age-(m.f.sdA||{})[k]>=2));
+E('wSect',{min:15,max:95,wld:1,when:()=>WGO&&wsOpen(worldSect())&&worldSect()!==m.sect,
+  st:()=>{ const c=wsCur(), S=SECTS[c.k]; return Sg('arena',{name:S.n,cast:[N('ws',c.lk,126,{face:-1,pose:'guard',tag:c.rank+' '+c.name})],hero:{x:70}}); },
+  text:()=>{ const c=wsCur(), S=SECTS[c.k]; const say=c.ty==='clan'?(c.n?'"또 그대인가. 가문의 이름이 걸렸으니 이번에는 내가 받겠소."':'"가전의 무공은 보여 줄 수는 있어도 가르쳐 줄 수는 없소. 보고 가시오."'):(c.n?'"또 그대인가. 이번에는 내가 상대하겠다."':'"멀리서 온 손님을 빈손으로 보낼 수는 없지. 한 수 받겠다."');
+    return `${S.n}의 문 앞에서 이름을 대고 비무를 청했다. 한참 뒤 ${c.rank} ${iga(c.name)} 나왔다. ${say}`; },
+  ch:()=>{ const c=wsCur(), S=SECTS[c.k]; return [
+    {t:'겨룬다',s:`${S.art[0]} · 목숨을 걸지 않는 비무다`,duel:()=>({foe:{name:c.name,title:`${S.n} ${c.rank}`,look:c.lk,pow:Math.round(power()*[.92,1.02,1.12][c.n])+ri(0,6),style:S.art[2]==='검'?'sword':S.art[2]==='도'?'brute':'monk',mercy:1,art:S.art[0]}}),
+      go:ok=>{ m.f.sdA=m.f.sdA||{}; m.f.sdA[c.k]=m.age; m.wsC=null; if(!ok){ addExp(gain()*.2); return {t:`${S.art[0]}의 벽은 높았다. ${c.name}${jo(c.name,'은','는')} 포권하고 돌아섰다. "두어 해 뒤에 다시 오시오."`,tone:'bad'}; }
+        m.f.sd=m.f.sd||{}; m.f.sd[c.k]=c.n+1; m.fame+=4+c.n*4; addExp(gain()*(.4+c.n*.2)); let ex='';
+        if(c.ty==='clan'){ const g=30+c.n*40; gold(g); ex=` 가문은 무공 대신 노자 ${g}냥을 내놓았다.`; }
+        else if(R()<(c.n?.35:.5)){ const A=Object.values(ARTS).filter(a=>a.sect===c.k&&a.k!=='내공'&&a.g<=Math.min(2,c.n+1)&&!knows(a.n)).sort((a,b)=>a.g-b.g)[0]; if(A){ learnArt(A.n,A.k==='내공'?innerMul():1); ex=` 돌아오는 길에 그 초식을 되짚다가 ${A.n}의 이치를 깨쳤다.`; } }
+        if(c.n>=2){ m.fame+=8; m.f.sdTop=(m.f.sdTop||0)+1; }
+        return {t:`${c.rank} ${c.name}의 ${eul(S.art[0])} 받아 냈다. 그는 한참 말이 없다가 포권했다.${ex}`,big:c.n>=2?`${S.n}의 ${c.rank} ${eul(c.name)} 비무에서 꺾었다. 강호가 술렁였다`:`${S.n}의 ${c.rank} ${eul(c.name)} 비무에서 꺾었다`,tone:'good'}; }},
+    {t:'인사만 하고 물러난다',go:()=>({t:'차 한 잔을 얻어 마시고 내려왔다.'})}]; }});
 /* ==== murim:train — 삼 년 수련기: 두 달마다 할 일, 동문, 일과 에피소드 ==== */
 const SEASONS=['정월','삼월','오월','칠월','구월','동짓달'], TSEAS=[3,0,1,1,2,3];
 const trainPlace=()=>m.sect?SECTS[m.sect].n:m.f.master?'은사의 초막':'마을 무관';
@@ -8051,6 +8171,7 @@ function tactSub(a){ const T=m.train||{};
   return a.s||''; }
 const mt=i=>m.mates[i];
 const alive=i=>m.mates&&m.mates[i]&&!m.mates[i].dead;
+const fit=i=>alive(i)&&!m.mates[i].lost;      // 살아 있고 무공도 그대로인 동문(주화입마로 무공을 잃은 사람은 검을 들지 못한다)
 function mateLook(i,o){ const x=m.mates[i]; return npcLook(Object.assign({name:x.name,sex:x.sx,age:m.age+(i===0?3:i===1?-1:0),sect:m.sect,weapon:i===1?null:'sword',blush:i===1&&x.love?1:0,hair:m.sect==='shaolin'?'bald':null},o||{})); }
 function masterLook(o){ const r=m.rels.find(x=>x.role==='사부'); return npcLook(Object.assign({name:r?r.name:'사부',sex:(m.sect&&masterSex(m.sect))||(r&&r.sx)||'m',age:58,sect:m.sect,robe:m.sect?null:'#5a5a64',weapon:m.sect==='shaolin'||m.sect==='beggar'?'staff':'sword',hair:m.sect==='shaolin'?'bald':null,beard:'long'},o||{})); }
 const mateN=(i,x,o)=>N('m'+i,mateLook(i),x,Object.assign({tag:mt(i).name},o||{}));
@@ -8124,11 +8245,11 @@ const TEV=[
     {t:'대신 패 준다',go:()=>{ hurt(3); m.joy+=3; return {t:'그 뒤로 내 밥그릇에만 고기가 한 점 더 올라왔다.',tone:'good',cut:()=>{ const h=A('hero'); if(h){ h.L=heroLook({tool:'axe'}); h.goto=92; h.act='tool'; } emo('gr','heart'); }}; }},
     {t:'수련이 먼저다',go:()=>{ addExp(1); return '할멈은 아무 말도 하지 않았다.'; }}]}
 ];
-const TEV_FINAL={final:1,st:()=>Sg('arena',{name:'비무 시험',cast:(alive(2)?[mateN(2,126,{pose:'guard'})]:[N('m2',LOOK.youth(),126,{pose:'guard'})])}),
-  text:()=>`수련기의 끝. ${m.train.place}의 비무 시험 날이다. 상대는 ${alive(2)?`${mt(2).rival?'맞수':'지기'} ${mt(2).name}`:'이름난 사형'}.`,ch:[
+const TEV_FINAL={final:1,st:()=>Sg('arena',{name:'비무 시험',cast:(fit(2)?[mateN(2,126,{pose:'guard'})]:[N('m2',LOOK.youth(),126,{pose:'guard'})])}),
+  text:()=>`수련기의 끝. ${m.train.place}의 비무 시험 날이다. 상대는 ${fit(2)?`${mt(2).rival?'맞수':'지기'} ${mt(2).name}`:'이름난 사형'}.`,ch:[
   {t:'정면으로 승부한다',s:'신망이 높을수록 기가 차서 오른다',duel:()=>finalDuel(0),go:ok=>finishTrain(ok,true)},
   {t:'버티며 판정을 노린다',s:'다섯 합을 버티면 통과. 수석은 못 한다',duel:()=>finalDuel(5),go:ok=>finishTrain(ok,false)}]};
-function finalDuel(sv){ const x=alive(2)?mt(2):null, T=m.train; const sp={foe:{name:x?x.name:'사형',title:'비무 시험',look:x?mateLook(2):LOOK.youth(),pow:m.sect?50:38,style:'sword'},qi:Math.round(cl(T.rep)*.4),extras:watchers([0,1].filter(alive).map(i=>mateLook(i)))}; if(sv) sp.survive=sv; return sp; }
+function finalDuel(sv){ const x=fit(2)?mt(2):null, T=m.train; const sp={foe:{name:x?x.name:'사형',title:'비무 시험',look:x?mateLook(2):LOOK.youth(),pow:m.sect?50:38,style:'sword'},qi:Math.round(cl(T.rep)*.4),extras:watchers([0,1].filter(alive).map(i=>mateLook(i)))}; if(sv) sp.survive=sv; return sp; }
 function finishTrain(ok,front){
   const T=m.train, top=ok&&front&&T.rep>=60; let extra='';
   m.f.standing=(m.f.standing||0)+(top?4:ok?2:0);
@@ -8136,7 +8257,7 @@ function finishTrain(ok,front){
   else if(ok){ addExp(3); log(`${T.place}의 수련기를 마쳤다`,true); }
   else { m.joy-=8; log(`${T.place}의 비무 시험에서 떨어졌다`,true); }
   if(T.craft>=4){ if(m.sect==='tang') m.f.poisonwise=1; else if(m.sect==='shaolin'||m.f.med) m.f.med=1; else m.f.smith=1; log('평생 쓸 손재주가 붙었다',true); }
-  m.mates.forEach(x=>{ if(x.dead) return; rel(x.rival?(x.v<=25?'원수':'맞수'):x.role,x.name,x.v,{sx:x.sx}); if(x.love&&x.v>=70&&!m.spouse){ m.f.loveName=x.name; m.q.push({age:m.age+ri(1,4),id:'mateLove'}); } });
+  m.mates.forEach(x=>{ if(x.dead) return; rel(x.rival?(x.v<=25?'원수':'맞수'):x.role,x.name,x.v,x.lost?{sx:x.sx,lost:1}:{sx:x.sx}); if(x.love&&x.v>=70&&!m.spouse){ m.f.loveName=x.name; m.q.push({age:m.age+ri(1,4),id:'mateLove'}); } });
   m.train=null; m.mates=null; placeAfterTrain();
   return {t:(top?'시험관들이 일어서서 박수를 쳤다. 수석이다.':ok?'통과했다. 내문 제자로 올라갔다.':'졌다. 한동안 외문에 남게 되었다.')+extra,tone:ok?'good':'bad'};
 }
@@ -8167,7 +8288,7 @@ function afterTrain(){ acc=0; render(); save(); }
 /* ---- 수련장 장면: 고른 일에 따라 주인공이 움직인다 ---- */
 function trainStage(){ const T=m.train, cast=[];
   if(alive(0)) cast.push(mateN(0,86,{face:1,act:'train'}));
-  if(alive(2)) cast.push(mateN(2,112,{act:alive(0)?'train':'wander',xmin:100,xmax:126}));
+  if(alive(2)) cast.push(mateN(2,112,{act:alive(0)&&!mt(2).lost?'train':'wander',xmin:100,xmax:126}));
   if(alive(1)) cast.push(mateN(1,138,{act:'wander',xmin:128,xmax:152}));
   cast.push(N('sa',m.f.master&&!m.sect?LOOK.master():masterLook(),168,{tag:'사부'}));
   return {key:'train:'+T.place+':'+m.mates.map(x=>x.dead?1:0).join(''),bg:m.sect?'dojo':m.f.master?'hermit':'dojo',name:T.place,season:TSEAS[T.turn%6],cast,hero:{look:heroLook(),x:46,face:-1,tag:m.name,tagc:'me'}}; }
@@ -8191,7 +8312,7 @@ function renderTrain(card,eye){
   const T=m.train, yr=Math.min(3,Math.floor(T.turn/6)+1), se=SEASONS[T.turn%6];
   const head=`<div class="mh-tr"><span class="mh-qa">${esc(T.place)} 수련기</span><b>${T.turn>=18?'비무 시험':`${yr}년차 ${se}`}</b><span class="mh-trbar" aria-label="수련기 진행 ${T.turn}/18"><i style="width:${T.turn/18*100}%"></i></span></div>`;
   const stats=`<div class="mh-meters">${meter('체력',m.hp,'hp')}${meter('신망',T.rep,'')}${meter('기예',Math.min(100,T.craft*25),'joy')}</div>`;
-  const mates=`<div class="mh-mates"><span class="mh-lab">동문</span>${m.mates.map((x,i)=>`<div class="mh-mate${x.dead?' dead':''}"><span class="mh-who"><img class="mh-pt" src="${portrait(mateLook(i))}" alt="" width="28" height="28"><span><b>${esc(x.name)}</b><small>${esc(x.dead?'고인':x.role)}</small></span></span><span class="mh-bar bond"><i style="width:${x.dead?0:cl(x.v)}%"></i></span><button type="button" class="mh-btn" data-mate="${i}" ${m.tev||x.dead||m.auto?'disabled':''}>어울리기</button></div>`).join('')}</div>`;
+  const mates=`<div class="mh-mates"><span class="mh-lab">동문</span>${m.mates.map((x,i)=>`<div class="mh-mate${x.dead?' dead':''}"><span class="mh-who"><img class="mh-pt" src="${portrait(mateLook(i))}" alt="" width="28" height="28"><span><b>${esc(x.name)}</b><small>${esc(x.dead?'고인':x.lost?x.role+' · 무공을 잃음':x.role)}</small></span></span><span class="mh-bar bond"><i style="width:${x.dead?0:cl(x.v)}%"></i></span><button type="button" class="mh-btn" data-mate="${i}" ${m.tev||x.dead||m.auto?'disabled':''}>어울리기</button></div>`).join('')}</div>`;
   const last=m.lastRes&&(m.lastRes.train||resWait())?resHtml(m.lastRes):'';
   const e=m.tev;
   const body=e?`<div class="mh-dec${e.gi?' gi':''}"><p class="mh-qa">${e.final?'시험':e.ep?`${esc(EPI_T[e.ep].n)} · ${e.bi+1}/${EPI_T[e.ep].beats.length}`:'일'}</p><p class="mh-text">${esc(m.tevText)}</p><div class="mh-chs">${tevChoices(e).map(chBtn).join('')}</div></div>`
@@ -8222,7 +8343,7 @@ const EPI_T={
     {st:()=>Sg('library',{cast:[N('el',LOOK.elder(),96,{tag:'장로',emote:'anger',pose:'point'})],hero:{x:62}}),text:()=>'비급각에서 비급 한 권이 사라졌다. 그날 밤 근처에 있었던 사람은 나뿐이다.',ch:[
       {t:'결백을 주장한다',p:()=>.35+cl(m.train.rep)/200,go:ok=>{ if(ok) return '장로가 일단은 믿어 주었다. 대신 사흘 안에 범인을 찾으라 했다.'; m.train.rep-=12; return {t:'아무도 믿어 주지 않았다. 등 뒤에서 수군거렸다.',tone:'bad'}; }},
       {t:'직접 찾아내겠다고 나선다',go:()=>'장로가 사흘을 주었다.'}]},
-    {when:()=>alive(2),st:()=>Sg('library',{cast:[mateN(2,150,{emote:'...'}),N('sv',LOOK.blackclad({weapon:null}),170,{alpha:.7})],hero:{x:40}}),text:()=>`밤중에 ${iga(mt(2).name)} 비급각 뒤에서 누군가와 속삭이는 것을 보았다.`,ch:[
+    {when:()=>fit(2),st:()=>Sg('library',{cast:[mateN(2,150,{emote:'...'}),N('sv',LOOK.blackclad({weapon:null}),170,{alpha:.7})],hero:{x:40}}),text:()=>`밤중에 ${iga(mt(2).name)} 비급각 뒤에서 누군가와 속삭이는 것을 보았다.`,ch:[
       {t:'그 자리에서 추궁한다',duel:()=>({foe:{name:mt(2).name,title:'맞수',look:mateLook(2),pow:Math.round(power()*.95),style:'sword'}}),go:ok=>{ if(ok){ EP('book').clue=1; return {t:'검을 쳐내고 보니 맞수는 결백했다. 그도 낯선 잡역부를 쫓고 있었다.',tone:'good'}; } mt(2).v-=12; return {t:'오해였다. 맞수와 주먹다짐만 했다.',tone:'bad'}; }},
       {t:'조용히 미행한다',p:()=>.4+ST('wit')*.04,go:ok=>{ if(ok){ EP('book').clue=1; mt(2).v+=8; return {t:'맞수도 범인을 쫓고 있었다. 새로 들어온 잡역부였다.',tone:'good'}; } return '놓쳤다.'; }}]},
     {st:()=>Sg('temple',{time:'night',cast:[N('spy',LOOK.blackclad({item:'book',weapon:null}),146,{pose:'carry',emote:'!',tag:'잡역부'})]}),text:()=>EP('book').clue?'잡역부가 비급을 품고 담을 넘으려 한다. 녹림의 첩자였다.':'사흘째 밤, 담을 넘으려는 그림자가 보인다.',ch:[
@@ -8273,8 +8394,9 @@ const EPI_T={
       {t:'비밀을 지켜 준다',go:()=>{ mt(2).v+=10; return {t:'맞수가 처음으로 고맙다는 말을 했다.',tone:'good'}; }},
       {t:'사부에게 알린다',go:()=>{ mt(2).v-=25; m.train.rep+=6; return {t:'맞수는 근신 처분을 받았다. 나를 보는 눈빛이 얼음 같았다.',tone:'bad'}; }}]},
     {when:()=>alive(2),st:()=>yard({time:'night',tint:'red',cast:[mateN(2,104,{pose:'kneel',act:'shiver',emote:'skull',auraC:'#ff5a3a'})]}),text:()=>`${mt(2).name}의 기혈이 거꾸로 돌기 시작했다. 주화입마 직전이다.`,ch:[
-      {t:'내공을 불어넣어 막는다',p:()=>.3+m.ng/80,go:ok=>{ if(ok){ const x=mt(2); x.v=Math.max(x.v,80); x.rival=0; x.role='지기'; m.ng*=.85; return {t:'밤새 손바닥을 맞댔다. 새벽에 맞수가 눈을 떴다. 그날부터 맞수가 아니라 지기가 되었다.',tone:'good',big:`맞수 ${eul(x.name)} 주화입마에서 구했다`,cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.emote='heart'; } }}; } hurt(25,'역류한 내공'); return {t:'둘 다 피를 토하고 쓰러졌다. 맞수는 살았지만 무공을 잃었다.',tone:'bad'}; }},
-      {t:'사람을 부르러 뛴다',go:()=>{ mt(2).v+=5; return '장로들이 달려와 겨우 살렸다.'; }}]}]},
+      {t:'내공을 불어넣어 막는다',p:()=>.3+m.ng/80,go:ok=>{ if(ok){ const x=mt(2); x.v=Math.max(x.v,80); x.rival=0; x.role='지기'; m.ng*=.85; return {t:'밤새 손바닥을 맞댔다. 새벽에 맞수가 눈을 떴다. 그날부터 맞수가 아니라 지기가 되었다.',tone:'good',big:`맞수 ${eul(x.name)} 주화입마에서 구했다`,cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.emote='heart'; } }}; } hurt(25,'역류한 내공'); const x=mt(2); x.lost=1; x.rival=0; x.role='옛 맞수'; x.v=Math.max(x.v,45);      // 무공을 잃었다: 더는 비무 상대로 나오지 않는다
+        return {t:'둘 다 피를 토하고 쓰러졌다. 맞수는 살았지만 무공을 잃었다. 다시는 검을 들지 못한다.',tone:'bad',big:`맞수 ${iga(x.name)} 주화입마로 무공을 잃었다`,cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.pose='lie'; a.emote=null; } }}; }},
+      {t:'사람을 부르러 뛴다',go:()=>{ mt(2).v+=5; return {t:'장로들이 달려와 기혈을 눌러 겨우 살렸다. 금지된 심법은 그 자리에서 폐해졌다. 맞수는 석 달을 누워 지낸 뒤 다시 검을 잡았다.',cut:()=>{ if(SC) SC.tint=null; const a=A('m2'); if(a){ a.act=null; a.ax=0; a.emote=null; } }}; }}]}]},
   raid:{n:'습격의 밤',beats:[
     {st:()=>Sg('temple',{time:'dawn',wx:'fog',hero:{x:120,emote:'?',pose:'kneel'}}),text:()=>'새벽에 담장 밖에서 낯선 발자국을 봤다. 여럿이고, 말발굽도 섞여 있다.',ch:[
       {t:'사부에게 알린다',go:()=>{ EP('raid').warn=1; m.train.rep+=4; return '사부는 그날부터 밤 순찰을 두 배로 늘렸다.'; }},
@@ -8457,7 +8579,7 @@ function doSeason(fid,o){ if(!mapMode()) return; o=o||{}; const b=snap(), sea=m.
   diffFx(b); m.sea++; if(m.sea>3){ m.sea=0; yearTurn(); }
   questTick(); if(inCathay()) m.wldN=(m.wldN||0)+1; if(m.wq){ const id=m.wq; m.wq=null; if(startEv(EV[id])) m.wevN=(m.wevN||0)+1; }
   acc=0; render(); save(); }
-const AUTOEV=new Set(['sectRaid','heartDemon','coldAttack','wedding','birth','doom','revenge','poison','demonWar','leader','demonLord','betray','lastDuel','ascend','famine','assassin','sectHead','masterDeath','spouseSick','kidRun','fever','flee','parentCare','friendDeath','avenge','succession','kinRevenge','sparedReturn','rivalReturn','envoy','exam','child6','child6b','disciple','enlight']);
+const AUTOEV=new Set(['sectRaid','heartDemon','coldAttack','wedding','birth','doom','revenge','poison','demonWar','leader','demonLord','betray','lastDuel','ascend','famine','assassin','sectHead','masterDeath','spouseSick','kidRun','fever','flee','parentCare','friendDeath','avenge','succession','kinRevenge','sparedReturn','rivalReturn','envoy','exam','child6','child6b','disciple','enlight','nemCome','nemLord','topDuel']);
 const markable=ev=>!(AUTOEV.has(ev.id)||ev.epn||(ev.w||0)>=9||ev.min===ev.max);
 const BGSPOT={market:'market',shop:'market',village:'market',inn:'inn',innroom:'inn',stable:'inn',den:'inn',forge:'smithy',mountain:'fall',hermit:'fall',pond:'fall',peak:'fall',cave:'fall',tomb:'fall',cliff:'fall',forest:'forest',bamboo:'forest',fort:'forest',road:'gate',snow:'gate',battle:'gate',river:'bridge',well:'well',school:'school',dojo:'dojo',arena:'dojo',temple:'dojo',library:'dojo',kitchen:'dojo',manor:'office',hall:'office',home:'home',yard:'home',room:'home',wedding:'home',field:'field',grave:'shrine'};
 function spotForEv(ev){ let bg='village'; try{ const s=ev.st&&ev.st(); if(s&&s.bg) bg=s.bg; }catch(e){} return BGSPOT[bg]||'market'; }
@@ -8614,7 +8736,7 @@ const WSEAS={
     if(o.pl==='deep'){ m.hp+=1.5; if(m.f.martial) m.ng+=.05; } else if(o.pl==='city') m.joy+=1; else if(o.pl==='pass'){ if(R()<.3) gold(ri(1,4)); } else if(R()<.2) gold(ri(1,6));
     return pick(WNONE[o.pl]||['하릴없이 한 계절이 갔다.']); },
   sectart:()=>{ const A=sectArtNext(); if(!A) return '장경각을 뒤졌지만 지금 익힐 만한 것이 없었다.'; learnArt(A.n); applyActFx(actFx('sectart')); log(`${SECTS[m.sect].n} 장경각에서 ${eul(A.n)} 익혔다`,A.g>=3); return pick([`장경각에서 한 계절을 보내며 ${eul(A.n)} 익혔다.`,`사부가 장경각 열쇠를 내주었다. ${eul(A.n)} 손에 익을 때까지 나오지 않았다.`]); },
-  wev:o=>{ m.wq=o.ev; return {wBandit:'칼을 고쳐 메고 소굴로 올라갔다.',wSpar:'읍성 비무대 앞에 섰다.',wExam:'산문 앞 돌계단을 올랐다.'}[o.ev]||'길을 나섰다.'; }
+  wev:o=>{ m.wq=o.ev; return {wBandit:'칼을 고쳐 메고 소굴로 올라갔다.',wSpar:'읍성 비무대 앞에 섰다.',wExam:'산문 앞 돌계단을 올랐다.',wCult:'검붉은 깃발 아래로 걸어 들어갔다.',wSect:'문 앞에서 이름을 대고 비무를 청했다.'}[o.ev]||'길을 나섰다.'; }
 };
 const WSTAGE={
   wwork:()=>Sg('road',{hero:{x:70,act:'wander',xmin:40,xmax:120},cast:[N('pd',LOOK.peddler(),134,{})]}),
@@ -8622,7 +8744,7 @@ const WSTAGE={
   wvisit:()=>Sg('temple',{hero:{x:70,face:1},cast:[N('sa',masterLook(),124,{tag:'사부'})]}),
   sectart:()=>Sg('temple',{hero:{x:84,face:1,pose:'sit'}}),
   explore:o=>Sg({city:'market',deep:'mountain',pass:'road',tomb:'tomb'}[o.pl]||'road',{hero:{x:70,act:'wander',xmin:40,xmax:120}}),
-  wev:o=>Sg({wBandit:'road',wSpar:'arena',wExam:'temple'}[o.ev]||'road',{hero:{x:60,face:1}})
+  wev:o=>Sg({wBandit:'road',wSpar:'arena',wExam:'temple',wCult:'hall',wSect:'arena'}[o.ev]||'road',{hero:{x:60,face:1}})
 };
 /* ---- 강호에서만 일어나는 일(되풀이된다) ---- */
 function wJoin(ok,pre){ const k=worldSect(), S=SECTS[k]; if(!ok) return {t:pre+' 장로는 고개를 저었다. "인연이 아니구나. 내려가거라."',tone:'bad'}; joinSect(k); return {t:pre+' 장로가 문을 열었다. "들어오너라."',big:`${S.n}에 입문했다`,tone:'good'}; }
@@ -8681,7 +8803,7 @@ function cathayLoop(dt){ CFR+=dt; if(CT&&!paused){ CT.f+=dt*(m.auto?SPD[spd]:1)*
       if(CT.n%14===0){ travelTick(CT); if(m.dead||!mapMode()) break; } } }
   cathHero(); if(!CT&&m.auto&&!paused&&mapMode()) cathayAuto(); }
 /* ---- 닿은 곳에서 하는 일 ---- */
-const CHINT={home:'나고 자란 마을이다.',capital:'황궁이 있는 도성이다. 사람도, 눈도 많다.',city:'장터와 객잔, 표국이 모여 있는 큰 고을이다.',sect:'산문 너머로 기합 소리가 들린다.',clan:'높은 담장 안에 한 가문이 대를 이어 산다.',den:'관의 손이 닿지 않는 소굴이다. 조심해야 한다.',demon:'검붉은 깃발이 걸려 있다. 오래 머물 곳이 아니다.',camp:'천막과 말 떼가 보인다.'};
+const CHINT={home:'나고 자란 마을이다.',capital:'황궁이 있는 도성이다. 사람도, 눈도 많다.',city:'장터와 객잔, 표국이 모여 있는 큰 고을이다.',sect:'산문 너머로 기합 소리가 들린다.',clan:'높은 담장 안에 한 가문이 대를 이어 산다.',den:'관의 손이 닿지 않는 소굴이다. 조심해야 한다.',demon:'검붉은 깃발이 걸려 있다. 협행으로 이름난 사람에게는 문이 열리지 않는다.',camp:'천막과 말 떼가 보인다.'};
 function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const add=(t,sub,fn,free,w)=>acts.push({t,s:sub,fn,free,w:w==null?1:w}), S=(fid,opt)=>()=>doSeason(fid,opt), mar=m.f.martial, t=s.type;
   if(m.quest&&!m.quest.step&&s.id===m.quest.to) add('임무: '+QT[m.quest.k].act,QT[m.quest.k].n(m.quest),S('quest'),0,9);
   if(t==='home'){ add('마을로 들어간다','',enterVillage,1); return acts; }
@@ -8692,6 +8814,8 @@ function cathActs(){ const s=curSite(), acts=[]; if(!s||CT) return acts; const a
     add(t==='clan'?'가문에 문안을 드린다':t==='demon'?'교에 문안을 드린다':t==='den'?'채에 얼굴을 비춘다':'사문에 문안을 드린다',actSub('wvisit'),S('wvisit'),0,1); add('연무장에서 수련한다',actSub('train'),S('train'),0,2);
     const na=sectArtNext(); if(na) add(`장경각에서 ${eul(na.n)} 익힌다`,`${TIER[na.g]}등급 ${artSub(na)} · ${artStat(na)} · ${actSub('sectart')}`,S('sectart'),0,4); }
   else if(t==='sect'&&joinable(s)&&!m.sect&&m.age<30&&sectOpen()) add('입문을 청한다','시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wExam'}),0,m.age<20?.08:0);
+  else if(t==='demon'&&!m.sect&&m.age<45&&s.sect&&SECTS[s.sect]&&side()!=='정') add('입교를 청한다',m.f.bloodBody?'혈마체다 · 시험 없이 받아 준다':'피로 시험을 본다 · 스무 살 전이면 삼 년 수련기를 보낸다',S('wev',{ev:'wCult'}),0,0);
+  if(!own&&s.sect&&wsOpen(s.sect)&&WSRANK[t]) add('비무를 청한다',`${SECTS[s.sect].n}의 ${WSRANK[t][Math.min(2,(m.f.sd||{})[s.sect]||0)]}${jo(WSRANK[t][Math.min(2,(m.f.sd||{})[s.sect]||0)],'과','와')} 겨룬다 · 비무 · 이기면 이름이 난다`,S('wev',{ev:'wSect'}),0,m.lv>=3&&m.hp>60?.4:0);
   if(t==='den'&&!own) add('소굴로 쳐들어간다','생사결이 될 수 있다 · 이기면 전리품',S('wev',{ev:'wBandit'}),0,mar&&m.lv>=3&&m.hp>70?.4:0);
   if(mar) add('근처 산에서 수련한다',actSub('train',{fall:1}),S('train',{fall:1}),0,2);
   add('약초를 캔다',actSub('herb',null,'18%로 다친다(건강 −7)'),S('herb'),0,mar?.3:1);
@@ -8809,15 +8933,16 @@ E('wAmbush',{min:8,max:95,wld:1,when:()=>WGO,st:()=>Sg('forest',{cast:mob('ab',(
 /* ---- 침공: 정파 문도에게는 마교가, 마도 문도에게는 무림맹 토벌대가 쳐들어온다 ---- */
 const raidOK=()=>!!(m.sect&&SECTS[m.sect]&&m.f.martial&&!m.train&&m.age>=13&&m.age<=75&&(m.f.trainDone||m.age>=20));
 // 해가 바뀔 때 따로 굴린다: 문도로 사는 동안 열다섯 해에 한 번꼴(난세에는 아홉 해에 한 번꼴), 한 번 겪으면 다섯 해는 조용하다
-function sectYear(){ if(m.dead||m.pending||!raidOK()) return; const last=m.used.sectRaid; if(last!=null&&m.age-last<5) return; if(R()<(m.era==='peace'?.08:.13)&&startEv(EV.sectRaid)) m.used.sectRaid=m.age; }
+function sectYear(){ if(m.dead||m.pending||!raidOK()) return; if(m.f.nemDone&&m.age-m.f.nemDone<25) return;      // 교주(맹주)를 꺾으면 한 세대는 조용하다
+  const last=m.used.sectRaid; if(last!=null&&m.age-last<5) return; if(R()<(m.era==='peace'?.08:.13)&&startEv(EV.sectRaid)) m.used.sectRaid=m.age; }
 E('sectRaid',{min:13,max:75,wld:1,when:()=>WGO&&raidOK(),
   st:()=>{ const S=SECTS[m.sect]||{}; return Sg('temple',{time:'night',name:(S.n||'사문')+' 산문',cast:mob('rd',()=>S.side==='마'?LOOK.whitesword():LOOK.cultist(),[118,134,150],{pose:'guard',emote:'anger'})}); },
-  text:()=>{ const S=SECTS[m.sect]||{n:'사문'}; return S.side==='마'?`한밤중에 본산의 북이 울렸다. 무림맹 토벌대가 ${S.n}의 산문을 넘었다. 횃불이 골짜기를 메웠다.`:`한밤중에 급종이 울렸다. 천마신교의 검은 깃발이 ${S.n}의 산문을 넘었다. 사형제들이 칼을 들고 뛰쳐나왔다.`; },
+  text:()=>{ const S=SECTS[m.sect]||{n:'사문'}, c=nemCur(5), who=` 앞장선 자는 ${c.title} ${c.name}${jo(c.name,'이다','다')}.`; return (S.side==='마'?`한밤중에 본산의 북이 울렸다. 무림맹 토벌대가 ${S.n}의 산문을 넘었다. 횃불이 골짜기를 메웠다.`:`한밤중에 급종이 울렸다. 천마신교의 검은 깃발이 ${S.n}의 산문을 넘었다. 사형제들이 칼을 들고 뛰쳐나왔다.`)+who; },
   ch:[
   {t:'산문 방어를 지휘한다',s:'세 갈래에 사람을 배치하고 영을 내린다',when:()=>canCommand(),war:()=>{ const S=SECTS[m.sect]||{n:'사문'}, dm=S.side==='마'; return {name:S.n+' 산문 방어전',foeName:dm?'무림맹 토벌대':'천마신교',mySide:dm?'마':'정',foes:dm?[['화산 검수대','swordsman'],['토벌대 본대','whitesword'],['개방 타구진','oldbeggar']]:[['혈검대','cultist'],['마교 본대','cultist'],['흑풍대','blackclad']],size:6,diff:1.08,deadly:.1,risk:[8,18],cause:'침공의 밤',time:'night'}; },
     go:(ok,res)=>{ const S=SECTS[m.sect]||{n:'사문'}, r=res||{fallen:[]}; if(ok){ m.fame+=12; m.hy+=6; addSc(20); addExp(gain()*.4); return {t:`새벽에 적의 본대가 물러갔다. ${r.fallen.length?r.fallen.join(', ')+jo(r.fallen[r.fallen.length-1],'은','는')+' 돌아오지 못했다. ':''}산문은 서 있었다.`,big:`${S.n} 침공을 지휘해 막아 냈다`,tone:'good'}; } addSc(4); return {t:`진이 뚫렸다. 제자들을 뒷산으로 물렸다. 전각 절반이 탔다.${r.fallen.length?' '+r.fallen.join(', ')+jo(r.fallen[r.fallen.length-1],'을','를')+' 잃었다.':''}`,tone:'bad'}; }},
-  {t:'앞장서서 적의 우두머리를 막는다',duel:()=>{ const dm=(SECTS[m.sect]||{}).side==='마'; return {foe:{name:dm?'무림맹 선봉장':pick(['마교 혈검대주','마교 흑풍대주','마교 귀면호법']),look:dm?LOOK.whitesword():LOOK.cultist({size:'big'}),pow:32+m.lv*8+ri(0,10),style:'brute',mercy:.2,art:dm?'정의검':'천마검'},lethal:1,cause:dm?'토벌대의 칼':'마교의 칼'}; },
-    go:(ok,res)=>{ const S=SECTS[m.sect]||{n:'사문'}; if(ok){ m.fame+=5; m.hy+=4; addSc(10); return {t:'적의 우두머리가 쓰러지자 검은 물결이 빠져나갔다. 날이 밝았을 때 산문은 아직 서 있었다.',big:`${S.n} 침공을 막아 냈다`,tone:'good'}; } if(res&&res.dead) return {t:'산문 앞 돌계단에서 쓰러졌다. 마지막으로 본 것은 불타는 전각이었다.',tone:'bad'}; addSc(3); return {t:'칼을 놓쳤지만, 버틴 사이 사형제들이 진을 다시 짰다. 사문은 가까스로 살아남았다.',tone:'bad'}; }},
+  {t:'앞장서서 적의 우두머리를 막는다',duel:()=>{ const c=nemCur(5); return {foe:c.foe,lethal:1,cause:c.sd==='무림맹'?'토벌대의 칼':'마교의 칼'}; },
+    go:(ok,res)=>{ const S=SECTS[m.sect]||{n:'사문'}; if(ok){ m.fame+=5; m.hy+=4; addSc(10); const c=nemCur(5); nemBeat(c.t); if(m.lv>=4) nemQueue(2,4); return {t:'적의 우두머리가 쓰러지자 검은 물결이 빠져나갔다. 날이 밝았을 때 산문은 아직 서 있었다.',big:`${S.n} 침공을 막아 냈다`,tone:'good'}; } if(res&&res.dead) return {t:'산문 앞 돌계단에서 쓰러졌다. 마지막으로 본 것은 불타는 전각이었다.',tone:'bad'}; addSc(3); return {t:'칼을 놓쳤지만, 버틴 사이 사형제들이 진을 다시 짰다. 사문은 가까스로 살아남았다.',tone:'bad'}; }},
   {t:'사형제들과 진을 짜 버틴다',p:()=>.3+m.lv*.09,go:ok=>{ if(ok){ hurt(8,'침공의 밤'); m.fame+=2; addSc(6); return {t:'어깨를 맞대고 새벽까지 버텼다. 적은 시체만 남기고 물러갔다.',tone:'good'}; } hurt(26,'침공의 밤'); addSc(2); return {t:'진이 무너졌다. 피투성이가 되어 뒷산으로 밀려났다. 전각 절반이 탔다.',tone:'bad'}; }},
   {t:'어린 제자들을 데리고 뒷산으로 피한다',go:()=>{ m.joy=cl(m.joy-4); addSc(1); return {t:'아이들 손을 잡고 어둠 속을 뛰었다. 등 뒤에서 칼 부딪는 소리가 밤새 이어졌다.'}; }}]});
 /* ==== murim:stage — 누가 어떤 모습으로, 지금 어떤 장면에 서 있는가 ==== */
@@ -8974,7 +9099,7 @@ const HELP={
   ng:()=>'기력이 아니라 쌓은 공력의 햇수다(60년이 1갑자). 햇수 × 0.35만큼 무위에 더해지고, 경지를 올릴 때 햇수의 3할이 쳐진다. 결투를 시작할 때 기가 더 차 있고(햇수 × 0.5, 많아야 +40), 늙어 죽을 확률을 낮춘다(10갑자까지). 폭포나 산에서 수련하면 더 빨리 쌓이고, 심법·영약·기연으로도 는다.',
   gold:()=>'가진 은자와, 강호 사람 가운데 몇째쯤인지. 열다섯 살까지는 집안의 살림으로 친다.',
   sect:()=>`사문의 임무를 마치면 공헌이 쌓인다(임무마다 4~10, 실패하면 −1, 기한을 넘기면 −3). 공헌 12에 이대제자, 30에 일대제자, 60에 장로가 된다. 서열이 오르면 사문 기본 무공의 위력이 2~3 오르고, 장경각에서 익힐 수 있는 무공이 한 등급 높아진다(삼대제자 B, 이대제자 A, 일대제자 S, 장로 SS). 장로는 대전에서 지휘를 맡는다.`,
-  st:()=>'근골은 무위(1당 +1.2)와 수련, 품삯에 든다. 오성은 수련(근골보다 조금 더 크게), 내공이 쌓이는 빠르기, 결투에서 낌새를 읽을 확률(1당 +3.5%)에 든다. 기연은 회심(1당 +1%)과 높은 등급 사건이 나올 확률에 든다. 매력은 사람을 상대하는 선택지에 든다. 네 가지 모두 사건 선택지의 성공 확률에 더해진다.',
+  st:()=>'근골은 무위(1당 +1.2)와 수련, 품삯에 든다. 오성은 수련(근골보다 조금 더 크게), 내공이 쌓이는 빠르기, 결투에서 낌새를 읽을 확률(1당 +3.5%)에 든다. 기연은 회심(1당 +1%)과 높은 등급 사건이 나올 확률에 든다. 매력은 사람을 상대하는 선택지에 든다. 비슷하거나 더 센 상대를 아슬아슬하게 이겼을 때 깨달음이 올 확률은 오성(1당 +5.5%)과 기연(1당 +2%)을 따른다. 네 가지 모두 사건 선택지의 성공 확률에 더해진다.',
   pw:()=>'무위 = 경지에 따른 바탕 + 가장 센 무공(위력 + 든 무기의 공격) + 내공 햇수 × 0.35 + 근골 × 1.2. 무기는 무공과 갈래가 맞아야 공격이 다 들어가고, 안 맞으면 절반만 든다. 결투의 체력과 이길 확률이 여기서 나온다.'
 };
 function wireHelp(el){ el.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>{ HELPK=HELPK===b.dataset.help?null:b.dataset.help; renderRec(); renderBag(); }); }
@@ -9089,12 +9214,17 @@ function renderTitle(card){
     ${optGroup('era','태어날 시대',[['peace','태평성대'],['chaos','정사대전기'],['demon','마교 천하'],['any','아무 시대나']])}
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
     ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
+    <details class="mh-cheat" ${cheatOn()?'open':''}><summary>암호</summary>${cheatOn()
+      ?`<div class="mh-cheatrow"><label>출신 <select id="mhCFam"><option value="">무작위</option>${FAM.map(f=>`<option value="${f.id}" ${setup.fam===f.id?'selected':''}>${esc(f.n)}${f.hidden?' (숨은 핏줄)':''}</option>`).join('')}</select></label><label>체질 <select id="mhCTr"><option value="">무작위</option><option value="none" ${setup.tr==='none'?'selected':''}>없음</option>${TRAITS.map(t=>`<option value="${t.id}" ${setup.tr===t.id?'selected':''}>${esc(t.n)}</option>`).join('')}</select></label></div><p class="mh-hint">고른 출신과 체질로 태어난다. 태어날 확률 표시는 원래 값 그대로다.</p>`
+      :`<div class="mh-cheatrow"><input id="mhCode" type="text" placeholder="암호를 넣는다" autocomplete="off" aria-label="암호"><button class="mh-btn" id="mhCodeOk" type="button">확인</button></div><p class="mh-hint" id="mhCodeMsg"></p>`}</details>
     <div class="mh-row">${saved?`<button class="mh-btn" type="button" id="mhResume">이어 살기 · ${esc(saved.name)} ${saved.age}세</button>`:''}<button class="mh-go seal" type="button" id="mhStart">태어나기</button></div>
     ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${p.g?`<span class="mh-gr g-${esc(p.g)}">${esc(p.g)}</span>`:''}${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
   const hint=()=>['era','basis','pace'].forEach(k=>{ $m('mhHint-'+k).textContent=HINTS[k][setup[k]]; });
   card.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ setup[b.dataset.k]=b.dataset.v; card.querySelectorAll(`[data-k="${b.dataset.k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b)); hint(); });
   hint();
-  $m('mhStart').onclick=()=>{ const era=setup.era==='any'?pick(['peace','chaos','demon']):setup.era; roll=makeBirth(era,setup.basis); m={phase:'birth'}; sfx('gong'); render(); };
+  $m('mhStart').onclick=()=>{ const era=setup.era==='any'?pick(['peace','chaos','demon']):setup.era, ch=cheatOn(); roll=makeBirth(era,setup.basis,ch&&setup.fam||undefined,ch&&setup.tr||undefined); if(ch&&(setup.fam||setup.tr)) roll.cheat=1; m={phase:'birth'}; sfx('gong'); render(); };
+  if($m('mhCFam')){ $m('mhCFam').onchange=e=>{ setup.fam=e.target.value; }; $m('mhCTr').onchange=e=>{ setup.tr=e.target.value; }; }
+  if($m('mhCodeOk')){ const go=()=>{ if(CODES.includes($m('mhCode').value.trim())){ lsSet('murim_cheat',1); sfx('ok'); renderTitle(card); } else $m('mhCodeMsg').textContent='그런 암호는 없다.'; }; $m('mhCodeOk').onclick=go; $m('mhCode').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); go(); } }; }
   if(saved) $m('mhResume').onclick=()=>{ rehydrate(saved); render(); };
 }
 function renderBirth(card){
@@ -9120,7 +9250,7 @@ function renderBirth(card){
     <p class="mh-note">같은 순간, 강호 어딘가에서 다른 아이 넷도 태어났다. 그들의 삶은 끝에서 보게 된다.</p>`;
   $m('mhLive').onclick=()=>{
     const others=[0,1,2,3].map(()=>simulate(makeBirth(b.era,setup.basis)));
-    m=fresh(roll); m.others=others; m.pace=setup.pace; m.basis=setup.basis;
+    m=fresh(roll); m.others=others; m.pace=setup.pace; m.basis=setup.basis; if(roll.cheat) m.f.cheat=1;
     log(`${r.n}의 ${famAs(o)}에서 태어났다`,true);
     if(b.father.dead) log('아버지 얼굴을 모른다',true);
     if(b.mother.dead) log('어머니가 낳다가 세상을 떠났다',true);
@@ -9211,7 +9341,7 @@ const LGCOL={C:'#8a8a80',B:'#4f8a5a',A:'#3f6f9a',S:'#8a5ad0',SS:'#c9862a',SSR:'#
 function lifeScore(){ const P=[], add=(l,v)=>{ v=Math.round(v*10)/10; if(v>0) P.push([l,v]); }, kids=m.rels.filter(r=>r.role==='자식').length;
   add('경지',m.f.martial?[0,4,8,14,22,30,40,52,65][m.lv]||0:0);
   add('이름',Math.min(12,(m.fame||0)*.1)+(m.alias?4:0));
-  let seat=(m.f.leader?8:0)+(m.f.champ?6:0); try{ if(m.sect&&srank()==='장로') seat+=3; if(m.f.ally&&!m.f.leader) seat+=({맹원:0,당주:1,장로:2,부맹주:4})[arank()]||0; }catch(e){} add('자리',seat);
+  let seat=(m.f.leader?8:0)+(m.f.champ?6:0)+(m.f.nemDone?10:0)+(m.f.best?8:0)+Math.min(5,(m.f.top||0)); try{ if(m.sect&&srank()==='장로') seat+=3; if(m.f.ally&&!m.f.leader) seat+=({맹원:0,당주:1,장로:2,부맹주:4})[arank()]||0; }catch(e){} add('자리',seat);
   add('싸움',Math.min(8,(m.wins||0)*.4));
   add('기연',Math.min(8,(m.giN||0)*1.5));
   add('재산',cl((pctNow()-50)/50*8,0,8));

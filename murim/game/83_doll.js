@@ -45,7 +45,7 @@ function dollSprite(L,pose,f,dir){
   const key=L.key+'|'+pp[0]+'|'+(pp[1]?1:0)+'|'+(lying?1:0); let c=DOLL.cache.get(key); if(c) return c;
   const S=dollSpec(L), p=pp[0], sx=S.sex, foot=DOLLD.M.foot[sx+p]; if(!foot) return null;
   const W=SW*2, H=SH*2, buf=new ImageData(W,H), D=buf.data, bx=OX*2-Math.round(foot[0]), by=OY*2-foot[1];
-  const robe=tones(vivid(S.robe,.55)), sash=tones(vivid(S.trim,.5)), hair=tones(vivid(S.hairC,.35));      // 꼬마 도트는 탁한 색이 잘 안 산다
+  const robe=tones(vivid(S.robe,.3)), sash=tones(vivid(S.trim,.3)), hair=tones(S.hairC);
   const put=(part,x0,y0)=>{ if(!part) return; const {d,w,h}=part;
     for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const s=(j*w+i)*4; if(d[s+3]<128) continue; const X=x0+i, Y=y0+j; if(X<0||Y<0||X>=W||Y>=H) continue;
       let r=d[s],g=d[s+1],b=d[s+2];
@@ -65,7 +65,7 @@ function dollSprite(L,pose,f,dir){
   L2('h'+sx+S.hair+p+'b');
   const body=dollPart('b'+sx+S.body+p)?S.body:'plain'; L2('b'+sx+body+p);
   // 눈
-  const eyes=DOLLD.M.eyes[sx+body+p]||DOLLD.M.eyes[sx+'plain'+p]||[], E=DEYES[S.eye%DEYES.length], ic=hexRgb(S.eyeC);
+  const eyes=S.eye>=0&&S.stamp?(DOLLD.M.eyes[sx+body+p]||DOLLD.M.eyes[sx+'plain'+p]||[]):[], E=DEYES[Math.max(0,S.eye)%DEYES.length], ic=hexRgb(S.eyeC);      // 기본은 원래 그림의 눈. 찍은 눈은 stamp 일 때만
   eyes.forEach((e,n)=>{ const th=Math.max(3,Math.min(6,e[2])), rows=E.keep?E.r:Array.from({length:th},(_,j)=>E.r[Math.min(E.r.length-1,Math.floor(j*E.r.length/th))]), h=rows.length, w=rows[0].length, mir=E.mir&&p<=1&&n===0&&eyes.length>1;      // 눈 높이에 맞춰 늘인다(가는 눈은 그대로)
     const x0=bx+Math.round(e[0]-(w-1)/2), y0=by+Math.round(e[1]+e[2]/2-h/2);
     for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const ch=rows[j][mir?w-1-i:i]; if(ch==='.') continue; const c3=ch==='i'?ic:DEYEC[ch], o=((y0+j)*W+x0+i)*4; if(o<0||o>=D.length) continue; D[o]=c3[0]; D[o+1]=c3[1]; D[o+2]=c3[2]; D[o+3]=255; } });

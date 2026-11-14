@@ -6,6 +6,7 @@ H=pickle.load(open('hi.pkl','rb'))
 HAIRS=['topknot','pony','messy','short','braid','longhalf','twin','lowbun','bob','scholar']
 def lum(c): return c[...,0]*.3+c[...,1]*.55+c[...,2]*.15
 LINE=(52,34,34)
+KEEP_EYES=True      # AI 가 그린 원래 눈을 남긴다(손으로 찍은 눈은 따로 고를 때만)
 def despeckle(sp):
     o=sp.copy(); a=sp[...,3]>0; Hh,W=a.shape
     for y in range(1,Hh-1):
@@ -17,7 +18,7 @@ def despeckle(sp):
 def edge(a):
     P=np.pad(a,1); return a&~(P[:-2,1:-1]&P[2:,1:-1]&P[1:-1,:-2]&P[1:-1,2:])
 def pal_of(frames,n=40):
-    px=np.concatenate([f[~bgmask(f)&~isline(f)] for f in frames]).astype(np.uint8)
+    px=np.concatenate([f[~bgmask(f)] for f in frames]).astype(np.uint8)      # 선과 눈동자 같은 어두운 색도 색표에 넣는다
     q=Image.fromarray(px.reshape(1,-1,3),'RGB').quantize(n,method=Image.Quantize.MEDIANCUT,dither=Image.Dither.NONE)
     return np.array(q.getpalette()[:n*3]).reshape(-1,3).astype(float)
 def snap(lo,pal):
@@ -25,12 +26,16 @@ def snap(lo,pal):
 # 바꿔 칠할 자리: 옷 파랑 3단, 띠 빨강 3단을 정해진 열쇠 색으로
 KEY_ROBE=[(0,0,250),(0,0,200),(0,0,150)]; KEY_SASH=[(250,0,0),(200,0,0),(150,0,0)]; KEY_HAIR=[(0,250,0),(0,200,0),(0,150,0)]
 def keyed_body(lo):
+    """옷 파랑·띠 빨강을 열쇠 색 세 단계로. 처음 시안처럼 색표의 색마다 밝기 순서로 단계를 정한다(점이 튀지 않게)"""
     o=lo.copy(); r,g,b=[lo[...,i].astype(int) for i in range(3)]; a=lo[...,3]>0
+    ys=np.where(a.any(axis=1))[0]; neck=ys.min()+int((ys.max()-ys.min())*.5); a=a.copy(); a[:neck]=False      # 입·볼은 옷이 아니다
     for m,keys in ((a&(b>r+40)&(b>g+10),KEY_ROBE),(a&(r>g+70)&(r>b+50),KEY_SASH)):
         if m.sum()<2: continue
-        L=lum(lo[...,:3].astype(float)); t=np.percentile(L[m],[33,67])
-        for k,(lo_,hi_) in enumerate(((t[1],1e9),(t[0],t[1]),(-1,t[0]))): mm=m&(L>=lo_)&(L<hi_); o[mm,:3]=keys[k]
-    return o
+        cols=np.unique(lo[m][:,:3],axis=0); L=lum(cols.astype(float)); order=np.argsort(-L); n=len(cols)
+        for rank,i in enumerate(order):
+            k=min(2,int(rank*3/max(1,n))) if n>=3 else (0 if rank==0 else 2) if n==2 else 1
+            mm=m&(lo[...,:3]==cols[i]).all(-1); o[mm,:3]=keys[k]
+    return despeckle(o)
 def is_skin(c): r,g,b=[c[...,i].astype(int) for i in range(3)]; return (c[...,3]>0)&(r>190)&(g>140)&(b>95)&(r>b+30)&(g<r)
 def eyes_of(lo,p):
     """얼굴 안쪽의 어두운 덩어리(높이 2 이상)를 눈으로 본다. 지우고 자리만 남긴다"""
@@ -57,6 +62,7 @@ def eyes_of(lo,p):
         if c[:,0].max()-c[:,0].min()+1>6: c=c[c[:,0]>=y1-5]
         fixed.append(c)
     comps=sorted(fixed,key=lambda c:-len(c))[:2 if p in (0,1,6,7) else 1]
+    if KEEP_EYES: return lo,[[float((c[:,1].min()+c[:,1].max())/2),int(c[:,0].min()),int(c[:,0].max()-c[:,0].min()+1)] for c in comps]
     o=lo.copy(); sk=lo[is_skin(lo)]; skin=tuple(np.median(sk[:,:3],axis=0).astype(int)) if len(sk) else (240,200,160)
     boxes=[]
     for c in comps:

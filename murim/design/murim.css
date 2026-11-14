@@ -581,3 +581,10 @@ img.mh-ic{object-fit:contain}
 
 .mh-wm{font-style:normal;color:var(--m-jade)}
 .mh-dl{font-weight:600;white-space:nowrap}.mh-dl.up{color:var(--m-jade)}.mh-dl.dn{color:var(--m-seal)}
+
+/* 암호(출신·체질 고르기) */
+#murimApp .mh-cheat{margin:10px 0 2px;font-size:14px}
+#murimApp .mh-cheat>summary{cursor:pointer;color:var(--mute,#7a7466);width:max-content;padding:4px 0}
+#murimApp .mh-cheatrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:8px 0 4px}
+#murimApp .mh-cheatrow label{display:flex;gap:6px;align-items:center}
+#murimApp .mh-cheatrow select,#murimApp .mh-cheatrow input{font:inherit;padding:8px 10px;border:2px solid #c9c6b4;background:#fbfaf2;color:inherit;border-radius:0;min-height:40px;max-width:100%}

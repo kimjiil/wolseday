@@ -65,3 +65,35 @@ E('topDuel',{min:22,max:110,rep:3,w:4,when:()=>m.f.martial&&m.lv>=5&&(m.f.top||0
           return {t:last?'천 합을 넘겼다. 마지막에 그가 먼저 검을 내렸다. "이제 그 이름은 그대 것이다." 강호가 나를 천하제일이라 부르기 시작했다.':`${c.al}의 ${eul(T[3])} 받아 냈다. 그는 웃으며 포권했다. "소문이 헛되지 않았군."`,big:last?'천하제일인을 꺾고 천하제일이 되었다':`${c.al} ${eul(c.name)} 비무에서 꺾었다`,tone:'good'}; }
         addExp(gain()*.3); return {t:`${c.al}의 벽은 높았다. 졌지만 그의 일 초 일 초가 눈에 남았다.`,tone:'bad'}; }},
     {t:'정중히 사양한다',go:()=>({t:'답장을 써 보냈다. 그는 "기다리겠다"고만 적어 보냈다.'})}]; }});
+
+/* ---- 마도 입교: 천마신교와 혈교는 산문에서 피로 값을 치르고 들어간다(협행으로 이름난 사람에게는 문이 열리지 않는다) ---- */
+function cultJoin(pre){ const k=worldSect(), S=SECTS[k]; joinSect(k); return {t:pre,big:`${S.n}에 입교했다`,tone:'good'}; }
+E('wCult',{min:15,max:44,wld:1,when:()=>WGO&&!m.sect&&!!SECTS[worldSect()]&&SECTS[worldSect()].side==='마',
+  st:()=>{ const S=SECTS[worldSect()]; return Sg('hall',{time:'night',tint:'red',name:S.n,cast:[N('gd',LOOK.cultist({size:'big',beard:'short'}),126,{face:-1,pose:'guard',tag:'수문 호법'})],hero:{x:70}}); },
+  text:()=>{ const S=SECTS[worldSect()]; return `${S.n}의 문 앞에 섰다. 귀면을 쓴 호법이 내려다보았다. "제 발로 온 자는 둘 중 하나다. 미쳤거나, 갈 곳이 없거나. 교는 둘 다 받는다. 다만 값은 피로 치른다."`; },
+  ch:()=>[
+    {t:'소매를 걷어 핏줄을 보인다',s:'혈마체 · 시험 없이 받아 준다',when:()=>!!m.f.bloodBody,go:()=>cultJoin('호법의 눈이 커졌다. "혈마체… 백 년에 하나 나는 몸이다." 시험은 없었다. 그날로 교주 앞에 불려 갔다.')},
+    {t:'피로 값을 치른다',s:'함께 온 지원자와 생사를 겨룬다',duel:()=>({foe:{name:rname(),title:'입교 지원자',look:LOOK.blackclad(),pow:Math.round(power()*.9)+ri(2,8),style:'assassin',mercy:.3,art:'무영자'},lethal:1,cause:'입교 시험',noReturn:1}),
+      go:(ok,res)=>{ if(ok) return cultJoin(res.killed?'쓰러진 자의 피가 돌바닥에 번졌다. 호법이 문을 열었다. "들어오너라. 오늘부터 네 이름은 교의 것이다."':'칼끝을 거두자 호법이 웃었다. "무르구나. 그래도 이긴 것은 이긴 것이다." 문이 열렸다.');
+        if(res.dead) return {t:'교의 문턱은 생각보다 높았다.',tone:'bad'}; return {t:'쓰러진 나를 호법이 문밖으로 끌어냈다. "살아 있거든 다음에 다시 오너라."',tone:'bad'}; }},
+    {t:'은자 100냥을 바친다',when:()=>m.gold>=100,p:()=>.45+ST('charm')*.04,go:ok=>{ gold(-100); if(ok) return cultJoin('호법은 은자 주머니의 무게를 달아 보고 문을 열었다. "교는 쓸모 있는 자를 내치지 않는다."'); return {t:'은자는 받고 문은 열지 않았다. "값이 모자라다."',tone:'bad'}; }},
+    {t:'돌아선다',go:()=>'등 뒤에서 낮은 웃음소리가 났다.'}]});
+
+/* ---- 남의 산문에 비무를 청한다: 문파와 세가의 고수들과 겨룬다. 한 곳에서 세 번(제자 → 장로 → 장문인·가주) ---- */
+const WSRANK={sect:['일대제자','장로','장문인'],clan:['방계 검수','장로','가주'],den:['부채주','채주의 오른팔','채주'],demon:['향주','호법','장로']};
+function wsCur(){ const k=worldSect(), s=inCathay()?curSite():null, ty=(s&&WSRANK[s.type])?s.type:'sect', n=Math.min(2,(m.f.sd||{})[k]||0), c=m.wsC; if(c&&c.a===m.age&&c.k===k&&c.n===n) return c;
+  const S=SECTS[k]; return m.wsC={a:m.age,k,n,ty,rank:WSRANK[ty][n],name:rname(),lk:npcLook({name:'ws'+k+n,sex:S.female?'f':'m',age:[32,55,62][n],sect:k,weapon:S.art[2]==='검'||S.art[2]==='도'?'sword':null,hair:k==='shaolin'?'bald':null})}; }
+const wsOpen=k=>!!(m.f.martial&&m.lv>=2&&SECTS[k]&&((m.f.sd||{})[k]||0)<3&&((m.f.sdA||{})[k]==null||m.age-(m.f.sdA||{})[k]>=2));
+E('wSect',{min:15,max:95,wld:1,when:()=>WGO&&wsOpen(worldSect())&&worldSect()!==m.sect,
+  st:()=>{ const c=wsCur(), S=SECTS[c.k]; return Sg('arena',{name:S.n,cast:[N('ws',c.lk,126,{face:-1,pose:'guard',tag:c.rank+' '+c.name})],hero:{x:70}}); },
+  text:()=>{ const c=wsCur(), S=SECTS[c.k]; const say=c.ty==='clan'?(c.n?'"또 그대인가. 가문의 이름이 걸렸으니 이번에는 내가 받겠소."':'"가전의 무공은 보여 줄 수는 있어도 가르쳐 줄 수는 없소. 보고 가시오."'):(c.n?'"또 그대인가. 이번에는 내가 상대하겠다."':'"멀리서 온 손님을 빈손으로 보낼 수는 없지. 한 수 받겠다."');
+    return `${S.n}의 문 앞에서 이름을 대고 비무를 청했다. 한참 뒤 ${c.rank} ${iga(c.name)} 나왔다. ${say}`; },
+  ch:()=>{ const c=wsCur(), S=SECTS[c.k]; return [
+    {t:'겨룬다',s:`${S.art[0]} · 목숨을 걸지 않는 비무다`,duel:()=>({foe:{name:c.name,title:`${S.n} ${c.rank}`,look:c.lk,pow:Math.round(power()*[.92,1.02,1.12][c.n])+ri(0,6),style:S.art[2]==='검'?'sword':S.art[2]==='도'?'brute':'monk',mercy:1,art:S.art[0]}}),
+      go:ok=>{ m.f.sdA=m.f.sdA||{}; m.f.sdA[c.k]=m.age; m.wsC=null; if(!ok){ addExp(gain()*.2); return {t:`${S.art[0]}의 벽은 높았다. ${c.name}${jo(c.name,'은','는')} 포권하고 돌아섰다. "두어 해 뒤에 다시 오시오."`,tone:'bad'}; }
+        m.f.sd=m.f.sd||{}; m.f.sd[c.k]=c.n+1; m.fame+=4+c.n*4; addExp(gain()*(.4+c.n*.2)); let ex='';
+        if(c.ty==='clan'){ const g=30+c.n*40; gold(g); ex=` 가문은 무공 대신 노자 ${g}냥을 내놓았다.`; }
+        else if(R()<(c.n?.35:.5)){ const A=Object.values(ARTS).filter(a=>a.sect===c.k&&a.k!=='내공'&&a.g<=Math.min(2,c.n+1)&&!knows(a.n)).sort((a,b)=>a.g-b.g)[0]; if(A){ learnArt(A.n,A.k==='내공'?innerMul():1); ex=` 돌아오는 길에 그 초식을 되짚다가 ${A.n}의 이치를 깨쳤다.`; } }
+        if(c.n>=2){ m.fame+=8; m.f.sdTop=(m.f.sdTop||0)+1; }
+        return {t:`${c.rank} ${c.name}의 ${eul(S.art[0])} 받아 냈다. 그는 한참 말이 없다가 포권했다.${ex}`,big:c.n>=2?`${S.n}의 ${c.rank} ${eul(c.name)} 비무에서 꺾었다. 강호가 술렁였다`:`${S.n}의 ${c.rank} ${eul(c.name)} 비무에서 꺾었다`,tone:'good'}; }},
+    {t:'인사만 하고 물러난다',go:()=>({t:'차 한 잔을 얻어 마시고 내려왔다.'})}]; }});

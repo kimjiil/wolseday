@@ -140,12 +140,17 @@ function renderTitle(card){
     ${optGroup('era','태어날 시대',[['peace','태평성대'],['chaos','정사대전기'],['demon','마교 천하'],['any','아무 시대나']])}
     ${optGroup('basis','태어날 곳을 정하는 기준',[['births','이 해에 태어나는 아이들'],['pop','지금 강호에 사는 사람들']])}
     ${optGroup('pace','어린 시절의 속도',[['fast','빠르게'],['normal','보통'],['slow','느긋하게']])}
+    <details class="mh-cheat" ${cheatOn()?'open':''}><summary>암호</summary>${cheatOn()
+      ?`<div class="mh-cheatrow"><label>출신 <select id="mhCFam"><option value="">무작위</option>${FAM.map(f=>`<option value="${f.id}" ${setup.fam===f.id?'selected':''}>${esc(f.n)}${f.hidden?' (숨은 핏줄)':''}</option>`).join('')}</select></label><label>체질 <select id="mhCTr"><option value="">무작위</option><option value="none" ${setup.tr==='none'?'selected':''}>없음</option>${TRAITS.map(t=>`<option value="${t.id}" ${setup.tr===t.id?'selected':''}>${esc(t.n)}</option>`).join('')}</select></label></div><p class="mh-hint">고른 출신과 체질로 태어난다. 태어날 확률 표시는 원래 값 그대로다.</p>`
+      :`<div class="mh-cheatrow"><input id="mhCode" type="text" placeholder="암호를 넣는다" autocomplete="off" aria-label="암호"><button class="mh-btn" id="mhCodeOk" type="button">확인</button></div><p class="mh-hint" id="mhCodeMsg"></p>`}</details>
     <div class="mh-row">${saved?`<button class="mh-btn" type="button" id="mhResume">이어 살기 · ${esc(saved.name)} ${saved.age}세</button>`:''}<button class="mh-go seal" type="button" id="mhStart">태어나기</button></div>
     ${past.length?`<h3>지난 생</h3><div class="mh-past">${past.slice(0,6).map(p=>`<div><span>${p.g?`<span class="mh-gr g-${esc(p.g)}">${esc(p.g)}</span>`:''}${esc(p.al?p.al+' ':'')}${esc(p.n)} · ${esc(p.reg||'')} ${esc(p.o||'')}</span><span>${p.age}세 · ${esc(p.c)}</span></div>`).join('')}</div>`:''}`;
   const hint=()=>['era','basis','pace'].forEach(k=>{ $m('mhHint-'+k).textContent=HINTS[k][setup[k]]; });
   card.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ setup[b.dataset.k]=b.dataset.v; card.querySelectorAll(`[data-k="${b.dataset.k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b)); hint(); });
   hint();
-  $m('mhStart').onclick=()=>{ const era=setup.era==='any'?pick(['peace','chaos','demon']):setup.era; roll=makeBirth(era,setup.basis); m={phase:'birth'}; sfx('gong'); render(); };
+  $m('mhStart').onclick=()=>{ const era=setup.era==='any'?pick(['peace','chaos','demon']):setup.era, ch=cheatOn(); roll=makeBirth(era,setup.basis,ch&&setup.fam||undefined,ch&&setup.tr||undefined); if(ch&&(setup.fam||setup.tr)) roll.cheat=1; m={phase:'birth'}; sfx('gong'); render(); };
+  if($m('mhCFam')){ $m('mhCFam').onchange=e=>{ setup.fam=e.target.value; }; $m('mhCTr').onchange=e=>{ setup.tr=e.target.value; }; }
+  if($m('mhCodeOk')){ const go=()=>{ if(CODES.includes($m('mhCode').value.trim())){ lsSet('murim_cheat',1); sfx('ok'); renderTitle(card); } else $m('mhCodeMsg').textContent='그런 암호는 없다.'; }; $m('mhCodeOk').onclick=go; $m('mhCode').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); go(); } }; }
   if(saved) $m('mhResume').onclick=()=>{ rehydrate(saved); render(); };
 }
 function renderBirth(card){
@@ -171,7 +176,7 @@ function renderBirth(card){
     <p class="mh-note">같은 순간, 강호 어딘가에서 다른 아이 넷도 태어났다. 그들의 삶은 끝에서 보게 된다.</p>`;
   $m('mhLive').onclick=()=>{
     const others=[0,1,2,3].map(()=>simulate(makeBirth(b.era,setup.basis)));
-    m=fresh(roll); m.others=others; m.pace=setup.pace; m.basis=setup.basis;
+    m=fresh(roll); m.others=others; m.pace=setup.pace; m.basis=setup.basis; if(roll.cheat) m.f.cheat=1;
     log(`${r.n}의 ${famAs(o)}에서 태어났다`,true);
     if(b.father.dead) log('아버지 얼굴을 모른다',true);
     if(b.mother.dead) log('어머니가 낳다가 세상을 떠났다',true);

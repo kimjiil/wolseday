@@ -8,12 +8,12 @@ const CREG=[['henan','하남',56,29],['shaanxi','섬서',43,29],['shanxi','산�
   ['mongol','몽골',45,5],['liaodong','요동',84,8],['beihai','북해',62,1]];
 // 장소: [id, 이름, x, y, 종류, 지역, 문파]   종류: capital 도성 · city 성 · sect 문파 · clan 세가 · den 소굴 · demon 마도 · camp 천막
 const CSITE=[
-  ['luoyang','낙양',52,31,'city','henan'],['kaifeng','개봉',60,30,'city','henan'],['shaolin','소림사',56,33,'sect','henan','shaolin'],
+  ['luoyang','낙양',52,31,'city','henan'],['kaifeng','개봉',60,30,'city','henan'],['gaebang','개방 총타',64,31,'sect','henan','beggar'],['shaolin','소림사',56,33,'sect','henan','shaolin'],
   ['xian','서안',43,32,'city','shaanxi'],['huashan','화산파',47,30,'sect','shaanxi','huashan'],['zhongnan','종남파',41,35,'sect','shaanxi','zhongnan'],
   ['taiyuan','태원',51,21,'city','shanxi'],['hengshan_n','항산파',54,16,'sect','shanxi','hengshan_n'],['nokrim','녹림 총채',57,25,'den','shanxi','nokrim'],
   ['beijing','북경',64,15,'capital','hebei'],['paeng','하북팽가',62,20,'clan','hebei','paeng'],
   ['jinan','제남',70,24,'city','shandong'],['taishan','태산파',73,27,'sect','shandong','taishan'],
-  ['wuhan','무한',58,40,'city','hubei'],['zhuge','제갈세가',52,38,'clan','hubei','zhuge'],['wudang','무당파',48,37,'sect','hubei','wudang'],
+  ['wuhan','무한',58,40,'city','hubei'],['haomun','하오문',60,44,'sect','hubei','haomun'],['zhuge','제갈세가',52,38,'clan','hubei','zhuge'],['wudang','무당파',48,37,'sect','hubei','wudang'],
   ['changsha','장사',55,48,'city','hunan'],['hengshan_s','형산파',53,52,'sect','hunan','hengshan_s'],['suchae','동정호 수채',51,44,'den','hunan','suchae'],
   ['hefei','합비',67,37,'city','anhui'],['namgung','남궁세가',69,41,'clan','anhui','namgung'],
   ['nanjing','남경',73,36,'city','jiangsu'],['moyong','모용세가',77,40,'clan','jiangsu','moyong'],
@@ -31,7 +31,7 @@ const CSITE=[
   ['yasu','남만야수궁',30,67,'sect','nanman','yasu'],['horde','초원 부족',44,8,'camp','mongol'],
   ['shenyang','심양',82,11,'city','liaodong'],['jangbaek','장백파',89,6,'sect','liaodong','jangbaek'],['binggung','북해빙궁',60,3,'sect','beihai','binggung']];
 const CROAD=[['beijing','taiyuan'],['beijing','jinan'],['beijing','shenyang'],['beijing','horde'],['horde','binggung'],['beijing','paeng'],['taiyuan','hengshan_n'],['taiyuan','luoyang'],['taiyuan','nokrim'],
-  ['luoyang','kaifeng'],['luoyang','shaolin'],['kaifeng','jinan'],['jinan','taishan'],['luoyang','xian'],['xian','huashan'],['xian','zhongnan'],['xian','lanzhou'],['lanzhou','gongdong'],['lanzhou','oasis'],['oasis','tianshan'],['lanzhou','kunlun'],
+  ['luoyang','kaifeng'],['kaifeng','gaebang'],['wuhan','haomun'],['luoyang','shaolin'],['kaifeng','jinan'],['jinan','taishan'],['luoyang','xian'],['xian','huashan'],['xian','zhongnan'],['xian','lanzhou'],['lanzhou','gongdong'],['lanzhou','oasis'],['oasis','tianshan'],['lanzhou','kunlun'],
   ['xian','chengdu'],['chengdu','tang'],['chengdu','emei'],['chengdu','qingcheng'],['chengdu','dali'],['dali','jeomchang'],['dali','yasu'],['chengdu','hyeol'],['hyeol','potala'],
   ['luoyang','zhuge'],['zhuge','wudang'],['zhuge','wuhan'],['wuhan','changsha'],['changsha','suchae'],['changsha','hengshan_s'],['wuhan','hefei'],['kaifeng','hefei'],['hefei','namgung'],['hefei','nanjing'],['nanjing','moyong'],['moyong','hangzhou'],['hangzhou','botao'],
   ['changsha','nanchang'],['nanchang','yongho'],['nanchang','hangzhou'],['hangzhou','fuzhou'],['fuzhou','namsorim'],['fuzhou','guangzhou'],['guangzhou','guilin'],['guilin','changsha'],['guilin','cheonma'],['guilin','odok'],['odok','dali'],['shenyang','jangbaek']];

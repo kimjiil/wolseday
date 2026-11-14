@@ -30,7 +30,7 @@ const WSEAS={
     if(o.pl==='deep'){ m.hp+=1.5; if(m.f.martial) m.ng+=.05; } else if(o.pl==='city') m.joy+=1; else if(o.pl==='pass'){ if(R()<.3) gold(ri(1,4)); } else if(R()<.2) gold(ri(1,6));
     return pick(WNONE[o.pl]||['하릴없이 한 계절이 갔다.']); },
   sectart:()=>{ const A=sectArtNext(); if(!A) return '장경각을 뒤졌지만 지금 익힐 만한 것이 없었다.'; learnArt(A.n); applyActFx(actFx('sectart')); log(`${SECTS[m.sect].n} 장경각에서 ${eul(A.n)} 익혔다`,A.g>=3); return pick([`장경각에서 한 계절을 보내며 ${eul(A.n)} 익혔다.`,`사부가 장경각 열쇠를 내주었다. ${eul(A.n)} 손에 익을 때까지 나오지 않았다.`]); },
-  wev:o=>{ m.wq=o.ev; return {wBandit:'칼을 고쳐 메고 소굴로 올라갔다.',wSpar:'읍성 비무대 앞에 섰다.',wExam:'산문 앞 돌계단을 올랐다.'}[o.ev]||'길을 나섰다.'; }
+  wev:o=>{ m.wq=o.ev; return {wBandit:'칼을 고쳐 메고 소굴로 올라갔다.',wSpar:'읍성 비무대 앞에 섰다.',wExam:'산문 앞 돌계단을 올랐다.',wCult:'검붉은 깃발 아래로 걸어 들어갔다.',wSect:'문 앞에서 이름을 대고 비무를 청했다.'}[o.ev]||'길을 나섰다.'; }
 };
 const WSTAGE={
   wwork:()=>Sg('road',{hero:{x:70,act:'wander',xmin:40,xmax:120},cast:[N('pd',LOOK.peddler(),134,{})]}),
@@ -38,7 +38,7 @@ const WSTAGE={
   wvisit:()=>Sg('temple',{hero:{x:70,face:1},cast:[N('sa',masterLook(),124,{tag:'사부'})]}),
   sectart:()=>Sg('temple',{hero:{x:84,face:1,pose:'sit'}}),
   explore:o=>Sg({city:'market',deep:'mountain',pass:'road',tomb:'tomb'}[o.pl]||'road',{hero:{x:70,act:'wander',xmin:40,xmax:120}}),
-  wev:o=>Sg({wBandit:'road',wSpar:'arena',wExam:'temple'}[o.ev]||'road',{hero:{x:60,face:1}})
+  wev:o=>Sg({wBandit:'road',wSpar:'arena',wExam:'temple',wCult:'hall',wSect:'arena'}[o.ev]||'road',{hero:{x:60,face:1}})
 };
 /* ---- 강호에서만 일어나는 일(되풀이된다) ---- */
 function wJoin(ok,pre){ const k=worldSect(), S=SECTS[k]; if(!ok) return {t:pre+' 장로는 고개를 저었다. "인연이 아니구나. 내려가거라."',tone:'bad'}; joinSect(k); return {t:pre+' 장로가 문을 열었다. "들어오너라."',big:`${S.n}에 입문했다`,tone:'good'}; }

@@ -38,7 +38,7 @@ const Sg=(bg,o)=>Object.assign({bg},o||{});
 const N=(id,look,x,o)=>Object.assign({id,look,x,face:-1},o||{});
 // 그 문파 사부의 성별: 여인 문파와 사부가 여인인 문파(fmaster)는 여자, 사내 문파는 남자, 나머지는 정해져 있지 않다
 const masterSex=k=>{ const S=SECTS[k]; return !S?null:S.female||S.fmaster?'f':S.male?'m':null; };
-function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(k==='demon'){ m.f.magong=1; m.ak+=20; } addExp(3); if(!relOf('사부')) rel('사부',null,65,masterSex(k)?{sx:masterSex(k)}:{});
+function joinSect(k){ const S=SECTS[k]; m.sect=k; learn(S.art[0],S.art[1],S.art[2]); if(S.inner) learn(S.inner[0],0,'내공',S.inner[1]); if(S.side==='마'){ m.f.magong=1; m.ak+=20; } addExp(3); if(!relOf('사부')) rel('사부',null,65,masterSex(k)?{sx:masterSex(k)}:{});
   if(S.w0&&!m.inv.w) give(S.w0,{quiet:1}); log(`${S.n}에 입문했다`,true); }
 // 출가 문파(소림사)는 혼인한 사람을 받지 않고, 문도는 혼인하지 못한다. 환속하면 풀린다
 const isMonk=()=>!!(m&&m.sect&&SECTS[m.sect]&&SECTS[m.sect].monk);
@@ -140,7 +140,7 @@ function pickMinor(){ if(R()>(m.age<10?.32:m.age<15?.42:.5)) return null; const 
 function choicesOf(ev){ const c=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch; return c.filter(x=>!x.when||x.when()); }
 // 돈이 모자라서 못 고르는 선택지: 숨기지 않고 흐리게 보여 준다(무엇이 있었는지는 알 수 있게)
 function lockedOf(ev){ const all=typeof ev.ch==='function'?(m.evCh||(m.evCh=ev.ch())):ev.ch, out=[]; for(const x of all){ if(!x.when||x.when()) continue; const g=/m\.gold>=(\d+)/.exec(String(x.when)); if(g&&m.gold<+g[1]) out.push({t:x.t,need:+g[1]}); } return out; }
-function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=c.duel()); }
+function duelSpecOf(c){ m.evDuel=m.evDuel||{}; return m.evDuel[c.t]||(m.evDuel[c.t]=duelFloor(c.duel())); }
 const foePow=sp=>Math.max.apply(null,(sp.chain||[sp.foe]).map(f=>f.pow));
 // 맡겨 두었을 때의 승률을 재서 맞춘 어림식: 힘의 비, 지금 건강, 버티기·조력·연전을 본다
 function duelOdds(sp){ let r=foePow(sp)/Math.max(1,power())*(1.62-.0072*cl(m.hp)); if(sp.ally) r*=.82; if(sp.survive) r*=sp.survive<=3?.62:.86; if(sp.qi) r*=1-sp.qi/400; let p=1/(1+Math.exp(7.5*(r-1.13))); if(sp.chain) p*=.8; return p; }
